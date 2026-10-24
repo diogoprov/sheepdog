@@ -54,6 +54,18 @@ test_that("export_occupancy_data() writes the tables and the schema", {
   expect_null(sc$calibration)
 })
 
+test_that("sites and species stay JSON arrays with a single element", {
+  pred <- dplyr::filter(sim_pred(), site == "ARA",
+                        species_code == sim_especies[1])
+  dir <- withr::local_tempdir()
+  suppressMessages(do.call(export_occupancy_data, c(
+    list(dir, pred, recordings = sim_recordings()), remap())))
+  sc <- jsonlite::read_json(file.path(dir, "schema.json"))
+  expect_type(sc$species, "list")
+  expect_identical(unlist(sc$species), sim_especies[1])
+  expect_type(sc$sites, "list")
+})
+
 test_that("occasions include recordings without predictions", {
   ex <- export_sim()
   oc <- ex$tables$occasions
