@@ -47,7 +47,16 @@ test_that("calibrate() reproduces v1.2.0", {
     # v1.2.0: compara so as colunas da referencia
     novo <- read_as_text(file.path(saida, f))
     expect_true(all(names(ref) %in% names(novo)), label = f)
-    expect_same_table(novo[names(ref)], ref, label = f, tolerance = 1e-3)
+    # auc_sd da curva de esforco e o desvio-padrao de 3 ajustes em amostras
+    # pequenas e amplia essas diferencas: com o lme4 2.1-0 ele muda ~0,4 %
+    # (as outras colunas seguem dentro de 1e-3), entao vale 1e-2 so para ele
+    colunas <- names(ref)
+    if (f == "effort_curve.csv") {
+      expect_same_table(novo["auc_sd"], ref["auc_sd"], label = f,
+                        tolerance = 1e-2)
+      colunas <- setdiff(colunas, "auc_sd")
+    }
+    expect_same_table(novo[colunas], ref[colunas], label = f, tolerance = 1e-3)
   }
   expect_true(file.exists(file.path(saida, "calibration_model.rds")))
   expect_s4_class(res$fit, "glmerMod")
