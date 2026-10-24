@@ -119,6 +119,14 @@ Effort-standardised site x month matrices from calibrated histories.
 - [`suggest_core_species()`](https://provetelab.org/sheepdog/reference/suggest_core_species.md)
   : Suggest the core species of the community matrices
 
+## Occupancy models
+
+Export the occasions, scores, reviewed clips and calibration draws for
+occupancy models with false positives, such as those of crywolf.
+
+- [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+  : Export the data of an occupancy model with false positives
+
 ## Package
 
 - [`sheepdog`](https://provetelab.org/sheepdog/reference/sheepdog-package.md)

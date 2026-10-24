@@ -141,7 +141,7 @@ cv |> select(model, auc_mean, auc_sd, n_failed)
 #> # A tibble: 5 × 4
 #>   model                auc_mean  auc_sd n_failed
 #>   <chr>                   <dbl>   <dbl>    <int>
-#> 1 m4_species_x_site       0.942 0.00564        0
+#> 1 m4_species_x_site       0.942 0.00563        0
 #> 2 m3_plus_site            0.928 0.00640        0
 #> 3 m2_species_slope        0.916 0.00556        0
 #> 4 m1_species_intercept    0.902 0.00544        0
@@ -186,9 +186,9 @@ cv |>
 #> # A tibble: 5 × 7
 #>   model logloss_mean logloss_sd brier_mean cal_intercept cal_slope prop_singular
 #>   <chr>        <dbl>      <dbl>      <dbl>         <dbl>     <dbl>         <dbl>
-#> 1 m4_s…        0.291    0.0103      0.0941      0.00430      0.994           1  
+#> 1 m4_s…        0.291    0.0103      0.0941      0.00448      0.993           1  
 #> 2 m3_p…        0.317    0.0119      0.104      -0.00268      0.991           0.2
-#> 3 m2_s…        0.337    0.0102      0.112      -0.000235     0.987           0.2
+#> 3 m2_s…        0.337    0.0102      0.112      -0.000204     0.987           0.2
 #> 4 m1_s…        0.379    0.00934     0.123      -0.00279      0.992           0  
 #> 5 m0_g…        0.436    0.0172      0.142      -0.000629     1.00            0
 ```
@@ -276,15 +276,15 @@ coef(fit_global)
 #>  -0.5310926   1.5993695
 lme4::fixef(fit_full)
 #> (Intercept)  logit_conf 
-#>  -0.2816424   2.7948424
+#>   -0.281896    2.800392
 lme4::VarCorr(fit_full)
 #>  Groups       Name        Std.Dev. Corr  
-#>  site:species (Intercept) 1.19448        
-#>  species      (Intercept) 0.81804        
-#>               logit_conf  1.89240  1.000
+#>  site:species (Intercept) 1.19511        
+#>  species      (Intercept) 0.81885        
+#>               logit_conf  1.89780  1.000
 ```
 
-The site x species intercepts of m4 have a standard deviation of 1.19 on
+The site x species intercepts of m4 have a standard deviation of 1.2 on
 the logit scale, a large effect: at a given score, the odds of a true
 detection differ several-fold among sites for the same species. The fit
 is nevertheless singular, which is why
@@ -384,7 +384,7 @@ thresholds |> print(n = Inf)
 #>    <fct>   <fct>       <dbl>     <dbl>
 #>  1 boa_ran ARA           0.9      0.65
 #>  2 boa_ran BAI           0.9      0.72
-#>  3 boa_ran NHE           0.9      0.77
+#>  3 boa_ran NHE           0.9      0.76
 #>  4 boa_ran XAR           0.9      0.78
 #>  5 den_nan ARA           0.9      0.8 
 #>  6 den_nan BAI           0.9      0.95

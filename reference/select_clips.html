@@ -13,7 +13,7 @@ audio is read or written; cut the clips with cut_clips()."><meta property="og:im
 
     <a class="navbar-brand me-2" href="../index.html">sheepdog</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.2.1.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -144,9 +144,11 @@ over the season;</p></li>
 <li><p><code>"site_species"</code>: no further stratification;</p></li>
 </ul><p>or a character vector of column names of <code>detections</code>, e.g.
 <code>c("site", "species_code", "habitat", "night")</code>, for strata defined by
-the user. Columns can be added to <code>detections</code> before the call (a
-habitat, a recorder, the moon phase, the rain of the night); <code>month</code>
-and <code>week</code> can also be used and are derived from the night when absent.
+the user. Columns can be added to <code>detections</code> before the call; since
+site and species are always part of the strata, useful columns vary
+within a site (the moon phase, the rain of the night, a recorder when
+a site has several). <code>month</code> and <code>week</code> can also be used and are
+derived from the night when absent.
 <code>site</code> and <code>species_code</code> are always added to the strata, which keeps
 <code>inclusion_prob</code> exact when <code>target_total</code> or <code>max_per_species</code> draw
 again within site x species. Columns that depend on the score

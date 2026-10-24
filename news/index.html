@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">sheepdog</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.2.1.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -56,6 +56,11 @@
       <small>Source: <a href="https://github.com/diogoprov/sheepdog/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="development version" id="sheepdog-development-version">sheepdog (development version)<a class="anchor" aria-label="anchor" href="#sheepdog-development-version"></a></h2>
+<ul><li>New <code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code> writes, in one folder, the data of an occupancy model with false positives (schema <code>sheepdog-occupancy</code>, version 1): every occasion, with or without predictions (<code>occasions.csv</code>), the predictions above <code>min_confidence</code> (<code>detections.csv</code>) and their highest score per occasion x species (<code>scores.csv</code>), the reviewed clips with their design and inclusion probability (<code>validation.csv</code>), the recordings annotated by ear (<code>recordings_verified.csv</code>), the site covariates (<code>sites.csv</code>) and, with a model fitted with <code>engine = "brms"</code>, posterior draws of P(TP) on a grid of scores (<code>calibration_draws.parquet</code>). <code>schema.json</code> records the version of the schema and the settings of the export. <code><a href="../articles/crywolf-integration.html">vignette("crywolf-integration")</a></code> documents every column.</li>
+<li>‘jsonlite’ is imported and ‘arrow’ is suggested, for the export.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="3.2.1" id="sheepdog-321">sheepdog 3.2.1<a class="anchor" aria-label="anchor" href="#sheepdog-321"></a></h2>
 <ul><li>Added fast tests for posterior matrix uncertainty, training provenance, overlap boundaries, missing clips and degenerate reviewer agreement.</li>

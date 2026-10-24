@@ -97,7 +97,7 @@ select(cv, model, auc_mean, auc_sd)
 #> # A tibble: 5 × 3
 #>   model                auc_mean  auc_sd
 #>   <chr>                   <dbl>   <dbl>
-#> 1 m4_species_x_site       0.942 0.00564
+#> 1 m4_species_x_site       0.942 0.00563
 #> 2 m3_plus_site            0.928 0.00640
 #> 3 m2_species_slope        0.916 0.00556
 #> 4 m1_species_intercept    0.902 0.00544
@@ -166,10 +166,10 @@ eff_m4
 #> # A tibble: 5 × 6
 #>   n_per_cell auc_mean  auc_sd n_train_mean n_test_mean n_failed
 #>        <dbl>    <dbl>   <dbl>        <dbl>       <dbl>    <int>
-#> 1          5    0.918 0.00896            5        2307        0
-#> 2         10    0.930 0.00449           10        2147        0
+#> 1          5    0.918 0.00902            5        2307        0
+#> 2         10    0.930 0.00447           10        2147        0
 #> 3         15    0.934 0.00325           15        1987        0
-#> 4         20    0.936 0.00331           20        1827        0
+#> 4         20    0.936 0.00330           20        1827        0
 #> 5         25    0.937 0.00335           25        1667        0
 ```
 
@@ -237,7 +237,7 @@ should not be read as losses.
 deviation measures how much the calibration depends on *which* clips
 were reviewed; a large spread means that a single validation round of
 that size may produce a poor model by chance. For the hierarchical model
-it is largest with 5 clips per cell (sd = 0.009) and halves by 15. The
+it is largest with 5 clips per cell (sd = 0.009) and halves by 10. The
 spread can also grow with *n* for a different reason: the test set is
 what is left of each cell, so it shrinks as *n* grows (`n_test_mean`;
 with 25 training clips per cell, 1667 of the 2467 clips remain for

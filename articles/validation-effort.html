@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">sheepdog</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.2.1.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -176,7 +176,7 @@ cross-validation on all the clips (formulas with random effects need the
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 3</span></span></span>
 <span><span class="co">#&gt;   model                auc_mean  auc_sd</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> m4_species_x_site       0.942 0.005<span style="text-decoration: underline;">64</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> m4_species_x_site       0.942 0.005<span style="text-decoration: underline;">63</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> m3_plus_site            0.928 0.006<span style="text-decoration: underline;">40</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> m2_species_slope        0.916 0.005<span style="text-decoration: underline;">56</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> m1_species_intercept    0.902 0.005<span style="text-decoration: underline;">44</span></span></span>
@@ -237,10 +237,10 @@ the hardest to calibrate.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 6</span></span></span>
 <span><span class="co">#&gt;   n_per_cell auc_mean  auc_sd n_train_mean n_test_mean n_failed</span></span>
 <span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          5    0.918 0.008<span style="text-decoration: underline;">96</span>            5        <span style="text-decoration: underline;">2</span>307        0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>         10    0.930 0.004<span style="text-decoration: underline;">49</span>           10        <span style="text-decoration: underline;">2</span>147        0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          5    0.918 0.009<span style="text-decoration: underline;">02</span>            5        <span style="text-decoration: underline;">2</span>307        0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>         10    0.930 0.004<span style="text-decoration: underline;">47</span>           10        <span style="text-decoration: underline;">2</span>147        0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>         15    0.934 0.003<span style="text-decoration: underline;">25</span>           15        <span style="text-decoration: underline;">1</span>987        0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>         20    0.936 0.003<span style="text-decoration: underline;">31</span>           20        <span style="text-decoration: underline;">1</span>827        0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>         20    0.936 0.003<span style="text-decoration: underline;">30</span>           20        <span style="text-decoration: underline;">1</span>827        0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>         25    0.937 0.003<span style="text-decoration: underline;">35</span>           25        <span style="text-decoration: underline;">1</span>667        0</span></span></code></pre></div>
 <p>The draws depend only on <code>seed</code>, <code>n_train</code>,
 <code>n_reps</code> and the data, not on the formula, so with the same
@@ -298,7 +298,7 @@ repetitions and should not be read as losses.</p>
 depends on <em>which</em> clips were reviewed; a large spread means that
 a single validation round of that size may produce a poor model by
 chance. For the hierarchical model it is largest with 5 clips per cell
-(sd = 0.009) and halves by 15. The spread can also grow with <em>n</em>
+(sd = 0.009) and halves by 10. The spread can also grow with <em>n</em>
 for a different reason: the test set is what is left of each cell, so it
 shrinks as <em>n</em> grows (<code>n_test_mean</code>; with 25 training
 clips per cell, 1667 of the 2467 clips remain for testing). The standard
