@@ -18,6 +18,10 @@
   [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md)
   documents every column.
 - ‘jsonlite’ is imported and ‘arrow’ is suggested, for the export.
+- The v1.2.0 reproduction test compares the `auc_sd` column of the
+  effort curve with a relative tolerance of 1e-2 (1e-3 elsewhere): with
+  lme4 2.1-0 this standard deviation over three small fits moves by
+  about 0.4%.
 
 ## sheepdog 3.2.1
 
