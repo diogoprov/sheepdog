@@ -30,5 +30,5 @@ utils::globalVariables(c(
   "complexity", "model", "set", "class_folder", "t_ini", "t_fim", ".linha",
   "n_tp", "min_confidence", "max_confidence", "threshold", "reason", "ok",
   "any_reliable", "reviewer", "second_reviewer", ".r1", ".r2", ".dupla",
-  ".veredito", "n_reviewers", "to"
+  ".veredito", "n_reviewers", "to", "start", "sampling_mode", "grid_index"
 ))
