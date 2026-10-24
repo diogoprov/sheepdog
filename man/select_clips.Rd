@@ -65,9 +65,11 @@ over the season;
 
 or a character vector of column names of \code{detections}, e.g.
 \code{c("site", "species_code", "habitat", "night")}, for strata defined by
-the user. Columns can be added to \code{detections} before the call (a
-habitat, a recorder, the moon phase, the rain of the night); \code{month}
-and \code{week} can also be used and are derived from the night when absent.
+the user. Columns can be added to \code{detections} before the call; since
+site and species are always part of the strata, useful columns vary
+within a site (the moon phase, the rain of the night, a recorder when
+a site has several). \code{month} and \code{week} can also be used and are
+derived from the night when absent.
 \code{site} and \code{species_code} are always added to the strata, which keeps
 \code{inclusion_prob} exact when \code{target_total} or \code{max_per_species} draw
 again within site x species. Columns that depend on the score

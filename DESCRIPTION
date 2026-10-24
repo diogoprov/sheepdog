@@ -1,6 +1,6 @@
 Package: sheepdog
 Title: Sample, Validate and Calibrate 'BirdNET' Detections
-Version: 3.2.1
+Version: 3.2.1.9000
 Authors@R:
     person("Diogo B.", "Provete", , "dbprovete@gmail.com", role = c("aut", "cre"))
 Description: Tools to check whether automated detections from 'BirdNET'
@@ -19,6 +19,7 @@ Depends:
     R (>= 4.2)
 Imports:
     dplyr (>= 1.1.1),
+    jsonlite,
     pROC,
     purrr (>= 1.0.0),
     readr,
@@ -31,6 +32,7 @@ Imports:
     zip
 Suggests:
     ape,
+    arrow,
     av,
     brms,
     crywolf,

@@ -1,3 +1,19 @@
+# sheepdog (development version)
+
+- New `export_occupancy_data()` writes, in one folder, the data of an
+  occupancy model with false positives (schema `sheepdog-occupancy`,
+  version 1): every occasion, with or without predictions
+  (`occasions.csv`), the predictions above `min_confidence`
+  (`detections.csv`) and their highest score per occasion x species
+  (`scores.csv`), the reviewed clips with their design and inclusion
+  probability (`validation.csv`), the recordings annotated by ear
+  (`recordings_verified.csv`), the site covariates (`sites.csv`) and,
+  with a model fitted with `engine = "brms"`, posterior draws of P(TP) on
+  a grid of scores (`calibration_draws.parquet`). `schema.json` records
+  the version of the schema and the settings of the export.
+  `vignette("crywolf-integration")` documents every column.
+- 'jsonlite' is imported and 'arrow' is suggested, for the export.
+
 # sheepdog 3.2.1
 
 - Added fast tests for posterior matrix uncertainty, training provenance,

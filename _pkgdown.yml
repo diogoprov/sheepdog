@@ -75,6 +75,10 @@ reference:
       - community_matrices
       - cell_status
       - suggest_core_species
+  - title: Occupancy models
+    desc: Export the occasions, scores, reviewed clips and calibration draws for occupancy models with false positives, such as those of crywolf.
+    contents:
+      - export_occupancy_data
   - title: Package
     contents:
       - sheepdog-package

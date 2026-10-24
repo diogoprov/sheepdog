@@ -97,6 +97,100 @@ multiple-method design (Miller et al. 2011,
 recordings. They are not confirmations of detections and must not go to the
 `validation` argument of `crywolf::fp_aggregate()`.
 
+## Export for occupancy models
+
+`export_occupancy_data()` writes in one folder everything an occupancy
+model with false positives needs: every occasion, the classifier scores,
+the reviewed clips with their design and, optionally, posterior draws of a
+Bayesian calibration. The folder follows the schema `sheepdog-occupancy`,
+version 1, described below. The tables are plain CSV files (missing values
+are empty cells); the calibration draws are a Parquet file.
+
+```{r, message = FALSE}
+ex <- system.file("extdata", "example", package = "sheepdog")
+det <- read_selection_tables(file.path(ex, "birdnet"))
+out <- export_occupancy_data(
+  file.path(tempdir(), "occupancy"), det,
+  recordings = file.path(ex, "recordings.csv"),
+  validation = list.files(file.path(ex, "validation"), full.names = TRUE)
+)
+vapply(out$tables, nrow, integer(1))
+```
+
+The example clips were drawn with `"top"`, so `validation.csv` serves the
+calibration but not the false-positive rate of an occupancy model (see
+`sampling_mode` below).
+
+### schema.json
+
+| field | definition |
+|---|---|
+| `schema`, `schema_version` | `"sheepdog-occupancy"` and `1`. A reader should refuse other names and versions it does not know. |
+| `created`, `sheepdog_version`, `classifier` | Provenance of the export. |
+| `occasion_unit` | `"file"` or `"minute"` (see Occasion above). |
+| `min_confidence` | Scores below this value were not written: an occasion x species pair absent from `scores.csv` had no prediction at or above it. |
+| `dawn_hour` | Recordings before this hour belong to the night before. |
+| `sites`, `species` | Every site and every classifier label (`species_code`) of the export. |
+| `tables` | For each table, its file and number of rows. |
+| `calibration` | With `fit`: `engine`, `formula`, `n_draws`, `grid_step` and `grid_min`. |
+
+### occasions.csv
+
+One row per occasion, with or without predictions, from the list of
+recordings (`recordings`).
+
+| column | type | definition |
+|---|---|---|
+| `site`, `occasion_id` | character | The occasion (see Occasion above). |
+| `source_audio` | character | Path of the recording. |
+| `recording_date`, `recording_hour` | character | Date (`YYYYMMDD`) and hour (`HH`) in the file name. |
+| `night` | character `YYYYMMDD` | Night of the occasion: the day before for recordings before `dawn_hour`. |
+| `start`, `duration` | double (s) | Start of the occasion in the recording (0 for files) and its length (`NA` when unknown). |
+
+### detections.csv and scores.csv
+
+`detections.csv` has one row per prediction with confidence >=
+`min_confidence`: `site`, `occasion_id`, `species_code`, `species` (the
+short code of `species_folder`, the key of the calibration), `file_offset`
+(s) and `confidence`. `scores.csv` summarises them by occasion x species:
+`max_score` (the highest confidence) and `n_above_min` (the number of
+predictions). Pairs absent from `scores.csv` are censored at
+`min_confidence`.
+
+### validation.csv and recordings_verified.csv
+
+`validation.csv` holds the clips of the `"top"` and `"random_detections"`
+designs: `site`, `occasion_id`, `species_code`, `species`, `clip_start`,
+`clip_end`, `confidence`, `sampling_mode`, `inclusion_prob`,
+`n_detections_occasion`, `verdict` (as in `validation_by_clip.csv`, or
+`disagreement` after `consensus_verdicts()`) and `tp` (1 for `positive`,
+0 for `negative`, empty otherwise), plus `reviewer` and `n_reviewers` when
+present. Only clips of `"random_detections"` estimate a false-positive
+rate; `"top"` clips serve the calibration.
+
+`recordings_verified.csv` holds the occasions annotated by ear
+(`"random_recordings"`), with `present` (1, 0 or empty) in place of `tp`.
+The two tables are kept apart because they say different things: a
+positive clip proves that the species called in its occasion, a negative
+clip only that this prediction was false (the species may have called
+with a lower score), while an annotated recording gives the state of the
+whole occasion.
+
+### sites.csv
+
+One row per site, with the covariates given in `sites`.
+
+### calibration_draws.parquet
+
+With `fit` (a model of `fit_calibration(engine = "brms")`), `n_draws`
+draws of the posterior of P(TP) on a grid of scores from `min_confidence`
+in steps of `grid_step`, for each site x species with predictions:
+`draw`, `site`, `species`, `grid_index`, `confidence` (the grid point) and
+`p_tp`. A detection takes the value of the grid point nearest its score,
+as in `score_detections()`. Species absent from the calibration are left
+out; sites absent from it get the species effects only. Reading it needs
+the 'arrow' package (in R) or any Parquet reader.
+
 ## Files written by v1.2.0
 
 Up to v1.2.0 the same tables were written in Portuguese
