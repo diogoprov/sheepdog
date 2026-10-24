@@ -24,6 +24,14 @@ Diogo confirmed that no real multispecies validation dataset is available.
   nights, 12 test nights, two windows per cell-night. Three generating
   scenarios: global, species heterogeneity, added site/cell heterogeneity.
   It overwrites its caches and records fit warnings and session metadata.
+- `curiango-export.R [DATA_DIR OUTPUT_DIR]`: exports the Curiango data in
+  the `sheepdog-occupancy` schema (version 1), one folder per classifier,
+  with a Bayesian calibration fitted to the ground-truth test set and its
+  posterior draws. The test case of phase 1 of `dev/roadmap-integration.md`.
+  The header of the script explains how the deposit maps on the schema,
+  including what it lacks (window offsets; occasion covariates, written to
+  `curiango_covariates.csv` outside the schema). Output under
+  `dev/benchmarks/results/curiango-export` (ignored).
 - `check-results.R`: checks the cached comparisons, selections, paired
   metrics, design sizes and artifact consistency without refitting models.
 

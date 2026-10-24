@@ -178,8 +178,9 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
     occasion_unit = unidade,
     min_confidence = min_confidence,
     dawn_hour = dawn_hour,
-    sites = sort(unique(ocasioes$site)),
-    species = sort(unique(det$species_code)),
+    # I(): listas mesmo com um elemento (auto_unbox desfaria o vetor)
+    sites = I(sort(unique(ocasioes$site))),
+    species = I(sort(unique(det$species_code))),
     tables = imap(arquivos, \(n, nome) list(
       file = if (nome == "calibration_draws") "calibration_draws.parquet"
              else paste0(nome, ".csv"),
