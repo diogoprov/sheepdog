@@ -606,6 +606,25 @@ espécies devem ponderar os clipes por
 <span><span class="co">#&gt; [1] "target_total/max_per_species are ignored in \"random_recordings\" (recording_fraction or n_recordings_per_site apply)."</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="sensors-that-discard-the-audio">Sensores que descartam o áudio<a class="anchor" aria-label="anchor" href="#sensors-that-discard-the-audio"></a>
+</h2>
+<p>Alguns gravadores já rodam o classificador no próprio aparelho e
+guardam só as detecções, descartando o áudio para economizar
+armazenamento ou transmissão. Nesse caso nenhum clipe pode ser revisado,
+e nenhum dos desenhos acima pode ser aplicado depois: a calibração e a
+taxa de falsos positivos de um modelo de ocupação precisam de clipes
+verificados, sorteados com probabilidade conhecida. A solução é uma
+decisão de desenho tomada antes da instalação: guardar uma amostra
+probabilística do áudio bruto, sorteada sem olhar os scores, por exemplo
+uma gravação em cada cem, ao acaso, em cada local, ou um subconjunto
+aleatório fixo da programação de gravação. Essas gravações podem depois
+ser anotadas de ouvido, como em <code>"random_recordings"</code>, e suas
+detecções revisadas, como em <code>"random_detections"</code>. Guardar
+só o áudio das detecções de score alto, ou das que o aparelho considerou
+ambíguas, não substitui essa amostra: ela depende dos scores, como
+<code>"top"</code>, e não estima a taxa de falsos positivos.</p>
+</div>
+<div class="section level2">
 <h2 id="hand-off-to-occupancy-models">Passagem para os modelos de ocupação<a class="anchor" aria-label="anchor" href="#hand-off-to-occupancy-models"></a>
 </h2>
 <p>O manifesto retornado por <code><a href="../../reference/select_clips.html">select_clips()</a></code> é recortado com

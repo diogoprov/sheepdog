@@ -524,6 +524,23 @@ tryCatch(
 #> [1] "target_total/max_per_species are ignored in \"random_recordings\" (recording_fraction or n_recordings_per_site apply)."
 ```
 
+## Sensors that discard the audio
+
+Some recorders now run the classifier on the device and keep only the
+detections, discarding the audio to save storage or transmission. No
+clip can then be reviewed, and none of the designs above can be applied
+after the fact: the calibration and the false-positive rate of an
+occupancy model both need verified clips drawn with a known probability.
+The remedy is a design decision taken before deployment: keep a
+probability sample of the raw audio, drawn without looking at the
+scores, e.g. one recording in a hundred at random in each site, or a
+fixed random subset of the recording schedule. Those recordings can
+later be annotated by ear, as in `"random_recordings"`, and their
+detections reviewed, as in `"random_detections"`. Keeping only the audio
+of high-score detections, or of detections the device found ambiguous,
+is not a substitute: such a sample depends on the scores, like `"top"`,
+and cannot estimate the false-positive rate.
+
 ## Hand-off to occupancy models
 
 The manifest returned by

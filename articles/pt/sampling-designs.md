@@ -535,6 +535,24 @@ tryCatch(
 #> [1] "target_total/max_per_species are ignored in \"random_recordings\" (recording_fraction or n_recordings_per_site apply)."
 ```
 
+## Sensores que descartam o áudio
+
+Alguns gravadores já rodam o classificador no próprio aparelho e guardam
+só as detecções, descartando o áudio para economizar armazenamento ou
+transmissão. Nesse caso nenhum clipe pode ser revisado, e nenhum dos
+desenhos acima pode ser aplicado depois: a calibração e a taxa de falsos
+positivos de um modelo de ocupação precisam de clipes verificados,
+sorteados com probabilidade conhecida. A solução é uma decisão de
+desenho tomada antes da instalação: guardar uma amostra probabilística
+do áudio bruto, sorteada sem olhar os scores, por exemplo uma gravação
+em cada cem, ao acaso, em cada local, ou um subconjunto aleatório fixo
+da programação de gravação. Essas gravações podem depois ser anotadas de
+ouvido, como em `"random_recordings"`, e suas detecções revisadas, como
+em `"random_detections"`. Guardar só o áudio das detecções de score
+alto, ou das que o aparelho considerou ambíguas, não substitui essa
+amostra: ela depende dos scores, como `"top"`, e não estima a taxa de
+falsos positivos.
+
 ## Passagem para os modelos de ocupação
 
 O manifesto retornado por

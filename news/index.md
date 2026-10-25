@@ -18,6 +18,11 @@
   [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md)
   documents every column.
 - ‘jsonlite’ is imported and ‘arrow’ is suggested, for the export.
+- [`vignette("sampling-designs")`](https://provetelab.org/sheepdog/articles/sampling-designs.md)
+  gains a section on recorders that run the classifier on the device and
+  discard the audio: keep a probability sample of the raw audio, drawn
+  without looking at the scores, so that the calibration and the
+  false-positive rate can still be estimated.
 - The v1.2.0 reproduction test compares the `auc_sd` column of the
   effort curve with a relative tolerance of 1e-2 (1e-3 elsewhere): with
   lme4 2.1-0 this standard deviation over three small fits moves by
