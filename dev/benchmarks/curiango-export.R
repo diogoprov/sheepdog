@@ -12,22 +12,30 @@
 # posterior, arrow, jsonlite.
 #
 # What the deposit has, and how it maps on the schema:
-# * df_night_clean.txt: one to 20 rows per one-minute recording (detection
-#   windows), with the scores of both classifiers, but no window offset. The
-#   recording is the occasion (occasion_unit = "file"). Rows with a score
-#   >= min_confidence become detections; their file_offset is the order of
-#   the row within the minute times 3 s, a placeholder, not the time of the
-#   window. scores.csv (the highest score per minute) is exact.
+# * df_night_clean.txt: one to 20 rows per one-minute recording, with the
+#   scores of both classifiers, but no window offset. The recording is the
+#   occasion (occasion_unit = "file"). Within a minute, every row with a
+#   score holds the SAME value (all minutes, both classifiers): the rows are
+#   copies of one score, not independent windows. Each minute therefore
+#   gives at most one detection per distinct score (file_offset = 0 for the
+#   first, 3 s for the next, a placeholder); exporting every row would count
+#   the same evidence several times when detections are drawn one by one
+#   (crywolf::fp_draws_data(rule = "sample")). scores.csv is exact.
 # * CM-<classifier>.txt: the ground-truth test set, about 1% of the
 #   recordings drawn in proportion to the effort of each site and annotated
-#   by ear in 3-s windows, with the score of each window. Every recording
-#   becomes a row of recordings_verified.csv (present if any window holds
-#   the species); every window with a score >= min_confidence becomes a
-#   reviewed clip of validation.csv. Since the recordings were drawn
-#   without looking at the scores and every window of a drawn recording was
-#   annotated, these clips follow the "random_detections" design
-#   (observation confirmation); the inclusion probability is the share of
-#   the recordings of the site in the test set.
+#   by ear in 3-s windows. Every recording becomes a row of
+#   recordings_verified.csv (present if any window holds the species). The
+#   calibration has to be on the unit of the occasion: the score exported
+#   per minute is the minute score of df_night_clean.txt (it matches the
+#   highest window score of the test set in only about half of the
+#   minutes), so a window-level calibration would give the minute far too
+#   low a probability. Each test minute with a minute score >=
+#   min_confidence therefore becomes one reviewed clip of validation.csv
+#   (the whole minute, verdict = the state of the minute), and the
+#   calibration is fitted to these clips. Since the recordings were drawn
+#   without looking at the scores, the clips follow the "random_detections"
+#   design (observation confirmation); the inclusion probability is the
+#   share of the recordings of the site in the test set.
 # * Nightly weather and minute acoustic indices have no place in schema
 #   version 1 (it has site covariates only); they go to
 #   curiango_covariates.csv beside the export, outside the schema.
@@ -75,10 +83,12 @@ for (cl in names(classifiers)) {
   message("== ", cl)
   score <- classifiers[[cl]]
   detections <- raw |>
+    filter(.data[[score]] >= min_confidence) |>
+    # linhas repetidas do mesmo minuto sao copias do mesmo score
+    distinct(Site, DataHora_Formatada, across(all_of(score)), .keep_all = TRUE) |>
     group_by(Site, DataHora_Formatada) |>
     mutate(window = row_number()) |>
     ungroup() |>
-    filter(.data[[score]] >= min_confidence) |>
     transmute(site = Site, species_code = species_code,
               confidence = .data[[score]],
               begin_path = audio(Site, DataHora_Formatada),
@@ -99,18 +109,6 @@ for (cl in names(classifiers)) {
     count(site, name = "n_test") |>
     left_join(count(recordings, site, name = "n_total"), by = "site") |>
     mutate(inclusion_prob = n_test / n_total)
-  windows <- cm |>
-    filter(compau_confidence >= min_confidence) |>
-    group_by(site, occasion_id) |>
-    mutate(n_detections_occasion = n()) |>
-    ungroup() |>
-    left_join(select(inclusion, site, inclusion_prob), by = "site") |>
-    transmute(site, species_code = species_code, occasion_id, source_audio,
-              clip_start = start_time, clip_end = end_time,
-              confidence = compau_confidence,
-              sampling_mode = "random_detections", inclusion_prob,
-              n_detections_occasion,
-              verdict = if_else(compau_annotation == 1, "positive", "negative"))
   annotated <- cm |>
     group_by(site, occasion_id, source_audio) |>
     summarise(present = any(compau_annotation == 1), .groups = "drop") |>
@@ -120,11 +118,19 @@ for (cl in names(classifiers)) {
               sampling_mode = "random_recordings", inclusion_prob,
               n_detections_occasion = NA_integer_,
               verdict = if_else(present, "positive", "negative"))
-  validation <- bind_rows(windows, annotated)
+  # um clipe por minuto de teste com score do minuto >= min_confidence
+  minutes <- annotated |>
+    inner_join(transmute(detections, site, source_audio = begin_path,
+                         minute_score = confidence),
+               by = c("site", "source_audio")) |>
+    mutate(confidence = minute_score, sampling_mode = "random_detections",
+           n_detections_occasion = 1L) |>
+    select(-minute_score)
+  validation <- bind_rows(minutes, annotated)
 
   # calibracao: modelo escolhido por log-loss com folds por gravacao, depois
   # ajustado com brms e a priori explicita de calibration_prior()
-  val_cal <- windows |>
+  val_cal <- minutes |>
     transmute(site = factor(site), species = factor(folder_name(species_code)),
               confidence, logit_conf = safe_logit(confidence),
               tp = as.integer(verdict == "positive"), source_audio)
