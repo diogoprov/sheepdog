@@ -142,7 +142,7 @@ Decisões embutidas, a conferir:
 | Recusar ou avisar quando `validation` vem de `sampling_mode = "top"` | crywolf | teste com os três modos |
 | Fixture compartilhada: um diretório pequeno gerado pelo sheepdog, copiado para `crywolf/tests/testthat/` | os dois | os testes dos dois pacotes leem o mesmo arquivo; um script em `data-raw/` refaz a cópia |
 | Exportar o Curiango no esquema | dev | o benchmark das fases 1 e 2 lê só o diretório |
-| `fp_to_unmarked()` (acrescentado em 25/10/2026): converte o objeto do `fp_read_sheepdog()` num `unmarked::unmarkedFrameOccuFP`, com as gravações anotadas de ouvido como método certo e as ocasiões automáticas (score >= limiar) como método incerto, para quem quer o `occuFP()` frequentista em vez do Stan | crywolf | o `occuFP()` ajusta o exemplo; com os mesmos dados, as estimativas ficam próximas das do `fp_occu()` com a priori fraca |
+| `fp_to_unmarked(data, obs_covs = NULL, occasion = NULL)` (acrescentado e feito em 25/10/2026): converte um `fp_data` num `unmarked::unmarkedFrameOccuFP` para quem quer o `occuFP()` frequentista em vez do Stan. Recebe o `fp_data`, e não o objeto do `fp_read_sheepdog()`: limiar e sítio-noite passam por `fp_aggregate()` e `fp_data()`. Verificadas primeiro, `type = c(n_ver, n_auto, 0)`, `METH` como covariável e o desenho de Chambert recusado | crywolf | feito: no Curiango Custom (limiar 0,4, sítios-noite) o `occuFP()` ajusta 1.753 × (12 + 56) em ~5 s |
 
 ## Fase 1: propagação Monte Carlo da calibração
 
