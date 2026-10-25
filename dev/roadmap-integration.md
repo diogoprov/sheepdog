@@ -60,6 +60,16 @@ proporcional por sítio. É o equivalente ao `sampling_mode =
 "random_recordings"` do sheepdog e identifica as distribuições de scores dos
 verdadeiros e dos falsos positivos sem depender do classificador.
 
+## Estado (25/10/2026)
+
+- Fase 0 feita: `export_occupancy_data()` (sheepdog#36) e `fp_read_sheepdog()`
+  (crywolf 1.9.0, doi:10.5281/zenodo.23624712).
+- Fase 1 em andamento: `fp_draws_data()` e `fp_occu_mc()` no crywolf; o
+  Curiango exportado (sheepdog#38 e #39) é o caso de teste. A primeira rodada
+  foi descartada por dois artefatos do export, corrigidos no #39.
+- Sensores com inferência embarcada: a recomendação de guardar uma amostra
+  probabilística do áudio bruto está na vinheta `sampling-designs`.
+
 ## Prioridades
 
 | Prioridade | Fase | Pacote | Esforço | Depende de |
@@ -132,6 +142,7 @@ Decisões embutidas, a conferir:
 | Recusar ou avisar quando `validation` vem de `sampling_mode = "top"` | crywolf | teste com os três modos |
 | Fixture compartilhada: um diretório pequeno gerado pelo sheepdog, copiado para `crywolf/tests/testthat/` | os dois | os testes dos dois pacotes leem o mesmo arquivo; um script em `data-raw/` refaz a cópia |
 | Exportar o Curiango no esquema | dev | o benchmark das fases 1 e 2 lê só o diretório |
+| `fp_to_unmarked()` (acrescentado em 25/10/2026): converte o objeto do `fp_read_sheepdog()` num `unmarked::unmarkedFrameOccuFP`, com as gravações anotadas de ouvido como método certo e as ocasiões automáticas (score >= limiar) como método incerto, para quem quer o `occuFP()` frequentista em vez do Stan | crywolf | o `occuFP()` ajusta o exemplo; com os mesmos dados, as estimativas ficam próximas das do `fp_occu()` com a priori fraca |
 
 ## Fase 1: propagação Monte Carlo da calibração
 
@@ -238,24 +249,31 @@ diferença entre os dois classificadores nos coeficientes de ocupação fica
 menor que a diferença entre MaxF1 e MaxPrecision com limiar, sem perder
 cobertura em simulação.
 
-## Fase 3: validação em duas camadas
+## Fase 3: validação em camadas
 
 O ACORN (Haucke et al. 2026, preprint) escolhe os clipes a revisar pelo
 quanto informam a ocupação, não pela acurácia do classificador. McEwen et
 al. (2026, preprint) lembram que rótulos escolhidos assim não servem para
-calibrar nem para validar o classificador. A proposta junta as duas coisas:
+calibrar nem para validar o classificador. A proposta separa as camadas pelo
+papel de cada uma:
 
 - **camada probabilística** (sheepdog, já existe): `random_detections` ou
   `random_recordings`, com `inclusion_prob`; garante a calibração, as
   métricas do classificador e a proteção contra f₁/f₀ mal especificadas;
 - **camada dirigida** (nova): clipes escolhidos pela redução esperada da
   variância posterior dos coeficientes de ocupação, a partir de um ajuste
-  do `fp_occu_score()`.
+  do `fp_occu_score()`;
+- **camada de treino** (nova, acrescentada em 25/10/2026): clipes de score
+  ambíguo (perto de 0,5, ou de maior entropia binária) para o retreino do
+  classificador. É o "aprendizado ativo por incerteza" das propostas de
+  MLOps. Serve só ao treino: como o `"top"`, depende do score e não pode
+  entrar na calibração nem na taxa de falsos positivos.
 
 | Passo | Pacote | Pronto quando |
 |---|---|---|
 | `select_clips(sampling_mode = "targeted", priority = )`: aceita uma tabela de prioridade por ocasião (gerada fora do sheepdog) e registra `sampling_mode` e a ordem de escolha | sheepdog | o manifesto marca a camada de cada clipe; `inclusion_prob` = `NA` na camada dirigida |
 | `fp_review_priority(fit)`: prioridade por ocasião (variância de w_ij ponderada pela influência em β) | crywolf | em simulação, recupera β com menos revisões que a amostra aleatória, com a mesma cobertura |
+| `select_clips(sampling_mode = "uncertain")`: clipes de score perto de 0,5 por local × espécie, com `inclusion_prob` = `NA` e o mesmo aviso do `"top"`; o `build_training_set()` os aceita | sheepdog | teste de que o modo não entra em `read_validations()` sem aviso; exemplo na vinheta `retraining` |
 | Divisão do orçamento: fração aleatória mínima | dev | simulação com orçamentos de 100 a 1.000 clipes; recomendação documentada |
 | Comparar com o ACORN | dev | mesmos dados simulados; diferença documentada |
 
