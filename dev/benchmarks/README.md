@@ -32,6 +32,10 @@ Diogo confirmed that no real multispecies validation dataset is available.
   including what it lacks (window offsets; occasion covariates, written to
   `curiango_covariates.csv` outside the schema). Output under
   `dev/benchmarks/results/curiango-export` (ignored).
+- `curiango-ppc.R [EXPORT_DIR]`: posterior predictive checks of the two
+  Curiango calibrations saved by `curiango-export.R`: share of true
+  positives overall, by score bin, by site and by month, with Bayesian
+  p-values and figures in each classifier folder.
 - `check-results.R`: checks the cached comparisons, selections, paired
   metrics, design sizes and artifact consistency without refitting models.
 
