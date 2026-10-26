@@ -39,9 +39,27 @@
 # * Nightly weather and minute acoustic indices have no place in schema
 #   version 1 (it has site covariates only); they go to
 #   curiango_covariates.csv beside the export, outside the schema.
+#
+# Seasonal sensitivity analysis (third argument "season"): the posterior
+# predictive check (curiango-ppc.R) showed that P(TP | score) changes with
+# the month, since a calibration also absorbs the calling activity of the
+# species. With "season", the candidates gain a random intercept of the
+# month of the recording (YYYYMM): logit_conf + (1 | month) and
+# logit_conf + (1 | site) + (1 | month); the choice by log-loss is made
+# among them (the comparison table keeps the models without month). The
+# calibration draws then depend on the month, which schema version 1 does
+# not foresee: calibration_draws.parquet gains a `month` column (YYYYMM, the
+# recording date of the occasion, substr(recording_date, 1, 6) in
+# occasions.csv), and schema.json$calibration$keys lists the keys. Months
+# without test minutes take a new level drawn from the month variance. This
+# is a sensitivity analysis, not the recommended calibration: a month effect
+# mixes calling activity into P(TP) and uses the test minutes twice (see
+# dev/roadmap-integration.md, phase 2).
+#   Rscript dev/benchmarks/curiango-export.R DATA_DIR OUTPUT_DIR season
 args <- commandArgs(trailingOnly = TRUE)
 data_dir <- if (length(args)) args[1] else "dev/benchmarks/data/curiango"
 out <- if (length(args) > 1) args[2] else "dev/benchmarks/results/curiango-export"
+season <- length(args) > 2 && args[3] == "season"
 devtools::load_all(".", quiet = TRUE)
 suppressPackageStartupMessages({library(dplyr); library(readr); library(tibble)})
 
@@ -74,6 +92,57 @@ covariates <- raw |>
   transmute(site = Site,
             occasion_id = tools::file_path_sans_ext(basename(audio(Site, DataHora_Formatada))),
             night_site_id, temp, rh, moon, bio = BIO, aci = ACI)
+
+# mes da gravacao (YYYYMM), a partir do nome do arquivo
+month_of <- function(path) {
+  substr(regmatches(path, regexpr("[0-9]{8}_[0-9]{6}", path)), 1, 6)
+}
+
+# Amostras de P(TP) por local x especie x mes x ponto da grade, como as de
+# export_occupancy_data(), mais a coluna month; acrescenta a tabela e a
+# calibracao ao schema.json da pasta
+seasonal_draws <- function(fit, scores, occasions, dir_cl, n_draws, grid_step) {
+  grade <- sheepdog:::score_grid(min_confidence, grid_step)
+  meses <- occasions |>
+    transmute(site, month = substr(recording_date, 1, 6)) |>
+    distinct()
+  novos <- setdiff(unique(meses$month), levels(fit$data$month))
+  if (length(novos)) {
+    message("Months without test minutes, drawn as new levels: ",
+            paste(novos, collapse = ", "))
+  }
+  pares <- distinct(scores, site, species) |>
+    inner_join(meses, by = "site", relationship = "many-to-many")
+  nd <- tidyr::expand_grid(pares, grid_index = seq_along(grade)) |>
+    mutate(confidence = grade[grid_index], logit_conf = safe_logit(confidence))
+  ids <- withr::with_seed(seed, sort(sample.int(brms::ndraws(fit), n_draws)))
+  ep <- withr::with_seed(seed, brms::posterior_epred(
+    fit, newdata = nd, draw_ids = ids, allow_new_levels = TRUE,
+    sample_new_levels = "uncertainty"))
+  draws <- tibble(draw = rep(ids, times = nrow(nd)),
+                  site = rep(nd$site, each = length(ids)),
+                  species = rep(nd$species, each = length(ids)),
+                  month = rep(nd$month, each = length(ids)),
+                  grid_index = rep(nd$grid_index, each = length(ids)),
+                  confidence = rep(nd$confidence, each = length(ids)),
+                  p_tp = as.vector(ep)) |>
+    arrange(site, species, month, grid_index, draw)
+  arrow::write_parquet(draws, file.path(dir_cl, "calibration_draws.parquet"))
+  sc_path <- file.path(dir_cl, "schema.json")
+  sc <- jsonlite::read_json(sc_path)
+  sc$tables$calibration_draws <- list(file = "calibration_draws.parquet",
+                                      rows = nrow(draws))
+  sc$calibration <- list(engine = "brms",
+                         formula = deparse1(stats::formula(fit)$formula),
+                         n_draws = n_draws, grid_step = grid_step,
+                         grid_min = min(grade),
+                         keys = I(c("site", "species", "month", "grid_index")),
+                         month = "substr(recording_date, 1, 6) of occasions.csv")
+  sc$sites <- I(unlist(sc$sites))
+  sc$species <- I(unlist(sc$species))
+  jsonlite::write_json(sc, sc_path, auto_unbox = TRUE, pretty = TRUE, digits = NA)
+  draws
+}
 
 classifiers <- c(Custom = "conf_div", BirdNET = "conf_preb")
 dir.create(out, recursive = TRUE, showWarnings = FALSE)
@@ -133,10 +202,22 @@ for (cl in names(classifiers)) {
   val_cal <- minutes |>
     transmute(site = factor(site), species = factor(folder_name(species_code)),
               confidence, logit_conf = safe_logit(confidence),
-              tp = as.integer(verdict == "positive"), source_audio)
-  comparison <- suppressWarnings(compare_calibration_models(
-    val_cal, fold_group = "source_audio", seed = seed))
-  chosen <- select_calibration_model(comparison, rule = "one_se_logloss")
+              tp = as.integer(verdict == "positive"), source_audio,
+              month = factor(month_of(source_audio)))
+  if (season) {
+    models <- list(m0_global = tp ~ logit_conf,
+                   m1_site_intercept = tp ~ logit_conf + (1 | site),
+                   m2_month = tp ~ logit_conf + (1 | month),
+                   m3_site_month = tp ~ logit_conf + (1 | site) + (1 | month))
+    comparison <- suppressWarnings(compare_calibration_models(
+      val_cal, models = models, fold_group = "source_audio", seed = seed))
+    chosen <- select_calibration_model(
+      filter(comparison, grepl("month", model)), rule = "one_se_logloss")
+  } else {
+    comparison <- suppressWarnings(compare_calibration_models(
+      val_cal, fold_group = "source_audio", seed = seed))
+    chosen <- select_calibration_model(comparison, rule = "one_se_logloss")
+  }
   formula <- stats::as.formula(comparison$formula[comparison$model == chosen])
   message("Calibration model: ", chosen, " (", deparse1(formula), ")")
   backend <- if (requireNamespace("cmdstanr", quietly = TRUE)) "cmdstanr" else "rstan"
@@ -149,9 +230,16 @@ for (cl in names(classifiers)) {
   dir_cl <- file.path(out, tolower(cl))
   res <- export_occupancy_data(
     dir_cl, detections, recordings = select(recordings, site, source_audio),
-    validation = validation, fit = fit, min_confidence = min_confidence,
-    classifier = paste("Curiango", cl, "(Piatti et al., Zenodo 10.5281/zenodo.21795898)"),
+    validation = validation, fit = if (season) NULL else fit,
+    min_confidence = min_confidence,
+    classifier = paste("Curiango", cl, "(Piatti et al., Zenodo 10.5281/zenodo.21795898)",
+                       if (season) "- seasonal calibration (sensitivity)"),
     n_draws = 100, seed = seed, overwrite = TRUE)
+  if (season) {
+    res$tables$calibration_draws <- seasonal_draws(
+      fit, res$tables$scores, res$tables$occasions, dir_cl, n_draws = 100,
+      grid_step = 0.01)
+  }
   write_csv(covariates, file.path(dir_cl, "curiango_covariates.csv"), na = "")
   write_csv(comparison, file.path(dir_cl, "curiango_calibration_comparison.csv"))
   write_csv(diagnostics, file.path(dir_cl, "curiango_calibration_diagnostics.csv"))
