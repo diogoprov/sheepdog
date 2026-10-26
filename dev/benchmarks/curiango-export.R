@@ -155,6 +155,10 @@ for (cl in names(classifiers)) {
   write_csv(covariates, file.path(dir_cl, "curiango_covariates.csv"), na = "")
   write_csv(comparison, file.path(dir_cl, "curiango_calibration_comparison.csv"))
   write_csv(diagnostics, file.path(dir_cl, "curiango_calibration_diagnostics.csv"))
+  # ajuste e dados da calibracao, para o posterior predictive check
+  # (dev/benchmarks/curiango-ppc.R)
+  saveRDS(fit, file.path(dir_cl, "curiango_calibration_fit.rds"))
+  write_csv(val_cal, file.path(dir_cl, "curiango_calibration_data.csv"))
 
   summary_rows[[cl]] <- tibble(
     classifier = cl, model = chosen,
