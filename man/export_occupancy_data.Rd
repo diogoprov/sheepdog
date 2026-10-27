@@ -11,6 +11,8 @@ export_occupancy_data(
   validation = NULL,
   fit = NULL,
   sites = NULL,
+  occasion_covariates = NULL,
+  calibration_keys = NULL,
   occasion_unit = c("file", "minute"),
   recording_duration = NULL,
   min_confidence = 0.1,
@@ -47,6 +49,16 @@ columns, e.g. from \code{\link[=read_validation_tables]{read_validation_tables()
 
 \item{sites}{Optional data frame of site covariates, with a \code{site}
 column.}
+
+\item{occasion_covariates}{Optional data frame of covariates of the
+occasions (e.g. temperature or the month), with \code{site} and either
+\code{occasion_id} or \code{source_audio} (plus \code{start}, in s, for minute
+occasions). One row per occasion; occasions without a row get \code{NA}.
+Columns named like those of \code{occasions.csv} are refused.}
+
+\item{calibration_keys}{Optional grouping variables of the calibration
+model, besides \code{site} and \code{species}, that vary between occasions (see
+Calibration keys). Only used with \code{fit}.}
 
 \item{occasion_unit}{The occasion of the occupancy model: \code{"file"} (a
 recording) or \code{"minute"}. Use the value of the clip extraction, so that
@@ -92,8 +104,9 @@ schema (a list).
 Writes, in one folder, everything an occupancy model with false
 positives needs from a passive acoustic survey: the occasions, the
 classifier scores, the reviewed clips with their sampling design and,
-optionally, posterior draws of a Bayesian calibration. The folder
-follows the \code{sheepdog-occupancy} schema, version 1, described in
+optionally, covariates of the occasions and posterior draws of a
+Bayesian calibration. The folder follows the \code{sheepdog-occupancy}
+schema, version 1.1, described in
 \code{vignette("crywolf-integration")}; the crywolf package reads it, but any
 software can, since every table is a plain CSV file (the calibration
 draws are a Parquet file).
@@ -102,7 +115,8 @@ draws are a Parquet file).
 
 \itemize{
 \item \code{occasions.csv}: one row per occasion (a recording, or a minute of a
-recording), with or without predictions.
+recording), with or without predictions, followed by the columns of
+\code{occasion_covariates} and of the calibration keys.
 \item \code{detections.csv}: one row per prediction with confidence >=
 \code{min_confidence}.
 \item \code{scores.csv}: one row per occasion x species with at least one
@@ -117,12 +131,25 @@ probability (only when \code{validation} is given).
 when \code{validation} holds such clips).
 \item \code{sites.csv}: one row per site, with the covariates of \code{sites}.
 \item \code{calibration_draws.parquet}: posterior draws of P(TP) on a grid of
-scores for each site x species with predictions (only when \code{fit} is
-given; needs the 'arrow' package).
+scores for each site x species with predictions, and for each level of
+the \code{calibration_keys} found among the occasions of the site (only
+when \code{fit} is given; needs the 'arrow' package).
 \item \code{schema.json}: name and version of the schema, the settings of the
 export, the lists of sites and species and the number of rows of each
 table.
 }
+
+\strong{Calibration keys.} A calibration may depend on a property of the
+occasion besides site and species, such as the month of the recording
+(\code{tp ~ logit_conf + (1 | month)}). Name such grouping variables in
+\code{calibration_keys}: each becomes a text column of \code{occasions.csv} and of
+\code{calibration_draws.parquet}, so that a reader matches each prediction
+to the draws of its occasion. A key must be a column of
+\code{occasion_covariates}, except \code{"month"}, which is derived from the
+recording date (\code{YYYYMM}) when not given. Levels absent from the
+calibration data are drawn as new levels of the group (brms
+\code{sample_new_levels = "uncertainty"}); occasions without a value of a key
+are reported, since their predictions cannot be scored.
 
 Two checks guard against inputs that would inflate the detections:
 predictions repeating the site, recording, offset and species of another
