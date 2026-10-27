@@ -60,13 +60,27 @@ proporcional por sítio. É o equivalente ao `sampling_mode =
 "random_recordings"` do sheepdog e identifica as distribuições de scores dos
 verdadeiros e dos falsos positivos sem depender do classificador.
 
-## Estado (26/10/2026)
+## Estado (27/10/2026)
 
 - Fase 0 feita: `export_occupancy_data()` (sheepdog#36) e `fp_read_sheepdog()`
   (crywolf 1.9.0, doi:10.5281/zenodo.23624712).
-- Fase 1 em andamento: `fp_draws_data()` e `fp_occu_mc()` no crywolf; o
-  Curiango exportado (sheepdog#38 e #39) é o caso de teste. A primeira rodada
-  foi descartada por dois artefatos do export, corrigidos no #39.
+- Fase 1 feita do lado do sheepdog: os sete itens da integração (abaixo)
+  estão na `main` (o último, sheepdog#46). O crywolf 2.1.0
+  (doi:10.5281/zenodo.23692218, 27/10/2026) lê os esquemas 1.1 e 1.2
+  (chaves da calibração e `occasion_draws.parquet`). O Curiango exportado é o
+  caso de teste; o fluxo inteiro está na vinheta `crywolf-integration`
+  (sheepdog#45). A primeira rodada foi descartada por dois artefatos do
+  export, corrigidos no sheepdog#39.
+- O contrato é testado nos dois lados: `test-contract.R` no sheepdog (que
+  no CI instala o crywolf do R-universe e roda também a leitura pelo
+  crywolf) e `test-read_sheepdog.R` no crywolf, sobre a mesma fixture
+  `export-1.2`; `dev/check-sheepdog-fixture.R` do crywolf confere que a
+  cópia dele continua idêntica à do sheepdog.
+- Próximo passo: o `fp_occu_dyn()` no crywolf; a fase 2 vem depois dele
+  (ver Prioridades). No sheepdog, nada bloqueia: só pendências pequenas.
+- Pendente: rodar de novo o modo sazonal de `dev/benchmarks/curiango-export.R`
+  (argumento `"season"`), que passou a usar `calibration_keys = "month"` e
+  ainda não foi refeito.
 - 26/10/2026: a reanálise do artigo do JAV achou que os scripts de
   ocupação tratavam cada linha das tabelas de detecção (uma por janela do
   classificador, com o score do minuto repetido) como uma visita. O artigo
@@ -81,7 +95,7 @@ verdadeiros e dos falsos positivos sem depender do classificador.
 |---|---|---|---|---|
 | 1 | 0. Contrato de dados | os dois | P–M | — |
 | 2 | 1. Propagação Monte Carlo da calibração | os dois | P | fase 0 |
-| 3 | 2. Modelo conjunto score–ocupação | crywolf | G | fase 0; crywolf 2.0.0 **[decidir]** |
+| 3 | 2. Modelo conjunto score–ocupação | crywolf | G | fase 0; depois do `fp_occu_dyn()` (decidido em 27/10/2026) |
 | 4 | 3. Validação em duas camadas | sheepdog (+ crywolf) | M | fase 2 |
 | 5 | 4. Atividade vocal (densidade de chamadas) | crywolf | M–G | fase 2 |
 | 6 | 5. Comunidade | crywolf | G | roadmap do crywolf (MSO, Fase A) |
@@ -91,9 +105,14 @@ vale a pena.
 
 O roadmap do crywolf congela a API no 1.9/2.0 e põe depois o dinâmico e,
 em seguida, o multiespécies. Nada aqui muda a API congelada: o que é novo
-entra em funções novas. **[decidir]** Onde a fase 2 entra na fila do
-crywolf: antes do dinâmico (é o que o Curiango pede primeiro), depois dele
-ou dentro dele (`fp_occu_dyn()` já com scores).
+entra em funções novas. Decidido pelo Diogo em 27/10/2026 (registrado no
+crywolf em `8f80e39`): a fase 2 entra **depois** do dinâmico, como função
+própria (`fp_occu_score()`), sem misturar com o `fp_occu_dyn()`. O
+dinâmico tem critério de pronto claro (com uma temporada, a log-densidade é
+a do `fp_occu()`); a fase 2 ainda é pesquisa (famílias de f₁/f₀,
+covariáveis, identificação junto com ψ e θ). Até lá, `fp ~ temp + rh` é o
+paliativo do lado do crywolf. Nenhum item do sheepdog depende da fase 2,
+só a fase 3.
 
 No sheepdog, a 3.2.1 vai para o CRAN como está; as fases 0, 1 e 3 entram
 como funções novas numa 3.3.0 (sem quebra).
@@ -183,14 +202,30 @@ de divergência que produziu o erro de visitas do artigo do JAV).
 | 1 | `calibration_ppc()` e `plot_calibration_ppc()`: checagem preditiva da calibração por faixa de score, local, espécie e grupos do usuário (mês), com p-valor mid-p. Substitui `dev/benchmarks/curiango-ppc.R` | feito |
 | 2 | `export_occupancy_data()` descarta predições repetidas (mesma janela lida duas vezes) e avisa quando a maioria das ocasiões com várias predições tem um só score (score copiado entre linhas, o erro do JAV) | feito |
 | 3 | Covariáveis de ocasião no export: argumento `occasion_covariates`, colunas extras em `occasions.csv` (esquema 1.1, só acréscimos). Substitui o `curiango_covariates.csv` | feito; esquema 1.1 combinado com o crywolf em 26/10 |
-| 4 | Chaves da calibração no export: amostras por local × espécie × grupo (mês, estação), com `calibration$keys` no `schema.json`, como no script do Curiango. Contrato: toda chave extra é uma coluna de texto de `occasions.csv` e do parquet, que cobre todo nível presente nas ocasiões. Fixture em `tests/testthat/fixtures/export-1.1/` (`data-raw/make_export_fixture.R`); o crywolf generaliza o `fp_draws_data()` para ler qualquer chave | feito no sheepdog; crywolf no 2.0.x/2.1 |
-| 5 | `occasion_draws()`: a lógica do `fp_draws_data()` no nível da ocasião, regras `"sample"` e `"threshold"`, tabela opcional `occasion_draws.parquet` (esquema 1.2). O `fp_draws_data()` passa a lê-la quando existir e as configurações baterem; o teste com a fixture `export-1.2` (que tem uma ocasião com predições com e sem draws) confere que as duas dão o mesmo resultado; depois de um ciclo, a lógica fica só aqui | feito no sheepdog; leitura do parquet no crywolf |
-| 6 | Fluxo de ponta a ponta na vinheta `crywolf-integration`, com resultados pré-computados do Curiango corrigido: `dev/benchmarks/curiango-flow.R` (PPC, `occasion_draws()`, `fp_draws_data()` lendo o parquet, `fp_occu_mc()` com `fp ~ 1`, M = 20, os dois classificadores) grava `inst/benchmarks/curiango-flow-*.csv`. O export do Curiango passa a gravar as covariáveis em `occasions.csv` e a sazonal usa `calibration_keys` | feito |
-| 7 | Teste de contrato no sheepdog, espelho do que o crywolf já tem; roda o crywolf quando instalado: `tests/testthat/test-contract.R` confere o export do exemplo, um simulado com os três desenhos e as fixtures 1.1 e 1.2 contra o esquema da vinheta (campos e linhas do `schema.json`, colunas, `scores.csv` contra `detections.csv`, chaves de texto que cobrem as ocasiões, `occasion_draws.parquet`) e, com o crywolf, a leitura de cada export e das versões gravadas | feito |
+| 4 | Chaves da calibração no export: amostras por local × espécie × grupo (mês, estação), com `calibration$keys` no `schema.json`, como no script do Curiango. Contrato: toda chave extra é uma coluna de texto de `occasions.csv` e do parquet, que cobre todo nível presente nas ocasiões. Fixture em `tests/testthat/fixtures/export-1.1/` (`data-raw/make_export_fixture.R`); o crywolf generaliza o `fp_draws_data()` para ler qualquer chave | feito; crywolf 2.1.0 lê qualquer chave |
+| 5 | `occasion_draws()`: a lógica do `fp_draws_data()` no nível da ocasião, regras `"sample"` e `"threshold"`, tabela opcional `occasion_draws.parquet` (esquema 1.2). O `fp_draws_data()` passa a lê-la quando existir e as configurações baterem; o teste com a fixture `export-1.2` (que tem uma ocasião com predições com e sem draws) confere que as duas dão o mesmo resultado; depois de um ciclo, a lógica fica só aqui | feito; o crywolf 2.1.0 lê o parquet |
+| 6 | Fluxo de ponta a ponta na vinheta `crywolf-integration`, com resultados pré-computados do Curiango corrigido: `dev/benchmarks/curiango-flow.R` (PPC, `occasion_draws()`, `fp_draws_data()` lendo o parquet, `fp_occu_mc()` com `fp ~ 1`, M = 20, os dois classificadores) grava `inst/benchmarks/curiango-flow-*.csv`. O export do Curiango passa a gravar as covariáveis em `occasions.csv` e a sazonal usa `calibration_keys` | feito (sheepdog#45); a sazonal ainda não foi rodada de novo |
+| 7 | Teste de contrato no sheepdog, espelho do que o crywolf já tem; roda o crywolf quando instalado: `tests/testthat/test-contract.R` confere o export do exemplo, um simulado com os três desenhos e as fixtures 1.1 e 1.2 contra o esquema da vinheta (campos e linhas do `schema.json`, colunas, `scores.csv` contra `detections.csv`, chaves de texto que cobrem as ocasiões, `occasion_draws.parquet`) e, com o crywolf, a leitura de cada export e das versões gravadas. No CI o crywolf vem do R-universe, então essa parte roda em todo push; o crywolf confere a cópia da fixture com `dev/check-sheepdog-fixture.R` | feito (sheepdog#46) |
 
 ## Fase 2: modelo conjunto score–ocupação
 
 É o núcleo do plano e a contribuição metodológica.
+
+### Divisão e dados (combinado em 27/10/2026)
+
+- O esquema 1.x basta; se faltar algo, entra como acréscimo 1.x (por
+  exemplo, o score do clipe revisado quando difere do da ocasião).
+  `scores.csv` dá s_ij (`max_score`, censura em `min_confidence`),
+  `detections.csv` as predições por janela, `validation.csv` o score de cada
+  clipe, `recordings_verified.csv` o w_ij observado e `occasion_covariates`
+  as covariáveis U_ij.
+- Dados e desenho da validação ficam no sheepdog; f₁/f₀ e o ajuste, só no
+  crywolf.
+- O período primário do dinâmico é argumento do `fp_occu_dyn()` (a partir de
+  `night` ou `recording_date`), não coluna do esquema.
+- A hipótese de que a calibração P(TP | score, sítio) mistura a prevalência
+  de canto com o erro do classificador ainda não foi testada: é a primeira
+  coisa que a simulação da fase 2 deve conferir.
 
 ### O modelo (proposta, a validar)
 
