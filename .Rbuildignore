@@ -17,3 +17,4 @@
 ^vignettes/articles$
 ^cran-comments\.md$
 ^manuscript$
+^AI_INTERACTION_LOG\.md$
