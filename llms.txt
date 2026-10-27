@@ -370,6 +370,8 @@ propagate the uncertainty to the histories and the matrices.
   : Plot posterior predictive checks of a calibration model
 - [`history_draws()`](https://provetelab.org/sheepdog/reference/history_draws.md)
   : Nightly detection histories over posterior draws
+- [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md)
+  : Detections of each occasion over the draws of the calibration
 - [`community_matrices_draws()`](https://provetelab.org/sheepdog/reference/community_matrices_draws.md)
   : Community matrices over posterior draws
 
