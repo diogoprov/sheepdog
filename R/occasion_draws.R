@@ -61,12 +61,12 @@ occasion_draws <- function(export_dir, species = NULL,
                            rule = c("sample", "threshold"), p_min = 0.95,
                            n_draws = NULL, seed = 2026, write = TRUE) {
   rule <- match.arg(rule)
-  require_suggested("arrow", "to read calibration_draws.parquet")
   schema_file <- file.path(export_dir, "schema.json")
   if (!file.exists(schema_file)) {
     stop("No schema.json in `export_dir`; was it written by ",
          "export_occupancy_data()?", call. = FALSE)
   }
+  require_suggested("arrow", "to read calibration_draws.parquet")
   schema <- jsonlite::read_json(schema_file, simplifyVector = TRUE)
   parquet <- file.path(export_dir, "calibration_draws.parquet")
   if (is.null(schema$calibration) || !file.exists(parquet)) {
