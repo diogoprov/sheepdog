@@ -364,6 +364,10 @@ propagate the uncertainty to the histories and the matrices.
   : Prior and likelihood sensitivity of a Bayesian calibration model
 - [`plot_calibration_draws()`](https://provetelab.org/sheepdog/reference/plot_calibration_draws.md)
   : Calibration curves of posterior (or prior) draws
+- [`calibration_ppc()`](https://provetelab.org/sheepdog/reference/calibration_ppc.md)
+  : Posterior predictive checks of a Bayesian calibration model
+- [`plot_calibration_ppc()`](https://provetelab.org/sheepdog/reference/plot_calibration_ppc.md)
+  : Plot posterior predictive checks of a calibration model
 - [`history_draws()`](https://provetelab.org/sheepdog/reference/history_draws.md)
   : Nightly detection histories over posterior draws
 - [`community_matrices_draws()`](https://provetelab.org/sheepdog/reference/community_matrices_draws.md)

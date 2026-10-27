@@ -30,6 +30,7 @@
 <url><loc>https://provetelab.org/sheepdog/reference/calibration_effort.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/reference/calibration_folds.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/reference/calibration_models.html</loc></url>
+<url><loc>https://provetelab.org/sheepdog/reference/calibration_ppc.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/reference/calibration_prior.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/reference/calibration_sensitivity.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/reference/cell_status.html</loc></url>
@@ -50,6 +51,7 @@
 <url><loc>https://provetelab.org/sheepdog/reference/pack_clips.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/reference/plot_calibration.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/reference/plot_calibration_draws.html</loc></url>
+<url><loc>https://provetelab.org/sheepdog/reference/plot_calibration_ppc.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/reference/plot_precision.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/reference/post_validation.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/reference/precision_by_bin.html</loc></url>

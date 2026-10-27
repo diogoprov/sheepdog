@@ -18,6 +18,20 @@
   [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md)
   documents every column.
 - ‘jsonlite’ is imported and ‘arrow’ is suggested, for the export.
+- [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+  drops predictions that repeat the site, recording, offset and species
+  of another (e.g. a selection table read twice), with a warning, and
+  warns when most occasion x species with several predictions share a
+  single score, a sign that one score per occasion was copied to several
+  rows.
+- New
+  [`calibration_ppc()`](https://provetelab.org/sheepdog/reference/calibration_ppc.md)
+  checks a Bayesian calibration model against the reviewed clips: the
+  observed share of true positives against its posterior predictive
+  distribution, overall and by score bin, site, species and any column
+  of the validation data (e.g. month), with a mid-p Bayesian p-value.
+  [`plot_calibration_ppc()`](https://provetelab.org/sheepdog/reference/plot_calibration_ppc.md)
+  draws one check.
 - [`vignette("sampling-designs")`](https://provetelab.org/sheepdog/articles/sampling-designs.md)
   gains a section on recorders that run the classifier on the device and
   discard the audio: keep a probability sample of the raw audio, drawn
