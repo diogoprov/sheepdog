@@ -76,6 +76,8 @@ verdadeiros e dos falsos positivos sem depender do classificador.
   crywolf) e `test-read_sheepdog.R` no crywolf, sobre a mesma fixture
   `export-1.2`; `dev/check-sheepdog-fixture.R` do crywolf confere que a
   cópia dele continua idêntica à do sheepdog.
+- Próximo passo: o `fp_occu_dyn()` no crywolf; a fase 2 vem depois dele
+  (ver Prioridades). No sheepdog, nada bloqueia: só pendências pequenas.
 - Pendente: rodar de novo o modo sazonal de `dev/benchmarks/curiango-export.R`
   (argumento `"season"`), que passou a usar `calibration_keys = "month"` e
   ainda não foi refeito.
@@ -93,7 +95,7 @@ verdadeiros e dos falsos positivos sem depender do classificador.
 |---|---|---|---|---|
 | 1 | 0. Contrato de dados | os dois | P–M | — |
 | 2 | 1. Propagação Monte Carlo da calibração | os dois | P | fase 0 |
-| 3 | 2. Modelo conjunto score–ocupação | crywolf | G | fase 0; crywolf 2.0.0 **[decidir]** |
+| 3 | 2. Modelo conjunto score–ocupação | crywolf | G | fase 0; depois do `fp_occu_dyn()` (decidido em 27/10/2026) |
 | 4 | 3. Validação em duas camadas | sheepdog (+ crywolf) | M | fase 2 |
 | 5 | 4. Atividade vocal (densidade de chamadas) | crywolf | M–G | fase 2 |
 | 6 | 5. Comunidade | crywolf | G | roadmap do crywolf (MSO, Fase A) |
@@ -103,9 +105,14 @@ vale a pena.
 
 O roadmap do crywolf congela a API no 1.9/2.0 e põe depois o dinâmico e,
 em seguida, o multiespécies. Nada aqui muda a API congelada: o que é novo
-entra em funções novas. **[decidir]** Onde a fase 2 entra na fila do
-crywolf: antes do dinâmico (é o que o Curiango pede primeiro), depois dele
-ou dentro dele (`fp_occu_dyn()` já com scores).
+entra em funções novas. Decidido pelo Diogo em 27/10/2026 (registrado no
+crywolf em `8f80e39`): a fase 2 entra **depois** do dinâmico, como função
+própria (`fp_occu_score()`), sem misturar com o `fp_occu_dyn()`. O
+dinâmico tem critério de pronto claro (com uma temporada, a log-densidade é
+a do `fp_occu()`); a fase 2 ainda é pesquisa (famílias de f₁/f₀,
+covariáveis, identificação junto com ψ e θ). Até lá, `fp ~ temp + rh` é o
+paliativo do lado do crywolf. Nenhum item do sheepdog depende da fase 2,
+só a fase 3.
 
 No sheepdog, a 3.2.1 vai para o CRAN como está; as fases 0, 1 e 3 entram
 como funções novas numa 3.3.0 (sem quebra).
@@ -203,6 +210,22 @@ de divergência que produziu o erro de visitas do artigo do JAV).
 ## Fase 2: modelo conjunto score–ocupação
 
 É o núcleo do plano e a contribuição metodológica.
+
+### Divisão e dados (combinado em 27/10/2026)
+
+- O esquema 1.x basta; se faltar algo, entra como acréscimo 1.x (por
+  exemplo, o score do clipe revisado quando difere do da ocasião).
+  `scores.csv` dá s_ij (`max_score`, censura em `min_confidence`),
+  `detections.csv` as predições por janela, `validation.csv` o score de cada
+  clipe, `recordings_verified.csv` o w_ij observado e `occasion_covariates`
+  as covariáveis U_ij.
+- Dados e desenho da validação ficam no sheepdog; f₁/f₀ e o ajuste, só no
+  crywolf.
+- O período primário do dinâmico é argumento do `fp_occu_dyn()` (a partir de
+  `night` ou `recording_date`), não coluna do esquema.
+- A hipótese de que a calibração P(TP | score, sítio) mistura a prevalência
+  de canto com o erro do classificador ainda não foi testada: é a primeira
+  coisa que a simulação da fase 2 deve conferir.
 
 ### O modelo (proposta, a validar)
 
