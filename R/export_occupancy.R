@@ -189,7 +189,8 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
   # uma exportacao anterior nao deixa tabelas que esta nao escreve
   unlink(file.path(output_dir, c(paste0(occupancy_tables, ".csv"),
-                                 "calibration_draws.parquet")))
+                                 "calibration_draws.parquet",
+                                 "occasion_draws.parquet")))
   iwalk(tabelas, \(tab, nome) write_csv(tab, file.path(output_dir,
                                                        paste0(nome, ".csv")),
                                         na = ""))

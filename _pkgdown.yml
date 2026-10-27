@@ -69,6 +69,7 @@ reference:
       - calibration_ppc
       - plot_calibration_ppc
       - history_draws
+      - occasion_draws
       - community_matrices_draws
   - title: Stage 3 - Community matrices
     desc: Effort-standardised site x month matrices from calibrated histories.

@@ -30,6 +30,16 @@
   `occasion_covariates` and `calibration$keys`. A small export of the
   example data in this schema, made by `data-raw/make_export_fixture.R`,
   is shared with crywolf as a test fixture.
+- New `occasion_draws()` turns an export with calibration draws into one
+  version of the detection data per posterior draw: in each draw an
+  occasion is a detection when at least one of its predictions is judged
+  true, either at random with its probability of being true (`"sample"`)
+  or above `p_min` (`"threshold"`). It writes `occasion_draws.parquet` in
+  the export (schema version 1.2), so that any occupancy software can
+  propagate the uncertainty of the calibration. The random numbers follow
+  those of `crywolf::fp_draws_data()`, and a test checks that both give the
+  same detections; `tests/testthat/fixtures/export-1.2/` holds the shared
+  case.
 - New `calibration_ppc()` checks a Bayesian calibration model against the
   reviewed clips: the observed share of true positives against its
   posterior predictive distribution, overall and by score bin, site,
