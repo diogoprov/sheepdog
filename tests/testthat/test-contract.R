@@ -132,11 +132,12 @@ expect_contract <- function(dir) {
   # occasion_draws.parquet (esquema 1.2)
   if (!is.null(sc$occasion_draws) && requireNamespace("arrow", quietly = TRUE)) {
     expect_gte(sc$schema_version, 1.2)
-    od <- arrow::read_parquet(file.path(dir, sc$occasion_draws$file),
-                              as_data_frame = FALSE)
+    # como data frame: uma Table do arrow manteria o arquivo mapeado, e o
+    # Windows nao deixaria o occasion_draws() seguinte sobrescreve-lo
+    od <- as.data.frame(arrow::read_parquet(file.path(dir, sc$occasion_draws$file)))
     expect_identical(names(od), c("draw", "site", "occasion_id", "species", "y"))
-    expect_true(od$schema$GetFieldByName("y")$type == arrow::int32())
-    od <- as.data.frame(od)
+    # int32 vira integer; int64 viraria double ou integer64
+    expect_true(is.integer(od$y) && !inherits(od$y, "integer64"))
     expect_true(sc$occasion_draws$rule %in% c("sample", "threshold"))
     expect_identical(length(unique(od$draw)), as.integer(sc$occasion_draws$n_draws))
     expect_setequal(unique(od$species), sc$occasion_draws$species)
