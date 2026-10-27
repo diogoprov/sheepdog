@@ -13,6 +13,16 @@
   the version of the schema and the settings of the export.
   `vignette("crywolf-integration")` documents every column.
 - 'jsonlite' is imported and 'arrow' is suggested, for the export.
+- `export_occupancy_data()` drops predictions that repeat the site,
+  recording, offset and species of another (e.g. a selection table read
+  twice), with a warning, and warns when most occasion x species with
+  several predictions share a single score, a sign that one score per
+  occasion was copied to several rows.
+- New `calibration_ppc()` checks a Bayesian calibration model against the
+  reviewed clips: the observed share of true positives against its
+  posterior predictive distribution, overall and by score bin, site,
+  species and any column of the validation data (e.g. month), with a
+  mid-p Bayesian p-value. `plot_calibration_ppc()` draws one check.
 - `vignette("sampling-designs")` gains a section on recorders that run
   the classifier on the device and discard the audio: keep a probability
   sample of the raw audio, drawn without looking at the scores, so that the
