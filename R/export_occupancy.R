@@ -3,15 +3,17 @@
 #' Writes, in one folder, everything an occupancy model with false
 #' positives needs from a passive acoustic survey: the occasions, the
 #' classifier scores, the reviewed clips with their sampling design and,
-#' optionally, posterior draws of a Bayesian calibration. The folder
-#' follows the `sheepdog-occupancy` schema, version 1, described in
+#' optionally, covariates of the occasions and posterior draws of a
+#' Bayesian calibration. The folder follows the `sheepdog-occupancy`
+#' schema, version 1.1, described in
 #' `vignette("crywolf-integration")`; the crywolf package reads it, but any
 #' software can, since every table is a plain CSV file (the calibration
 #' draws are a Parquet file).
 #'
 #' @section Tables:
 #' * `occasions.csv`: one row per occasion (a recording, or a minute of a
-#'   recording), with or without predictions.
+#'   recording), with or without predictions, followed by the columns of
+#'   `occasion_covariates` and of the calibration keys.
 #' * `detections.csv`: one row per prediction with confidence >=
 #'   `min_confidence`.
 #' * `scores.csv`: one row per occasion x species with at least one
@@ -26,11 +28,24 @@
 #'   when `validation` holds such clips).
 #' * `sites.csv`: one row per site, with the covariates of `sites`.
 #' * `calibration_draws.parquet`: posterior draws of P(TP) on a grid of
-#'   scores for each site x species with predictions (only when `fit` is
-#'   given; needs the 'arrow' package).
+#'   scores for each site x species with predictions, and for each level of
+#'   the `calibration_keys` found among the occasions of the site (only
+#'   when `fit` is given; needs the 'arrow' package).
 #' * `schema.json`: name and version of the schema, the settings of the
 #'   export, the lists of sites and species and the number of rows of each
 #'   table.
+#'
+#' **Calibration keys.** A calibration may depend on a property of the
+#' occasion besides site and species, such as the month of the recording
+#' (`tp ~ logit_conf + (1 | month)`). Name such grouping variables in
+#' `calibration_keys`: each becomes a text column of `occasions.csv` and of
+#' `calibration_draws.parquet`, so that a reader matches each prediction
+#' to the draws of its occasion. A key must be a column of
+#' `occasion_covariates`, except `"month"`, which is derived from the
+#' recording date (`YYYYMM`) when not given. Levels absent from the
+#' calibration data are drawn as new levels of the group (brms
+#' `sample_new_levels = "uncertainty"`); occasions without a value of a key
+#' are reported, since their predictions cannot be scored.
 #'
 #' Two checks guard against inputs that would inflate the detections:
 #' predictions repeating the site, recording, offset and species of another
@@ -60,6 +75,14 @@
 #'   `engine = "brms"`, for `calibration_draws.parquet`.
 #' @param sites Optional data frame of site covariates, with a `site`
 #'   column.
+#' @param occasion_covariates Optional data frame of covariates of the
+#'   occasions (e.g. temperature or the month), with `site` and either
+#'   `occasion_id` or `source_audio` (plus `start`, in s, for minute
+#'   occasions). One row per occasion; occasions without a row get `NA`.
+#'   Columns named like those of `occasions.csv` are refused.
+#' @param calibration_keys Optional grouping variables of the calibration
+#'   model, besides `site` and `species`, that vary between occasions (see
+#'   Calibration keys). Only used with `fit`.
 #' @param occasion_unit The occasion of the occupancy model: `"file"` (a
 #'   recording) or `"minute"`. Use the value of the clip extraction, so that
 #'   the `occasion_id` of the reviewed clips match.
@@ -84,6 +107,8 @@
 #' @export
 export_occupancy_data <- function(output_dir, detections, recordings = NULL,
                                   validation = NULL, fit = NULL, sites = NULL,
+                                  occasion_covariates = NULL,
+                                  calibration_keys = NULL,
                                   occasion_unit = c("file", "minute"),
                                   recording_duration = NULL,
                                   min_confidence = 0.1, dawn_hour = 12,
@@ -99,6 +124,9 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
            "calibration draws need a posterior.", call. = FALSE)
     }
     require_suggested("arrow", "to write calibration_draws.parquet")
+    check_calibration_keys(fit, calibration_keys)
+  } else if (length(calibration_keys) > 0) {
+    stop("`calibration_keys` need a calibration model in `fit`.", call. = FALSE)
   }
   if (file.exists(file.path(output_dir, "schema.json")) && !overwrite) {
     stop("`output_dir` already holds an export; use overwrite = TRUE to ",
@@ -136,6 +164,11 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
             call. = FALSE)
     ocasioes <- bind_rows(ocasioes, sem_ocasiao) |> arrange(site, occasion_id)
   }
+  fixas <- names(ocasioes)
+  ocasioes <- join_occasion_covariates(ocasioes, occasion_covariates,
+                                       remap_from, remap_to)
+  ocasioes <- add_calibration_keys(ocasioes, calibration_keys)
+  covariaveis <- setdiff(names(ocasioes), fixas)
 
   tabelas <- list(
     occasions = ocasioes,
@@ -165,7 +198,8 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
   calibracao <- NULL
   if (!is.null(fit)) {
     draws <- calibration_draws(fit, distinct(tabelas$scores, site, species),
-                               min_confidence, grid_step, n_draws, seed)
+                               min_confidence, grid_step, n_draws, seed,
+                               ocasioes, calibration_keys)
     arrow::write_parquet(draws, file.path(output_dir,
                                           "calibration_draws.parquet"))
     tabelas$calibration_draws <- draws
@@ -174,12 +208,15 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
                         error = function(e) NULL)
     calibracao <- list(engine = "brms", formula = formula,
                        n_draws = length(unique(draws$draw)),
-                       grid_step = grid_step, grid_min = min(draws$confidence))
+                       grid_step = grid_step, grid_min = min(draws$confidence),
+                       keys = I(c("site", "species", calibration_keys,
+                                  "grid_index")),
+                       new_levels = "uncertainty")
   }
 
   schema <- list(
     schema = "sheepdog-occupancy",
-    schema_version = 1L,
+    schema_version = 1.1,
     created = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     sheepdog_version = as.character(utils::packageVersion("sheepdog")),
     classifier = classifier,
@@ -189,6 +226,7 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
     # I(): listas mesmo com um elemento (auto_unbox desfaria o vetor)
     sites = I(sort(unique(ocasioes$site))),
     species = I(sort(unique(det$species_code))),
+    occasion_covariates = if (length(covariaveis)) I(covariaveis),
     tables = imap(arquivos, \(n, nome) list(
       file = if (nome == "calibration_draws") "calibration_draws.parquet"
              else paste0(nome, ".csv"),
@@ -227,6 +265,94 @@ check_duplicate_predictions <- function(det) {
             "prediction is not a separate detection window.", call. = FALSE)
   }
   det
+}
+
+# As chaves da calibracao sao fatores de agrupamento do modelo, alem de
+# local e especie
+check_calibration_keys <- function(fit, keys) {
+  if (length(keys) == 0) return(invisible())
+  if (!is.character(keys) || anyNA(keys) || anyDuplicated(keys)) {
+    stop("`calibration_keys` must be distinct column names.", call. = FALSE)
+  }
+  if (any(keys %in% c("site", "species", "grid_index"))) {
+    stop("`calibration_keys` must not include site, species or grid_index, ",
+         "which are always keys.", call. = FALSE)
+  }
+  vars <- names(fit$data)
+  if (!is.null(vars) && !all(keys %in% vars)) {
+    stop("Calibration key(s) not in the model: ",
+         paste(setdiff(keys, vars), collapse = ", "), ".", call. = FALSE)
+  }
+  invisible()
+}
+
+# Covariaveis de ocasiao, casadas por occasion_id ou pela gravacao (e o
+# inicio do minuto)
+join_occasion_covariates <- function(ocasioes, covs, remap_from, remap_to) {
+  if (is.null(covs)) return(ocasioes)
+  if (!is.data.frame(covs) || !"site" %in% names(covs)) {
+    stop("`occasion_covariates` must be a data frame with a `site` column.",
+         call. = FALSE)
+  }
+  por <- if ("occasion_id" %in% names(covs)) c("site", "occasion_id")
+         else if ("source_audio" %in% names(covs)) {
+           c("site", "source_audio", if ("start" %in% names(covs)) "start")
+         } else {
+           stop("`occasion_covariates` needs `occasion_id` or `source_audio`.",
+                call. = FALSE)
+         }
+  if (identical(por, c("site", "source_audio")) &&
+      anyDuplicated(ocasioes[c("site", "source_audio")])) {
+    stop("Minute occasions: `occasion_covariates` needs a `start` column, ",
+         "or `occasion_id`.", call. = FALSE)
+  }
+  extras <- setdiff(names(covs), por)
+  colide <- intersect(extras, names(ocasioes))
+  if (length(colide) > 0) {
+    stop("`occasion_covariates` has column(s) named like those of ",
+         "occasions.csv: ", paste(colide, collapse = ", "), ".", call. = FALSE)
+  }
+  if (length(extras) == 0) {
+    stop("`occasion_covariates` has no covariate column.", call. = FALSE)
+  }
+  covs <- mutate(covs, site = as.character(site))
+  if ("source_audio" %in% por) {
+    covs$source_audio <- remap_path(covs$source_audio, remap_from, remap_to)
+  }
+  if ("occasion_id" %in% por) covs$occasion_id <- as.character(covs$occasion_id)
+  if ("start" %in% por) covs$start <- as.numeric(covs$start)
+  if (anyDuplicated(covs[por])) {
+    stop("`occasion_covariates` has more than one row for some occasion.",
+         call. = FALSE)
+  }
+  fora <- nrow(anti_join(covs, ocasioes, by = por))
+  if (fora > 0) {
+    warning(fora, " row(s) of `occasion_covariates` match no occasion.",
+            call. = FALSE)
+  }
+  left_join(ocasioes, covs[c(por, extras)], by = por)
+}
+
+# Colunas das chaves em occasions.csv, como texto; "month" vem da data da
+# gravacao quando nao foi dada
+add_calibration_keys <- function(ocasioes, keys) {
+  for (k in keys) {
+    if (!k %in% names(ocasioes)) {
+      if (k != "month") {
+        stop("Calibration key `", k, "` is not a column of ",
+             "`occasion_covariates`.", call. = FALSE)
+      }
+      ocasioes$month <- substr(ocasioes$recording_date, 1, 6)
+    }
+    ocasioes[[k]] <- as.character(ocasioes[[k]])
+    sem <- is.na(ocasioes[[k]]) | !nzchar(ocasioes[[k]])
+    if (any(sem)) {
+      warning(sum(sem), " occasion(s) have no value of the calibration key `",
+              k, "`; their predictions cannot be scored.", call. = FALSE)
+      ocasioes[[k]][sem] <- NA_character_
+    }
+  }
+  ocasioes
 }
 
 # Tabelas CSV do esquema, na ordem de schema.json
@@ -340,9 +466,10 @@ export_sites <- function(sites, nomes) {
 }
 
 # Amostras da posterior de P(TP) na grade de scores, para os pares
-# local x especie com predicoes
+# local x especie com predicoes e, com chaves, para cada combinacao de
+# niveis das chaves entre as ocasioes do local
 calibration_draws <- function(fit, pares, min_confidence, grid_step, n_draws,
-                              seed) {
+                              seed, ocasioes = NULL, keys = NULL) {
   niveis <- fit_levels(fit)
   fora <- setdiff(unique(pares$species), niveis$species)
   if (length(fora) > 0) {
@@ -352,26 +479,40 @@ calibration_draws <- function(fit, pares, min_confidence, grid_step, n_draws,
   pares <- filter(pares, species %in% niveis$species)
   novos <- setdiff(unique(pares$site), niveis$site)
   if (length(novos) > 0) {
-    message("Site(s) not in the calibration, drawn with the species ",
-            "effects only: ", paste(novos, collapse = ", "))
+    message("Site(s) not in the calibration, drawn as new levels of the ",
+            "site effect: ", paste(novos, collapse = ", "))
   }
   ids <- withr::with_seed(seed, sort(sample.int(
     posterior_size(fit), min(n_draws, posterior_size(fit)))))
   n_g <- length(score_grid(min_confidence, grid_step))
-  imap(split(pares$species, pares$site), function(especies, loc) {
-    especies <- sort(especies)
-    gd <-grid_draws(fit, loc, especies, min_confidence, grid_step,
-                     draw_ids = ids)
-    tibble(draw = rep(ids, times = ncol(gd$draws)),
-           site = loc,
-           species = rep(as.character(gd$grid$species), each = length(ids)),
-           grid_index = rep(rep(seq_len(n_g), length(especies)),
-                            each = length(ids)),
-           confidence = rep(gd$grid$confidence, each = length(ids)),
-           p_tp = as.vector(gd$draws))
+  combos <- if (length(keys)) {
+    distinct(ocasioes[c("site", keys)]) |>
+      filter(if_all(all_of(keys), \(x) !is.na(x)))
+  } else {
+    tibble(site = unique(pares$site))
+  }
+  # niveis novos das chaves sao sorteados: mesma semente, mesmo resultado
+  withr::with_seed(seed, {
+    pmap(combos, function(site, ...) {
+      nivel <- list(...)
+      especies <- sort(pares$species[pares$site == site])
+      if (length(especies) == 0) return(NULL)
+      gd <- grid_draws(fit, site, especies, min_confidence, grid_step,
+                       draw_ids = ids, keys = nivel)
+      out <- tibble(draw = rep(ids, times = ncol(gd$draws)),
+                    site = site,
+                    species = rep(as.character(gd$grid$species),
+                                  each = length(ids)))
+      for (k in names(nivel)) out[[k]] <- nivel[[k]]
+      out$grid_index <- rep(rep(seq_len(n_g), length(especies)),
+                            each = length(ids))
+      out$confidence <- rep(gd$grid$confidence, each = length(ids))
+      out$p_tp <- as.vector(gd$draws)
+      out
+    })
   }) |>
     list_rbind() |>
-    arrange(site, species, grid_index, draw)
+    arrange(site, species, across(all_of(keys)), grid_index, draw)
 }
 
 # Numero de amostras da posterior (funcao propria para os testes)

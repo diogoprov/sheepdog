@@ -142,15 +142,18 @@ snap_to_grid <- function(confidence, min_confidence, step) {
 }
 
 # Amostras da posterior de P(TP) num local, para todas as especies x
-# pontos da grade: matriz amostras x (especie, ponto), com a tabela da grade
+# pontos da grade: matriz amostras x (especie, ponto), com a tabela da grade.
+# `keys`: niveis de outras variaveis de agrupamento (ex. list(month =
+# "202406")), constantes na grade
 grid_draws <- function(fit, site, species, min_confidence, step,
-                       draw_ids = NULL) {
+                       draw_ids = NULL, keys = list()) {
   niveis <- fit_levels(fit)
   grade <- expand_grid(species = species,
                        confidence = score_grid(min_confidence, step)) |>
     mutate(site = factor(site, levels = niveis$site),
            species = factor(species, levels = niveis$species),
            logit_conf = safe_logit(confidence))
+  for (k in names(keys)) grade[[k]] <- keys[[k]]
   draws <- brms::posterior_epred(fit, newdata = grade, allow_new_levels = TRUE,
                                  draw_ids = draw_ids)
   list(grid = grade, draws = draws)

@@ -42,7 +42,8 @@ test_that("export_occupancy_data() writes the tables and the schema", {
                               "validation.csv", "sites.csv", "schema.json"))
   sc <- jsonlite::read_json(file.path(ex$dir, "schema.json"))
   expect_identical(sc$schema, "sheepdog-occupancy")
-  expect_identical(sc$schema_version, 1L)
+  expect_identical(sc$schema_version, 1.1)
+  expect_null(sc$occasion_covariates)
   expect_identical(sc$occasion_unit, "file")
   expect_identical(sc$classifier, "sim v1")
   expect_setequal(unlist(sc$sites), c("ARA", "BAI", "XAR"))
@@ -223,7 +224,7 @@ test_that("calibration draws cover every site x species on the grid", {
   local_mocked_bindings(
     posterior_size = function(fit) 400L,
     grid_draws = function(fit, site, species, min_confidence, step,
-                          draw_ids = NULL) {
+                          draw_ids = NULL, keys = list()) {
       grade <- tidyr::expand_grid(
         species = factor(species),
         confidence = sheepdog:::score_grid(min_confidence, step))
@@ -257,4 +258,122 @@ test_that("calibration draws cover every site x species on the grid", {
   ex2 <- export_sim(fit = fit, n_draws = 50, grid_step = 0.05)
   expect_identical(.Random.seed, antes)
   expect_identical(ex2$tables$calibration_draws$draw, dr$draw)
+})
+
+test_that("occasion covariates are joined by occasion_id or by recording", {
+  base <- export_sim()$tables$occasions
+  covs <- dplyr::transmute(base[-1, ], site, occasion_id,
+                           temp = seq_len(nrow(base) - 1), period = "early")
+  ex <- export_sim(occasion_covariates = covs)
+  oc <- ex$tables$occasions
+  expect_identical(names(oc), c(names(base), "temp", "period"))
+  expect_true(is.na(oc$temp[1]))
+  expect_equal(oc$temp[-1], seq_len(nrow(base) - 1))
+  sc <- jsonlite::read_json(file.path(ex$dir, "schema.json"))
+  expect_identical(unlist(sc$occasion_covariates), c("temp", "period"))
+  # NA vazio no CSV
+  expect_true(is.na(read_export(ex$dir, "occasions")$temp[1]))
+  # pela gravacao, com o caminho do estilo Windows remapeado
+  rec <- readr::read_csv(sim_recordings(), show_col_types = FALSE)
+  pela_gravacao <- tibble::tibble(site = rec$local, source_audio = rec$caminho_audio,
+                                  rain = 1)
+  oc2 <- export_sim(occasion_covariates = pela_gravacao)$tables$occasions
+  expect_true(all(oc2$rain == 1))
+})
+
+test_that("invalid occasion covariates are refused or reported", {
+  base <- export_sim()$tables$occasions
+  covs <- dplyr::transmute(base, site, occasion_id, temp = 1)
+  expect_error(export_sim(occasion_covariates = dplyr::mutate(covs, night = "x")),
+               "named like those of occasions.csv: night")
+  expect_error(export_sim(occasion_covariates = rbind(covs, covs[1, ])),
+               "more than one row")
+  expect_error(export_sim(occasion_covariates = covs["site"]),
+               "occasion_id` or `source_audio")
+  extra <- rbind(covs, tibble::tibble(site = "ARA", occasion_id = "nope", temp = 2))
+  expect_warning(export_sim(occasion_covariates = extra), "1 row\\(s\\)")
+})
+
+test_that("calibration keys reach occasions.csv and the draws, as text", {
+  skip_if_not_installed("arrow")
+  pred <- sim_pred()
+  especies <- unique(sheepdog:::folder_name(pred$species_code))
+  fit <- structure(list(data = data.frame(tp = 1, logit_conf = 0, month = "202201",
+                                          period = "early")),
+                   class = "brmsfit",
+                   sheepdog_levels = list(species = especies,
+                                          site = c("ARA", "BAI", "XAR")))
+  local_mocked_bindings(
+    posterior_size = function(fit) 10L,
+    grid_draws = function(fit, site, species, min_confidence, step,
+                          draw_ids = NULL, keys = list()) {
+      grade <- tidyr::expand_grid(
+        species = factor(species),
+        confidence = sheepdog:::score_grid(min_confidence, step))
+      # valor distinto por nivel de period, para conferir o casamento
+      add <- if (identical(keys$period, "late")) 0.5 else 0
+      list(grid = grade, draws = matrix(add, length(draw_ids), nrow(grade)))
+    })
+  base <- export_sim()$tables$occasions
+  covs <- dplyr::transmute(base, site, occasion_id,
+                           period = ifelse(night < "20220115", "early", "late"))
+  ex <- export_sim(fit = fit, n_draws = 10, grid_step = 0.1,
+                   occasion_covariates = covs,
+                   calibration_keys = c("month", "period"))
+  oc <- read_export(ex$dir, "occasions")
+  expect_identical(unique(oc$month), "202201")
+  expect_true(all(c("period", "month") %in% names(oc)))
+  dr <- arrow::read_parquet(file.path(ex$dir, "calibration_draws.parquet"))
+  expect_identical(names(dr), c("draw", "site", "species", "month", "period",
+                                "grid_index", "confidence", "p_tp"))
+  expect_type(dr$month, "character")
+  # cada local x especie com predicoes tem todos os niveis das suas ocasioes
+  niveis <- dplyr::distinct(ex$tables$occasions, site, month, period)
+  pares <- dplyr::distinct(ex$tables$scores, site, species)
+  esperado <- dplyr::inner_join(pares, niveis, by = "site",
+                                relationship = "many-to-many")
+  coberto <- dplyr::distinct(dr, site, species, month, period)
+  expect_equal(nrow(dplyr::anti_join(esperado, coberto,
+                                     by = names(esperado))), 0L)
+  expect_true(all(dr$p_tp[dr$period == "late"] == 0.5))
+  sc <- jsonlite::read_json(file.path(ex$dir, "schema.json"))
+  expect_identical(unlist(sc$calibration$keys),
+                   c("site", "species", "month", "period", "grid_index"))
+  expect_identical(sc$calibration$new_levels, "uncertainty")
+  expect_identical(unlist(sc$occasion_covariates), c("period", "month"))
+})
+
+test_that("calibration keys are checked", {
+  fit <- structure(list(data = data.frame(tp = 1, logit_conf = 0, month = "1")),
+                   class = "brmsfit")
+  skip_if_not_installed("arrow")
+  expect_error(export_sim(calibration_keys = "month"), "need a calibration")
+  expect_error(export_sim(fit = fit, calibration_keys = "season"),
+               "not in the model: season")
+  expect_error(export_sim(fit = fit, calibration_keys = "site"),
+               "always keys")
+  fit2 <- fit; fit2$data$season <- "dry"
+  expect_error(export_sim(fit = fit2, calibration_keys = "season"),
+               "not a column of `occasion_covariates`")
+})
+
+test_that("the shared 1.1 fixture keeps its contract", {
+  skip_if_not_installed("arrow")
+  dir <- test_path("fixtures", "export-1.1")
+  sc <- jsonlite::read_json(file.path(dir, "schema.json"), simplifyVector = TRUE)
+  expect_identical(sc$schema_version, 1.1)
+  chaves <- setdiff(sc$calibration$keys, c("site", "species", "grid_index"))
+  expect_identical(chaves, "month")
+  oc <- read_export(dir, "occasions")
+  expect_true(all(c(sc$occasion_covariates, chaves) %in% names(oc)))
+  dr <- arrow::read_parquet(file.path(dir, "calibration_draws.parquet"))
+  expect_type(dr$month, "character")
+  # toda ocasiao com predicao acha suas amostras pela chave
+  com_pred <- dplyr::semi_join(oc, read_export(dir, "scores"),
+                               by = c("site", "occasion_id"))
+  falta <- dplyr::anti_join(dplyr::distinct(com_pred, site, month),
+                            dplyr::distinct(dr, site, month),
+                            by = c("site", "month"))
+  expect_equal(nrow(falta), 0L)
+  expect_equal(nrow(dr), sc$tables$calibration_draws$rows)
 })
