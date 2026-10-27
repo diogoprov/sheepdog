@@ -96,6 +96,9 @@ test_that("occasion_draws() gives the detections of crywolf::fp_draws_data()", {
   skip_if_not_installed("crywolf", minimum_version = "2.0.0.9000")
   dir <- fixture_copy()
   x <- suppressWarnings(crywolf::fp_read_sheepdog(dir, species = "phy_cuv"))
+  # sem a tabela gravada, o crywolf calcula as deteccoes (com ela, leria o
+  # parquet quando as configuracoes batessem, e o teste nao compararia nada)
+  x$files <- x$files[names(x$files) != "occasion_draws"]
   for (regra in c("sample", "threshold")) {
     v <- suppressWarnings(crywolf::fp_draws_data(x, rule = regra, p_min = 0.5,
                                                  n_draws = 20, seed = 11))
