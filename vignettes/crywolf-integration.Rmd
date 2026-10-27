@@ -125,7 +125,7 @@ calibration but not the false-positive rate of an occupancy model (see
 
 | field | definition |
 |---|---|
-| `schema`, `schema_version` | `"sheepdog-occupancy"` and `1.1`. Minor versions only add tables, columns or fields, so a reader of version 1 can read any 1.x by ignoring what it does not know; it should refuse other names and major versions. Version 1.1 added the occasion covariates and the calibration keys. |
+| `schema`, `schema_version` | `"sheepdog-occupancy"` and `1.1`. Minor versions only add tables, columns or fields, so a reader of version 1 can read any 1.x by ignoring what it does not know; it should refuse other names and major versions. Version 1.1 added the occasion covariates and the calibration keys; version 1.2, `occasion_draws.parquet`. |
 | `created`, `sheepdog_version`, `classifier` | Provenance of the export. |
 | `occasion_unit` | `"file"` or `"minute"` (see Occasion above). |
 | `min_confidence` | Scores below this value were not written: an occasion x species pair absent from `scores.csv` had no prediction at or above it. |
@@ -133,6 +133,7 @@ calibration but not the false-positive rate of an occupancy model (see
 | `sites`, `species` | Every site and every classifier label (`species_code`) of the export. |
 | `tables` | For each table, its file and number of rows. |
 | `occasion_covariates` | The columns of `occasions.csv` after the fixed ones (from `occasion_covariates` and the calibration keys), when any. |
+| `occasion_draws` | Written by `occasion_draws()` (version 1.2): `file`, `rule`, `p_min` (with `"threshold"`), `seed` (with `"sample"`), `n_draws` and `species`. |
 | `calibration` | With `fit`: `engine`, `formula`, `n_draws`, `grid_step`, `grid_min`, `keys` (the columns that identify a row of `calibration_draws.parquet` within a draw: `site`, `species`, the `calibration_keys` and `grid_index`) and `new_levels` (`"uncertainty"`: levels of a key absent from the calibration data are drawn from the distribution of the group). |
 
 ### occasions.csv
@@ -195,6 +196,27 @@ level of a key found among the occasions of a site is covered. Species
 absent from the calibration are left out; sites and key levels absent from
 it are drawn as new levels of their group. Reading it needs
 the 'arrow' package (in R) or any Parquet reader.
+
+### occasion_draws.parquet
+
+Written into an export by `occasion_draws()`: for each calibration draw,
+the detection `y` of every occasion with at least one prediction of the
+species (`draw`, `site`, `occasion_id`, `species` as the short code, `y`
+as a 32-bit integer). `y` is 1 when at least one prediction of the
+occasion is judged true in that draw, 0 when none is, and empty when the
+occasion cannot be scored (a prediction without calibration draws). The
+other occasions of `occasions.csv` are 0 in every draw. With
+`rule = "sample"` a prediction is judged true at random with its
+probability of being true; with `"threshold"`, when that probability is at
+least `p_min`. Fitting the occupancy model to each draw and pooling the
+posteriors propagates the uncertainty of the calibration (Monte Carlo
+propagation); `crywolf::fp_draws_data()` reads the table when its settings
+match the request and otherwise draws the same detections itself.
+
+```{r, eval = FALSE}
+occasion_draws(file.path(tempdir(), "occupancy"), rule = "sample",
+               n_draws = 50, seed = 2026)
+```
 
 ## Files written by v1.2.0
 

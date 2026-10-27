@@ -1,0 +1,59 @@
+{
+  "schema": "sheepdog-occupancy",
+  "schema_version": 1.2,
+  "created": "2026-10-27T00:00:00-0400",
+  "sheepdog_version": "3.2.1.9000",
+  "classifier": "example",
+  "occasion_unit": "file",
+  "min_confidence": 0.1,
+  "dawn_hour": 12,
+  "sites": ["ARA", "BAI", "NHE", "XAR"],
+  "species": ["Physalaemus cuvieri_phy-cuv"],
+  "occasion_covariates": ["hour", "month"],
+  "tables": {
+    "occasions": {
+      "file": "occasions.csv",
+      "rows": 354
+    },
+    "detections": {
+      "file": "detections.csv",
+      "rows": 850
+    },
+    "scores": {
+      "file": "scores.csv",
+      "rows": 266
+    },
+    "validation": {
+      "file": "validation.csv",
+      "rows": 320
+    },
+    "sites": {
+      "file": "sites.csv",
+      "rows": 4
+    },
+    "calibration_draws": {
+      "file": "calibration_draws.parquet",
+      "rows": 8460
+    },
+    "occasion_draws": {
+      "file": "occasion_draws.parquet",
+      "rows": 5320
+    }
+  },
+  "calibration": {
+    "engine": "brms",
+    "formula": "tp ~ logit_conf + (1 | month)",
+    "n_draws": 20,
+    "grid_step": 0.05,
+    "grid_min": 0.1,
+    "keys": ["site", "species", "month", "grid_index"],
+    "new_levels": "uncertainty"
+  },
+  "occasion_draws": {
+    "file": "occasion_draws.parquet",
+    "rule": "sample",
+    "seed": 2026,
+    "n_draws": 20,
+    "species": ["phy_cuv"]
+  }
+}
