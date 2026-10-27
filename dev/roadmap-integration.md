@@ -60,13 +60,18 @@ proporcional por sítio. É o equivalente ao `sampling_mode =
 "random_recordings"` do sheepdog e identifica as distribuições de scores dos
 verdadeiros e dos falsos positivos sem depender do classificador.
 
-## Estado (25/10/2026)
+## Estado (26/10/2026)
 
 - Fase 0 feita: `export_occupancy_data()` (sheepdog#36) e `fp_read_sheepdog()`
   (crywolf 1.9.0, doi:10.5281/zenodo.23624712).
 - Fase 1 em andamento: `fp_draws_data()` e `fp_occu_mc()` no crywolf; o
   Curiango exportado (sheepdog#38 e #39) é o caso de teste. A primeira rodada
   foi descartada por dois artefatos do export, corrigidos no #39.
+- 26/10/2026: a reanálise do artigo do JAV achou que os scripts de
+  ocupação tratavam cada linha das tabelas de detecção (uma por janela do
+  classificador, com o score do minuto repetido) como uma visita. O artigo
+  foi corrigido antes da composição e o depósito vai para a versão 3. O
+  item 2 da integração (abaixo) é a checagem que teria pegado o erro.
 - Sensores com inferência embarcada: a recomendação de guardar uma amostra
   probabilística do áudio bruto está na vinheta `sampling-designs`.
 
@@ -163,6 +168,25 @@ ecológico, o que por si só responde a uma pergunta do artigo do Curiango.
 
 Risco: custo *M* vezes o de um ajuste. O caminho rápido (GLM por sítio) do
 crywolf ajuda; medir antes de documentar.
+
+### Integração ao sheepdog (plano de 26/10/2026)
+
+As funções da fase 1 nasceram no crywolf (`fp_draws_data()`,
+`fp_occu_mc()`, `fp_to_unmarked()`) e em scripts de `dev/benchmarks/`. A
+divisão continua a mesma: o sheepdog mede e gera versões dos dados; o
+crywolf ajusta. O sheepdog não passa a depender do crywolf, e nenhum ajuste
+de modelo é copiado para cá (duas implementações do mesmo modelo são o tipo
+de divergência que produziu o erro de visitas do artigo do JAV).
+
+| # | Item | Estado |
+|---|---|---|
+| 1 | `calibration_ppc()` e `plot_calibration_ppc()`: checagem preditiva da calibração por faixa de score, local, espécie e grupos do usuário (mês), com p-valor mid-p. Substitui `dev/benchmarks/curiango-ppc.R` | feito |
+| 2 | `export_occupancy_data()` descarta predições repetidas (mesma janela lida duas vezes) e avisa quando a maioria das ocasiões com várias predições tem um só score (score copiado entre linhas, o erro do JAV) | feito |
+| 3 | Covariáveis de ocasião no export: argumento `occasion_covariates`, colunas extras em `occasions.csv` (esquema 1.1, só acréscimos). Substitui o `curiango_covariates.csv` | a combinar com o crywolf |
+| 4 | Chaves da calibração no export: amostras por local × espécie × grupo (mês, estação), com `calibration$keys` no `schema.json`, como no script do Curiango; o `fp_draws_data()` já lê | a combinar com o crywolf |
+| 5 | `occasion_draws()`: a lógica do `fp_draws_data()` no nível da ocasião, regras `"sample"` e `"threshold"`, tabela opcional `occasion_draws.parquet`. O `fp_draws_data()` passa a lê-la quando existir; um teste com o mesmo export e a mesma semente confere que as duas dão o mesmo resultado; depois de um ciclo, a lógica fica só aqui | depois de 3 e 4 |
+| 6 | Fluxo de ponta a ponta na vinheta `crywolf-integration`, com resultados pré-computados do Curiango corrigido | depois de 5 |
+| 7 | Teste de contrato no sheepdog, espelho do que o crywolf já tem; roda o crywolf quando instalado | depois de 5 |
 
 ## Fase 2: modelo conjunto score–ocupação
 

@@ -175,6 +175,33 @@ test_that("predictions outside the list of recordings are kept, with a warning",
   expect_true("BAI" %in% ex$tables$occasions$site)
 })
 
+test_that("repeated predictions are dropped, with a warning", {
+  pred <- sim_pred()
+  dobro <- dplyr::bind_rows(pred, pred[1:5, ])
+  expect_warning(
+    ex <- suppressMessages(do.call(export_occupancy_data, c(
+      list(withr::local_tempdir(), dobro, recordings = sim_recordings()),
+      remap()))),
+    "5 prediction\\(s\\) repeat")
+  expect_equal(ex$tables$detections, export_sim()$tables$detections)
+})
+
+test_that("one score copied to several rows of an occasion is reported", {
+  # um score por gravacao x especie, copiado para tres linhas
+  um <- dplyr::filter(sim_pred(), confidence >= 0.1) |>
+    dplyr::distinct(site, begin_path, species_code, .keep_all = TRUE)
+  copias <- dplyr::bind_rows(lapply(0:2, function(k) {
+    dplyr::mutate(um, file_offset = file_offset + k * 3)
+  }))
+  expect_warning(
+    suppressMessages(do.call(export_occupancy_data, c(
+      list(withr::local_tempdir(), copias, recordings = sim_recordings()),
+      remap()))),
+    "same score in all of them")
+  # dados sem copias nao geram o aviso
+  expect_no_warning(export_sim())
+})
+
 test_that("invalid inputs are refused", {
   pred <- sim_pred()
   expect_error(export_occupancy_data(withr::local_tempdir(),

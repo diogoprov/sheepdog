@@ -124,6 +124,13 @@ export, the lists of sites and species and the number of rows of each
 table.
 }
 
+Two checks guard against inputs that would inflate the detections:
+predictions repeating the site, recording, offset and species of another
+(e.g. a selection table read twice) are dropped with a warning, and a
+warning is given when most occasion x species with several predictions
+have the same score in all of them, a sign that one score per occasion
+was copied to several rows.
+
 A clip verdict and the state of an occasion are kept apart on purpose: a
 positive clip proves that the species called in its occasion, but a
 negative clip only says that this prediction was a false positive (the

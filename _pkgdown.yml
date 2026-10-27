@@ -66,6 +66,8 @@ reference:
       - calibration_diagnostics
       - calibration_sensitivity
       - plot_calibration_draws
+      - calibration_ppc
+      - plot_calibration_ppc
       - history_draws
       - community_matrices_draws
   - title: Stage 3 - Community matrices

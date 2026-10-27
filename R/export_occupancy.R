@@ -32,6 +32,13 @@
 #'   export, the lists of sites and species and the number of rows of each
 #'   table.
 #'
+#' Two checks guard against inputs that would inflate the detections:
+#' predictions repeating the site, recording, offset and species of another
+#' (e.g. a selection table read twice) are dropped with a warning, and a
+#' warning is given when most occasion x species with several predictions
+#' have the same score in all of them, a sign that one score per occasion
+#' was copied to several rows.
+#'
 #' A clip verdict and the state of an occasion are kept apart on purpose: a
 #' positive clip proves that the species called in its occasion, but a
 #' negative clip only says that this prediction was a false positive (the
@@ -115,6 +122,7 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
     det <- filter(det, str_extract(species_code, "[^_]+$") %in% species)
   }
   if (nrow(det) == 0) stop("No prediction with confidence >= ", min_confidence, ".")
+  det <- check_duplicate_predictions(det)
 
   ocasioes <- export_occasions(det, recordings, unidade, recording_duration,
                                dawn_hour, audio_pattern, remap_from, remap_to)
@@ -192,6 +200,33 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
   message("Export written to ", output_dir, ": ",
           paste(names(arquivos), collapse = ", "), ".")
   invisible(list(tables = tabelas, schema = schema))
+}
+
+# Predicoes repetidas: a mesma janela lida duas vezes (tabelas de selecao
+# duplicadas) sai com um aviso; ocasioes cujas predicoes tem todas o mesmo
+# score sugerem um score copiado entre linhas (o erro do artigo do JAV) e
+# so geram um aviso
+check_duplicate_predictions <- function(det) {
+  chave <- c("site", "source_audio", "file_offset", "species_code")
+  repetidas <- duplicated(det[chave])
+  if (any(repetidas)) {
+    warning(sum(repetidas), " prediction(s) repeat the site, recording, ",
+            "offset and species of another and were dropped. Was a ",
+            "selection table read twice?", call. = FALSE)
+    det <- det[!repetidas, ]
+  }
+  grupos <- det |>
+    group_by(site, occasion_id, species_code) |>
+    summarise(n = n(), .n_scores = n_distinct(confidence), .groups = "drop") |>
+    filter(n >= 2)
+  iguais <- sum(grupos$.n_scores == 1)
+  if (iguais >= 10 && iguais / nrow(grupos) > 0.5) {
+    warning(iguais, " of ", nrow(grupos), " occasion x species with several ",
+            "predictions have the same score in all of them. Were the ",
+            "scores of an occasion copied to several rows? Then each ",
+            "prediction is not a separate detection window.", call. = FALSE)
+  }
+  det
 }
 
 # Tabelas CSV do esquema, na ordem de schema.json
