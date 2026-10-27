@@ -188,9 +188,11 @@ test_that("exports follow the documented contract", {
 
 test_that("occasion_draws() keeps an export within the contract", {
   skip_if_not_installed("arrow")
-  dir <- withr::local_tempdir()
-  file.copy(list.files(fixture("export-1.1"), full.names = TRUE), dir)
   for (regra in c("threshold", "sample")) {
+    # uma copia por regra: as colunas lidas pelo arrow podem manter o parquet
+    # mapeado, e o Windows nao deixa sobrescreve-lo
+    dir <- withr::local_tempdir()
+    file.copy(list.files(fixture("export-1.1"), full.names = TRUE), dir)
     suppressMessages(suppressWarnings(occasion_draws(dir, rule = regra, p_min = 0.5,
                                                      n_draws = 5, seed = 3)))
     sc <- expect_contract(dir)

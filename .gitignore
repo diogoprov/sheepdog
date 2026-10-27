@@ -46,3 +46,7 @@ docs/
 # Downloaded benchmark inputs and full intermediate reports
 dev/benchmarks/data/
 dev/benchmarks/results/
+
+# Manuscrito do artigo (fora do repositorio publico)
+manuscript/
+AI_INTERACTION_LOG.md
