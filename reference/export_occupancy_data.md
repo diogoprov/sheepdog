@@ -3,8 +3,9 @@
 Writes, in one folder, everything an occupancy model with false
 positives needs from a passive acoustic survey: the occasions, the
 classifier scores, the reviewed clips with their sampling design and,
-optionally, posterior draws of a Bayesian calibration. The folder
-follows the `sheepdog-occupancy` schema, version 1, described in
+optionally, covariates of the occasions and posterior draws of a
+Bayesian calibration. The folder follows the `sheepdog-occupancy`
+schema, version 1.1, described in
 [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md);
 the crywolf package reads it, but any software can, since every table is
 a plain CSV file (the calibration draws are a Parquet file).
@@ -19,6 +20,8 @@ export_occupancy_data(
   validation = NULL,
   fit = NULL,
   sites = NULL,
+  occasion_covariates = NULL,
+  calibration_keys = NULL,
   occasion_unit = c("file", "minute"),
   recording_duration = NULL,
   min_confidence = 0.1,
@@ -73,6 +76,20 @@ export_occupancy_data(
 - sites:
 
   Optional data frame of site covariates, with a `site` column.
+
+- occasion_covariates:
+
+  Optional data frame of covariates of the occasions (e.g. temperature
+  or the month), with `site` and either `occasion_id` or `source_audio`
+  (plus `start`, in s, for minute occasions). One row per occasion;
+  occasions without a row get `NA`. Columns named like those of
+  `occasions.csv` are refused.
+
+- calibration_keys:
+
+  Optional grouping variables of the calibration model, besides `site`
+  and `species`, that vary between occasions (see Calibration keys).
+  Only used with `fit`.
 
 - occasion_unit:
 
@@ -140,7 +157,8 @@ list).
 ## Tables
 
 - `occasions.csv`: one row per occasion (a recording, or a minute of a
-  recording), with or without predictions.
+  recording), with or without predictions, followed by the columns of
+  `occasion_covariates` and of the calibration keys.
 
 - `detections.csv`: one row per prediction with confidence \>=
   `min_confidence`.
@@ -161,12 +179,25 @@ list).
 - `sites.csv`: one row per site, with the covariates of `sites`.
 
 - `calibration_draws.parquet`: posterior draws of P(TP) on a grid of
-  scores for each site x species with predictions (only when `fit` is
-  given; needs the 'arrow' package).
+  scores for each site x species with predictions, and for each level of
+  the `calibration_keys` found among the occasions of the site (only
+  when `fit` is given; needs the 'arrow' package).
 
 - `schema.json`: name and version of the schema, the settings of the
   export, the lists of sites and species and the number of rows of each
   table.
+
+**Calibration keys.** A calibration may depend on a property of the
+occasion besides site and species, such as the month of the recording
+(`tp ~ logit_conf + (1 | month)`). Name such grouping variables in
+`calibration_keys`: each becomes a text column of `occasions.csv` and of
+`calibration_draws.parquet`, so that a reader matches each prediction to
+the draws of its occasion. A key must be a column of
+`occasion_covariates`, except `"month"`, which is derived from the
+recording date (`YYYYMM`) when not given. Levels absent from the
+calibration data are drawn as new levels of the group (brms
+`sample_new_levels = "uncertainty"`); occasions without a value of a key
+are reported, since their predictions cannot be scored.
 
 Two checks guard against inputs that would inflate the detections:
 predictions repeating the site, recording, offset and species of another

@@ -24,6 +24,19 @@
   warns when most occasion x species with several predictions share a
   single score, a sign that one score per occasion was copied to several
   rows.
+- [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+  writes version 1.1 of the `sheepdog-occupancy` schema, which only adds
+  to version 1: `occasion_covariates` appends covariates of the
+  occasions (matched by `occasion_id` or by recording) to
+  `occasions.csv`, and `calibration_keys` exports a calibration that
+  depends on a property of the occasion, such as the month
+  (`tp ~ logit_conf + (1 | month)`): each key becomes a text column of
+  `occasions.csv` and of `calibration_draws.parquet`, which covers every
+  level found among the occasions (levels absent from the calibration
+  data are drawn as new levels). `schema.json` lists them in
+  `occasion_covariates` and `calibration$keys`. A small export of the
+  example data in this schema, made by `data-raw/make_export_fixture.R`,
+  is shared with crywolf as a test fixture.
 - New
   [`calibration_ppc()`](https://provetelab.org/sheepdog/reference/calibration_ppc.md)
   checks a Bayesian calibration model against the reviewed clips: the

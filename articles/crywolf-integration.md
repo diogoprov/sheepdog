@@ -110,10 +110,11 @@ the `validation` argument of
 [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
 writes in one folder everything an occupancy model with false positives
 needs: every occasion, the classifier scores, the reviewed clips with
-their design and, optionally, posterior draws of a Bayesian calibration.
-The folder follows the schema `sheepdog-occupancy`, version 1, described
-below. The tables are plain CSV files (missing values are empty cells);
-the calibration draws are a Parquet file.
+their design and, optionally, covariates of the occasions and posterior
+draws of a Bayesian calibration. The folder follows the schema
+`sheepdog-occupancy`, version 1.1, described below. The tables are plain
+CSV files (missing values are empty cells); the calibration draws are a
+Parquet file.
 
 ``` r
 
@@ -137,14 +138,15 @@ the calibration but not the false-positive rate of an occupancy model
 
 | field | definition |
 |----|----|
-| `schema`, `schema_version` | `"sheepdog-occupancy"` and `1`. A reader should refuse other names and versions it does not know. |
+| `schema`, `schema_version` | `"sheepdog-occupancy"` and `1.1`. Minor versions only add tables, columns or fields, so a reader of version 1 can read any 1.x by ignoring what it does not know; it should refuse other names and major versions. Version 1.1 added the occasion covariates and the calibration keys. |
 | `created`, `sheepdog_version`, `classifier` | Provenance of the export. |
 | `occasion_unit` | `"file"` or `"minute"` (see Occasion above). |
 | `min_confidence` | Scores below this value were not written: an occasion x species pair absent from `scores.csv` had no prediction at or above it. |
 | `dawn_hour` | Recordings before this hour belong to the night before. |
 | `sites`, `species` | Every site and every classifier label (`species_code`) of the export. |
 | `tables` | For each table, its file and number of rows. |
-| `calibration` | With `fit`: `engine`, `formula`, `n_draws`, `grid_step` and `grid_min`. |
+| `occasion_covariates` | The columns of `occasions.csv` after the fixed ones (from `occasion_covariates` and the calibration keys), when any. |
+| `calibration` | With `fit`: `engine`, `formula`, `n_draws`, `grid_step`, `grid_min`, `keys` (the columns that identify a row of `calibration_draws.parquet` within a draw: `site`, `species`, the `calibration_keys` and `grid_index`) and `new_levels` (`"uncertainty"`: levels of a key absent from the calibration data are drawn from the distribution of the group). |
 
 ### occasions.csv
 
@@ -158,6 +160,7 @@ recordings (`recordings`).
 | `recording_date`, `recording_hour` | character | Date (`YYYYMMDD`) and hour (`HH`) in the file name. |
 | `night` | character `YYYYMMDD` | Night of the occasion: the day before for recordings before `dawn_hour`. |
 | `start`, `duration` | double (s) | Start of the occasion in the recording (0 for files) and its length (`NA` when unknown). |
+| further columns | any | Covariates of the occasion from `occasion_covariates`, and the calibration keys, always written as text (e.g. `month`, `YYYYMM`, derived from `recording_date` when not given). |
 
 ### detections.csv and scores.csv
 
@@ -199,13 +202,15 @@ One row per site, with the covariates given in `sites`.
 With `fit` (a model of `fit_calibration(engine = "brms")`), `n_draws`
 draws of the posterior of P(TP) on a grid of scores from
 `min_confidence` in steps of `grid_step`, for each site x species with
-predictions: `draw`, `site`, `species`, `grid_index`, `confidence` (the
-grid point) and `p_tp`. A detection takes the value of the grid point
-nearest its score, as in
-[`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md).
-Species absent from the calibration are left out; sites absent from it
-get the species effects only. Reading it needs the ‘arrow’ package (in
-R) or any Parquet reader.
+predictions: `draw`, `site`, `species`, one text column per calibration
+key, `grid_index`, `confidence` (the grid point) and `p_tp`. A detection
+takes the value of the grid point nearest its score, as in
+[`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md),
+and of the levels of the keys of its occasion in `occasions.csv`. Every
+level of a key found among the occasions of a site is covered. Species
+absent from the calibration are left out; sites and key levels absent
+from it are drawn as new levels of their group. Reading it needs the
+‘arrow’ package (in R) or any Parquet reader.
 
 ## Files written by v1.2.0
 
