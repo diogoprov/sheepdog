@@ -56,6 +56,16 @@
   and the Monte Carlo propagation in crywolf (`fp_draws_data()`,
   `fp_occu_mc()`), with results cached in
   `inst/benchmarks/curiango-flow-*.csv`.
+- A contract test (`tests/testthat/test-contract.R`, the counterpart of
+  crywolf’s `test-read_sheepdog.R`) checks that exports follow the
+  schema documented in
+  [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md):
+  the fields of `schema.json` and the row counts it declares, the
+  columns and keys of every table, `scores.csv` against
+  `detections.csv`, calibration keys as text covering every level of the
+  occasions, and the layout of `occasion_draws.parquet`. With crywolf
+  installed, it also checks that crywolf reads each export and the
+  stored occasion draws.
 - New
   [`calibration_ppc()`](https://provetelab.org/sheepdog/reference/calibration_ppc.md)
   checks a Bayesian calibration model against the reviewed clips: the
