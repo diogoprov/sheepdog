@@ -276,7 +276,7 @@ coef(fit_global)
 #>  -0.5310926   1.5993695
 lme4::fixef(fit_full)
 #> (Intercept)  logit_conf 
-#>  -0.2818954   2.8003920
+#>  -0.2818959   2.8003911
 lme4::VarCorr(fit_full)
 #>  Groups       Name        Std.Dev. Corr  
 #>  site:species (Intercept) 1.19511        
