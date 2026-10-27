@@ -45,6 +45,14 @@
   predictive check of the calibration, `occasion_draws()` and the Monte
   Carlo propagation in crywolf (`fp_draws_data()`, `fp_occu_mc()`), with
   results cached in `inst/benchmarks/curiango-flow-*.csv`.
+- A contract test (`tests/testthat/test-contract.R`, the counterpart of
+  crywolf's `test-read_sheepdog.R`) checks that exports follow the schema
+  documented in `vignette("crywolf-integration")`: the fields of
+  `schema.json` and the row counts it declares, the columns and keys of
+  every table, `scores.csv` against `detections.csv`, calibration keys as
+  text covering every level of the occasions, and the layout of
+  `occasion_draws.parquet`. With crywolf installed, it also checks that
+  crywolf reads each export and the stored occasion draws.
 - New `calibration_ppc()` checks a Bayesian calibration model against the
   reviewed clips: the observed share of true positives against its
   posterior predictive distribution, overall and by score bin, site,
