@@ -10,6 +10,8 @@ permissions: read-all
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
+    # um runner travado falha em vez de ocupar o job por ate 6 h
+    timeout-minutes: 30
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
     strategy:
       fail-fast: false
