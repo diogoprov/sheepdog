@@ -16,3 +16,4 @@
 ^vignettes/bayesian-calibration\.Rmd\.orig$
 ^vignettes/articles$
 ^cran-comments\.md$
+^manuscript$
