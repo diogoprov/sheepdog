@@ -1,4 +1,4 @@
-# Exports the Curiango data in the sheepdog-occupancy schema (version 1),
+# Exports the Curiango data in the sheepdog-occupancy schema (version 1.1),
 # one folder per classifier, with the calibration draws of a Bayesian
 # calibration fitted to the ground-truth test set. This is the test case
 # of phase 1 of dev/roadmap-integration.md (Monte Carlo propagation of
@@ -36,9 +36,9 @@
 #   without looking at the scores, the clips follow the "random_detections"
 #   design (observation confirmation); the inclusion probability is the
 #   share of the recordings of the site in the test set.
-# * Nightly weather and minute acoustic indices have no place in schema
-#   version 1 (it has site covariates only); they go to
-#   curiango_covariates.csv beside the export, outside the schema.
+# * Nightly weather (means of the night at each recorder) and minute
+#   acoustic indices are occasion covariates (schema 1.1): columns
+#   night_site_id, temp, rh, moon, bio and aci of occasions.csv.
 #
 # Seasonal sensitivity analysis (third argument "season"): the posterior
 # predictive check (curiango-ppc.R) showed that P(TP | score) changes with
@@ -47,11 +47,11 @@
 # month of the recording (YYYYMM): logit_conf + (1 | month) and
 # logit_conf + (1 | site) + (1 | month); the choice by log-loss is made
 # among them (the comparison table keeps the models without month). The
-# calibration draws then depend on the month, which schema version 1 does
-# not foresee: calibration_draws.parquet gains a `month` column (YYYYMM, the
-# recording date of the occasion, substr(recording_date, 1, 6) in
-# occasions.csv), and schema.json$calibration$keys lists the keys. Months
-# without test minutes take a new level drawn from the month variance. This
+# calibration draws then depend on the month, a calibration key of the
+# export (calibration_keys = "month", schema 1.1): calibration_draws.parquet
+# and occasions.csv gain a `month` column (YYYYMM of the recording date).
+# Months without test minutes take a new level drawn from the month
+# variance. This
 # is a sensitivity analysis, not the recommended calibration: a month effect
 # mixes calling activity into P(TP) and uses the test minutes twice (see
 # dev/roadmap-integration.md, phase 2).
@@ -89,59 +89,12 @@ covariates <- raw |>
   group_by(night_site_id) |>
   mutate(temp = mean(Temp), rh = mean(RH), moon = mean(moon_illumination)) |>
   ungroup() |>
-  transmute(site = Site,
-            occasion_id = tools::file_path_sans_ext(basename(audio(Site, DataHora_Formatada))),
+  transmute(site = Site, source_audio = audio(Site, DataHora_Formatada),
             night_site_id, temp, rh, moon, bio = BIO, aci = ACI)
 
 # mes da gravacao (YYYYMM), a partir do nome do arquivo
 month_of <- function(path) {
   substr(regmatches(path, regexpr("[0-9]{8}_[0-9]{6}", path)), 1, 6)
-}
-
-# Amostras de P(TP) por local x especie x mes x ponto da grade, como as de
-# export_occupancy_data(), mais a coluna month; acrescenta a tabela e a
-# calibracao ao schema.json da pasta
-seasonal_draws <- function(fit, scores, occasions, dir_cl, n_draws, grid_step) {
-  grade <- sheepdog:::score_grid(min_confidence, grid_step)
-  meses <- occasions |>
-    transmute(site, month = substr(recording_date, 1, 6)) |>
-    distinct()
-  novos <- setdiff(unique(meses$month), levels(fit$data$month))
-  if (length(novos)) {
-    message("Months without test minutes, drawn as new levels: ",
-            paste(novos, collapse = ", "))
-  }
-  pares <- distinct(scores, site, species) |>
-    inner_join(meses, by = "site", relationship = "many-to-many")
-  nd <- tidyr::expand_grid(pares, grid_index = seq_along(grade)) |>
-    mutate(confidence = grade[grid_index], logit_conf = safe_logit(confidence))
-  ids <- withr::with_seed(seed, sort(sample.int(brms::ndraws(fit), n_draws)))
-  ep <- withr::with_seed(seed, brms::posterior_epred(
-    fit, newdata = nd, draw_ids = ids, allow_new_levels = TRUE,
-    sample_new_levels = "uncertainty"))
-  draws <- tibble(draw = rep(ids, times = nrow(nd)),
-                  site = rep(nd$site, each = length(ids)),
-                  species = rep(nd$species, each = length(ids)),
-                  month = rep(nd$month, each = length(ids)),
-                  grid_index = rep(nd$grid_index, each = length(ids)),
-                  confidence = rep(nd$confidence, each = length(ids)),
-                  p_tp = as.vector(ep)) |>
-    arrange(site, species, month, grid_index, draw)
-  arrow::write_parquet(draws, file.path(dir_cl, "calibration_draws.parquet"))
-  sc_path <- file.path(dir_cl, "schema.json")
-  sc <- jsonlite::read_json(sc_path)
-  sc$tables$calibration_draws <- list(file = "calibration_draws.parquet",
-                                      rows = nrow(draws))
-  sc$calibration <- list(engine = "brms",
-                         formula = deparse1(stats::formula(fit)$formula),
-                         n_draws = n_draws, grid_step = grid_step,
-                         grid_min = min(grade),
-                         keys = I(c("site", "species", "month", "grid_index")),
-                         month = "substr(recording_date, 1, 6) of occasions.csv")
-  sc$sites <- I(unlist(sc$sites))
-  sc$species <- I(unlist(sc$species))
-  jsonlite::write_json(sc, sc_path, auto_unbox = TRUE, pretty = TRUE, digits = NA)
-  draws
 }
 
 classifiers <- c(Custom = "conf_div", BirdNET = "conf_preb")
@@ -230,17 +183,12 @@ for (cl in names(classifiers)) {
   dir_cl <- file.path(out, tolower(cl))
   res <- export_occupancy_data(
     dir_cl, detections, recordings = select(recordings, site, source_audio),
-    validation = validation, fit = if (season) NULL else fit,
+    validation = validation, fit = fit, occasion_covariates = covariates,
+    calibration_keys = if (season) "month",
     min_confidence = min_confidence,
     classifier = paste("Curiango", cl, "(Piatti et al., Zenodo 10.5281/zenodo.21795898)",
                        if (season) "- seasonal calibration (sensitivity)"),
     n_draws = 100, seed = seed, overwrite = TRUE)
-  if (season) {
-    res$tables$calibration_draws <- seasonal_draws(
-      fit, res$tables$scores, res$tables$occasions, dir_cl, n_draws = 100,
-      grid_step = 0.01)
-  }
-  write_csv(covariates, file.path(dir_cl, "curiango_covariates.csv"), na = "")
   write_csv(comparison, file.path(dir_cl, "curiango_calibration_comparison.csv"))
   write_csv(diagnostics, file.path(dir_cl, "curiango_calibration_diagnostics.csv"))
   # ajuste e dados da calibracao, para o posterior predictive check

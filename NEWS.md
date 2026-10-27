@@ -40,6 +40,11 @@
   those of `crywolf::fp_draws_data()`, and a test checks that both give the
   same detections; `tests/testthat/fixtures/export-1.2/` holds the shared
   case.
+- `vignette("crywolf-integration")` runs the whole flow on the Curiango
+  data (one-minute recordings, two classifiers): export, posterior
+  predictive check of the calibration, `occasion_draws()` and the Monte
+  Carlo propagation in crywolf (`fp_draws_data()`, `fp_occu_mc()`), with
+  results cached in `inst/benchmarks/curiango-flow-*.csv`.
 - New `calibration_ppc()` checks a Bayesian calibration model against the
   reviewed clips: the observed share of true positives against its
   posterior predictive distribution, overall and by score bin, site,

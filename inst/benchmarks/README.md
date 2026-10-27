@@ -13,6 +13,15 @@ used explicit one-species site-effect candidates; `curiango-native.csv`
 checks the new automatic family against the same comparison. Native
 single-species timing was repeated three times per classifier.
 
+The `curiango-flow-*` tables are rendered by
+`vignettes/crywolf-integration.Rmd`: the end-to-end flow of
+`dev/benchmarks/curiango-flow.R` on the export of
+`dev/benchmarks/curiango-export.R` (one-minute recordings as occasions),
+for both classifiers: posterior predictive checks of the calibration,
+the share of minutes with a detection in each of 20 versions drawn by
+`occasion_draws()`, and the pooled summaries and per-fit convergence of
+`crywolf::fp_occu_mc()` (constant false-positive rate).
+
 The multispecies results are SIMULATED. There was no real multispecies
 validation dataset available. There are 20 independent seeds per scenario
 (2026–2045), six sites and eight species, 24 training nights and 12

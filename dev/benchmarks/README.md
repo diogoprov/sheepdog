@@ -25,13 +25,21 @@ Diogo confirmed that no real multispecies validation dataset is available.
   scenarios: global, species heterogeneity, added site/cell heterogeneity.
   It overwrites its caches and records fit warnings and session metadata.
 - `curiango-export.R [DATA_DIR OUTPUT_DIR]`: exports the Curiango data in
-  the `sheepdog-occupancy` schema (version 1), one folder per classifier,
-  with a Bayesian calibration fitted to the ground-truth test set and its
-  posterior draws. The test case of phase 1 of `dev/roadmap-integration.md`.
-  The header of the script explains how the deposit maps on the schema,
-  including what it lacks (window offsets; occasion covariates, written to
-  `curiango_covariates.csv` outside the schema). Output under
+  the `sheepdog-occupancy` schema (version 1.1), one folder per classifier,
+  with a Bayesian calibration fitted to the ground-truth test set, its
+  posterior draws and the night and minute covariates of the occasions.
+  The test case of phase 1 of `dev/roadmap-integration.md`. The header of
+  the script explains how the deposit maps on the schema, including what it
+  lacks (window offsets). Output under
   `dev/benchmarks/results/curiango-export` (ignored).
+- `curiango-flow.R [EXPORT_DIR]`: the end-to-end flow of
+  `vignette("crywolf-integration")` on that export, for both classifiers:
+  posterior predictive check of the calibration, `occasion_draws()`, and
+  the Monte Carlo propagation in crywolf (`fp_draws_data()`,
+  `fp_occu_mc()`). Needs crywolf >= 2.0.0.9000 and a CmdStan installation;
+  about 20 minutes per classifier with M = 20 versions on 16 cores. Writes
+  the small tables the vignette reads to
+  `inst/benchmarks/curiango-flow-*.csv`.
 - `curiango-ppc.R [EXPORT_DIR]`: posterior predictive checks of the two
   Curiango calibrations saved by `curiango-export.R`: share of true
   positives overall, by score bin, by site and by month, with Bayesian
