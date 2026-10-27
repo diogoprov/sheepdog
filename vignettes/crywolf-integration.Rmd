@@ -218,6 +218,152 @@ occasion_draws(file.path(tempdir(), "occupancy"), rule = "sample",
                n_draws = 50, seed = 2026)
 ```
 
+## End to end: the Curiango data
+
+This section runs the whole flow, from the classifier scores to the
+occupancy estimates, on real data: the Common Pauraque (*Nyctidromus
+albicollis*) recordings of Piatti et al. (data:
+<https://doi.org/10.5281/zenodo.21795898>; article:
+<https://doi.org/10.1002/jav.03737>). The models take hours, so the code
+below is not run here; the results are read from tables cached in the
+package, written by `dev/benchmarks/curiango-export.R` and
+`dev/benchmarks/curiango-flow.R` of the source repository.
+
+The recorders took one-minute recordings at four sites; the occasion is
+the recording (`occasion_unit = "file"`), grouped into nights at each
+recorder, the sites of the occupancy model. Two classifiers scored them:
+a custom one and BirdNET. About 1% of the recordings, drawn in proportion
+to the effort of each site without looking at the scores, were annotated
+by ear; each annotated minute with a score is a reviewed clip of the
+observation-confirmation design, and the calibration is fitted to these
+clips.
+
+```{r, include = FALSE}
+flow <- function(file) {
+  read.csv(system.file("benchmarks", paste0("curiango-flow-", file, ".csv"),
+                       package = "sheepdog"))
+}
+```
+
+### 1. Export
+
+```{r, eval = FALSE}
+fit <- fit_calibration(val_cal, tp ~ logit_conf + (1 | site), engine = "brms",
+                       prior = calibration_prior(tp ~ logit_conf + (1 | site),
+                                                 val_cal),
+                       chains = 4, iter = 2000, seed = 2026)
+export_occupancy_data(
+  "curiango/custom", detections, recordings = recordings,
+  validation = validation, fit = fit,
+  occasion_covariates = covariates, # night_site_id, temp, rh, moon, bio, aci
+  min_confidence = 0.1, n_draws = 100, seed = 2026)
+```
+
+The model of the calibration is chosen by cross-validated log-loss among
+`tp ~ logit_conf` and `tp ~ logit_conf + (1 | site)` (custom classifier:
+with the site; BirdNET: without), and fitted with 'brms' with the prior of
+`calibration_prior()` (see `vignette("bayesian-calibration")`).
+
+### 2. Check the calibration
+
+Before the calibration draws are used, the calibration must reproduce the
+data it was fitted to: the share of true positives overall, by score bin,
+by site and by month.
+
+```{r, eval = FALSE}
+ppc <- calibration_ppc(fit, val_cal, group = "month")
+plot_calibration_ppc(ppc, check = "month")
+```
+
+```{r}
+ppc <- flow("ppc")
+ppc_n <- aggregate(cbind(groups = 1, flagged = flagged) ~ classifier + check,
+                   data = ppc, FUN = sum)
+ppc_n[order(ppc_n$classifier, ppc_n$check), ]
+month <- ppc[ppc$check == "month" & ppc$flagged,
+             c("classifier", "group", "n", "observed", "pred_mean", "p_value")]
+month[4:6] <- lapply(month[4:6], round, 3)
+month
+```
+
+Both calibrations reproduce the overall share of true positives, but not
+the share by month: in some months nearly every reviewed minute was a true
+detection, in others almost none, beyond what the score predicts. The
+probability that a prediction is true depends on how much the species
+called that month, which a calibration on the score alone (and the site)
+does not see. The draws below inherit this misfit. A calibration with the
+month (`tp ~ logit_conf + (1 | month)`, exported with
+`calibration_keys = "month"`) removes it, but the month then carries
+calling activity into P(TP), and the reviewed minutes inform both the
+calibration and the occupancy model; it is a sensitivity analysis here,
+not the recommended model.
+
+### 3. Versions of the detections
+
+```{r, eval = FALSE}
+occasion_draws("curiango/custom", rule = "sample", n_draws = 20, seed = 2026)
+```
+
+Each version is one draw of which predictions are true; an occasion is a
+detection when at least one of its predictions is. The share of minutes
+with a detection per version:
+
+```{r}
+versions <- flow("versions")
+aggregate(detection_rate ~ classifier, data = versions,
+          FUN = function(x) round(c(mean = mean(x), min = min(x), max = max(x)), 4))
+```
+
+### 4. Occupancy in crywolf
+
+crywolf reads the export, takes the versions from `occasion_draws.parquet`
+(its `fp_draws_data()` draws the same ones when the table is absent),
+fits the occupancy model with false positives to each version and pools
+the posteriors in equal shares.
+
+```{r, eval = FALSE}
+x <- crywolf::fp_read_sheepdog("curiango/custom", species = "nyc_alb")
+versions <- crywolf::fp_draws_data(x, rule = "sample", n_draws = 20,
+                                   seed = 2026, occasions = occ, sites = nights,
+                                   site = "night_site_id")
+mc <- crywolf::fp_occu_mc(versions, occ = ~ temp + rh + moon,
+                          det = ~ bio + aci, fp = ~ 1, seed = 1,
+                          parallel = TRUE)
+summary(mc)
+```
+
+`occ` holds the minute covariates (`bio`, `aci`) and `nights` the night
+covariates (`temp`, `rh`, `moon`), all standardised.
+
+```{r}
+fits <- flow("fits")
+aggregate(cbind(fits = 1, kept = kept, divergences = divergences) ~ classifier,
+          data = fits, FUN = sum)
+s <- flow("summary")
+s <- s[grepl("^occ_|^p10_ref$|^p11_ref$", s$variable),
+       c("classifier", "variable", "mean", "sd", "sd_within", "sd_between",
+         "share_between")]
+s[-1:-2] <- lapply(s[-1:-2], round, 3)
+s
+```
+
+`sd_within` is the posterior uncertainty given one version of the
+detections, and `sd_between` the uncertainty about which detections are
+true; their squares add up to the pooled variance (`share_between` is the
+share of the second). Every fit converged (largest R-hat
+`r round(max(fits$max_rhat), 3)`, no divergent transitions).
+
+With the custom classifier, most of the posterior variance of the
+occupancy intercept and of the humidity effect comes from the calibration:
+which of its many low-scoring predictions are true changes from version to
+version, and a model fitted to any one version alone would report about
+half the posterior standard deviation. BirdNET
+gives few predictions, most of them confident, so its versions differ
+little and the uncertainty is mostly within each fit. The two classifiers
+also disagree on the temperature effect; with the misfit of the
+calibrations by month, this comparison is a demonstration of the flow, not
+an ecological result.
+
 ## Files written by v1.2.0
 
 Up to v1.2.0 the same tables were written in Portuguese
