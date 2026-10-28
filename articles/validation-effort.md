@@ -333,83 +333,66 @@ clips at high scores (more review may help) or low precision even at
 high scores (more review will not). To tell them apart, count the
 high-score clips reviewed in each cell, their precision, and how many
 high-score detections in the complete selection tables were not
-reviewed:
+reviewed.
+[`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md)
+does this for every cell. Here a score of 0.7 or more counts as high
+(`conf_high`), and a cell needs 15 clips (`min_n`):
 
 ``` r
 
-conf_high <- 0.7   # example: what counts as a high score
-min_n     <- 15
-
 detections <- suppressMessages(
-  read_selection_tables(file.path(ex, "birdnet"))) |>
-  mutate(species = gsub("-", "_", sub("^.*_", "", species_code)))
-
-support <- val |>
-  mutate(across(c(site, species), as.character)) |>
-  summarise(n_fp      = sum(tp == 0),
-            n_high    = sum(confidence >= conf_high),
-            prec_high = round(mean(tp[confidence >= conf_high]), 2),
-            .by = c(site, species)) |>
-  left_join(detections |>
-              summarise(n_high_all = sum(confidence >= conf_high),
-                        .by = c(site, species)),
-            by = c("site", "species")) |>
-  left_join(select(thr, site, species = species_folder, threshold),
-            by = c("site", "species")) |>
-  mutate(unreviewed_high = n_high_all - n_high,
-         diagnosis = case_when(
-           !is.na(threshold)        ~ "reached",
-           unreviewed_high < min_n  ~ "exhausted",
-           prec_high < 0.5          ~ "unreliable",
-           .default = "review more"
-         )) |>
-  select(site, species, n_fp, n_high, prec_high, unreviewed_high,
+  read_selection_tables(file.path(ex, "birdnet")))
+support <- review_support(val_raw, detections, conf_high = 0.7, min_n = 15,
+                          min_precision = 0.5, target_precision = 0.90)
+support |>
+  mutate(prec_high = round(prec_high, 2)) |>
+  select(site, species_folder, n_fp, n_high, prec_high, unreviewed_high,
          diagnosis) |>
-  arrange(diagnosis, species, site)
-print(support, n = Inf)
+  print(n = Inf)
 #> # A tibble: 32 × 7
-#>    site  species  n_fp n_high prec_high unreviewed_high diagnosis  
-#>    <chr> <chr>   <int>  <int>     <dbl>           <int> <chr>      
-#>  1 ARA   lep_fus    33      1      0                  0 exhausted  
-#>  2 BAI   lep_fus    56      3      0                  0 exhausted  
-#>  3 ARA   boa_ran     2     59      1                122 reached    
-#>  4 BAI   boa_ran    18     45      1                 25 reached    
-#>  5 NHE   boa_ran    45     26      0.96              18 reached    
-#>  6 XAR   boa_ran    23     49      0.98              29 reached    
-#>  7 ARA   den_nan    14     35      0.94              57 reached    
-#>  8 NHE   den_nan    39     33      0.82              47 reached    
-#>  9 ARA   ela_bic     7     61      1                 42 reached    
-#> 10 BAI   ela_bic     5     55      1                 51 reached    
-#> 11 NHE   ela_bic    16     53      1                 65 reached    
-#> 12 XAR   ela_bic     6     57      1                 46 reached    
-#> 13 XAR   lep_fus    32     16      0.94              17 reached    
-#> 14 ARA   lep_pod     7     62      1                 48 reached    
-#> 15 BAI   lep_pod    12     39      1                 12 reached    
-#> 16 NHE   lep_pod    19     53      1                 53 reached    
-#> 17 XAR   lep_pod     5     64      1                 91 reached    
-#> 18 ARA   phy_cuv     2     71      1                 64 reached    
-#> 19 BAI   phy_cuv     3     67      1                 68 reached    
-#> 20 NHE   phy_cuv     9     63      1                111 reached    
-#> 21 XAR   phy_cuv    18     59      0.98              39 reached    
-#> 22 ARA   sci_nas    15     40      0.92              34 reached    
-#> 23 BAI   den_nan    52     23      0.7               21 review more
-#> 24 XAR   den_nan    56     27      0.63              20 review more
-#> 25 NHE   lep_fus    30     18      0.78              19 review more
-#> 26 ARA   pse_pla    31     26      0.62              23 review more
-#> 27 BAI   sci_nas    46     30      0.7               30 review more
-#> 28 NHE   sci_nas    61     21      0.52              42 review more
-#> 29 XAR   sci_nas    39     36      0.69              39 review more
-#> 30 BAI   pse_pla    63     30      0.1               16 unreliable 
-#> 31 NHE   pse_pla    56     37      0.32              61 unreliable 
-#> 32 XAR   pse_pla    70     26      0.15              34 unreliable
+#>    site  species_folder  n_fp n_high prec_high unreviewed_high diagnosis  
+#>    <chr> <chr>          <int>  <int>     <dbl>           <int> <chr>      
+#>  1 ARA   lep_fus           33      1      0                  0 exhausted  
+#>  2 BAI   lep_fus           56      3      0                  0 exhausted  
+#>  3 ARA   boa_ran            2     59      1                122 reached    
+#>  4 BAI   boa_ran           18     45      1                 25 reached    
+#>  5 NHE   boa_ran           45     26      0.96              18 reached    
+#>  6 XAR   boa_ran           23     49      0.98              29 reached    
+#>  7 ARA   den_nan           14     35      0.94              57 reached    
+#>  8 NHE   den_nan           39     33      0.82              47 reached    
+#>  9 ARA   ela_bic            7     61      1                 42 reached    
+#> 10 BAI   ela_bic            5     55      1                 51 reached    
+#> 11 NHE   ela_bic           16     53      1                 65 reached    
+#> 12 XAR   ela_bic            6     57      1                 46 reached    
+#> 13 XAR   lep_fus           32     16      0.94              17 reached    
+#> 14 ARA   lep_pod            7     62      1                 48 reached    
+#> 15 BAI   lep_pod           12     39      1                 12 reached    
+#> 16 NHE   lep_pod           19     53      1                 53 reached    
+#> 17 XAR   lep_pod            5     64      1                 91 reached    
+#> 18 ARA   phy_cuv            2     71      1                 64 reached    
+#> 19 BAI   phy_cuv            3     67      1                 68 reached    
+#> 20 NHE   phy_cuv            9     63      1                111 reached    
+#> 21 XAR   phy_cuv           18     59      0.98              39 reached    
+#> 22 ARA   sci_nas           15     40      0.92              34 reached    
+#> 23 BAI   den_nan           52     23      0.7               21 review more
+#> 24 XAR   den_nan           56     27      0.63              20 review more
+#> 25 NHE   lep_fus           30     18      0.78              19 review more
+#> 26 ARA   pse_pla           31     26      0.62              23 review more
+#> 27 BAI   sci_nas           46     30      0.7               30 review more
+#> 28 NHE   sci_nas           61     21      0.52              42 review more
+#> 29 XAR   sci_nas           39     36      0.69              39 review more
+#> 30 BAI   pse_pla           63     30      0.1               16 unreliable 
+#> 31 NHE   pse_pla           56     37      0.32              61 unreliable 
+#> 32 XAR   pse_pla           70     26      0.15              34 unreliable
 ```
 
 A cell is `"reached"` when
 [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
 found a threshold. The other labels use illustrative cut-offs
-(`conf_high`, `min_n` and a precision of 0.5 at high scores); set them
-from the precision the study needs. In this example they separate three
-groups of cells that lack support:
+(`conf_high`, `min_n` and `min_precision`, a precision of 0.5 at high
+scores); set them from the precision the study needs. A cell with
+detections but no reviewed clip would be `"not reviewed"`. In this
+example they separate three groups of cells that lack support:
 
 - **`"review more"`:** den_nan at BAI, den_nan at XAR, lep_fus at NHE,
   pse_pla at ARA, sci_nas at BAI, sci_nas at NHE, sci_nas at XAR.
@@ -610,6 +593,64 @@ With a fitted calibration,
 `cell_status(fit, validations, by = "temp_bin")` gives the status of
 each site x species x bin cell; keep the column in the validations with
 `read_validations(keep = "night")` and join the bins.
+
+[`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md)
+repeats the diagnosis of the cells within each bin. It joins the table
+of bins to the clips and to the predictions itself, so the count of
+unreviewed high-score detections is also by bin:
+
+``` r
+
+support_temp <- review_support(val_raw, detections, conf_high = 0.7,
+                               min_n = 15, by = "temp_bin",
+                               covariates = temp_bins)
+count(support, diagnosis, name = "cells")
+#> # A tibble: 4 × 2
+#>   diagnosis   cells
+#>   <chr>       <int>
+#> 1 exhausted       2
+#> 2 reached        20
+#> 3 review more     7
+#> 4 unreliable      3
+count(support_temp, diagnosis, name = "cells x bins")
+#> # A tibble: 4 × 2
+#>   diagnosis   `cells x bins`
+#>   <chr>                <int>
+#> 1 exhausted               40
+#> 2 reached                 46
+#> 3 review more              6
+#> 4 unreliable               4
+support_temp |>
+  filter(species_folder == "phy_cuv") |>
+  select(site, temp_bin, n_high, unreviewed_high, threshold, diagnosis)
+#> # A tibble: 12 × 6
+#>    site  temp_bin n_high unreviewed_high threshold diagnosis  
+#>    <chr> <chr>     <int>           <int>     <dbl> <chr>      
+#>  1 ARA   q1           24              25      0.38 reached    
+#>  2 ARA   q2           27              12      0.61 reached    
+#>  3 ARA   q3           20              27      0.19 reached    
+#>  4 BAI   q1           33              21      0.48 reached    
+#>  5 BAI   q3           22              18      0.23 reached    
+#>  6 NHE   q1           16              38      0.45 reached    
+#>  7 NHE   q2           31              46      0.36 reached    
+#>  8 NHE   q3           16              27      0.16 reached    
+#>  9 XAR   q1           22              10      0.14 reached    
+#> 10 XAR   q2           20              13      0.27 reached    
+#> 11 XAR   q3           17              16      0.51 reached    
+#> 12 BAI   q2           12              29     NA    review more
+```
+
+A cell that reached its threshold as a whole may not reach it in every
+bin. Part of this is plain arithmetic: each bin holds about a third of
+the clips and of the detections, so `min_n` is harder to meet, and many
+more cell x bin combinations are `"exhausted"` than cells (here 40
+against 2); lower `min_n` for the reading by bin if the study can accept
+it. Read the two tables together. A bin labelled `"review more"` inside
+a cell that is `"reached"` overall is the part of the gradient where the
+next round of review should go. A bin labelled `"unreliable"` while the
+other bins are not would point to a classifier that fails in that part
+of the gradient (here the covariate is simulated, so no such pattern is
+expected).
 
 ### Caveats
 

@@ -2,6 +2,20 @@
 
 ## sheepdog (development version)
 
+- New
+  [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md):
+  for each site x species cell, the reviewed clips at high scores, their
+  precision, the high-score detections not yet reviewed, the threshold
+  of
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
+  and a diagnosis (`"reached"`, `"exhausted"`, `"unreliable"`,
+  `"review more"`, `"not reviewed"`). It replaces the code of the
+  `support` table of
+  [`vignette("validation-effort")`](https://provetelab.org/sheepdog/articles/validation-effort.md)
+  and gives the same result. With `by` and `covariates` (e.g. from
+  [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md)),
+  the diagnosis is repeated within the bins of an environmental gradient
+  or acoustic index, counting the unreviewed detections by bin too.
 - [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
   exports a calibration on continuous covariates of the occasion
   (`tp ~ logit_conf + temp_z`), schema `sheepdog-occupancy` 1.3: P(TP)

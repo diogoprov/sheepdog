@@ -31,6 +31,8 @@ presence and retraining clips.
   : Precision by confidence bin
 - [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
   : Suggest a confidence threshold per species
+- [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md)
+  : Review support of each cell: is more validation worth it?
 - [`nightly_presence()`](https://provetelab.org/sheepdog/reference/nightly_presence.md)
   : Confirmed presence by night
 - [`retraining_clips()`](https://provetelab.org/sheepdog/reference/retraining_clips.md)

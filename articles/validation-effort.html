@@ -386,79 +386,61 @@ reviewed clips at high scores (more review may help) or low precision
 even at high scores (more review will not). To tell them apart, count
 the high-score clips reviewed in each cell, their precision, and how
 many high-score detections in the complete selection tables were not
-reviewed:</p>
+reviewed. <code><a href="../reference/review_support.html">review_support()</a></code> does this for every cell. Here a
+score of 0.7 or more counts as high (<code>conf_high</code>), and a cell
+needs 15 clips (<code>min_n</code>):</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">conf_high</span> <span class="op">&lt;-</span> <span class="fl">0.7</span>   <span class="co"># example: what counts as a high score</span></span>
-<span><span class="va">min_n</span>     <span class="op">&lt;-</span> <span class="fl">15</span></span>
-<span></span>
-<span><span class="va">detections</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="../reference/read_selection_tables.html">read_selection_tables</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"birdnet"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>species <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"-"</span>, <span class="st">"_"</span>, <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"^.*_"</span>, <span class="st">""</span>, <span class="va">species_code</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">support</span> <span class="op">&lt;-</span> <span class="va">val</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">site</span>, <span class="va">species</span><span class="op">)</span>, <span class="va">as.character</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>n_fp      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">tp</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span>,</span>
-<span>            n_high    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">confidence</span> <span class="op">&gt;=</span> <span class="va">conf_high</span><span class="op">)</span>,</span>
-<span>            prec_high <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">tp</span><span class="op">[</span><span class="va">confidence</span> <span class="op">&gt;=</span> <span class="va">conf_high</span><span class="op">]</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>,</span>
-<span>            .by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">site</span>, <span class="va">species</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">detections</span> <span class="op">|&gt;</span></span>
-<span>              <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>n_high_all <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">confidence</span> <span class="op">&gt;=</span> <span class="va">conf_high</span><span class="op">)</span>,</span>
-<span>                        .by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">site</span>, <span class="va">species</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>            by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"species"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">thr</span>, <span class="va">site</span>, species <span class="op">=</span> <span class="va">species_folder</span>, <span class="va">threshold</span><span class="op">)</span>,</span>
-<span>            by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"species"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>unreviewed_high <span class="op">=</span> <span class="va">n_high_all</span> <span class="op">-</span> <span class="va">n_high</span>,</span>
-<span>         diagnosis <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case-and-replace-when.html" class="external-link">case_when</a></span><span class="op">(</span></span>
-<span>           <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">threshold</span><span class="op">)</span>        <span class="op">~</span> <span class="st">"reached"</span>,</span>
-<span>           <span class="va">unreviewed_high</span> <span class="op">&lt;</span> <span class="va">min_n</span>  <span class="op">~</span> <span class="st">"exhausted"</span>,</span>
-<span>           <span class="va">prec_high</span> <span class="op">&lt;</span> <span class="fl">0.5</span>          <span class="op">~</span> <span class="st">"unreliable"</span>,</span>
-<span>           .default <span class="op">=</span> <span class="st">"review more"</span></span>
-<span>         <span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">site</span>, <span class="va">species</span>, <span class="va">n_fp</span>, <span class="va">n_high</span>, <span class="va">prec_high</span>, <span class="va">unreviewed_high</span>,</span>
+<code class="sourceCode R"><span><span class="va">detections</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/read_selection_tables.html">read_selection_tables</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"birdnet"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">support</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/review_support.html">review_support</a></span><span class="op">(</span><span class="va">val_raw</span>, <span class="va">detections</span>, conf_high <span class="op">=</span> <span class="fl">0.7</span>, min_n <span class="op">=</span> <span class="fl">15</span>,</span>
+<span>                          min_precision <span class="op">=</span> <span class="fl">0.5</span>, target_precision <span class="op">=</span> <span class="fl">0.90</span><span class="op">)</span></span>
+<span><span class="va">support</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>prec_high <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">prec_high</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">site</span>, <span class="va">species_folder</span>, <span class="va">n_fp</span>, <span class="va">n_high</span>, <span class="va">prec_high</span>, <span class="va">unreviewed_high</span>,</span>
 <span>         <span class="va">diagnosis</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">diagnosis</span>, <span class="va">species</span>, <span class="va">site</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">support</span>, n <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span>n <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 32 × 7</span></span></span>
-<span><span class="co">#&gt;    site  species  n_fp n_high prec_high unreviewed_high diagnosis  </span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> ARA   lep_fus    33      1      0                  0 exhausted  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> BAI   lep_fus    56      3      0                  0 exhausted  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> ARA   boa_ran     2     59      1                122 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> BAI   boa_ran    18     45      1                 25 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> NHE   boa_ran    45     26      0.96              18 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> XAR   boa_ran    23     49      0.98              29 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> ARA   den_nan    14     35      0.94              57 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> NHE   den_nan    39     33      0.82              47 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> ARA   ela_bic     7     61      1                 42 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> BAI   ela_bic     5     55      1                 51 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> NHE   ela_bic    16     53      1                 65 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> XAR   ela_bic     6     57      1                 46 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> XAR   lep_fus    32     16      0.94              17 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> ARA   lep_pod     7     62      1                 48 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> BAI   lep_pod    12     39      1                 12 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">16</span> NHE   lep_pod    19     53      1                 53 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">17</span> XAR   lep_pod     5     64      1                 91 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">18</span> ARA   phy_cuv     2     71      1                 64 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">19</span> BAI   phy_cuv     3     67      1                 68 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">20</span> NHE   phy_cuv     9     63      1                111 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">21</span> XAR   phy_cuv    18     59      0.98              39 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">22</span> ARA   sci_nas    15     40      0.92              34 reached    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">23</span> BAI   den_nan    52     23      0.7               21 review more</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">24</span> XAR   den_nan    56     27      0.63              20 review more</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">25</span> NHE   lep_fus    30     18      0.78              19 review more</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">26</span> ARA   pse_pla    31     26      0.62              23 review more</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">27</span> BAI   sci_nas    46     30      0.7               30 review more</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">28</span> NHE   sci_nas    61     21      0.52              42 review more</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">29</span> XAR   sci_nas    39     36      0.69              39 review more</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">30</span> BAI   pse_pla    63     30      0.1               16 unreliable </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">31</span> NHE   pse_pla    56     37      0.32              61 unreliable </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">32</span> XAR   pse_pla    70     26      0.15              34 unreliable</span></span></code></pre></div>
+<span><span class="co">#&gt;    site  species_folder  n_fp n_high prec_high unreviewed_high diagnosis  </span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> ARA   lep_fus           33      1      0                  0 exhausted  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> BAI   lep_fus           56      3      0                  0 exhausted  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> ARA   boa_ran            2     59      1                122 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> BAI   boa_ran           18     45      1                 25 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> NHE   boa_ran           45     26      0.96              18 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> XAR   boa_ran           23     49      0.98              29 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> ARA   den_nan           14     35      0.94              57 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> NHE   den_nan           39     33      0.82              47 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> ARA   ela_bic            7     61      1                 42 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> BAI   ela_bic            5     55      1                 51 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> NHE   ela_bic           16     53      1                 65 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> XAR   ela_bic            6     57      1                 46 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> XAR   lep_fus           32     16      0.94              17 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> ARA   lep_pod            7     62      1                 48 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> BAI   lep_pod           12     39      1                 12 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">16</span> NHE   lep_pod           19     53      1                 53 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">17</span> XAR   lep_pod            5     64      1                 91 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">18</span> ARA   phy_cuv            2     71      1                 64 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">19</span> BAI   phy_cuv            3     67      1                 68 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">20</span> NHE   phy_cuv            9     63      1                111 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">21</span> XAR   phy_cuv           18     59      0.98              39 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">22</span> ARA   sci_nas           15     40      0.92              34 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">23</span> BAI   den_nan           52     23      0.7               21 review more</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">24</span> XAR   den_nan           56     27      0.63              20 review more</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">25</span> NHE   lep_fus           30     18      0.78              19 review more</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">26</span> ARA   pse_pla           31     26      0.62              23 review more</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">27</span> BAI   sci_nas           46     30      0.7               30 review more</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">28</span> NHE   sci_nas           61     21      0.52              42 review more</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">29</span> XAR   sci_nas           39     36      0.69              39 review more</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">30</span> BAI   pse_pla           63     30      0.1               16 unreliable </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">31</span> NHE   pse_pla           56     37      0.32              61 unreliable </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">32</span> XAR   pse_pla           70     26      0.15              34 unreliable</span></span></code></pre></div>
 <p>A cell is <code>"reached"</code> when
 <code><a href="../reference/suggest_thresholds.html">suggest_thresholds()</a></code> found a threshold. The other labels
 use illustrative cut-offs (<code>conf_high</code>, <code>min_n</code>
-and a precision of 0.5 at high scores); set them from the precision the
-study needs. In this example they separate three groups of cells that
-lack support:</p>
+and <code>min_precision</code>, a precision of 0.5 at high scores); set
+them from the precision the study needs. A cell with detections but no
+reviewed clip would be <code>"not reviewed"</code>. In this example they
+separate three groups of cells that lack support:</p>
 <ul>
 <li>
 <strong><code>"review more"</code>:</strong> den_nan at BAI, den_nan
@@ -646,6 +628,60 @@ With a fitted calibration,
 status of each site x species x bin cell; keep the column in the
 validations with <code>read_validations(keep = "night")</code> and join
 the bins.</p>
+<p><code><a href="../reference/review_support.html">review_support()</a></code> repeats the diagnosis of the cells
+within each bin. It joins the table of bins to the clips and to the
+predictions itself, so the count of unreviewed high-score detections is
+also by bin:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">support_temp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/review_support.html">review_support</a></span><span class="op">(</span><span class="va">val_raw</span>, <span class="va">detections</span>, conf_high <span class="op">=</span> <span class="fl">0.7</span>,</span>
+<span>                               min_n <span class="op">=</span> <span class="fl">15</span>, by <span class="op">=</span> <span class="st">"temp_bin"</span>,</span>
+<span>                               covariates <span class="op">=</span> <span class="va">temp_bins</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">support</span>, <span class="va">diagnosis</span>, name <span class="op">=</span> <span class="st">"cells"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 2</span></span></span>
+<span><span class="co">#&gt;   diagnosis   cells</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> exhausted       2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> reached        20</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> review more     7</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> unreliable      3</span></span>
+<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">support_temp</span>, <span class="va">diagnosis</span>, name <span class="op">=</span> <span class="st">"cells x bins"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 2</span></span></span>
+<span><span class="co">#&gt;   diagnosis   `cells x bins`</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> exhausted               40</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> reached                 46</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> review more              6</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> unreliable               4</span></span>
+<span><span class="va">support_temp</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">species_folder</span> <span class="op">==</span> <span class="st">"phy_cuv"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">site</span>, <span class="va">temp_bin</span>, <span class="va">n_high</span>, <span class="va">unreviewed_high</span>, <span class="va">threshold</span>, <span class="va">diagnosis</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 12 × 6</span></span></span>
+<span><span class="co">#&gt;    site  temp_bin n_high unreviewed_high threshold diagnosis  </span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> ARA   q1           24              25      0.38 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> ARA   q2           27              12      0.61 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> ARA   q3           20              27      0.19 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> BAI   q1           33              21      0.48 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> BAI   q3           22              18      0.23 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> NHE   q1           16              38      0.45 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> NHE   q2           31              46      0.36 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> NHE   q3           16              27      0.16 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> XAR   q1           22              10      0.14 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> XAR   q2           20              13      0.27 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> XAR   q3           17              16      0.51 reached    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> BAI   q2           12              29     <span style="color: #BB0000;">NA</span>    review more</span></span></code></pre></div>
+<p>A cell that reached its threshold as a whole may not reach it in
+every bin. Part of this is plain arithmetic: each bin holds about a
+third of the clips and of the detections, so <code>min_n</code> is
+harder to meet, and many more cell x bin combinations are
+<code>"exhausted"</code> than cells (here 40 against 2); lower
+<code>min_n</code> for the reading by bin if the study can accept it.
+Read the two tables together. A bin labelled <code>"review more"</code>
+inside a cell that is <code>"reached"</code> overall is the part of the
+gradient where the next round of review should go. A bin labelled
+<code>"unreliable"</code> while the other bins are not would point to a
+classifier that fails in that part of the gradient (here the covariate
+is simulated, so no such pattern is expected).</p>
 </div>
 <div class="section level3">
 <h3 id="caveats">Caveats<a class="anchor" aria-label="anchor" href="#caveats"></a>
@@ -744,7 +780,7 @@ computed for the best model of the cross-validation and written to
 <code>effort_curve.csv</code>. The arguments <code>effort_n</code> and
 <code>effort_reps</code> set the training sizes and the number of
 repetitions.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ARA"</span>, <span class="st">"BAI"</span>, <span class="st">"NHE"</span>, <span class="st">"XAR"</span><span class="op">)</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibrate.html">calibrate</a></span><span class="op">(</span></span>
 <span>  validation_files  <span class="op">=</span> <span class="va">val_files</span>,</span>
