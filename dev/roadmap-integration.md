@@ -99,6 +99,7 @@ verdadeiros e dos falsos positivos sem depender do classificador.
 | 4 | 3. Validação em duas camadas | sheepdog (+ crywolf) | M | fase 2 |
 | 5 | 4. Atividade vocal (densidade de chamadas) | crywolf | M–G | fase 2 |
 | 6 | 5. Comunidade | crywolf | G | roadmap do crywolf (MSO, Fase A) |
+| — | App local (Shiny) | sheepdog | M | nada; em paralelo |
 
 Em paralelo a tudo: o benchmark (seção própria), que decide se cada fase
 vale a pena.
@@ -368,6 +369,39 @@ existe (Wright et al. 2019; Stratton et al. 2022; Clement et al. 2022), mas
 exige uma matriz de classificação e um desenho de verificação próprio.
 **[decidir]** Se ela vira um projeto de pesquisa separado (por exemplo, com
 os anuros do FrogNet, que têm cantos parecidos entre espécies).
+
+## App local (Shiny)
+
+Fora das fases da integração e sem depender delas. Pedido do Diogo em
+27/10/2026: um app **local**, aberto pelo próprio pacote, com uma vinheta
+que mostra como montar e usar o app. Não é para hospedar: as gravações têm
+gigabytes e a calibração com brms precisa de CmdStan, o que não roda no
+shinyapps.io; o app lê os arquivos do disco do usuário. O shinylive (webR,
+sem servidor) não roda Stan nem lida bem com arquivos grandes, então não
+serve como solução única.
+
+O app é uma camada fina sobre as funções que já existem: nenhuma lógica
+nova entra nele, e o que ele grava é o mesmo que as funções gravam (o CSV
+de veredictos, o export). `shiny` entra em Suggests.
+
+1. **Revisão** (o maior ganho e o maior trabalho). Espectrograma e player
+   HTML5 de cada clipe, com botões positivo/negativo/incerto que gravam o
+   CSV de veredictos que `read_validations()` lê, no lugar de separar os
+   clipes em pastas. Fila por revisor a partir de `assign_reviewers()`;
+   `reviewer_agreement()` e `consensus_verdicts()` continuam iguais.
+2. **Sorteio e exportação.** Formulário para o desenho de `select_clips()`
+   (`top`, `random_detections`, `random_recordings`), estrato e número de
+   clipes, mostrando a probabilidade de inclusão; botão que chama
+   `export_occupancy_data()`.
+3. **Calibração.** Primeiro com lme4, ao vivo: comparação de modelos, curva
+   de calibração e `calibration_ppc()` em gráficos. brms como opção para
+   quem tem CmdStan, rodando em segundo plano com barra de progresso.
+
+Entregas: `run_app()` (ou um nome melhor), a vinheta e testes dos módulos
+com `shiny::testServer()`. Esforço: M, em três ou quatro PRs, na ordem
+acima; entra numa versão menor (sem quebra). **[decidir]** Se a vinheta
+monta o app passo a passo a partir das funções (o usuário adapta o código)
+ou só mostra como abrir e usar o app que vem no pacote.
 
 ## Benchmark e dados
 
