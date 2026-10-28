@@ -224,15 +224,17 @@ test_that("occasion_draws() keeps an export within the contract", {
 })
 
 # Lado do crywolf: le cada export, com os identificadores como texto e uma
-# linha de fp_aggregate() por ocasiao. A fixture 1.3 entra quando o crywolf
-# ler o esquema 1.3 (proposta em dev/proposal-calibration-covariates.md do
-# crywolf).
+# linha de fp_aggregate() por ocasiao. A fixture 1.3 entra com o crywolf
+# que le o esquema 1.3 (>= 2.1.0.9000).
 test_that("crywolf reads every export", {
   skip_if_not_installed("crywolf")
   skip_if(!"fp_read_sheepdog" %in% getNamespaceExports("crywolf"),
           "this crywolf has no fp_read_sheepdog()")
   dirs <- list(exemplo = export_exemplo(), simulado = export_simulado(),
                `1.1` = fixture("export-1.1"), `1.2` = fixture("export-1.2"))
+  if (utils::packageVersion("crywolf") >= "2.1.0.9000") {
+    dirs$`1.3` <- fixture("export-1.3")
+  }
   for (nome in names(dirs)) {
     dir <- dirs[[nome]]
     sp <- ler_tabela(dir, "detections")$species[1]
@@ -252,6 +254,23 @@ test_that("crywolf reads every export", {
   }
 })
 
+# As versoes do crywolf sao as de occasion_draws.parquet: pontuadas com o
+# mesmo y; nao pontuadas (y vazio) fora do crywolf ou NA; as demais ocasioes
+# do crywolf sao 0
+expect_same_versions <- function(v, od) {
+  expect_identical(attr(v, "draws"), sort(unique(od$draw)))
+  for (j in seq_along(v)) {
+    cw <- v[[j]]$auto
+    g <- od[od$draw == attr(v, "draws")[j], ]
+    pont <- g[!is.na(g$y), ]
+    m <- match(par(pont), par(cw))
+    expect_false(anyNA(m))
+    expect_identical(as.integer(cw$y[m]), pont$y)
+    expect_true(all(is.na(cw$y[match(par(g[is.na(g$y), ]), par(cw))])))
+    expect_true(all(cw$y[!par(cw) %in% par(g)] == 0))
+  }
+}
+
 test_that("crywolf reads the calibration keys and occasion_draws.parquet", {
   skip_if_not_installed("arrow")
   skip_if_not_installed("crywolf", minimum_version = "2.0.0.9000")
@@ -265,16 +284,19 @@ test_that("crywolf reads the calibration keys and occasion_draws.parquet", {
     x, rule = sc$occasion_draws$rule, n_draws = sc$occasion_draws$n_draws,
     seed = sc$occasion_draws$seed))
   od <- as.data.frame(arrow::read_parquet(file.path(dir, "occasion_draws.parquet")))
-  expect_identical(attr(v, "draws"), sort(unique(od$draw)))
-  for (j in seq_along(v)) {
-    cw <- v[[j]]$auto
-    g <- od[od$draw == attr(v, "draws")[j], ]
-    # pontuadas: o mesmo y; nao pontuadas (y vazio): fora do crywolf ou NA
-    pont <- g[!is.na(g$y), ]
-    m <- match(par(pont), par(cw))
-    expect_false(anyNA(m))
-    expect_identical(as.integer(cw$y[m]), pont$y)
-    expect_true(all(is.na(cw$y[match(par(g[is.na(g$y), ]), par(cw))])))
-    expect_true(all(cw$y[!par(cw) %in% par(g)] == 0))
-  }
+  expect_same_versions(v, od)
+})
+
+# Esquema 1.3: sem grade, o crywolf so pode usar as versoes do export
+test_that("crywolf takes the versions of a calibration on covariates", {
+  skip_if_not_installed("arrow")
+  skip_if_not_installed("crywolf", minimum_version = "2.1.0.9000")
+  dir <- fixture("export-1.3")
+  x <- suppressWarnings(crywolf::fp_read_sheepdog(dir, species = "phy_cuv"))
+  v <- suppressWarnings(crywolf::fp_draws_data(x))
+  od <- as.data.frame(arrow::read_parquet(file.path(dir, "occasion_draws.parquet")))
+  expect_same_versions(v, od)
+  # outra semente pediria versoes que o export nao sorteou
+  expect_error(suppressWarnings(crywolf::fp_draws_data(x, seed = 1)),
+               "export it again")
 })
