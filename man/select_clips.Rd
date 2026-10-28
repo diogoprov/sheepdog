@@ -11,6 +11,7 @@ select_clips(
   threshold = NULL,
   n_top = 2,
   strata = "night_hour",
+  covariates = NULL,
   recording_fraction = 0.01,
   n_recordings_per_site = NULL,
   recordings = NULL,
@@ -83,6 +84,18 @@ With one recording per hour and \code{occasion_unit = "file"},
 random. With strata without the hour and \code{balance_by_hour = TRUE}
 under \code{target_total} or \code{max_per_species}, \code{inclusion_prob} is
 conditional on the first draw (a warning says so).}
+
+\item{covariates}{\code{"random_detections"}: optional data frame of
+occasion covariates whose columns can be used in \code{strata}, such as
+the bins of an environmental gradient or of an acoustic index made by
+\code{\link[=covariate_bins]{covariate_bins()}}. It is joined to the predictions by the columns it
+shares with them among \code{site}, \code{night}, \code{recording_date},
+\code{recording_hour}, \code{source_audio} and \code{occasion_id} (compared as
+character; \code{night} and \code{recording_date} are \code{YYYYMMDD}). Occasions
+without a match form a stratum of their own, with a warning. A
+stratum other than site, species and time may be related to the
+verdict, so the calibration should include it or weight the clips by
+\code{inclusion_prob} (a message says so).}
 
 \item{recording_fraction}{\code{"random_recordings"}: fraction of the
 recordings (or minutes) drawn at each site, rounded, with at least one

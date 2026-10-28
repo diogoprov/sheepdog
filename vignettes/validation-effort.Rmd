@@ -24,7 +24,9 @@ two complementary views of it:
 * **Stage 1, `precision_by_bin()` and `suggest_thresholds()`.** Precision
   by confidence bin and the lowest threshold that reaches a target
   precision, for each site x species, with flags for bins and thresholds
-  resting on few clips. They show *which* cells lack support.
+  resting on few clips. They show *which* cells lack support, and, with
+  `covariate_bins()`, which parts of an environmental gradient or of the
+  acoustic background.
 
 This vignette runs both on the simulated example shipped with the package.
 
@@ -339,6 +341,159 @@ a cell whose reviewed clips are all false positives
 gives no information on true detections at all; it may be a site where the
 species is absent. These are interpretations of the model structure, not
 flags computed by the package.
+
+## Stage 1 along a gradient
+
+The checks above split the reviewed clips by site x species. The share of
+false positives can also change along an environmental gradient within a
+site, for instance with the temperature or the rain of the night, or with
+the acoustic background of the recording (wind, rain, a chorus of other
+species). When the gradient is also a covariate of occupancy, a model with
+false positives can only separate the two effects if the reviewed clips
+cover the whole gradient, including its ends, which hold few nights and
+are easily missed by a draw that ignores them. Two steps make the gradient
+part of the design: stratify the draw of `select_clips()` by bins of the
+covariate, and repeat the checks of stage 1 within each bin.
+
+### Bins of the covariate
+
+`covariate_bins()` cuts a covariate of the occasions into bins. The table
+should list every night (or recording) of the study, with or without
+predictions, so that the same bins serve the draw and every later table.
+The covariates of the example are **simulated** here, independently of the
+verdicts, only to show the mechanics: a mean temperature per night and an
+acoustic index per recording.
+
+```{r}
+recordings <- read.csv(file.path(ex, "recordings.csv")) |>
+  mutate(occasion_id = tools::file_path_sans_ext(
+           basename(gsub("\\\\", "/", source_audio))),
+         night = sub("^.*_(\\d{8})_\\d{6}$", "\\1", occasion_id))
+
+set.seed(42)
+nights <- distinct(recordings, site, night) |>
+  mutate(temp = rnorm(n(), mean = 22, sd = 3))
+temp_bins <- covariate_bins(nights, "temp", key = c("site", "night"),
+                            n_bins = 3)
+count(temp_bins, site, temp_bin) |>
+  tidyr::pivot_wider(names_from = temp_bin, values_from = n)
+```
+
+By default the breaks are the quantiles of the covariate **within each
+site** (`within = "site"`), so each site contributes nights to every bin.
+Quantiles over all sites (`within = NULL`) or fixed breaks (`breaks = `)
+suit a covariate measured on the same scale everywhere, such as rainfall;
+an acoustic index depends on the gain and placement of each recorder, so
+its bins should be computed within sites.
+
+### Drawing clips along the gradient
+
+The bin enters `strata`, and the table of bins enters `covariates`; it is
+joined to the predictions by the columns they share (here `site` and
+`night`). Every site x species x bin stratum then gets `n_top` occasions:
+
+```{r}
+detections_raw <- suppressMessages(
+  read_selection_tables(file.path(ex, "birdnet")))
+clips_temp <- select_clips(detections_raw, "random_detections",
+                           threshold = 0.5, n_top = 3, strata = "temp_bin",
+                           covariates = temp_bins)
+clips_temp |>
+  distinct(site, species_code, occasion_id, night) |>
+  left_join(temp_bins, by = c("site", "night")) |>
+  count(temp_bin)
+```
+
+The bin does not depend on the score, so `inclusion_prob` stays exact.
+The message printed by `select_clips()` is a reminder of the main caveat,
+discussed below. The clip manifest keeps its usual columns; the bin comes
+back from the same `temp_bins` table whenever it is needed.
+
+An acoustic index works the same way, with the recording as key. With
+`occasion_unit = "minute"`, the key would be `occasion_id` of each minute:
+
+```{r}
+aci <- recordings |>
+  mutate(aci = rnorm(n(), mean = 150, sd = 10)) |>
+  select(site, occasion_id, aci)
+aci_bins <- covariate_bins(aci, "aci", key = c("site", "occasion_id"),
+                           n_bins = 2)
+clips_aci <- select_clips(detections_raw, "random_detections",
+                          threshold = 0.5, n_top = 3,
+                          strata = c("month", "aci_bin"),
+                          covariates = aci_bins)
+```
+
+Here the strata cross the index with the month, so that quiet and noisy
+recordings are reviewed in every month; in a real study this would let
+the checks tell a change in calling activity from a change in the
+acoustic background.
+
+### The checks of stage 1 within bins
+
+`precision_by_bin()`, `suggest_thresholds()` and `cell_status()` take a
+`by` argument with columns that split each site x species cell. The bins
+are joined to the validation tables by the same key (the tables of the
+example were drawn with the `"top"` design, so they only illustrate the
+call):
+
+```{r}
+val_temp <- val_raw |>
+  mutate(night = as.character(night)) |>
+  left_join(temp_bins, by = c("site", "night"))
+
+precision_by_bin(val_temp, min_n = 15, by = "temp_bin") |>
+  filter(site == "BAI", species_folder == "phy_cuv", bin == "[0.9,1]")
+
+suggest_thresholds(val_temp, target_precision = 0.90, min_n = 15,
+                   by = "temp_bin") |>
+  filter(species_folder == "phy_cuv")
+```
+
+A threshold reached in one bin but not in another shows the part of the
+gradient where more clips are needed, or where the classifier fails. With
+a fitted calibration, `cell_status(fit, validations, by = "temp_bin")`
+gives the status of each site x species x bin cell; keep the column in
+the validations with `read_validations(keep = "night")` and join the bins.
+
+### Caveats
+
+* **A stratum may be related to the verdict.** Unlike the score, which is
+  refused in `strata`, a covariate can be related to whether a detection is
+  true: an acoustic index rises when the species calls, and the false
+  positive rate may change along the gradient. A calibration that ignores
+  the covariate then fits a mixture of bins drawn with unequal inclusion
+  probabilities. Include the bin in the calibration (e.g.
+  `tp ~ logit_conf + (1 | temp_bin)`, compared with the other candidates
+  by `compare_calibration_models()`) or weight the clips by the inverse of
+  `inclusion_prob`.
+* **The same covariate in the calibration and in the occupancy model.** A
+  calibration that varies along the gradient takes over part of what the
+  occupancy or detection model would attribute to the covariate, as a
+  calibration by month absorbs calling activity. Compare the occupancy
+  estimates with and without the covariate in the calibration, and report
+  the difference as a sensitivity analysis.
+* **Never select by the covariate itself.** Taking the recordings with the
+  highest index, as the `"top"` design takes the highest scores, is not a
+  probability sample, and its clips cannot calibrate the classifier.
+  Stratify, and let the draw within each stratum be random.
+* **The covariate must be constant within an occasion** (a night mean for
+  nightly or recording occasions, a minute value for minute occasions);
+  `select_clips()` refuses strata that vary within an occasion. Occasions
+  without a value in `covariates` form a stratum of their own, with a
+  warning.
+* **More strata, fewer clips per stratum.** Each bin multiplies the number
+  of site x species strata; two or three bins per covariate are usually
+  enough, and `target_total` or `max_per_species` keep the total effort
+  bounded.
+
+The export of a calibration that includes a covariate bin to occupancy
+models with false positives (`export_occupancy_data()` and crywolf) is
+being developed together with crywolf. For now, a calibration with a
+random intercept of the bin can already be exported: give the bin as a
+column of `occasion_covariates` and name it in `calibration_keys` of
+`export_occupancy_data()` (see the calibration keys in
+`vignette("crywolf-integration")`).
 
 ## The practical decision
 

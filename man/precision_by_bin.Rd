@@ -4,7 +4,12 @@
 \alias{precision_by_bin}
 \title{Precision by confidence bin}
 \usage{
-precision_by_bin(validation, bins = seq(0.1, 1, by = 0.1), min_n = 15)
+precision_by_bin(
+  validation,
+  bins = seq(0.1, 1, by = 0.1),
+  min_n = 15,
+  by = NULL
+)
 }
 \arguments{
 \item{validation}{Table returned by \code{\link[=classify_review]{classify_review()}}.}
@@ -13,10 +18,15 @@ precision_by_bin(validation, bins = seq(0.1, 1, by = 0.1), min_n = 15)
 
 \item{min_n}{Minimum of reviewed clips for a bin to be taken seriously;
 bins with fewer are flagged in \code{low_support}.}
+
+\item{by}{Optional columns of \code{validation} that split each site x
+species cell further, e.g. the bin of an environmental gradient or of
+an acoustic index joined from \code{\link[=covariate_bins]{covariate_bins()}}. They show which
+parts of the gradient lack reviewed clips.}
 }
 \value{
-A tibble with \code{site}, \code{species_folder}, \code{bin}, \code{n_reviewed},
-\code{n_positive}, \code{precision} and \code{low_support}.
+A tibble with \code{site}, \code{species_folder}, the \code{by} columns, \code{bin},
+\code{n_reviewed}, \code{n_positive}, \code{precision} and \code{low_support}.
 }
 \description{
 Precision (share of positive verdicts) of the reviewed clips, by site,

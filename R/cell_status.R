@@ -23,31 +23,44 @@
 #' @param p_min Calibrated probability that makes a detection reliable, as
 #'   in [detection_history()].
 #' @param min_n Minimum number of reviewed clips in a cell.
+#' @param by Optional columns of `validations` that split each cell, e.g.
+#'   the bin of an environmental gradient or of an acoustic index from
+#'   [covariate_bins()] (kept by `read_validations(keep = )` or joined
+#'   afterwards). Each site x species x `by` cell gets its own status; the
+#'   threshold uses the `by` columns only if the calibration model does.
 #'
-#' @return A tibble with one row per site x species: `site`, `species`,
+#' @return A tibble with one row per site x species (x `by`): `site`,
+#'   `species`, the `by` columns,
 #'   `n_reviewed`, `n_tp`, `max_confidence` (highest reviewed score),
 #'   `threshold` (lowest grid score at which the calibrated probability
 #'   reaches `p_min`; `NA` if never), `status` and `reason`. The grid
 #'   contains both observed endpoints and steps of 0.01 within the
 #'   reviewed range.
 #' @export
-cell_status <- function(fit, validations, p_min = 0.95, min_n = 15) {
+cell_status <- function(fit, validations, p_min = 0.95, min_n = 15,
+                        by = NULL) {
+  check_by(validations, by)
   niveis <- fit_levels(fit)
   resumo <- validations |>
     mutate(across(c(site, species), as.character)) |>
-    group_by(site, species) |>
+    group_by(site, species, across(all_of(by))) |>
     summarise(n_reviewed = n(), n_tp = sum(tp),
               min_confidence = min(confidence),
               max_confidence = max(confidence), .groups = "drop")
 
-  celulas <- expand_grid(site = niveis$site, species = niveis$species) |>
-    left_join(resumo, by = c("site", "species")) |>
+  celulas <- expand_grid(site = niveis$site, species = niveis$species)
+  if (!is.null(by)) {
+    celulas <- tidyr::crossing(celulas, distinct(validations[by]))
+  }
+  celulas <- celulas |>
+    left_join(resumo, by = c("site", "species", by)) |>
     mutate(n_reviewed = replace_na(n_reviewed, 0L),
            n_tp = replace_na(n_tp, 0L))
 
   limiar <- pmap_dbl(celulas, function(site, species, n_reviewed,
                                        min_confidence, max_confidence, ...) {
     if (n_reviewed == 0) return(NA_real_)
+    extras <- list(...)[by]
     # Include both observed endpoints, without extrapolating below the
     # reviewed range or missing crossings between 0.99 and the maximum.
     interior <- seq(floor(min_confidence * 100) / 100,
@@ -61,6 +74,7 @@ cell_status <- function(fit, validations, p_min = 0.95, min_n = 15) {
       species = factor(species, levels = niveis$species),
       confidence = scores) |>
       mutate(logit_conf = safe_logit(confidence))
+    for (col in by) grade[[col]] <- extras[[col]]
     p <- predict_tp(fit, grade)
     if (any(p >= p_min)) min(grade$confidence[p >= p_min]) else NA_real_
   })
@@ -81,9 +95,9 @@ cell_status <- function(fit, validations, p_min = 0.95, min_n = 15) {
         .default = "does not reach p_min within the reviewed scores"
       )
     ) |>
-    select(site, species, n_reviewed, n_tp, max_confidence, threshold,
-           status, reason) |>
-    arrange(species, site)
+    select(site, species, all_of(by), n_reviewed, n_tp, max_confidence,
+           threshold, status, reason) |>
+    arrange(species, site, across(all_of(by)))
 }
 
 #' Suggest the core species of the community matrices

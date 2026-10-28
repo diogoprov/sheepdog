@@ -4,7 +4,7 @@
 \alias{suggest_thresholds}
 \title{Suggest a confidence threshold per species}
 \usage{
-suggest_thresholds(validation, target_precision = 0.9, min_n = 15)
+suggest_thresholds(validation, target_precision = 0.9, min_n = 15, by = NULL)
 }
 \arguments{
 \item{validation}{Table returned by \code{\link[=classify_review]{classify_review()}}.}
@@ -13,15 +13,21 @@ suggest_thresholds(validation, target_precision = 0.9, min_n = 15)
 
 \item{min_n}{Minimum of reviewed clips for a bin to be taken seriously;
 bins with fewer are flagged in \code{low_support}.}
+
+\item{by}{Optional columns of \code{validation} that split each site x
+species cell further, e.g. the bin of an environmental gradient or of
+an acoustic index joined from \code{\link[=covariate_bins]{covariate_bins()}}. They show which
+parts of the gradient lack reviewed clips.}
 }
 \value{
-A tibble with \code{site}, \code{species_folder}, \code{threshold},
-\code{n_support} and \code{precision_at_threshold} (\code{NA} when no cut reaches
-the target). Without any reviewed clip with a confidence, the tibble
-has no rows.
+A tibble with \code{site}, \code{species_folder}, the \code{by} columns,
+\code{threshold}, \code{n_support} and \code{precision_at_threshold} (\code{NA} when no
+cut reaches the target). Without any reviewed clip with a confidence,
+the tibble has no rows.
 }
 \description{
-For each site and species, the lowest confidence \code{c} such that the
+For each site and species (and each level of the \code{by} columns), the
+lowest confidence \code{c} such that the
 precision among the reviewed clips with confidence >= \code{c} reaches
 \code{target_precision}, with at least \code{min_n} clips. Candidate cuts are the
 observed confidences rounded to two decimals.

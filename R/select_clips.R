@@ -70,6 +70,17 @@
 #'   random. With strata without the hour and `balance_by_hour = TRUE`
 #'   under `target_total` or `max_per_species`, `inclusion_prob` is
 #'   conditional on the first draw (a warning says so).
+#' @param covariates `"random_detections"`: optional data frame of
+#'   occasion covariates whose columns can be used in `strata`, such as
+#'   the bins of an environmental gradient or of an acoustic index made by
+#'   [covariate_bins()]. It is joined to the predictions by the columns it
+#'   shares with them among `site`, `night`, `recording_date`,
+#'   `recording_hour`, `source_audio` and `occasion_id` (compared as
+#'   character; `night` and `recording_date` are `YYYYMMDD`). Occasions
+#'   without a match form a stratum of their own, with a warning. A
+#'   stratum other than site, species and time may be related to the
+#'   verdict, so the calibration should include it or weight the clips by
+#'   `inclusion_prob` (a message says so).
 #' @param recording_fraction `"random_recordings"`: fraction of the
 #'   recordings (or minutes) drawn at each site, rounded, with at least one
 #'   per site. The default (1 %) suits large projects: with fewer than 150
@@ -134,6 +145,7 @@ select_clips <- function(detections,
                          threshold = NULL,
                          n_top = 2,
                          strata = "night_hour",
+                         covariates = NULL,
                          recording_fraction = 0.01,
                          n_recordings_per_site = NULL,
                          recordings = NULL,
@@ -271,7 +283,8 @@ select_clips <- function(detections,
     # Candidatas: ocasioes com >= 1 predicao da especie >= threshold. O
     # sorteio (n_top ocasioes por estrato) nao olha o score.
     deteccoes <- filter(selecao, confidence >= threshold) |>
-      add_period_columns(estrato1)
+      add_period_columns(estrato1) |>
+      join_covariates(covariates, estrato1)
     faltam <- setdiff(estrato1, names(deteccoes))
     if (length(faltam) > 0) {
       stop("Column(s) of `strata` not in `detections`: ",
@@ -649,6 +662,54 @@ resolve_strata <- function(strata) {
          paste(proibidas, collapse = ", "), call. = FALSE)
   }
   unique(c("site", "species_code", cols))
+}
+
+# Junta as covariaveis das ocasioes (ex. de covariate_bins()) pelas
+# colunas de identificacao que elas compartilham com as predicoes
+join_covariates <- function(df, covariates, estratos) {
+  if (is.null(covariates)) return(df)
+  if (!is.data.frame(covariates)) {
+    stop("`covariates` must be a data frame.", call. = FALSE)
+  }
+  ids <- c("site", "night", "recording_date", "recording_hour",
+           "source_audio", "occasion_id")
+  chave <- intersect(ids, names(covariates))
+  if (length(chave) == 0) {
+    stop("`covariates` must share at least one of the columns ",
+         paste(ids, collapse = ", "), " with the predictions.", call. = FALSE)
+  }
+  novas <- setdiff(names(covariates), chave)
+  repetidas <- intersect(novas, names(df))
+  if (length(repetidas) > 0) {
+    stop("Column(s) of `covariates` already in `detections`: ",
+         paste(repetidas, collapse = ", "), call. = FALSE)
+  }
+  cov <- mutate(covariates, across(all_of(chave), as.character))
+  if (anyDuplicated(cov[chave])) {
+    stop("`covariates` must have one row per ",
+         paste(chave, collapse = " x "), ".", call. = FALSE)
+  }
+  df <- df |>
+    mutate(.ordem = row_number(),
+           across(all_of(chave), as.character, .names = ".k_{.col}"))
+  names(cov)[match(chave, names(cov))] <- paste0(".k_", chave)
+  df <- left_join(df, cov, by = paste0(".k_", chave)) |>
+    arrange(.ordem) |>
+    select(-".ordem", -all_of(paste0(".k_", chave)))
+  usadas <- intersect(novas, estratos)
+  if (length(usadas) > 0) {
+    faltando <- rowSums(is.na(df[usadas])) > 0
+    sem <- unique(df[faltando, c("site", "species_code", "occasion_id")])
+    if (nrow(sem) > 0) {
+      warning(nrow(sem), " occasion(s) without a value of ",
+              paste(usadas, collapse = ", "), " in `covariates`; they form ",
+              "a stratum of their own.", call. = FALSE)
+    }
+    message("Strata by ", paste(usadas, collapse = ", "), ": if the ",
+            "covariate may be related to the verdict, include it in the ",
+            "calibration or weight the clips by inclusion_prob.")
+  }
+  df
 }
 
 # Mes (AAAA-MM) e semana ISO (AAAA-Wss) da noite, quando usados nos
