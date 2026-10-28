@@ -644,16 +644,26 @@ each site x species x bin cell; keep the column in the validations with
   usually enough, and `target_total` or `max_per_species` keep the total
   effort bounded.
 
-The export of a calibration that includes a covariate bin to occupancy
-models with false positives
-([`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
-and crywolf) is being developed together with crywolf. For now, a
-calibration with a random intercept of the bin can already be exported:
-give the bin as a column of `occasion_covariates` and name it in
+A calibration that includes the covariate can be exported to occupancy
+models with false positives in two ways. With a random intercept of the
+bin, give the bin as a column of `occasion_covariates` and name it in
 `calibration_keys` of
-[`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
-(see the calibration keys in
+[`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md).
+With the covariate itself (`tp ~ logit_conf + temp_z`), give it as a
+column of `occasion_covariates` on the scale of the model; the export
+then draws the versions of the detections itself (schema 1.3; see
 [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md)).
+
+The same reasoning applies to the site. The `"random_detections"` design
+always draws within site x species, with the same number of occasions
+per stratum, so sites with few candidate occasions are reviewed more
+heavily than their share of the detections. A global calibration model,
+without a site term, then fits a mixture weighted by the design rather
+than by the detections; keep the site in the model (the default
+candidates of
+[`compare_calibration_models()`](https://provetelab.org/sheepdog/reference/compare_calibration_models.md)
+with a site intercept) unless the allocation is proportional to the
+number of candidate occasions.
 
 ## The practical decision
 

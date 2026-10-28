@@ -348,9 +348,11 @@ an occupancy model with false positives needs: every occasion, the
 classifier scores, the reviewed clips with their design and, optionally,
 covariates of the occasions and posterior draws of a Bayesian
 calibration. The folder follows the schema
-<code>sheepdog-occupancy</code>, version 1.1, described below. The
-tables are plain CSV files (missing values are empty cells); the
-calibration draws are a Parquet file.</p>
+<code>sheepdog-occupancy</code>, version 1.1 (1.2 with
+<code>occasion_draws.parquet</code>, 1.3 with a calibration on
+continuous covariates), described below. The tables are plain CSV files
+(missing values are empty cells); the calibration draws are a Parquet
+file.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example"</span>, package <span class="op">=</span> <span class="st">"sheepdog"</span><span class="op">)</span></span>
 <span><span class="va">det</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_selection_tables.html">read_selection_tables</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"birdnet"</span><span class="op">)</span><span class="op">)</span></span>
@@ -389,7 +391,10 @@ versions only add tables, columns or fields, so a reader of version 1
 can read any 1.x by ignoring what it does not know; it should refuse
 other names and major versions. Version 1.1 added the occasion
 covariates and the calibration keys; version 1.2,
-<code>occasion_draws.parquet</code>.</td>
+<code>occasion_draws.parquet</code>; version 1.3, the continuous
+covariates of the calibration (<code>calibration$covariates</code>),
+with which <code>occasion_draws.parquet</code> is required and
+<code>calibration_draws.parquet</code> is not written.</td>
 </tr>
 <tr class="even">
 <td>
@@ -433,10 +438,11 @@ any.</td>
 </tr>
 <tr class="odd">
 <td><code>occasion_draws</code></td>
-<td>Written by <code><a href="../reference/occasion_draws.html">occasion_draws()</a></code> (version 1.2):
-<code>file</code>, <code>rule</code>, <code>p_min</code> (with
-<code>"threshold"</code>), <code>seed</code> (with
-<code>"sample"</code>), <code>n_draws</code> and
+<td>Written by <code><a href="../reference/occasion_draws.html">occasion_draws()</a></code> (version 1.2), or by
+<code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code> with <code>n_versions</code> or
+with continuous covariates (version 1.3): <code>file</code>,
+<code>rule</code>, <code>p_min</code> (with <code>"threshold"</code>),
+<code>seed</code> (with <code>"sample"</code>), <code>n_draws</code> and
 <code>species</code>.</td>
 </tr>
 <tr class="even">
@@ -448,7 +454,14 @@ any.</td>
 <code>species</code>, the <code>calibration_keys</code> and
 <code>grid_index</code>) and <code>new_levels</code>
 (<code>"uncertainty"</code>: levels of a key absent from the calibration
-data are drawn from the distribution of the group).</td>
+data are drawn from the distribution of the group). With continuous
+covariates (version 1.3), <code>grid_step</code>, <code>grid_min</code>
+and <code>grid_index</code> are absent, and three fields are added:
+<code>covariates</code> (columns of <code>occasions.csv</code>, on the
+scale of the model), <code>covariate_range</code> (their minimum and
+maximum in the calibration data) and, when given,
+<code>covariate_scaling</code> (the <code>center</code> and
+<code>scale</code> used to standardise each covariate).</td>
 </tr>
 </tbody>
 </table>
@@ -600,6 +613,41 @@ match the request and otherwise draws the same detections itself.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/occasion_draws.html">occasion_draws</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"occupancy"</span><span class="op">)</span>, rule <span class="op">=</span> <span class="st">"sample"</span>,</span>
 <span>               n_draws <span class="op">=</span> <span class="fl">50</span>, seed <span class="op">=</span> <span class="fl">2026</span><span class="op">)</span></span></code></pre></div>
 </div>
+<div class="section level3">
+<h3 id="calibration-on-a-continuous-covariate-version-1-3">Calibration on a continuous covariate (version 1.3)<a class="anchor" aria-label="anchor" href="#calibration-on-a-continuous-covariate-version-1-3"></a>
+</h3>
+<p>A calibration may depend on a continuous covariate of the occasion,
+such as the temperature of the night or an acoustic index of the
+recording (<code>tp ~ logit_conf + temp_z</code>), for instance when the
+clips were drawn along an environmental gradient (see
+<code><a href="../articles/validation-effort.html">vignette("validation-effort")</a></code>). A grid of scores would then
+need a point for every value of the covariate, so the export computes
+P(TP) for each prediction and draws the versions of the detections
+itself, by the rules of <code><a href="../reference/occasion_draws.html">occasion_draws()</a></code>; the calibration
+draws are not written. The covariate must be a column of
+<code>occasion_covariates</code>, on the scale of the model, and its
+standardisation is recorded in <code>schema.json</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/export_occupancy_data.html">export_occupancy_data</a></span><span class="op">(</span></span>
+<span>  <span class="st">"occupancy-temp"</span>, <span class="va">det</span>, recordings <span class="op">=</span> <span class="va">recordings</span>, validation <span class="op">=</span> <span class="va">validation</span>,</span>
+<span>  fit <span class="op">=</span> <span class="va">fit_temp</span>,                       <span class="co"># tp ~ logit_conf + temp_z</span></span>
+<span>  occasion_covariates <span class="op">=</span> <span class="va">covs</span>,           <span class="co"># site, occasion_id, temp_z</span></span>
+<span>  n_draws <span class="op">=</span> <span class="fl">100</span>, n_versions <span class="op">=</span> <span class="fl">50</span>, rule <span class="op">=</span> <span class="st">"sample"</span>, seed <span class="op">=</span> <span class="fl">2026</span>,</span>
+<span>  covariate_scaling <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>temp_z <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>center <span class="op">=</span> <span class="fl">22.4</span>, scale <span class="op">=</span> <span class="fl">3.1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="../reference/calibration_prior.html">calibration_prior()</a></code> gives the covariate a
+<code>normal(0, 1)</code> prior, which suits a standardised covariate;
+since ‘brms’ cannot bound a single coefficient, the slope of
+<code>logit_conf</code> then keeps <code>normal(1, 1)</code> without the
+truncation at 0. Occasions without a value of the covariate are not
+scored, and values outside its range in the calibration data are
+reported, since their P(TP) is an extrapolation. To change the rule, the
+seed or the number of versions, export again:
+<code><a href="../reference/occasion_draws.html">occasion_draws()</a></code> refuses such a folder, which has no grid
+to draw from. A calibration on a bin of the covariate
+(<code>tp ~ logit_conf + (1 | temp_bin)</code>) is still a calibration
+key of version 1.1, with a grid. Reading version 1.3 in crywolf is
+planned.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="end-to-end-the-curiango-data">End to end: the Curiango data<a class="anchor" aria-label="anchor" href="#end-to-end-the-curiango-data"></a>
@@ -623,7 +671,7 @@ the calibration is fitted to these clips.</p>
 <div class="section level3">
 <h3 id="export">1. Export<a class="anchor" aria-label="anchor" href="#export"></a>
 </h3>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_calibration.html">fit_calibration</a></span><span class="op">(</span><span class="va">val_cal</span>, <span class="va">tp</span> <span class="op">~</span> <span class="va">logit_conf</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">site</span><span class="op">)</span>, engine <span class="op">=</span> <span class="st">"brms"</span>,</span>
 <span>                       prior <span class="op">=</span> <span class="fu"><a href="../reference/calibration_prior.html">calibration_prior</a></span><span class="op">(</span><span class="va">tp</span> <span class="op">~</span> <span class="va">logit_conf</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">site</span><span class="op">)</span>,</span>
 <span>                                                 <span class="va">val_cal</span><span class="op">)</span>,</span>
@@ -634,8 +682,8 @@ the calibration is fitted to these clips.</p>
 <span>  occasion_covariates <span class="op">=</span> <span class="va">covariates</span>, <span class="co"># night_site_id, temp, rh, moon, bio, aci</span></span>
 <span>  min_confidence <span class="op">=</span> <span class="fl">0.1</span>, n_draws <span class="op">=</span> <span class="fl">100</span>, seed <span class="op">=</span> <span class="fl">2026</span><span class="op">)</span></span></code></pre></div>
 <p>The model of the calibration is chosen by cross-validated log-loss,
-with the one-standard-error rule, among the three candidates of
-<code>calibration_candidates()</code>: <code>tp ~ logit_conf</code>,
+with the one-standard-error rule, among the three default candidates of
+<code><a href="../reference/compare_calibration_models.html">compare_calibration_models()</a></code>: <code>tp ~ logit_conf</code>,
 <code>tp ~ logit_conf + (1 | site)</code> and
 <code>tp ~ logit_conf + (logit_conf | site)</code> (custom classifier:
 random intercept of site; BirdNET: the global model). It is fitted with
@@ -648,10 +696,10 @@ random intercept of site; BirdNET: the global model). It is fitted with
 <p>Before the calibration draws are used, the calibration must reproduce
 the data it was fitted to: the share of true positives overall, by score
 bin, by site and by month.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ppc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibration_ppc.html">calibration_ppc</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">val_cal</span>, group <span class="op">=</span> <span class="st">"month"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_calibration_ppc.html">plot_calibration_ppc</a></span><span class="op">(</span><span class="va">ppc</span>, check <span class="op">=</span> <span class="st">"month"</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ppc</span> <span class="op">&lt;-</span> <span class="fu">flow</span><span class="op">(</span><span class="st">"ppc"</span><span class="op">)</span></span>
 <span><span class="va">ppc_n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span>groups <span class="op">=</span> <span class="fl">1</span>, flagged <span class="op">=</span> <span class="va">flagged</span><span class="op">)</span> <span class="op">~</span> <span class="va">classifier</span> <span class="op">+</span> <span class="va">check</span>,</span>
 <span>                   data <span class="op">=</span> <span class="va">ppc</span>, FUN <span class="op">=</span> <span class="va">sum</span><span class="op">)</span></span>
@@ -684,10 +732,10 @@ bin, by site and by month.</p>
 <span><span class="co">#&gt; 57    birdnet 202406 116    0.940     0.866   0.012</span></span>
 <span><span class="co">#&gt; 58    birdnet 202407  20    0.700     0.867   0.971</span></span>
 <span><span class="co">#&gt; 61    birdnet 202410  39    1.000     0.838   0.001</span></span></code></pre></div>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_calibration_ppc.html">plot_calibration_ppc</a></span><span class="op">(</span><span class="va">ppc</span>, check <span class="op">=</span> <span class="st">"month"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span> <span class="va">classifier</span>, ncol <span class="op">=</span> <span class="fl">1</span>, scales <span class="op">=</span> <span class="st">"free_x"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="crywolf-integration_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="Observed share of true positives by month over its posterior predictive interval, one panel per classifier." width="672"></p>
+<p><img src="crywolf-integration_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="Observed share of true positives by month over its posterior predictive interval, one panel per classifier." width="672"></p>
 <p>Both calibrations reproduce the overall share of true positives, but
 not the share by month: in some months nearly every reviewed minute was
 a true detection, in others almost none, beyond what the score predicts.
@@ -703,12 +751,12 @@ sensitivity analysis here, not the recommended model.</p>
 <div class="section level3">
 <h3 id="versions-of-the-detections">3. Versions of the detections<a class="anchor" aria-label="anchor" href="#versions-of-the-detections"></a>
 </h3>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/occasion_draws.html">occasion_draws</a></span><span class="op">(</span><span class="st">"curiango/custom"</span>, rule <span class="op">=</span> <span class="st">"sample"</span>, n_draws <span class="op">=</span> <span class="fl">20</span>, seed <span class="op">=</span> <span class="fl">2026</span><span class="op">)</span></span></code></pre></div>
 <p>Each version is one draw of which predictions are true; an occasion
 is a detection when at least one of its predictions is. The share of
 minutes with a detection per version:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">versions</span> <span class="op">&lt;-</span> <span class="fu">flow</span><span class="op">(</span><span class="st">"versions"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">detection_rate</span> <span class="op">~</span> <span class="va">classifier</span>, data <span class="op">=</span> <span class="va">versions</span>,</span>
 <span>          FUN <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, min <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, max <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
@@ -724,7 +772,7 @@ minutes with a detection per version:</p>
 draws the same ones when the table is absent), fits the occupancy model
 with false positives to each version and pools the posteriors in equal
 shares.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">crywolf</span><span class="fu">::</span><span class="fu">fp_read_sheepdog</span><span class="op">(</span><span class="st">"curiango/custom"</span>, species <span class="op">=</span> <span class="st">"nyc_alb"</span><span class="op">)</span></span>
 <span><span class="va">versions</span> <span class="op">&lt;-</span> <span class="fu">crywolf</span><span class="fu">::</span><span class="fu">fp_draws_data</span><span class="op">(</span><span class="va">x</span>, rule <span class="op">=</span> <span class="st">"sample"</span>, n_draws <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>                                   seed <span class="op">=</span> <span class="fl">2026</span>, occasions <span class="op">=</span> <span class="va">occ</span>, sites <span class="op">=</span> <span class="va">nights</span>,</span>
@@ -737,7 +785,7 @@ shares.</p>
 <code>aci</code>) and <code>nights</code> the night covariates
 (<code>temp</code>, <code>rh</code>, <code>moon</code>), all
 standardised.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fits</span> <span class="op">&lt;-</span> <span class="fu">flow</span><span class="op">(</span><span class="st">"fits"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span>fits <span class="op">=</span> <span class="fl">1</span>, kept <span class="op">=</span> <span class="va">kept</span>, divergences <span class="op">=</span> <span class="va">divergences</span><span class="op">)</span> <span class="op">~</span> <span class="va">classifier</span>,</span>
 <span>          data <span class="op">=</span> <span class="va">fits</span>, FUN <span class="op">=</span> <span class="va">sum</span><span class="op">)</span></span>
@@ -881,7 +929,7 @@ and <code>random_recordings</code>; <code>positivo</code>,
 <div class="section level2">
 <h2 id="reading-the-validation-in-crywolf">Reading the validation in crywolf<a class="anchor" aria-label="anchor" href="#reading-the-validation-in-crywolf"></a>
 </h2>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">v</span> <span class="op">&lt;-</span> <span class="fu">crywolf</span><span class="fu">::</span><span class="fu"><a href="https://provetelab.org/crywolf/reference/fp_read_validation.html" class="external-link">fp_read_validation</a></span><span class="op">(</span><span class="va">validation</span><span class="op">)</span></span></code></pre></div>
 <p><code>fp_read_validation()</code> reads the v1.2.0 format; reading
 the column names above needs a crywolf version that supports them.</p>

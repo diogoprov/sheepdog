@@ -4,8 +4,9 @@ Writes, in one folder, everything an occupancy model with false
 positives needs from a passive acoustic survey: the occasions, the
 classifier scores, the reviewed clips with their sampling design and,
 optionally, covariates of the occasions and posterior draws of a
-Bayesian calibration. The folder follows the `sheepdog-occupancy`
-schema, version 1.1, described in
+Bayesian calibration. The folder follows the `sheepdog-occupancy` schema
+(version 1.1, 1.2 with versions of the detections, 1.3 with a
+calibration on continuous covariates), described in
 [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md);
 the crywolf package reads it, but any software can, since every table is
 a plain CSV file (the calibration draws are a Parquet file).
@@ -30,6 +31,10 @@ export_occupancy_data(
   n_draws = 100,
   grid_step = 0.01,
   seed = 2026,
+  n_versions = NULL,
+  rule = c("sample", "threshold"),
+  p_min = 0.95,
+  covariate_scaling = NULL,
   audio_pattern = "\\.(wav|flac|mp3)$",
   remap_from = NULL,
   remap_to = NULL,
@@ -127,8 +132,32 @@ export_occupancy_data(
 
 - seed:
 
-  Seed of the choice of draws. The global random number generator is
-  left as it was.
+  Seed of the choice of draws and, with `n_versions`, of the versions of
+  the detections (`rule = "sample"`). The global random number generator
+  is left as it was.
+
+- n_versions:
+
+  Optional number of versions of the detections to write to
+  `occasion_draws.parquet`, from the first calibration draws. Without
+  continuous covariates,
+  [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md)
+  is called on the folder (schema 1.2). With them, the versions are
+  always written, and `NULL` means one per calibration draw (`n_draws`).
+
+- rule, p_min:
+
+  Rule of the versions, as in
+  [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md).
+
+- covariate_scaling:
+
+  Optional named list recording how each continuous covariate of the
+  calibration was standardised before the model was fitted, e.g.
+  `list(temp = c(center = 22.4, scale = 3.1))` for
+  `(temp_raw - 22.4) / 3.1`. It is written to `schema.json` so that a
+  reader can map the covariate back; the values of `occasion_covariates`
+  must already be on the scale of the model.
 
 - audio_pattern:
 
@@ -183,6 +212,12 @@ list).
   the `calibration_keys` found among the occasions of the site (only
   when `fit` is given; needs the 'arrow' package).
 
+- `occasion_draws.parquet`: versions of the detections over the
+  calibration draws, as written by
+  [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md)
+  (only with `n_versions`, or with a calibration on continuous
+  covariates).
+
 - `schema.json`: name and version of the schema, the settings of the
   export, the lists of sites and species and the number of rows of each
   table.
@@ -198,6 +233,26 @@ recording date (`YYYYMM`) when not given. Levels absent from the
 calibration data are drawn as new levels of the group (brms
 `sample_new_levels = "uncertainty"`); occasions without a value of a key
 are reported, since their predictions cannot be scored.
+
+**Continuous covariates (schema 1.3).** A calibration may also depend on
+a continuous covariate of the occasion, such as the temperature of the
+night or an acoustic index (`tp ~ logit_conf + temp`). Numeric variables
+of the model besides `logit_conf` are taken as such covariates; each
+must be a column of `occasion_covariates`, on the scale used in the
+model. A grid of scores would then need one point per value of the
+covariate, so P(TP) is computed for each prediction instead, and the
+versions of the detections are drawn here, by the rules of
+[`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md),
+and written to `occasion_draws.parquet`; `calibration_draws.parquet` is
+not written. `schema.json` records the covariates
+(`calibration$covariates`), their range in the calibration data, the
+scaling given in `covariate_scaling`, the rule, the seed and the number
+of versions. Occasions with predictions but without a value of a
+covariate are not scored (`NA`), and values outside the range of the
+calibration data are reported. To change the rule or the number of
+versions, export again;
+[`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md)
+refuses such a folder.
 
 Two checks guard against inputs that would inflate the detections:
 predictions repeating the site, recording, offset and species of another

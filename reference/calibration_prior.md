@@ -39,6 +39,12 @@ A `brmsprior` object.
   a calibrated score, wide enough to allow slopes from near 0 to near 3,
   and assuming that a higher score never lowers P(TP);
 
+- other population-level terms, such as a continuous covariate of the
+  occasion (`tp ~ logit_conf + temp`): `normal(0, 1)`, which suits a
+  standardised covariate. 'brms' bounds a whole class, not a single
+  coefficient, so with such terms the slope of `logit_conf` keeps
+  `normal(1, 1)` without the truncation at 0;
+
 - `sd` (standard deviations of the random effects): `exponential(1)`;
 
 - `cor` (correlations between random effects): `lkj(2)`, which pulls the

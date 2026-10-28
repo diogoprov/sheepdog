@@ -10,7 +10,8 @@ positives needs from a passive acoustic survey: the occasions, the
 classifier scores, the reviewed clips with their sampling design and,
 optionally, covariates of the occasions and posterior draws of a
 Bayesian calibration. The folder follows the sheepdog-occupancy
-schema, version 1.1, described in
+schema (version 1.1, 1.2 with versions of the detections, 1.3 with a
+calibration on continuous covariates), described in
 vignette("crywolf-integration"); the crywolf package reads it, but any
 software can, since every table is a plain CSV file (the calibration
 draws are a Parquet file).'><meta property="og:description" content='Writes, in one folder, everything an occupancy model with false
@@ -18,7 +19,8 @@ positives needs from a passive acoustic survey: the occasions, the
 classifier scores, the reviewed clips with their sampling design and,
 optionally, covariates of the occasions and posterior draws of a
 Bayesian calibration. The folder follows the sheepdog-occupancy
-schema, version 1.1, described in
+schema (version 1.1, 1.2 with versions of the detections, 1.3 with a
+calibration on continuous covariates), described in
 vignette("crywolf-integration"); the crywolf package reads it, but any
 software can, since every table is a plain CSV file (the calibration
 draws are a Parquet file).'><meta property="og:image" content="https://provetelab.org/sheepdog/logo.svg"></head><body>
@@ -85,7 +87,8 @@ positives needs from a passive acoustic survey: the occasions, the
 classifier scores, the reviewed clips with their sampling design and,
 optionally, covariates of the occasions and posterior draws of a
 Bayesian calibration. The folder follows the <code>sheepdog-occupancy</code>
-schema, version 1.1, described in
+schema (version 1.1, 1.2 with versions of the detections, 1.3 with a
+calibration on continuous covariates), described in
 <code><a href="../articles/crywolf-integration.html">vignette("crywolf-integration")</a></code>; the crywolf package reads it, but any
 software can, since every table is a plain CSV file (the calibration
 draws are a Parquet file).</p>
@@ -110,6 +113,10 @@ draws are a Parquet file).</p>
 <span>  n_draws <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  grid_step <span class="op">=</span> <span class="fl">0.01</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">2026</span>,</span>
+<span>  n_versions <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  rule <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sample"</span>, <span class="st">"threshold"</span><span class="op">)</span>,</span>
+<span>  p_min <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>  covariate_scaling <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  audio_pattern <span class="op">=</span> <span class="st">"\\.(wav|flac|mp3)$"</span>,</span>
 <span>  remap_from <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  remap_to <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -205,8 +212,30 @@ night before.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>Seed of the choice of draws. The global random number
-generator is left as it was.</p></dd>
+<dd><p>Seed of the choice of draws and, with <code>n_versions</code>, of the
+versions of the detections (<code>rule = "sample"</code>). The global random
+number generator is left as it was.</p></dd>
+
+
+<dt id="arg-n-versions">n_versions<a class="anchor" aria-label="anchor" href="#arg-n-versions"></a></dt>
+<dd><p>Optional number of versions of the detections to
+write to <code>occasion_draws.parquet</code>, from the first calibration draws.
+Without continuous covariates, <code><a href="occasion_draws.html">occasion_draws()</a></code> is called on the
+folder (schema 1.2). With them, the versions are always written, and
+<code>NULL</code> means one per calibration draw (<code>n_draws</code>).</p></dd>
+
+
+<dt id="arg-rule-p-min">rule, p_min<a class="anchor" aria-label="anchor" href="#arg-rule-p-min"></a></dt>
+<dd><p>Rule of the versions, as in <code><a href="occasion_draws.html">occasion_draws()</a></code>.</p></dd>
+
+
+<dt id="arg-covariate-scaling">covariate_scaling<a class="anchor" aria-label="anchor" href="#arg-covariate-scaling"></a></dt>
+<dd><p>Optional named list recording how each
+continuous covariate of the calibration was standardised before the
+model was fitted, e.g. <code>list(temp = c(center = 22.4, scale = 3.1))</code>
+for <code>(temp_raw - 22.4) / 3.1</code>. It is written to <code>schema.json</code> so that
+a reader can map the covariate back; the values of
+<code>occasion_covariates</code> must already be on the scale of the model.</p></dd>
 
 
 <dt id="arg-audio-pattern">audio_pattern<a class="anchor" aria-label="anchor" href="#arg-audio-pattern"></a></dt>
@@ -258,6 +287,9 @@ when <code>validation</code> holds such clips).</p></li>
 scores for each site x species with predictions, and for each level of
 the <code>calibration_keys</code> found among the occasions of the site (only
 when <code>fit</code> is given; needs the 'arrow' package).</p></li>
+<li><p><code>occasion_draws.parquet</code>: versions of the detections over the
+calibration draws, as written by <code><a href="occasion_draws.html">occasion_draws()</a></code> (only with
+<code>n_versions</code>, or with a calibration on continuous covariates).</p></li>
 <li><p><code>schema.json</code>: name and version of the schema, the settings of the
 export, the lists of sites and species and the number of rows of each
 table.</p></li>
@@ -272,6 +304,22 @@ recording date (<code>YYYYMM</code>) when not given. Levels absent from the
 calibration data are drawn as new levels of the group (brms
 <code>sample_new_levels = "uncertainty"</code>); occasions without a value of a key
 are reported, since their predictions cannot be scored.</p>
+<p><strong>Continuous covariates (schema 1.3).</strong> A calibration may also depend on
+a continuous covariate of the occasion, such as the temperature of the
+night or an acoustic index (<code>tp ~ logit_conf + temp</code>). Numeric
+variables of the model besides <code>logit_conf</code> are taken as such
+covariates; each must be a column of <code>occasion_covariates</code>, on the scale
+used in the model. A grid of scores would then need one point per value
+of the covariate, so P(TP) is computed for each prediction instead, and
+the versions of the detections are drawn here, by the rules of
+<code><a href="occasion_draws.html">occasion_draws()</a></code>, and written to <code>occasion_draws.parquet</code>;
+<code>calibration_draws.parquet</code> is not written. <code>schema.json</code> records the
+covariates (<code>calibration$covariates</code>), their range in the calibration
+data, the scaling given in <code>covariate_scaling</code>, the rule, the seed and
+the number of versions. Occasions with predictions but without a value
+of a covariate are not scored (<code>NA</code>), and values outside the range of
+the calibration data are reported. To change the rule or the number of
+versions, export again; <code><a href="occasion_draws.html">occasion_draws()</a></code> refuses such a folder.</p>
 <p>Two checks guard against inputs that would inflate the detections:
 predictions repeating the site, recording, offset and species of another
 (e.g. a selection table read twice) are dropped with a warning, and a

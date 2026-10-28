@@ -687,15 +687,24 @@ multiplies the number of site x species strata; two or three bins per
 covariate are usually enough, and <code>target_total</code> or
 <code>max_per_species</code> keep the total effort bounded.</li>
 </ul>
-<p>The export of a calibration that includes a covariate bin to
-occupancy models with false positives
-(<code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code> and crywolf) is being developed
-together with crywolf. For now, a calibration with a random intercept of
-the bin can already be exported: give the bin as a column of
+<p>A calibration that includes the covariate can be exported to
+occupancy models with false positives in two ways. With a random
+intercept of the bin, give the bin as a column of
 <code>occasion_covariates</code> and name it in
-<code>calibration_keys</code> of <code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code>
-(see the calibration keys in
-<code><a href="../articles/crywolf-integration.html">vignette("crywolf-integration")</a></code>).</p>
+<code>calibration_keys</code> of <code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code>.
+With the covariate itself (<code>tp ~ logit_conf + temp_z</code>), give
+it as a column of <code>occasion_covariates</code> on the scale of the
+model; the export then draws the versions of the detections itself
+(schema 1.3; see <code><a href="../articles/crywolf-integration.html">vignette("crywolf-integration")</a></code>).</p>
+<p>The same reasoning applies to the site. The
+<code>"random_detections"</code> design always draws within site x
+species, with the same number of occasions per stratum, so sites with
+few candidate occasions are reviewed more heavily than their share of
+the detections. A global calibration model, without a site term, then
+fits a mixture weighted by the design rather than by the detections;
+keep the site in the model (the default candidates of
+<code><a href="../reference/compare_calibration_models.html">compare_calibration_models()</a></code> with a site intercept) unless
+the allocation is proportional to the number of candidate occasions.</p>
 </div>
 </div>
 <div class="section level2">

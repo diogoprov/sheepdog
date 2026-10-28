@@ -2,6 +2,28 @@
 
 ## sheepdog (development version)
 
+- [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+  exports a calibration on continuous covariates of the occasion
+  (`tp ~ logit_conf + temp_z`), schema `sheepdog-occupancy` 1.3: P(TP)
+  is computed for each prediction, the versions of the detections are
+  drawn in the export and written to `occasion_draws.parquet`, and
+  `calibration_draws.parquet` is not written. `schema.json` records the
+  covariates (`calibration$covariates`), their range in the calibration
+  data and their standardisation (`covariate_scaling`). New arguments
+  `n_versions`, `rule`, `p_min` and `covariate_scaling`; without
+  covariates, `n_versions` calls
+  [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md)
+  on the folder (schema 1.2).
+  [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md)
+  refuses a folder of schema 1.3, which has no grid. New fixture
+  `tests/testthat/fixtures/export-1.3`, checked by the contract test.
+  Agreed with crywolf (`dev/proposal-calibration-covariates.md` there),
+  which will read version 1.3 later.
+- [`calibration_prior()`](https://provetelab.org/sheepdog/reference/calibration_prior.md)
+  gives other population-level terms, such as a continuous covariate, a
+  `normal(0, 1)` prior; the slope of `logit_conf` then keeps
+  `normal(1, 1)` without the truncation at 0, since ‘brms’ cannot bound
+  a single coefficient.
 - New
   [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md)
   cuts a covariate of the occasions (an environmental gradient, such as

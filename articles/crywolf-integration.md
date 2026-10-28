@@ -112,9 +112,10 @@ writes in one folder everything an occupancy model with false positives
 needs: every occasion, the classifier scores, the reviewed clips with
 their design and, optionally, covariates of the occasions and posterior
 draws of a Bayesian calibration. The folder follows the schema
-`sheepdog-occupancy`, version 1.1, described below. The tables are plain
-CSV files (missing values are empty cells); the calibration draws are a
-Parquet file.
+`sheepdog-occupancy`, version 1.1 (1.2 with `occasion_draws.parquet`,
+1.3 with a calibration on continuous covariates), described below. The
+tables are plain CSV files (missing values are empty cells); the
+calibration draws are a Parquet file.
 
 ``` r
 
@@ -138,7 +139,7 @@ the calibration but not the false-positive rate of an occupancy model
 
 | field | definition |
 |----|----|
-| `schema`, `schema_version` | `"sheepdog-occupancy"` and `1.1`. Minor versions only add tables, columns or fields, so a reader of version 1 can read any 1.x by ignoring what it does not know; it should refuse other names and major versions. Version 1.1 added the occasion covariates and the calibration keys; version 1.2, `occasion_draws.parquet`. |
+| `schema`, `schema_version` | `"sheepdog-occupancy"` and `1.1`. Minor versions only add tables, columns or fields, so a reader of version 1 can read any 1.x by ignoring what it does not know; it should refuse other names and major versions. Version 1.1 added the occasion covariates and the calibration keys; version 1.2, `occasion_draws.parquet`; version 1.3, the continuous covariates of the calibration (`calibration$covariates`), with which `occasion_draws.parquet` is required and `calibration_draws.parquet` is not written. |
 | `created`, `sheepdog_version`, `classifier` | Provenance of the export. |
 | `occasion_unit` | `"file"` or `"minute"` (see Occasion above). |
 | `min_confidence` | Scores below this value were not written: an occasion x species pair absent from `scores.csv` had no prediction at or above it. |
@@ -146,8 +147,8 @@ the calibration but not the false-positive rate of an occupancy model
 | `sites`, `species` | Every site and every classifier label (`species_code`) of the export. |
 | `tables` | For each table, its file and number of rows. |
 | `occasion_covariates` | The columns of `occasions.csv` after the fixed ones (from `occasion_covariates` and the calibration keys), when any. |
-| `occasion_draws` | Written by [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md) (version 1.2): `file`, `rule`, `p_min` (with `"threshold"`), `seed` (with `"sample"`), `n_draws` and `species`. |
-| `calibration` | With `fit`: `engine`, `formula`, `n_draws`, `grid_step`, `grid_min`, `keys` (the columns that identify a row of `calibration_draws.parquet` within a draw: `site`, `species`, the `calibration_keys` and `grid_index`) and `new_levels` (`"uncertainty"`: levels of a key absent from the calibration data are drawn from the distribution of the group). |
+| `occasion_draws` | Written by [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md) (version 1.2), or by [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md) with `n_versions` or with continuous covariates (version 1.3): `file`, `rule`, `p_min` (with `"threshold"`), `seed` (with `"sample"`), `n_draws` and `species`. |
+| `calibration` | With `fit`: `engine`, `formula`, `n_draws`, `grid_step`, `grid_min`, `keys` (the columns that identify a row of `calibration_draws.parquet` within a draw: `site`, `species`, the `calibration_keys` and `grid_index`) and `new_levels` (`"uncertainty"`: levels of a key absent from the calibration data are drawn from the distribution of the group). With continuous covariates (version 1.3), `grid_step`, `grid_min` and `grid_index` are absent, and three fields are added: `covariates` (columns of `occasions.csv`, on the scale of the model), `covariate_range` (their minimum and maximum in the calibration data) and, when given, `covariate_scaling` (the `center` and `scale` used to standardise each covariate). |
 
 ### occasions.csv
 
@@ -237,6 +238,45 @@ occasion_draws(file.path(tempdir(), "occupancy"), rule = "sample",
                n_draws = 50, seed = 2026)
 ```
 
+### Calibration on a continuous covariate (version 1.3)
+
+A calibration may depend on a continuous covariate of the occasion, such
+as the temperature of the night or an acoustic index of the recording
+(`tp ~ logit_conf + temp_z`), for instance when the clips were drawn
+along an environmental gradient (see
+[`vignette("validation-effort")`](https://provetelab.org/sheepdog/articles/validation-effort.md)).
+A grid of scores would then need a point for every value of the
+covariate, so the export computes P(TP) for each prediction and draws
+the versions of the detections itself, by the rules of
+[`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md);
+the calibration draws are not written. The covariate must be a column of
+`occasion_covariates`, on the scale of the model, and its
+standardisation is recorded in `schema.json`:
+
+``` r
+
+export_occupancy_data(
+  "occupancy-temp", det, recordings = recordings, validation = validation,
+  fit = fit_temp,                       # tp ~ logit_conf + temp_z
+  occasion_covariates = covs,           # site, occasion_id, temp_z
+  n_draws = 100, n_versions = 50, rule = "sample", seed = 2026,
+  covariate_scaling = list(temp_z = c(center = 22.4, scale = 3.1)))
+```
+
+[`calibration_prior()`](https://provetelab.org/sheepdog/reference/calibration_prior.md)
+gives the covariate a `normal(0, 1)` prior, which suits a standardised
+covariate; since ‘brms’ cannot bound a single coefficient, the slope of
+`logit_conf` then keeps `normal(1, 1)` without the truncation at 0.
+Occasions without a value of the covariate are not scored, and values
+outside its range in the calibration data are reported, since their
+P(TP) is an extrapolation. To change the rule, the seed or the number of
+versions, export again:
+[`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md)
+refuses such a folder, which has no grid to draw from. A calibration on
+a bin of the covariate (`tp ~ logit_conf + (1 | temp_bin)`) is still a
+calibration key of version 1.1, with a grid. Reading version 1.3 in
+crywolf is planned.
+
 ## End to end: the Curiango data
 
 This section runs the whole flow, from the classifier scores to the
@@ -273,9 +313,9 @@ export_occupancy_data(
 ```
 
 The model of the calibration is chosen by cross-validated log-loss, with
-the one-standard-error rule, among the three candidates of
-`calibration_candidates()`: `tp ~ logit_conf`,
-`tp ~ logit_conf + (1 | site)` and
+the one-standard-error rule, among the three default candidates of
+[`compare_calibration_models()`](https://provetelab.org/sheepdog/reference/compare_calibration_models.md):
+`tp ~ logit_conf`, `tp ~ logit_conf + (1 | site)` and
 `tp ~ logit_conf + (logit_conf | site)` (custom classifier: random
 intercept of site; BirdNET: the global model). It is fitted with ‘brms’
 with the prior of
@@ -339,7 +379,7 @@ plot_calibration_ppc(ppc, check = "month") +
 
 ![Observed share of true positives by month over its posterior
 predictive interval, one panel per
-classifier.](crywolf-integration_files/figure-html/unnamed-chunk-9-1.png)
+classifier.](crywolf-integration_files/figure-html/unnamed-chunk-10-1.png)
 
 Both calibrations reproduce the overall share of true positives, but not
 the share by month: in some months nearly every reviewed minute was a

@@ -110,6 +110,11 @@ of 1, an intercept equal to that mean gives P(TP) = score;</p></li>
 <li><p><code>b</code> (slope of <code>logit_conf</code>): <code>normal(1, 1)</code> truncated at 0, centred on
 a calibrated score, wide enough to allow slopes from near 0 to near 3,
 and assuming that a higher score never lowers P(TP);</p></li>
+<li><p>other population-level terms, such as a continuous covariate of the
+occasion (<code>tp ~ logit_conf + temp</code>): <code>normal(0, 1)</code>, which suits a
+standardised covariate. 'brms' bounds a whole class, not a single
+coefficient, so with such terms the slope of <code>logit_conf</code> keeps
+<code>normal(1, 1)</code> without the truncation at 0;</p></li>
 <li><p><code>sd</code> (standard deviations of the random effects): <code>exponential(1)</code>;</p></li>
 <li><p><code>cor</code> (correlations between random effects): <code>lkj(2)</code>, which pulls
 the correlations away from +-1 (the singular fits of m4 with 'lme4').</p></li>
