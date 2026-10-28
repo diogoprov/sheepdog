@@ -293,7 +293,7 @@ mats <- build_community_matrices(history_file, out, core_species = core,
                                  k_min = 2, min_nights_month = 5)
 #> Matrix: 23 rows (site x month) x 5 species | rule k >= 2
 #> Effort: 23 site x month cells included; 1 dropped for having < 5 recorded nights (see effort_site_month.csv)
-#> Files in: /tmp/RtmpGTlvrh/community_matrices
+#> Files in: /tmp/RtmpHJi0aY/community_matrices
 list.files(out)
 #> [1] "count_matrix_site_month_k2.csv"     "effort_site_month.csv"             
 #> [3] "frequency_matrix_site_month_k2.csv"
