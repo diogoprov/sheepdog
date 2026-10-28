@@ -248,11 +248,11 @@ below is not run here; the results are read from tables cached in the
 package, written by `dev/benchmarks/curiango-export.R` and
 `dev/benchmarks/curiango-flow.R` of the source repository.
 
-The recorders took one-minute recordings at four sites; the occasion is
-the recording (`occasion_unit = "file"`), grouped into nights at each
+Seven recorders, one per site, took one-minute recordings; the occasion
+is the recording (`occasion_unit = "file"`), grouped into nights at each
 recorder, the sites of the occupancy model. Two classifiers scored them:
 a custom one and BirdNET. About 1% of the recordings, drawn in
-proportion to the effort of each site without looking at the scores,
+proportion to the effort of each recorder without looking at the scores,
 were annotated by ear; each annotated minute with a score is a reviewed
 clip of the observation-confirmation design, and the calibration is
 fitted to these clips.
@@ -272,10 +272,13 @@ export_occupancy_data(
   min_confidence = 0.1, n_draws = 100, seed = 2026)
 ```
 
-The model of the calibration is chosen by cross-validated log-loss among
-`tp ~ logit_conf` and `tp ~ logit_conf + (1 | site)` (custom classifier:
-with the site; BirdNET: without), and fitted with ‘brms’ with the prior
-of
+The model of the calibration is chosen by cross-validated log-loss, with
+the one-standard-error rule, among the three candidates of
+`calibration_candidates()`: `tp ~ logit_conf`,
+`tp ~ logit_conf + (1 | site)` and
+`tp ~ logit_conf + (logit_conf | site)` (custom classifier: random
+intercept of site; BirdNET: the global model). It is fitted with ‘brms’
+with the prior of
 [`calibration_prior()`](https://provetelab.org/sheepdog/reference/calibration_prior.md)
 (see
 [`vignette("bayesian-calibration")`](https://provetelab.org/sheepdog/articles/bayesian-calibration.md)).

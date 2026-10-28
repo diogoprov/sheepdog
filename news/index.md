@@ -2,6 +2,9 @@
 
 ## sheepdog (development version)
 
+- [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md):
+  the Curiango data come from seven recorders, not four, and the
+  calibration model is chosen among three candidates, not two.
 - Larissa S. M. Sugai and Liliana Piatti, who designed the validation
   protocol, are now listed as authors (`Authors@R` and `CITATION.cff`).
 - New
