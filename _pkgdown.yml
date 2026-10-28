@@ -22,6 +22,7 @@ reference:
       - extract_validation_clips
       - read_selection_tables
       - select_clips
+      - covariate_bins
       - cut_clips
       - pack_clips
   - title: Stage 1 - After the review

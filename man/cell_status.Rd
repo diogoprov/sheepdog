@@ -4,7 +4,7 @@
 \alias{cell_status}
 \title{Status of each site x species cell for the community matrices}
 \usage{
-cell_status(fit, validations, p_min = 0.95, min_n = 15)
+cell_status(fit, validations, p_min = 0.95, min_n = 15, by = NULL)
 }
 \arguments{
 \item{fit}{Model returned by \code{\link[=fit_calibration]{fit_calibration()}}.}
@@ -16,9 +16,16 @@ the model was fitted to.}
 in \code{\link[=detection_history]{detection_history()}}.}
 
 \item{min_n}{Minimum number of reviewed clips in a cell.}
+
+\item{by}{Optional columns of \code{validations} that split each cell, e.g.
+the bin of an environmental gradient or of an acoustic index from
+\code{\link[=covariate_bins]{covariate_bins()}} (kept by \code{read_validations(keep = )} or joined
+afterwards). Each site x species x \code{by} cell gets its own status; the
+threshold uses the \code{by} columns only if the calibration model does.}
 }
 \value{
-A tibble with one row per site x species: \code{site}, \code{species},
+A tibble with one row per site x species (x \code{by}): \code{site},
+\code{species}, the \code{by} columns,
 \code{n_reviewed}, \code{n_tp}, \code{max_confidence} (highest reviewed score),
 \code{threshold} (lowest grid score at which the calibrated probability
 reaches \code{p_min}; \code{NA} if never), \code{status} and \code{reason}. The grid

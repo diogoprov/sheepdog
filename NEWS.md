@@ -1,5 +1,18 @@
 # sheepdog (development version)
 
+- New `covariate_bins()` cuts a covariate of the occasions (an
+  environmental gradient, such as the temperature of the night, or an
+  acoustic index of the recording or minute) into bins, by default
+  quantiles within each site. `select_clips()` gains `covariates`, so that
+  the `"random_detections"` draw can be stratified by those bins
+  (`strata = "temp_bin"`) with exact inclusion probabilities, and a message
+  recalls that a stratum related to the verdict should enter the
+  calibration. `precision_by_bin()`, `suggest_thresholds()` and
+  `cell_status()` gain `by`, to check each site x species cell within the
+  bins. `vignette("validation-effort")` has a new section, "Stage 1 along a
+  gradient", with both examples and their caveats.
+- `man/sheepdog-package.Rd` lists the three authors (it was not
+  regenerated when `Authors@R` changed).
 - `vignette("crywolf-integration")`: the Curiango data come from seven
   recorders, not four, and the calibration model is chosen among three
   candidates, not two.

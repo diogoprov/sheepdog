@@ -93,16 +93,21 @@ reviewed_with_confidence <- function(validation) {
 #' @param bins Breaks of the confidence bins (left-closed).
 #' @param min_n Minimum of reviewed clips for a bin to be taken seriously;
 #'   bins with fewer are flagged in `low_support`.
+#' @param by Optional columns of `validation` that split each site x
+#'   species cell further, e.g. the bin of an environmental gradient or of
+#'   an acoustic index joined from [covariate_bins()]. They show which
+#'   parts of the gradient lack reviewed clips.
 #'
-#' @return A tibble with `site`, `species_folder`, `bin`, `n_reviewed`,
-#'   `n_positive`, `precision` and `low_support`.
+#' @return A tibble with `site`, `species_folder`, the `by` columns, `bin`,
+#'   `n_reviewed`, `n_positive`, `precision` and `low_support`.
 #' @export
 precision_by_bin <- function(validation, bins = seq(0.1, 1, by = 0.1),
-                             min_n = 15) {
+                             min_n = 15, by = NULL) {
+  check_by(validation, by)
   reviewed_with_confidence(validation) |>
     mutate(bin = cut(confidence, breaks = bins,
                      include.lowest = TRUE, right = FALSE)) |>
-    group_by(site, species_folder, bin) |>
+    group_by(site, species_folder, across(all_of(by)), bin) |>
     summarise(n_reviewed = n(),
               n_positive = sum(verdict == "positive"),
               precision  = n_positive / n_reviewed,
@@ -112,7 +117,8 @@ precision_by_bin <- function(validation, bins = seq(0.1, 1, by = 0.1),
 
 #' Suggest a confidence threshold per species
 #'
-#' For each site and species, the lowest confidence `c` such that the
+#' For each site and species (and each level of the `by` columns), the
+#' lowest confidence `c` such that the
 #' precision among the reviewed clips with confidence >= `c` reaches
 #' `target_precision`, with at least `min_n` clips. Candidate cuts are the
 #' observed confidences rounded to two decimals.
@@ -120,25 +126,42 @@ precision_by_bin <- function(validation, bins = seq(0.1, 1, by = 0.1),
 #' @inheritParams precision_by_bin
 #' @param target_precision Target precision.
 #'
-#' @return A tibble with `site`, `species_folder`, `threshold`,
-#'   `n_support` and `precision_at_threshold` (`NA` when no cut reaches
-#'   the target). Without any reviewed clip with a confidence, the tibble
-#'   has no rows.
+#' @return A tibble with `site`, `species_folder`, the `by` columns,
+#'   `threshold`, `n_support` and `precision_at_threshold` (`NA` when no
+#'   cut reaches the target). Without any reviewed clip with a confidence,
+#'   the tibble has no rows.
 #' @export
 suggest_thresholds <- function(validation, target_precision = 0.90,
-                               min_n = 15) {
+                               min_n = 15, by = NULL) {
+  check_by(validation, by)
   validados <- reviewed_with_confidence(validation)
   # sem clipes com confidence, group_modify() criaria uma linha toda NA
   # (era o que a v1.2.0 escrevia)
   if (nrow(validados) == 0) {
-    return(tibble(site = character(), species_folder = character(),
-                  threshold = numeric(), n_support = integer(),
-                  precision_at_threshold = numeric()))
+    vazio <- tibble(site = character(), species_folder = character())
+    for (col in by) vazio[[col]] <- validation[[col]][0]
+    return(bind_cols(vazio,
+                     tibble(threshold = numeric(), n_support = integer(),
+                            precision_at_threshold = numeric())))
   }
   validados |>
-    group_by(site, species_folder) |>
+    group_by(site, species_folder, across(all_of(by))) |>
     group_modify(~ threshold_for(.x, target_precision, min_n)) |>
     ungroup()
+}
+
+# Colunas extras de agrupamento (argumento `by`)
+check_by <- function(dados, by) {
+  if (is.null(by)) return(invisible())
+  if (!is.character(by) || anyNA(by)) {
+    stop("`by` must be a character vector of column names.", call. = FALSE)
+  }
+  faltam <- setdiff(by, names(dados))
+  if (length(faltam) > 0) {
+    stop("Column(s) of `by` not in the table: ",
+         paste(faltam, collapse = ", "), call. = FALSE)
+  }
+  invisible()
 }
 
 # Menor corte c tal que a precisao entre os clipes com confidence >= c
