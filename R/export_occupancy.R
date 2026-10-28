@@ -5,7 +5,8 @@
 #' classifier scores, the reviewed clips with their sampling design and,
 #' optionally, covariates of the occasions and posterior draws of a
 #' Bayesian calibration. The folder follows the `sheepdog-occupancy`
-#' schema, version 1.1, described in
+#' schema (version 1.1, 1.2 with versions of the detections, 1.3 with a
+#' calibration on continuous covariates), described in
 #' `vignette("crywolf-integration")`; the crywolf package reads it, but any
 #' software can, since every table is a plain CSV file (the calibration
 #' draws are a Parquet file).
@@ -31,6 +32,9 @@
 #'   scores for each site x species with predictions, and for each level of
 #'   the `calibration_keys` found among the occasions of the site (only
 #'   when `fit` is given; needs the 'arrow' package).
+#' * `occasion_draws.parquet`: versions of the detections over the
+#'   calibration draws, as written by [occasion_draws()] (only with
+#'   `n_versions`, or with a calibration on continuous covariates).
 #' * `schema.json`: name and version of the schema, the settings of the
 #'   export, the lists of sites and species and the number of rows of each
 #'   table.
@@ -46,6 +50,23 @@
 #' calibration data are drawn as new levels of the group (brms
 #' `sample_new_levels = "uncertainty"`); occasions without a value of a key
 #' are reported, since their predictions cannot be scored.
+#'
+#' **Continuous covariates (schema 1.3).** A calibration may also depend on
+#' a continuous covariate of the occasion, such as the temperature of the
+#' night or an acoustic index (`tp ~ logit_conf + temp`). Numeric
+#' variables of the model besides `logit_conf` are taken as such
+#' covariates; each must be a column of `occasion_covariates`, on the scale
+#' used in the model. A grid of scores would then need one point per value
+#' of the covariate, so P(TP) is computed for each prediction instead, and
+#' the versions of the detections are drawn here, by the rules of
+#' [occasion_draws()], and written to `occasion_draws.parquet`;
+#' `calibration_draws.parquet` is not written. `schema.json` records the
+#' covariates (`calibration$covariates`), their range in the calibration
+#' data, the scaling given in `covariate_scaling`, the rule, the seed and
+#' the number of versions. Occasions with predictions but without a value
+#' of a covariate are not scored (`NA`), and values outside the range of
+#' the calibration data are reported. To change the rule or the number of
+#' versions, export again; [occasion_draws()] refuses such a folder.
 #'
 #' Two checks guard against inputs that would inflate the detections:
 #' predictions repeating the site, recording, offset and species of another
@@ -93,8 +114,21 @@
 #'   draws. Use the `min_confidence` of the BirdNET run or higher.
 #' @param n_draws Number of posterior draws of the calibration.
 #' @param grid_step Step of the grid of scores of the calibration draws.
-#' @param seed Seed of the choice of draws. The global random number
-#'   generator is left as it was.
+#' @param seed Seed of the choice of draws and, with `n_versions`, of the
+#'   versions of the detections (`rule = "sample"`). The global random
+#'   number generator is left as it was.
+#' @param n_versions Optional number of versions of the detections to
+#'   write to `occasion_draws.parquet`, from the first calibration draws.
+#'   Without continuous covariates, `occasion_draws()` is called on the
+#'   folder (schema 1.2). With them, the versions are always written, and
+#'   `NULL` means one per calibration draw (`n_draws`).
+#' @param rule,p_min Rule of the versions, as in [occasion_draws()].
+#' @param covariate_scaling Optional named list recording how each
+#'   continuous covariate of the calibration was standardised before the
+#'   model was fitted, e.g. `list(temp = c(center = 22.4, scale = 3.1))`
+#'   for `(temp_raw - 22.4) / 3.1`. It is written to `schema.json` so that
+#'   a reader can map the covariate back; the values of
+#'   `occasion_covariates` must already be on the scale of the model.
 #' @param classifier Optional label of the classifier, recorded in
 #'   `schema.json`.
 #' @param overwrite Replace an existing export in `output_dir`?
@@ -114,10 +148,15 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
                                   min_confidence = 0.1, dawn_hour = 12,
                                   species = NULL,
                                   n_draws = 100, grid_step = 0.01, seed = 2026,
+                                  n_versions = NULL,
+                                  rule = c("sample", "threshold"),
+                                  p_min = 0.95, covariate_scaling = NULL,
                                   audio_pattern = "\\.(wav|flac|mp3)$",
                                   remap_from = NULL, remap_to = NULL,
                                   classifier = NULL, overwrite = FALSE) {
   unidade <- match.arg(occasion_unit)
+  rule <- match.arg(rule)
+  covs_cal <- character()
   if (!is.null(fit)) {
     if (!inherits(fit, "brmsfit")) {
       stop("`fit` must be a model fitted with engine = \"brms\": the ",
@@ -125,8 +164,16 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
     }
     require_suggested("arrow", "to write calibration_draws.parquet")
     check_calibration_keys(fit, calibration_keys)
+    covs_cal <- calibration_covariates(fit, calibration_keys)
+    check_covariate_scaling(covariate_scaling, covs_cal)
   } else if (length(calibration_keys) > 0) {
     stop("`calibration_keys` need a calibration model in `fit`.", call. = FALSE)
+  } else if (!is.null(n_versions)) {
+    stop("`n_versions` needs a calibration model in `fit`.", call. = FALSE)
+  }
+  if (!is.null(n_versions) &&
+      (!is.numeric(n_versions) || length(n_versions) != 1 || n_versions < 1)) {
+    stop("`n_versions` must be a positive number.", call. = FALSE)
   }
   if (file.exists(file.path(output_dir, "schema.json")) && !overwrite) {
     stop("`output_dir` already holds an export; use overwrite = TRUE to ",
@@ -168,6 +215,16 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
   ocasioes <- join_occasion_covariates(ocasioes, occasion_covariates,
                                        remap_from, remap_to)
   ocasioes <- add_calibration_keys(ocasioes, calibration_keys)
+  for (v in covs_cal) {
+    if (!v %in% names(ocasioes)) {
+      stop("Calibration covariate `", v, "` is not a column of ",
+           "`occasion_covariates`.", call. = FALSE)
+    }
+    if (!is.numeric(ocasioes[[v]])) {
+      stop("Calibration covariate `", v, "` must be numeric in ",
+           "`occasion_covariates`.", call. = FALSE)
+    }
+  }
   covariaveis <- setdiff(names(ocasioes), fixas)
 
   tabelas <- list(
@@ -197,7 +254,37 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
   arquivos <- map(tabelas, nrow)
 
   calibracao <- NULL
-  if (!is.null(fit)) {
+  versoes <- NULL
+  if (!is.null(fit) && length(covs_cal) > 0) {
+    n_v <- if (is.null(n_versions)) n_draws else n_versions
+    od <- covariate_versions(fit, tabelas$detections, ocasioes,
+                             calibration_keys, covs_cal, n_draws, n_v, rule,
+                             p_min, seed)
+    arrow::write_parquet(od, file.path(output_dir, "occasion_draws.parquet"))
+    tabelas$occasion_draws <- od
+    arquivos$occasion_draws <- nrow(od)
+    formula <- tryCatch(deparse1(stats::formula(fit)$formula),
+                        error = function(e) NULL)
+    faixa <- map(set_names(covs_cal), \(v) list(
+      min = min(fit$data[[v]], na.rm = TRUE),
+      max = max(fit$data[[v]], na.rm = TRUE)))
+    calibracao <- compact(list(
+      engine = "brms", formula = formula,
+      n_draws = length(unique(od$draw)),
+      keys = I(c("site", "species", calibration_keys)),
+      covariates = I(covs_cal), covariate_range = faixa,
+      covariate_scaling = if (!is.null(covariate_scaling)) {
+        map(covariate_scaling, \(s) list(center = unname(s[["center"]]),
+                                         scale = unname(s[["scale"]])))
+      },
+      new_levels = "uncertainty"))
+    versoes <- compact(list(
+      file = "occasion_draws.parquet", rule = rule,
+      p_min = if (rule == "threshold") p_min,
+      seed = if (rule == "sample") seed,
+      n_draws = length(unique(od$draw)),
+      species = I(sort(unique(od$species)))))
+  } else if (!is.null(fit)) {
     draws <- calibration_draws(fit, distinct(tabelas$scores, site, species),
                                min_confidence, grid_step, n_draws, seed,
                                ocasioes, calibration_keys)
@@ -217,7 +304,7 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
 
   schema <- list(
     schema = "sheepdog-occupancy",
-    schema_version = 1.1,
+    schema_version = if (length(covs_cal) > 0) 1.3 else 1.1,
     created = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     sheepdog_version = as.character(utils::packageVersion("sheepdog")),
     classifier = classifier,
@@ -229,16 +316,109 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
     species = I(sort(unique(det$species_code))),
     occasion_covariates = if (length(covariaveis)) I(covariaveis),
     tables = imap(arquivos, \(n, nome) list(
-      file = if (nome == "calibration_draws") "calibration_draws.parquet"
-             else paste0(nome, ".csv"),
+      file = if (nome %in% c("calibration_draws", "occasion_draws")) {
+        paste0(nome, ".parquet")
+      } else paste0(nome, ".csv"),
       rows = n)),
-    calibration = calibracao
+    calibration = calibracao,
+    occasion_draws = versoes
   )
   jsonlite::write_json(compact(schema), file.path(output_dir, "schema.json"),
                        auto_unbox = TRUE, pretty = TRUE, digits = NA)
   message("Export written to ", output_dir, ": ",
           paste(names(arquivos), collapse = ", "), ".")
+  # sem covariaveis, as versoes saem da grade, como em occasion_draws()
+  if (!is.null(n_versions) && length(covs_cal) == 0) {
+    tabelas$occasion_draws <- occasion_draws(
+      output_dir, rule = rule, p_min = p_min, n_draws = n_versions,
+      seed = seed)
+    schema <- jsonlite::read_json(file.path(output_dir, "schema.json"),
+                                  simplifyVector = TRUE)
+  }
   invisible(list(tables = tabelas, schema = schema))
+}
+
+# Covariaveis continuas da calibracao: variaveis numericas do modelo alem do
+# score (as chaves sao agrupamentos)
+calibration_covariates <- function(fit, keys) {
+  dados <- fit$data
+  if (is.null(dados)) return(character())
+  numericas <- names(dados)[vapply(dados, is.numeric, logical(1))]
+  setdiff(numericas, c("tp", "logit_conf", keys))
+}
+
+check_covariate_scaling <- function(scaling, covs) {
+  if (is.null(scaling)) return(invisible())
+  if (!is.list(scaling) || is.null(names(scaling)) ||
+      !all(names(scaling) %in% covs)) {
+    stop("`covariate_scaling` must be a list named by the continuous ",
+         "covariates of the calibration (", paste(covs, collapse = ", "), ").",
+         call. = FALSE)
+  }
+  for (s in scaling) {
+    if (!is.numeric(s) || !all(c("center", "scale") %in% names(s))) {
+      stop("Each element of `covariate_scaling` must be c(center = , ",
+           "scale = ).", call. = FALSE)
+    }
+  }
+  invisible()
+}
+
+# Versoes das deteccoes com covariaveis continuas: P(TP) de cada predicao
+# em cada draw (sem grade), sorteadas como em occasion_draws()
+covariate_versions <- function(fit, det, ocasioes, keys, covs, n_draws,
+                               n_versions, rule, p_min, seed) {
+  niveis <- fit_levels(fit)
+  fora <- setdiff(unique(det$species), niveis$species)
+  if (length(fora) > 0) {
+    message("Species not in the calibration, left out of the versions: ",
+            paste(fora, collapse = ", "))
+  }
+  novos <- setdiff(unique(det$site), niveis$site)
+  if (length(novos) > 0) {
+    message("Site(s) not in the calibration, drawn as new levels of the ",
+            "site effect: ", paste(novos, collapse = ", "))
+  }
+  ids <- withr::with_seed(seed, sort(sample.int(
+    posterior_size(fit), min(n_draws, posterior_size(fit)))))
+  ids <- utils::head(ids, n_versions)
+  occ_key <- paste(ocasioes$site, ocasioes$occasion_id, sep = "\r")
+  especies <- sort(intersect(unique(det$species), niveis$species))
+  map(especies, function(sp) {
+    d <- det[det$species == sp, ]
+    o <- match(paste(d$site, d$occasion_id, sep = "\r"), occ_key)
+    nd <- tibble(site = d$site, species = d$species,
+                 logit_conf = safe_logit(d$confidence))
+    for (k in keys) nd[[k]] <- ocasioes[[k]][o]
+    for (v in covs) nd[[v]] <- ocasioes[[v]][o]
+    pontuar <- !is.na(o) & stats::complete.cases(nd)
+    for (v in covs) {
+      faixa <- range(fit$data[[v]], na.rm = TRUE)
+      fora_faixa <- pontuar & (nd[[v]] < faixa[1] | nd[[v]] > faixa[2])
+      if (any(fora_faixa)) {
+        warning(sum(fora_faixa), " prediction(s) of ", sp, " have `", v,
+                "` outside its range in the calibration data (",
+                signif(faixa[1], 3), " to ", signif(faixa[2], 3),
+                "); their P(TP) is an extrapolation.", call. = FALSE)
+      }
+    }
+    Pdet <- matrix(NA_real_, nrow(d), length(ids))
+    if (any(pontuar)) {
+      # niveis novos sao sorteados: mesma semente, mesmo resultado
+      Pdet[pontuar, ] <- t(withr::with_seed(seed, prediction_draws(
+        fit, nd[pontuar, , drop = FALSE], ids)))
+    }
+    sample_versions(d, ocasioes, o, Pdet, ids, rule, p_min, seed,
+                    motivo = "without a value of the calibration covariates or keys")
+  }) |>
+    list_rbind()
+}
+
+# P(TP) de cada linha de `newdata` nos draws `ids` (draws x linhas); funcao
+# propria para os testes
+prediction_draws <- function(fit, newdata, ids) {
+  brms::posterior_epred(fit, newdata = newdata, allow_new_levels = TRUE,
+                        draw_ids = ids)
 }
 
 # Predicoes repetidas: a mesma janela lida duas vezes (tabelas de selecao
