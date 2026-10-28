@@ -328,6 +328,16 @@ month
 #> 61    birdnet 202410  39    1.000     0.838   0.001
 ```
 
+``` r
+
+plot_calibration_ppc(ppc, check = "month") +
+  ggplot2::facet_wrap(~ classifier, ncol = 1, scales = "free_x")
+```
+
+![Observed share of true positives by month over its posterior
+predictive interval, one panel per
+classifier.](crywolf-integration_files/figure-html/unnamed-chunk-9-1.png)
+
 Both calibrations reproduce the overall share of true positives, but not
 the share by month: in some months nearly every reviewed minute was a
 true detection, in others almost none, beyond what the score predicts.

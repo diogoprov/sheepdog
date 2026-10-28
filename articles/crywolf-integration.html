@@ -676,6 +676,10 @@ bin, by site and by month.</p>
 <span><span class="co">#&gt; 57    birdnet 202406 116    0.940     0.866   0.012</span></span>
 <span><span class="co">#&gt; 58    birdnet 202407  20    0.700     0.867   0.971</span></span>
 <span><span class="co">#&gt; 61    birdnet 202410  39    1.000     0.838   0.001</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_calibration_ppc.html">plot_calibration_ppc</a></span><span class="op">(</span><span class="va">ppc</span>, check <span class="op">=</span> <span class="st">"month"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span> <span class="va">classifier</span>, ncol <span class="op">=</span> <span class="fl">1</span>, scales <span class="op">=</span> <span class="st">"free_x"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="crywolf-integration_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="Observed share of true positives by month over its posterior predictive interval, one panel per classifier." width="672"></p>
 <p>Both calibrations reproduce the overall share of true positives, but
 not the share by month: in some months nearly every reviewed minute was
 a true detection, in others almost none, beyond what the score predicts.
@@ -691,12 +695,12 @@ sensitivity analysis here, not the recommended model.</p>
 <div class="section level3">
 <h3 id="versions-of-the-detections">3. Versions of the detections<a class="anchor" aria-label="anchor" href="#versions-of-the-detections"></a>
 </h3>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/occasion_draws.html">occasion_draws</a></span><span class="op">(</span><span class="st">"curiango/custom"</span>, rule <span class="op">=</span> <span class="st">"sample"</span>, n_draws <span class="op">=</span> <span class="fl">20</span>, seed <span class="op">=</span> <span class="fl">2026</span><span class="op">)</span></span></code></pre></div>
 <p>Each version is one draw of which predictions are true; an occasion
 is a detection when at least one of its predictions is. The share of
 minutes with a detection per version:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">versions</span> <span class="op">&lt;-</span> <span class="fu">flow</span><span class="op">(</span><span class="st">"versions"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">detection_rate</span> <span class="op">~</span> <span class="va">classifier</span>, data <span class="op">=</span> <span class="va">versions</span>,</span>
 <span>          FUN <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, min <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, max <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
@@ -712,7 +716,7 @@ minutes with a detection per version:</p>
 draws the same ones when the table is absent), fits the occupancy model
 with false positives to each version and pools the posteriors in equal
 shares.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">crywolf</span><span class="fu">::</span><span class="fu">fp_read_sheepdog</span><span class="op">(</span><span class="st">"curiango/custom"</span>, species <span class="op">=</span> <span class="st">"nyc_alb"</span><span class="op">)</span></span>
 <span><span class="va">versions</span> <span class="op">&lt;-</span> <span class="fu">crywolf</span><span class="fu">::</span><span class="fu">fp_draws_data</span><span class="op">(</span><span class="va">x</span>, rule <span class="op">=</span> <span class="st">"sample"</span>, n_draws <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>                                   seed <span class="op">=</span> <span class="fl">2026</span>, occasions <span class="op">=</span> <span class="va">occ</span>, sites <span class="op">=</span> <span class="va">nights</span>,</span>
@@ -725,7 +729,7 @@ shares.</p>
 <code>aci</code>) and <code>nights</code> the night covariates
 (<code>temp</code>, <code>rh</code>, <code>moon</code>), all
 standardised.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fits</span> <span class="op">&lt;-</span> <span class="fu">flow</span><span class="op">(</span><span class="st">"fits"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span>fits <span class="op">=</span> <span class="fl">1</span>, kept <span class="op">=</span> <span class="va">kept</span>, divergences <span class="op">=</span> <span class="va">divergences</span><span class="op">)</span> <span class="op">~</span> <span class="va">classifier</span>,</span>
 <span>          data <span class="op">=</span> <span class="va">fits</span>, FUN <span class="op">=</span> <span class="va">sum</span><span class="op">)</span></span>
@@ -869,7 +873,7 @@ and <code>random_recordings</code>; <code>positivo</code>,
 <div class="section level2">
 <h2 id="reading-the-validation-in-crywolf">Reading the validation in crywolf<a class="anchor" aria-label="anchor" href="#reading-the-validation-in-crywolf"></a>
 </h2>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">v</span> <span class="op">&lt;-</span> <span class="fu">crywolf</span><span class="fu">::</span><span class="fu"><a href="https://provetelab.org/crywolf/reference/fp_read_validation.html" class="external-link">fp_read_validation</a></span><span class="op">(</span><span class="va">validation</span><span class="op">)</span></span></code></pre></div>
 <p><code>fp_read_validation()</code> reads the v1.2.0 format; reading
 the column names above needs a crywolf version that supports them.</p>
