@@ -1,8 +1,14 @@
 Package: sheepdog
 Title: Sample, Validate and Calibrate 'BirdNET' Detections
 Version: 3.2.1.9000
-Authors@R:
-    person("Diogo B.", "Provete", , "dbprovete@gmail.com", role = c("aut", "cre"))
+Authors@R: c(
+    person("Diogo B.", "Provete", , "dbprovete@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-0097-0651")),
+    person("Larissa Sayuri Moreira", "Sugai", role = "aut",
+           comment = c(ORCID = "0000-0002-6248-291X")),
+    person("Liliana", "Piatti", role = "aut",
+           comment = c(ORCID = "0000-0001-6324-1723"))
+  )
 Description: Tools to check whether automated detections from 'BirdNET'
     custom classifiers in passive acoustic monitoring are real. The package
     builds clip sets for manual validation (top-score, random-occasion or

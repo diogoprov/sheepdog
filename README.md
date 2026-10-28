@@ -221,9 +221,9 @@ written with AI assistance (Claude, Anthropic), with human review and tests.
 If sheepdog is useful in your work, please cite it (GitHub's "Cite this
 repository" button uses `CITATION.cff`):
 
-> Provete, D. B. (2026). *sheepdog: sample, validate and calibrate BirdNET
-> detections for passive acoustic monitoring* (v2.2.0). Zenodo.
-> https://doi.org/10.5281/zenodo.22696210
+> Provete, D. B., Sugai, L. S. M., & Piatti, L. (2026). *sheepdog: sample,
+> validate and calibrate BirdNET detections for passive acoustic monitoring*.
+> Zenodo. https://doi.org/10.5281/zenodo.22696209
 
 The hex sticker uses a dog silhouette by Mozillian from
 [PhyloPic](https://www.phylopic.org/images/d3e8133c-e669-4881-9111-b44145f94212)
