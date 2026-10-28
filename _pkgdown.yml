@@ -2,6 +2,7 @@ url: https://provetelab.org/sheepdog/
 
 template:
   bootstrap: 5
+  math-rendering: mathjax
   bslib:
     primary: "#241042"
 
