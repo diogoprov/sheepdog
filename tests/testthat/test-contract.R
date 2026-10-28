@@ -105,8 +105,28 @@ expect_contract <- function(dir) {
     expect_setequal(s$site, sc$sites)
   }
 
+  # esquema 1.3: calibracao com covariaveis continuas, sem grade e com as
+  # versoes obrigatorias
+  covs_cal <- sc$calibration$covariates
+  if (length(covs_cal) > 0) {
+    expect_gte(sc$schema_version, 1.3)
+    expect_false("calibration_draws" %in% names(sc$tables))
+    expect_false(file.exists(file.path(dir, "calibration_draws.parquet")))
+    expect_false(is.null(sc$occasion_draws))
+    expect_true(all(covs_cal %in% extras))
+    expect_true(all(c("site", "species") == sc$calibration$keys[1:2]))
+    expect_false("grid_index" %in% sc$calibration$keys)
+    expect_setequal(names(sc$calibration$covariate_range), covs_cal)
+    expect_true(all(names(sc$calibration$covariate_scaling) %in% covs_cal))
+    for (v in covs_cal) {
+      x <- numero(oc[[v]])
+      expect_false(all(is.na(x)), label = v)
+    }
+  }
+
   # calibration_draws.parquet: chaves de texto que cobrem as ocasioes
-  if (!is.null(sc$calibration) && requireNamespace("arrow", quietly = TRUE)) {
+  if (!is.null(sc$calibration) && length(covs_cal) == 0 &&
+      requireNamespace("arrow", quietly = TRUE)) {
     cal <- as.data.frame(arrow::read_parquet(
       file.path(dir, "calibration_draws.parquet")))
     chaves <- sc$calibration$keys
@@ -152,7 +172,7 @@ expect_contract <- function(dir) {
 }
 
 # Exports a conferir: o do exemplo (sem calibracao), um simulado com os tres
-# desenhos e as fixtures compartilhadas com o crywolf (1.1 e 1.2)
+# desenhos e as fixtures compartilhadas com o crywolf (1.1, 1.2 e 1.3)
 export_exemplo <- function(env = parent.frame()) {
   ex <- system.file("extdata", "example", package = "sheepdog")
   dir <- withr::local_tempdir(.local_envir = env)
@@ -184,6 +204,9 @@ test_that("exports follow the documented contract", {
   expect_identical(sc$calibration$keys, c("site", "species", "month", "grid_index"))
   sc <- expect_contract(fixture("export-1.2"))
   expect_identical(sc$schema_version, 1.2)
+  sc <- expect_contract(fixture("export-1.3"))
+  expect_identical(sc$schema_version, 1.3)
+  expect_identical(sc$calibration$covariates, "temp_z")
 })
 
 test_that("occasion_draws() keeps an export within the contract", {
@@ -201,7 +224,9 @@ test_that("occasion_draws() keeps an export within the contract", {
 })
 
 # Lado do crywolf: le cada export, com os identificadores como texto e uma
-# linha de fp_aggregate() por ocasiao
+# linha de fp_aggregate() por ocasiao. A fixture 1.3 entra quando o crywolf
+# ler o esquema 1.3 (proposta em dev/proposal-calibration-covariates.md do
+# crywolf).
 test_that("crywolf reads every export", {
   skip_if_not_installed("crywolf")
   skip_if(!"fp_read_sheepdog" %in% getNamespaceExports("crywolf"),

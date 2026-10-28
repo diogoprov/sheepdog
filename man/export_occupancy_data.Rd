@@ -21,6 +21,10 @@ export_occupancy_data(
   n_draws = 100,
   grid_step = 0.01,
   seed = 2026,
+  n_versions = NULL,
+  rule = c("sample", "threshold"),
+  p_min = 0.95,
+  covariate_scaling = NULL,
   audio_pattern = "\\\\.(wav|flac|mp3)$",
   remap_from = NULL,
   remap_to = NULL,
@@ -81,8 +85,24 @@ night before.}
 
 \item{grid_step}{Step of the grid of scores of the calibration draws.}
 
-\item{seed}{Seed of the choice of draws. The global random number
-generator is left as it was.}
+\item{seed}{Seed of the choice of draws and, with \code{n_versions}, of the
+versions of the detections (\code{rule = "sample"}). The global random
+number generator is left as it was.}
+
+\item{n_versions}{Optional number of versions of the detections to
+write to \code{occasion_draws.parquet}, from the first calibration draws.
+Without continuous covariates, \code{occasion_draws()} is called on the
+folder (schema 1.2). With them, the versions are always written, and
+\code{NULL} means one per calibration draw (\code{n_draws}).}
+
+\item{rule, p_min}{Rule of the versions, as in \code{\link[=occasion_draws]{occasion_draws()}}.}
+
+\item{covariate_scaling}{Optional named list recording how each
+continuous covariate of the calibration was standardised before the
+model was fitted, e.g. \code{list(temp = c(center = 22.4, scale = 3.1))}
+for \code{(temp_raw - 22.4) / 3.1}. It is written to \code{schema.json} so that
+a reader can map the covariate back; the values of
+\code{occasion_covariates} must already be on the scale of the model.}
 
 \item{audio_pattern}{Regular expression for the audio files listed when
 \code{recordings} is \code{NULL}.}
@@ -106,7 +126,8 @@ positives needs from a passive acoustic survey: the occasions, the
 classifier scores, the reviewed clips with their sampling design and,
 optionally, covariates of the occasions and posterior draws of a
 Bayesian calibration. The folder follows the \code{sheepdog-occupancy}
-schema, version 1.1, described in
+schema (version 1.1, 1.2 with versions of the detections, 1.3 with a
+calibration on continuous covariates), described in
 \code{vignette("crywolf-integration")}; the crywolf package reads it, but any
 software can, since every table is a plain CSV file (the calibration
 draws are a Parquet file).
@@ -134,6 +155,9 @@ when \code{validation} holds such clips).
 scores for each site x species with predictions, and for each level of
 the \code{calibration_keys} found among the occasions of the site (only
 when \code{fit} is given; needs the 'arrow' package).
+\item \code{occasion_draws.parquet}: versions of the detections over the
+calibration draws, as written by \code{\link[=occasion_draws]{occasion_draws()}} (only with
+\code{n_versions}, or with a calibration on continuous covariates).
 \item \code{schema.json}: name and version of the schema, the settings of the
 export, the lists of sites and species and the number of rows of each
 table.
@@ -150,6 +174,23 @@ recording date (\code{YYYYMM}) when not given. Levels absent from the
 calibration data are drawn as new levels of the group (brms
 \code{sample_new_levels = "uncertainty"}); occasions without a value of a key
 are reported, since their predictions cannot be scored.
+
+\strong{Continuous covariates (schema 1.3).} A calibration may also depend on
+a continuous covariate of the occasion, such as the temperature of the
+night or an acoustic index (\code{tp ~ logit_conf + temp}). Numeric
+variables of the model besides \code{logit_conf} are taken as such
+covariates; each must be a column of \code{occasion_covariates}, on the scale
+used in the model. A grid of scores would then need one point per value
+of the covariate, so P(TP) is computed for each prediction instead, and
+the versions of the detections are drawn here, by the rules of
+\code{\link[=occasion_draws]{occasion_draws()}}, and written to \code{occasion_draws.parquet};
+\code{calibration_draws.parquet} is not written. \code{schema.json} records the
+covariates (\code{calibration$covariates}), their range in the calibration
+data, the scaling given in \code{covariate_scaling}, the rule, the seed and
+the number of versions. Occasions with predictions but without a value
+of a covariate are not scored (\code{NA}), and values outside the range of
+the calibration data are reported. To change the rule or the number of
+versions, export again; \code{\link[=occasion_draws]{occasion_draws()}} refuses such a folder.
 
 Two checks guard against inputs that would inflate the detections:
 predictions repeating the site, recording, offset and species of another

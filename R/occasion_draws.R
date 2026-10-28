@@ -68,6 +68,14 @@ occasion_draws <- function(export_dir, species = NULL,
   }
   require_suggested("arrow", "to read calibration_draws.parquet")
   schema <- jsonlite::read_json(schema_file, simplifyVector = TRUE)
+  if (length(schema$calibration$covariates) > 0) {
+    stop("The calibration of this export depends on continuous ",
+         "covariate(s) (", paste(schema$calibration$covariates, collapse = ", "),
+         "): it has no grid of calibration draws, and its versions were ",
+         "drawn by export_occupancy_data() (occasion_draws.parquet). To ",
+         "change the rule, the seed or the number of versions, export again ",
+         "with `n_versions`, `rule`, `p_min` and `seed`.", call. = FALSE)
+  }
   parquet <- file.path(export_dir, "calibration_draws.parquet")
   if (is.null(schema$calibration) || !file.exists(parquet)) {
     stop("The export has no calibration draws; write it with ",
@@ -165,31 +173,43 @@ occasion_draws_species <- function(det, ocasioes, cal, chaves, step, rule,
 
   occ_key <- paste(ocasioes$site, ocasioes$occasion_id, sep = "\r")
   o <- match(paste(det$site, det$occasion_id, sep = "\r"), occ_key)
+  g <- round((det$confidence - grid_min) / step) + 1
+  g <- pmin(pmax(g, 1), max(cal$grid_index))
+  det_chaves <- ocasioes[o, chaves, drop = FALSE]
+  k <- match(chave(cbind(det[c("site", "species")], det_chaves), g), linhas)
+  Pdet <- matrix(NA_real_, nrow(det), length(ids))
+  Pdet[!is.na(k), ] <- P[k[!is.na(k)], , drop = FALSE]
+  sample_versions(det, ocasioes, o, Pdet, ids, rule, p_min, seed,
+                  motivo = "without calibration draws")
+}
+
+# Sorteio das versoes de uma especie, na ordem de crywolf::fp_draws_data():
+# `Pdet` tem P(TP) de cada predicao (linhas, na ordem de detections.csv) em
+# cada draw (colunas, `ids` em ordem crescente); `o` e a linha da ocasiao de
+# cada predicao em `ocasioes`. Predicoes sem P(TP) deixam a ocasiao NA.
+sample_versions <- function(det, ocasioes, o, Pdet, ids, rule, p_min, seed,
+                            motivo) {
   if (anyNA(o)) {
     warning(sum(is.na(o)), " prediction(s) of ", det$species[1], " are not ",
             "in occasions.csv and were left out.", call. = FALSE)
   }
-  det_chaves <- ocasioes[o, chaves, drop = FALSE]
-  g <- round((det$confidence - grid_min) / step) + 1
-  g <- pmin(pmax(g, 1), max(cal$grid_index))
-  k <- match(chave(cbind(det[c("site", "species")], det_chaves), g), linhas)
-  sem_cal <- is.na(k) & !is.na(o)
+  sem_cal <- !stats::complete.cases(Pdet) & !is.na(o)
   nao_pontuadas <- unique(o[sem_cal])
   if (length(nao_pontuadas) > 0) {
-    warning(sum(sem_cal), " prediction(s) of ", det$species[1], " without ",
-            "calibration draws: their ", length(nao_pontuadas),
+    warning(sum(sem_cal), " prediction(s) of ", det$species[1], " ", motivo,
+            ": their ", length(nao_pontuadas),
             " occasion(s) are NA (not scored).", call. = FALSE)
   }
-  # fora do sorteio: sem draws, fora das ocasioes e todas as predicoes de
+  # fora do sorteio: sem P(TP), fora das ocasioes e todas as predicoes de
   # uma ocasiao nao pontuada
-  keep <- !is.na(k) & !is.na(o) & !(o %in% nao_pontuadas)
-  k <- k[keep]
+  keep <- !sem_cal & !is.na(o) & !(o %in% nao_pontuadas)
+  Pk <- Pdet[keep, , drop = FALSE]
   o_keep <- o[keep]
   com_pred <- sort(unique(o[!is.na(o)]))
 
   sortear <- function() {
     map(seq_along(ids), function(j) {
-      p <- P[k, j]
+      p <- Pk[, j]
       verdadeira <- if (rule == "sample") stats::runif(length(p)) < p
                     else p >= p_min
       y <- tabulate(o_keep[verdadeira], nbins = nrow(ocasioes))[com_pred] > 0

@@ -46,6 +46,14 @@ test_that("calibration_prior() matches the classes of the formula", {
   expect_true(grepl(as.character(round(mean(val$logit_conf), 3)),
                     pr$prior[pr$class == "Intercept"], fixed = TRUE))
   expect_identical(pr$lb[pr$class == "b"], "0")
+  # com uma covariavel continua: normal(0, 1) para a classe, normal(1, 1)
+  # sem limite para a inclinacao do score (o brms nao limita um coeficiente)
+  val$temp <- seq(-1, 1, length.out = nrow(val))
+  pc <- calibration_prior(tp ~ logit_conf + temp, val)
+  b <- pc[pc$class == "b", ]
+  expect_identical(b$prior[b$coef == ""], "normal(0, 1)")
+  expect_identical(b$prior[b$coef == "logit_conf"], "normal(1, 1)")
+  expect_true(all(is.na(b$lb)))
 })
 
 # O ajuste com Stan leva ~1 min (compilacao): roda so com

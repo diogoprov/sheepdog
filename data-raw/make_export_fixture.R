@@ -76,3 +76,58 @@ jsonlite::write_json(sc, file.path(out2, "schema.json"), auto_unbox = TRUE,
                      pretty = TRUE, digits = NA)
 suppressWarnings(occasion_draws(out2, rule = "sample", n_draws = 20,
                                 seed = 2026))
+
+# Fixture 1.3: calibracao com covariavel continua da ocasiao
+# (tp ~ logit_conf + temp_z), escrita em tests/testthat/fixtures/export-1.3/.
+# A temperatura e simulada por data de gravacao (so para o teste) e
+# padronizada antes do ajuste; a padronizacao vai para o schema.json. Sem
+# grade de calibracao: as versoes (20, "sample", seed 2026) saem do export.
+out3 <- "tests/testthat/fixtures/export-1.3"
+datas <- sort(unique(regmatches(rec$source_audio,
+                                regexpr("[0-9]{8}", rec$source_audio))))
+temp_dia <- withr::with_seed(2026, tibble(
+  data = datas, temp = round(stats::rnorm(length(datas), 22, 3), 1)))
+centro <- mean(temp_dia$temp)
+escala <- stats::sd(temp_dia$temp)
+covs3 <- tibble(site = rec$site, source_audio = rec$source_audio,
+                data = regmatches(rec$source_audio,
+                                  regexpr("[0-9]{8}", rec$source_audio))) |>
+  left_join(temp_dia, by = "data") |>
+  mutate(temp_z = round((temp - centro) / escala, 4)) |>
+  select(site, source_audio, temp_z)
+val3 <- read_validations(list.files(file.path(ex, "validation"), full.names = TRUE),
+                         keep = "source_audio") |>
+  filter(species == especie) |>
+  mutate(source_audio = gsub("\\\\", "/", source_audio),
+         data = regmatches(source_audio, regexpr("[0-9]{8}", source_audio))) |>
+  left_join(temp_dia, by = "data") |>
+  mutate(temp_z = (temp - centro) / escala)
+f3 <- tp ~ logit_conf + temp_z
+fit3 <- fit_calibration(val3, f3, engine = "brms",
+                        prior = calibration_prior(f3, val3),
+                        chains = 4, iter = 2000, refresh = 0, seed = 2026)
+
+unlink(out3, recursive = TRUE)
+export_occupancy_data(out3, det, recordings = file.path(ex, "recordings.csv"),
+                      validation = list.files(file.path(ex, "validation"),
+                                              full.names = TRUE),
+                      fit = fit3, occasion_covariates = covs3,
+                      n_draws = 20, n_versions = 20, rule = "sample",
+                      covariate_scaling = list(temp_z = c(center = centro,
+                                                          scale = escala)),
+                      classifier = "example", overwrite = TRUE)
+# so a especie da fixture nos clipes revisados, como na 1.2
+v <- readr::read_csv(file.path(out3, "validation.csv"), na = "",
+                     col_types = readr::cols(.default = "c"))
+v <- filter(v, species == especie)
+readr::write_csv(v, file.path(out3, "validation.csv"), na = "")
+sc <- jsonlite::read_json(file.path(out3, "schema.json"))
+sc$tables$validation$rows <- nrow(v)
+sc$created <- "2026-10-28T00:00:00-0400"
+sc$sites <- I(unlist(sc$sites)); sc$species <- I(unlist(sc$species))
+sc$occasion_covariates <- I(unlist(sc$occasion_covariates))
+sc$calibration$keys <- I(unlist(sc$calibration$keys))
+sc$calibration$covariates <- I(unlist(sc$calibration$covariates))
+sc$occasion_draws$species <- I(unlist(sc$occasion_draws$species))
+jsonlite::write_json(sc, file.path(out3, "schema.json"), auto_unbox = TRUE,
+                     pretty = TRUE, digits = NA)

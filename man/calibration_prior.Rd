@@ -30,6 +30,11 @@ of 1, an intercept equal to that mean gives P(TP) = score;
 \item \code{b} (slope of \code{logit_conf}): \code{normal(1, 1)} truncated at 0, centred on
 a calibrated score, wide enough to allow slopes from near 0 to near 3,
 and assuming that a higher score never lowers P(TP);
+\item other population-level terms, such as a continuous covariate of the
+occasion (\code{tp ~ logit_conf + temp}): \code{normal(0, 1)}, which suits a
+standardised covariate. 'brms' bounds a whole class, not a single
+coefficient, so with such terms the slope of \code{logit_conf} keeps
+\code{normal(1, 1)} without the truncation at 0;
 \item \code{sd} (standard deviations of the random effects): \code{exponential(1)};
 \item \code{cor} (correlations between random effects): \code{lkj(2)}, which pulls
 the correlations away from +-1 (the singular fits of m4 with 'lme4').

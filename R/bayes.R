@@ -13,6 +13,11 @@
 #' * `b` (slope of `logit_conf`): `normal(1, 1)` truncated at 0, centred on
 #'   a calibrated score, wide enough to allow slopes from near 0 to near 3,
 #'   and assuming that a higher score never lowers P(TP);
+#' * other population-level terms, such as a continuous covariate of the
+#'   occasion (`tp ~ logit_conf + temp`): `normal(0, 1)`, which suits a
+#'   standardised covariate. 'brms' bounds a whole class, not a single
+#'   coefficient, so with such terms the slope of `logit_conf` keeps
+#'   `normal(1, 1)` without the truncation at 0;
 #' * `sd` (standard deviations of the random effects): `exponential(1)`;
 #' * `cor` (correlations between random effects): `lkj(2)`, which pulls
 #'   the correlations away from +-1 (the singular fits of m4 with 'lme4').
@@ -33,13 +38,25 @@
 #' @export
 calibration_prior <- function(formula, validations) {
   require_suggested("brms", "for Bayesian calibration models")
-  classes <- unique(brms::get_prior(formula, data = validations,
-                                    family = brms::bernoulli())$class)
+  tab <- brms::get_prior(formula, data = validations,
+                         family = brms::bernoulli())
+  classes <- unique(tab$class)
+  coefs_b <- setdiff(tab$coef[tab$class == "b"], "")
   m <- round(mean(validations$logit_conf), 3)
+  # com outros termos fixos (ex. uma covariavel), o limite em 0 nao pode
+  # ficar so na inclinacao do score: o brms limita a classe inteira
+  b <- if (all(coefs_b %in% "logit_conf")) {
+    brms::prior_string("normal(1, 1)", class = "b", lb = 0)
+  } else {
+    c(brms::prior_string("normal(0, 1)", class = "b"),
+      if ("logit_conf" %in% coefs_b) {
+        brms::prior_string("normal(1, 1)", class = "b", coef = "logit_conf")
+      })
+  }
   priors <- list(
     Intercept = brms::prior_string(paste0("normal(", m, ", 1.5)"),
                                    class = "Intercept"),
-    b         = brms::prior_string("normal(1, 1)", class = "b", lb = 0),
+    b         = b,
     sd        = brms::prior_string("exponential(1)", class = "sd"),
     cor       = brms::prior_string("lkj(2)", class = "cor")
   )
