@@ -56,6 +56,8 @@
 # mixes calling activity into P(TP) and uses the test minutes twice (see
 # dev/roadmap-integration.md, phase 2).
 #   Rscript dev/benchmarks/curiango-export.R DATA_DIR OUTPUT_DIR season
+# CALIB_MODEL=<model> forces one of the candidates instead of the
+# one-standard-error rule (e.g. CALIB_MODEL=m3_site_month).
 args <- commandArgs(trailingOnly = TRUE)
 data_dir <- if (length(args)) args[1] else "dev/benchmarks/data/curiango"
 out <- if (length(args) > 1) args[2] else "dev/benchmarks/results/curiango-export"
@@ -170,6 +172,12 @@ for (cl in names(classifiers)) {
     comparison <- suppressWarnings(compare_calibration_models(
       val_cal, fold_group = "source_audio", seed = seed))
     chosen <- select_calibration_model(comparison, rule = "one_se_logloss")
+  }
+  # CALIB_MODEL forces a candidate (e.g. m3_site_month), overriding the rule.
+  forced <- Sys.getenv("CALIB_MODEL")
+  if (nzchar(forced)) {
+    stopifnot(forced %in% comparison$model)
+    chosen <- forced
   }
   formula <- stats::as.formula(comparison$formula[comparison$model == chosen])
   message("Calibration model: ", chosen, " (", deparse1(formula), ")")

@@ -16,7 +16,8 @@
 # EXPORT_DIR defaults to dev/benchmarks/results/curiango-export. Needs
 # crywolf >= 2.0.0.9000 with CmdStan, future and furrr. About 20 minutes per
 # classifier with M = 20 and 4 workers of 4 chains (16 cores).
-# Writes the small tables of the vignette to inst/benchmarks/:
+# Writes the small tables of the vignette to inst/benchmarks/ (or to the
+# folder in OUT, e.g. for a sensitivity analysis):
 #   curiango-flow-ppc.csv      the posterior predictive checks;
 #   curiango-flow-versions.csv share of minutes with a detection per version;
 #   curiango-flow-summary.csv  pooled posterior summaries (fp_occu_mc);
@@ -31,7 +32,8 @@ seed <- 2026
 devtools::load_all(".", quiet = TRUE)
 stopifnot(utils::packageVersion("crywolf") >= "2.0.0.9000")
 suppressPackageStartupMessages(library(dplyr))
-out <- "inst/benchmarks"
+out <- Sys.getenv("OUT", "inst/benchmarks")
+dir.create(out, showWarnings = FALSE, recursive = TRUE)
 
 zs <- function(v) as.numeric(scale(v))
 crywolf::fp_compile()
