@@ -78,9 +78,13 @@ verdadeiros e dos falsos positivos sem depender do classificador.
   cópia dele continua idêntica à do sheepdog.
 - Próximo passo: o `fp_occu_dyn()` no crywolf; a fase 2 vem depois dele
   (ver Prioridades). No sheepdog, nada bloqueia: só pendências pequenas.
-- Pendente: rodar de novo o modo sazonal de `dev/benchmarks/curiango-export.R`
-  (argumento `"season"`), que passou a usar `calibration_keys = "month"` e
-  ainda não foi refeito.
+- Modo sazonal refeito em 27/10/2026 (`curiango-export.R` com `"season"`,
+  e o fluxo com `OUT` numa pasta separada). A regra de 1 erro-padrão escolhe
+  o modelo só com mês, que tira o desajuste mensal mas deixa 5 de 7
+  gravadores sinalizados no custom; com gravador + mês
+  (`CALIB_MODEL=m3_site_month`) nada fica sinalizado, e os dois
+  classificadores concordam no efeito negativo da temperatura. Fica como
+  análise de sensibilidade (Appendix S2 do artigo da MEE).
 - 26/10/2026: a reanálise do artigo do JAV achou que os scripts de
   ocupação tratavam cada linha das tabelas de detecção (uma por janela do
   classificador, com o score do minuto repetido) como uma visita. O artigo
