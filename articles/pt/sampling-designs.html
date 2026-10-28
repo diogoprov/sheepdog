@@ -11,7 +11,13 @@
 <link rel="apple-touch-icon" sizes="180x180" href="../../apple-touch-icon.png">
 <link rel="icon" sizes="any" href="../../favicon.ico">
 <link rel="manifest" href="../../site.webmanifest">
-<script src="../../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
+  window.MathJax = {
+    chtml: {
+      fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
+    }
+  };
+</script><script src="../../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
@@ -177,9 +183,7 @@ gravações de 300 s. O esforço de gravação difere entre os locais:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> NHE           90</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> XAR           84</span></span></code></pre></div>
 <p>Ao longo de todo o artigo, assume-se que a análise de ocupação trata
-como detecção uma predição com confiança
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>≥</mo><annotation encoding="application/x-tex">\geq</annotation></semantics></math>
-0,5:</p>
+como detecção uma predição com confiança <span class="math inline">\(\geq\)</span> 0,5:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">threshold</span> <span class="op">&lt;-</span> <span class="fl">0.5</span></span>
 <span><span class="va">above</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">pred</span>, <span class="va">confidence</span> <span class="op">&gt;=</span> <span class="va">threshold</span><span class="op">)</span></span>
@@ -226,8 +230,8 @@ detecção de uma ocasião verificada é confirmada ou rejeitada.
 <code>"random_detections"</code> o implementa da seguinte forma:</p>
 <ol style="list-style-type: decimal">
 <li>Uma ocasião candidata é uma ocasião com pelo menos uma predição da
-espécie com confiança
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>≥</mo><annotation encoding="application/x-tex">\geq</annotation></semantics></math><code>threshold</code>. A ocasião é a unidade amostral do modelo de
+espécie com confiança <span class="math inline">\(\geq\)</span>
+<code>threshold</code>. A ocasião é a unidade amostral do modelo de
 ocupação, definida por <code>occasion_unit</code>: a gravação inteira
 (<code>"file"</code>) ou um minuto dela (<code>"minute"</code>).</li>
 <li>
@@ -235,8 +239,8 @@ ocupação, definida por <code>occasion_unit</code>: a gravação inteira
 em cada estrato local × espécie × noite × hora. Os estratos não dependem
 do score, de modo que cada detecção tem uma probabilidade conhecida e
 não nula de ser verificada.</li>
-<li>Cada predição
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>≥</mo><annotation encoding="application/x-tex">\geq</annotation></semantics></math><code>threshold</code> de uma ocasião sorteada torna-se um clipe.</li>
+<li>Cada predição <span class="math inline">\(\geq\)</span>
+<code>threshold</code> de uma ocasião sorteada torna-se um clipe.</li>
 </ol>
 <p><code>threshold</code> é obrigatório e deve ser igual ao limiar da
 análise de ocupação; caso contrário, as ocasiões sorteadas não são as
@@ -345,9 +349,9 @@ cinco minutos candidatos por gravação, e um deles é sorteado:</p>
 <span><span class="co">#&gt; 1876 occasions drawn (1 per site x species_code x night x recording_hour) among 3824 with a prediction &gt;= 0.5.</span></span>
 <span><span class="co">#&gt; 2288 clips (every prediction &gt;= 0.5 of the 1876 occasions drawn).</span></span></code></pre></div>
 <p><code>occasion_id</code> identifica a ocasião,
-<code>n_detections_occasion</code> conta as predições
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>≥</mo><annotation encoding="application/x-tex">\geq</annotation></semantics></math><code>threshold</code> da espécie nela, e <code>inclusion_prob</code> é
-a probabilidade de a ocasião ter sido sorteada:</p>
+<code>n_detections_occasion</code> conta as predições <span class="math inline">\(\geq\)</span> <code>threshold</code> da espécie
+nela, e <code>inclusion_prob</code> é a probabilidade de a ocasião ter
+sido sorteada:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rd</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">site</span>, <span class="va">species_code</span>, <span class="va">occasion_id</span>, <span class="va">rank</span>, <span class="va">confidence</span>,</span>
@@ -370,12 +374,9 @@ a probabilidade de a ocasião ter sido sorteada:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          0.333   502</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          0.5     764</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          1       810</span></span></code></pre></div>
-<p><code>inclusion_prob</code> é
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">min</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>n</mi><mrow><mi mathvariant="normal">t</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">p</mi></mrow></msub><mo>,</mo><mi>N</mi><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mi>N</mi></mrow><annotation encoding="application/x-tex">\min(n_\mathrm{top}, N) / N</annotation></semantics></math>,
-em que
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>
-é o número de ocasiões candidatas no estrato. Como toda detecção de uma
-ocasião sorteada é recortada, o número de clipes por ocasião é igual a
+<p><code>inclusion_prob</code> é <span class="math inline">\(\min(n_\mathrm{top}, N) / N\)</span>, em que <span class="math inline">\(N\)</span> é o número de ocasiões candidatas no
+estrato. Como toda detecção de uma ocasião sorteada é recortada, o
+número de clipes por ocasião é igual a
 <code>n_detections_occasion</code>:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">per_occasion</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">rd</span>, <span class="va">site</span>, <span class="va">species_code</span>, <span class="va">occasion_id</span>,</span>
@@ -469,10 +470,11 @@ seguintes (ver <code><a href="../../articles/crywolf-integration.html">vignette(
 <p>A diferença prática entre <code>"top"</code> e
 <code>"random_detections"</code> é visível na confiança dos clipes que
 cada um seleciona. A referência é a distribuição de todas as predições
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>≥</mo><annotation encoding="application/x-tex">\geq</annotation></semantics></math><code>threshold</code>, isto é, as detecções que entram no histórico de
-detecção. Os clipes de <code>"random_detections"</code> são ponderados
-por <code>1 / inclusion_prob</code> (pesos do desenho), porque ocasiões
-em estratos com muitas candidatas têm menor probabilidade de serem
+<span class="math inline">\(\geq\)</span> <code>threshold</code>, isto
+é, as detecções que entram no histórico de detecção. Os clipes de
+<code>"random_detections"</code> são ponderados por
+<code>1 / inclusion_prob</code> (pesos do desenho), porque ocasiões em
+estratos com muitas candidatas têm menor probabilidade de serem
 sorteadas.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">wquantile</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">w</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span>,</span>

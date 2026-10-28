@@ -59,7 +59,7 @@ count(recs, site, name = "recordings")
 ```
 
 Throughout, the occupancy analysis is assumed to treat a prediction with
-confidence $`\geq`$ 0.5 as a detection:
+confidence \\\geq\\ 0.5 as a detection:
 
 ``` r
 
@@ -109,14 +109,14 @@ of a checked occasion is confirmed or rejected. `"random_detections"`
 implements it as follows:
 
 1.  A candidate occasion is an occasion with at least one prediction of
-    the species with confidence $`\geq`$`threshold`. The occasion is the
-    sampling unit of the occupancy model, set by `occasion_unit`: the
-    whole recording (`"file"`) or one minute of it (`"minute"`).
+    the species with confidence \\\geq\\ `threshold`. The occasion is
+    the sampling unit of the occupancy model, set by `occasion_unit`:
+    the whole recording (`"file"`) or one minute of it (`"minute"`).
 2.  `n_top` candidate occasions are drawn at random in each site ×
     species × night × hour stratum. The strata do not depend on the
     score, so every detection has a known, non-zero probability of being
     checked.
-3.  Every prediction $`\geq`$`threshold` of a drawn occasion becomes a
+3.  Every prediction \\\geq\\ `threshold` of a drawn occasion becomes a
     clip.
 
 `threshold` is required and must equal the threshold of the occupancy
@@ -244,7 +244,7 @@ rd <- select_clips(pred, sampling_mode = "random_detections",
 ```
 
 `occasion_id` identifies the occasion, `n_detections_occasion` counts
-the predictions $`\geq`$`threshold` of the species in it, and
+the predictions \\\geq\\ `threshold` of the species in it, and
 `inclusion_prob` is the probability that the occasion was drawn:
 
 ``` r
@@ -272,7 +272,7 @@ count(rd, inclusion_prob)
 #> 5          1       810
 ```
 
-`inclusion_prob` is $`\min(n_\mathrm{top}, N) / N`$, where $`N`$ is the
+`inclusion_prob` is \\\min(n\_\mathrm{top}, N) / N\\, where \\N\\ is the
 number of candidate occasions in the stratum. Because every detection of
 a drawn occasion is cut, the number of clips per occasion equals
 `n_detections_occasion`:
@@ -374,10 +374,11 @@ and are handled differently downstream (see
 
 The practical difference between `"top"` and `"random_detections"` is
 visible in the confidence of the clips they select. The reference is the
-distribution of all predictions $`\geq`$`threshold`, i.e. the detections
-that enter the detection history. Clips from `"random_detections"` are
-weighted by `1 / inclusion_prob` (design weights), because occasions in
-strata with many candidates have a lower probability of being drawn.
+distribution of all predictions \\\geq\\ `threshold`, i.e. the
+detections that enter the detection history. Clips from
+`"random_detections"` are weighted by `1 / inclusion_prob` (design
+weights), because occasions in strata with many candidates have a lower
+probability of being drawn.
 
 ``` r
 

@@ -65,7 +65,7 @@ count(recs, site, name = "recordings")
 ```
 
 Ao longo de todo o artigo, assume-se que a análise de ocupação trata
-como detecção uma predição com confiança $`\geq`$ 0,5:
+como detecção uma predição com confiança \\\geq\\ 0,5:
 
 ``` r
 
@@ -115,14 +115,14 @@ detecção de uma ocasião verificada é confirmada ou rejeitada.
 `"random_detections"` o implementa da seguinte forma:
 
 1.  Uma ocasião candidata é uma ocasião com pelo menos uma predição da
-    espécie com confiança $`\geq`$`threshold`. A ocasião é a unidade
+    espécie com confiança \\\geq\\ `threshold`. A ocasião é a unidade
     amostral do modelo de ocupação, definida por `occasion_unit`: a
     gravação inteira (`"file"`) ou um minuto dela (`"minute"`).
 2.  `n_top` ocasiões candidatas são sorteadas aleatoriamente em cada
     estrato local × espécie × noite × hora. Os estratos não dependem do
     score, de modo que cada detecção tem uma probabilidade conhecida e
     não nula de ser verificada.
-3.  Cada predição $`\geq`$`threshold` de uma ocasião sorteada torna-se
+3.  Cada predição \\\geq\\ `threshold` de uma ocasião sorteada torna-se
     um clipe.
 
 `threshold` é obrigatório e deve ser igual ao limiar da análise de
@@ -251,7 +251,7 @@ rd <- select_clips(pred, sampling_mode = "random_detections",
 ```
 
 `occasion_id` identifica a ocasião, `n_detections_occasion` conta as
-predições $`\geq`$`threshold` da espécie nela, e `inclusion_prob` é a
+predições \\\geq\\ `threshold` da espécie nela, e `inclusion_prob` é a
 probabilidade de a ocasião ter sido sorteada:
 
 ``` r
@@ -279,7 +279,7 @@ count(rd, inclusion_prob)
 #> 5          1       810
 ```
 
-`inclusion_prob` é $`\min(n_\mathrm{top}, N) / N`$, em que $`N`$ é o
+`inclusion_prob` é \\\min(n\_\mathrm{top}, N) / N\\, em que \\N\\ é o
 número de ocasiões candidatas no estrato. Como toda detecção de uma
 ocasião sorteada é recortada, o número de clipes por ocasião é igual a
 `n_detections_occasion`:
@@ -382,7 +382,7 @@ tratadas de forma diferente nas etapas seguintes (ver
 
 A diferença prática entre `"top"` e `"random_detections"` é visível na
 confiança dos clipes que cada um seleciona. A referência é a
-distribuição de todas as predições $`\geq`$`threshold`, isto é, as
+distribuição de todas as predições \\\geq\\ `threshold`, isto é, as
 detecções que entram no histórico de detecção. Os clipes de
 `"random_detections"` são ponderados por `1 / inclusion_prob` (pesos do
 desenho), porque ocasiões em estratos com muitas candidatas têm menor
