@@ -1,5 +1,14 @@
 # sheepdog (development version)
 
+- New `review_support()`: for each site x species cell, the reviewed
+  clips at high scores, their precision, the high-score detections not yet
+  reviewed, the threshold of `suggest_thresholds()` and a diagnosis
+  (`"reached"`, `"exhausted"`, `"unreliable"`, `"review more"`,
+  `"not reviewed"`). It replaces the code of the `support` table of
+  `vignette("validation-effort")` and gives the same result. With `by` and
+  `covariates` (e.g. from `covariate_bins()`), the diagnosis is repeated
+  within the bins of an environmental gradient or acoustic index, counting
+  the unreviewed detections by bin too.
 - `export_occupancy_data()` exports a calibration on continuous covariates
   of the occasion (`tp ~ logit_conf + temp_z`), schema `sheepdog-occupancy`
   1.3: P(TP) is computed for each prediction, the versions of the

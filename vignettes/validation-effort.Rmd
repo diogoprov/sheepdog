@@ -267,53 +267,35 @@ call for opposite decisions: too few reviewed clips at high scores (more
 review may help) or low precision even at high scores (more review will
 not). To tell them apart, count the high-score clips reviewed in each cell,
 their precision, and how many high-score detections in the complete
-selection tables were not reviewed:
+selection tables were not reviewed.
+`review_support()` does this for every cell. Here a score of 0.7 or more
+counts as high (`conf_high`), and a cell needs 15 clips (`min_n`):
 
 ```{r}
-conf_high <- 0.7   # example: what counts as a high score
-min_n     <- 15
-
 detections <- suppressMessages(
-  read_selection_tables(file.path(ex, "birdnet"))) |>
-  mutate(species = gsub("-", "_", sub("^.*_", "", species_code)))
-
-support <- val |>
-  mutate(across(c(site, species), as.character)) |>
-  summarise(n_fp      = sum(tp == 0),
-            n_high    = sum(confidence >= conf_high),
-            prec_high = round(mean(tp[confidence >= conf_high]), 2),
-            .by = c(site, species)) |>
-  left_join(detections |>
-              summarise(n_high_all = sum(confidence >= conf_high),
-                        .by = c(site, species)),
-            by = c("site", "species")) |>
-  left_join(select(thr, site, species = species_folder, threshold),
-            by = c("site", "species")) |>
-  mutate(unreviewed_high = n_high_all - n_high,
-         diagnosis = case_when(
-           !is.na(threshold)        ~ "reached",
-           unreviewed_high < min_n  ~ "exhausted",
-           prec_high < 0.5          ~ "unreliable",
-           .default = "review more"
-         )) |>
-  select(site, species, n_fp, n_high, prec_high, unreviewed_high,
+  read_selection_tables(file.path(ex, "birdnet")))
+support <- review_support(val_raw, detections, conf_high = 0.7, min_n = 15,
+                          min_precision = 0.5, target_precision = 0.90)
+support |>
+  mutate(prec_high = round(prec_high, 2)) |>
+  select(site, species_folder, n_fp, n_high, prec_high, unreviewed_high,
          diagnosis) |>
-  arrange(diagnosis, species, site)
-print(support, n = Inf)
+  print(n = Inf)
 ```
 
 ```{r, include = FALSE}
 cells_with <- function(d) {
   x <- filter(support, diagnosis == d)
   if (nrow(x) == 0) return("none")
-  paste(x$species, x$site, sep = " at ", collapse = ", ")
+  paste(x$species_folder, x$site, sep = " at ", collapse = ", ")
 }
 ```
 
 A cell is `"reached"` when `suggest_thresholds()` found a threshold. The
-other labels use illustrative cut-offs (`conf_high`, `min_n` and a
-precision of 0.5 at high scores); set them from the precision the study
-needs. In this example they separate three groups of cells that lack
+other labels use illustrative cut-offs (`conf_high`, `min_n` and
+`min_precision`, a precision of 0.5 at high scores); set them from the
+precision the study needs. A cell with detections but no reviewed clip
+would be `"not reviewed"`. In this example they separate three groups of cells that lack
 support:
 
 * **`"review more"`:** `r cells_with("review more")`.
@@ -324,7 +306,7 @@ support:
   The `"top"` design has already taken almost every high-score detection
   of these cells; more effort cannot add support. Treat the species at that
   site as poorly calibrated. In this example these cells have
-  `r sum(filter(count(val, site, species, wt = tp), paste(species, site) %in% with(filter(support, diagnosis == "exhausted"), paste(species, site)))$n)`
+  `r sum(filter(count(val, site, species, wt = tp), paste(species, site) %in% with(filter(support, diagnosis == "exhausted"), paste(species_folder, site)))$n)`
   true positives among their reviewed clips in total (see `n_fp` below).
 * **`"unreliable"`:** `r cells_with("unreliable")`.
   Most high-score detections are false positives; more review would only
@@ -455,6 +437,34 @@ gradient where more clips are needed, or where the classifier fails. With
 a fitted calibration, `cell_status(fit, validations, by = "temp_bin")`
 gives the status of each site x species x bin cell; keep the column in
 the validations with `read_validations(keep = "night")` and join the bins.
+
+`review_support()` repeats the diagnosis of the cells within each bin. It
+joins the table of bins to the clips and to the predictions itself, so the
+count of unreviewed high-score detections is also by bin:
+
+```{r}
+support_temp <- review_support(val_raw, detections, conf_high = 0.7,
+                               min_n = 15, by = "temp_bin",
+                               covariates = temp_bins)
+count(support, diagnosis, name = "cells")
+count(support_temp, diagnosis, name = "cells x bins")
+support_temp |>
+  filter(species_folder == "phy_cuv") |>
+  select(site, temp_bin, n_high, unreviewed_high, threshold, diagnosis)
+```
+
+A cell that reached its threshold as a whole may not reach it in every
+bin. Part of this is plain arithmetic: each bin holds about a third of the
+clips and of the detections, so `min_n` is harder to meet, and many more
+cell x bin combinations are `"exhausted"` than cells (here
+`r sum(support_temp$diagnosis == "exhausted")` against
+`r sum(support$diagnosis == "exhausted")`); lower `min_n` for the reading
+by bin if the study can accept it. Read the two tables together. A bin
+labelled `"review more"` inside a cell that is `"reached"` overall is the
+part of the gradient where the next round of review should go. A bin
+labelled `"unreliable"` while the other bins are not would point to a
+classifier that fails in that part of the gradient (here the covariate is
+simulated, so no such pattern is expected).
 
 ### Caveats
 

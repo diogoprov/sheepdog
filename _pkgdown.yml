@@ -32,6 +32,7 @@ reference:
       - classify_review
       - precision_by_bin
       - suggest_thresholds
+      - review_support
       - nightly_presence
       - retraining_clips
       - plot_precision
