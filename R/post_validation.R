@@ -150,6 +150,136 @@ suggest_thresholds <- function(validation, target_precision = 0.90,
     ungroup()
 }
 
+#' Review support of each cell: is more validation worth it?
+#'
+#' For each site x species cell (and each level of the `by` columns, such as
+#' the bin of an environmental gradient or of an acoustic index), counts the
+#' reviewed clips at high scores, their precision, and the high-score
+#' detections of the selection tables that were not reviewed, and labels the
+#' cell:
+#'
+#' * `"reached"`: [suggest_thresholds()] found a threshold that reaches
+#'   `target_precision` with at least `min_n` clips;
+#' * `"exhausted"`: fewer than `min_n` high-score detections are left to
+#'   review, so more effort cannot add support;
+#' * `"unreliable"`: precision at high scores is below `min_precision`, so
+#'   more review would only confirm it (retrain the classifier instead);
+#' * `"review more"`: high-score detections remain and precision there is
+#'   intermediate, so a further round of review may reach a threshold;
+#' * `"not reviewed"`: the cell has detections but no reviewed clip.
+#'
+#' The cut-offs (`conf_high`, `min_n`, `min_precision`) are illustrative
+#' defaults: set them from the precision the study needs. Splitting cells by
+#' `by` lowers the number of clips per cell, so more cells fall short of
+#' `min_n`; compare with the reading without `by`. These labels interpret
+#' counts; they are not a statistical test.
+#'
+#' @param validation Reviewed clips, as for [precision_by_bin()] (the
+#'   `validation_by_clip.csv` tables).
+#' @param detections Predictions, as returned by [read_selection_tables()].
+#' @param conf_high Score from which a prediction counts as high.
+#' @param min_n Minimum number of clips, as in [suggest_thresholds()], and
+#'   of unreviewed high-score detections for `"review more"`.
+#' @param min_precision Precision at high scores below which a cell is
+#'   `"unreliable"`.
+#' @param target_precision Target precision of [suggest_thresholds()].
+#' @param by Optional columns that split each cell, e.g. `"temp_bin"`.
+#'   They must be columns of `covariates` (joined to both tables) or of
+#'   both tables.
+#' @param covariates Optional table of occasion covariates, such as the
+#'   output of [covariate_bins()], joined to the clips and to the
+#'   predictions by the columns it shares with them among `site`, `night`,
+#'   `recording_date`, `recording_hour`, `source_audio` and `occasion_id`,
+#'   as in [select_clips()].
+#' @inheritParams select_clips
+#'
+#' @return A tibble with `site`, `species_folder`, the `by` columns,
+#'   `n_reviewed`, `n_fp` (false positives among them), `n_high`
+#'   (reviewed clips with score >= `conf_high`), `prec_high` (their
+#'   precision), `n_high_all` (predictions with score >= `conf_high`),
+#'   `unreviewed_high`, `threshold` and `diagnosis`, ordered by diagnosis.
+#' @seealso `vignette("validation-effort")`.
+#' @export
+review_support <- function(validation, detections, conf_high = 0.7,
+                           min_n = 15, min_precision = 0.5,
+                           target_precision = 0.90, by = NULL,
+                           covariates = NULL,
+                           occasion_unit = c("file", "minute"),
+                           remap_from = NULL, remap_to = NULL) {
+  unidade <- match.arg(occasion_unit)
+  faltam <- setdiff(c("site", "species_code", "confidence", "begin_path",
+                      "file_offset"), names(detections))
+  if (length(faltam) > 0) {
+    stop("`detections` lacks column(s): ", paste(faltam, collapse = ", "),
+         ". Read it with read_selection_tables().", call. = FALSE)
+  }
+  # as predicoes ganham as colunas de identificacao das ocasioes, como no
+  # select_clips()
+  det <- detections |>
+    mutate(site = as.character(site),
+           species_folder = folder_name(species_code),
+           source_audio = remap_path(begin_path, remap_from, remap_to),
+           occasion_id = make_occasion_id(source_audio, file_offset, unidade))
+  det <- bind_cols(det, parse_date_hour(basename(det$begin_path))) |>
+    mutate(night = recording_date)
+  val <- reviewed_with_confidence(validation) |>
+    mutate(site = as.character(site))
+  if (!is.null(covariates)) {
+    val <- join_covariates(val, covariates, character())
+    det <- join_covariates(det, covariates, character())
+  }
+  check_by(val, by)
+  check_by(det, by)
+  for (col in by) {
+    sem <- sum(is.na(det[[col]]))
+    if (sem > 0) {
+      warning(sem, " prediction(s) without a value of `", col, "`; they ",
+              "form a group of their own.", call. = FALSE)
+    }
+  }
+  # as colunas de `by` com o mesmo tipo nas duas tabelas
+  for (col in by) {
+    val[[col]] <- as.character(val[[col]])
+    det[[col]] <- as.character(det[[col]])
+  }
+  celula <- c("site", "species_folder", by)
+
+  revisados <- val |>
+    group_by(across(all_of(celula))) |>
+    summarise(n_reviewed = n(),
+              n_fp = sum(verdict == "negative"),
+              n_high = sum(confidence >= conf_high),
+              prec_high = if (n_high > 0) {
+                mean(verdict[confidence >= conf_high] == "positive")
+              } else NA_real_,
+              .groups = "drop")
+  todas <- det |>
+    group_by(across(all_of(celula))) |>
+    summarise(n_high_all = sum(confidence >= conf_high), .groups = "drop")
+  limiares <- suggest_thresholds(val, target_precision = target_precision,
+                                 min_n = min_n, by = by) |>
+    select(all_of(celula), threshold)
+
+  full_join(revisados, todas, by = celula) |>
+    left_join(limiares, by = celula) |>
+    mutate(
+      n_reviewed = replace_na(n_reviewed, 0L),
+      n_fp = replace_na(n_fp, 0L),
+      n_high = replace_na(n_high, 0L),
+      n_high_all = replace_na(n_high_all, 0L),
+      unreviewed_high = pmax(n_high_all - n_high, 0L),
+      diagnosis = case_when(
+        n_reviewed == 0                                  ~ "not reviewed",
+        !is.na(threshold)                                ~ "reached",
+        unreviewed_high < min_n                          ~ "exhausted",
+        !is.na(prec_high) & prec_high < min_precision    ~ "unreliable",
+        .default = "review more"
+      )) |>
+    select(all_of(celula), n_reviewed, n_fp, n_high, prec_high, n_high_all,
+           unreviewed_high, threshold, diagnosis) |>
+    arrange(diagnosis, species_folder, site, across(all_of(by)))
+}
+
 # Colunas extras de agrupamento (argumento `by`)
 check_by <- function(dados, by) {
   if (is.null(by)) return(invisible())
