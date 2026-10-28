@@ -10,8 +10,9 @@
 #' would bias the detection histories built from the model.
 #'
 #' For each group, the test statistic is the share of true positives,
-#' \eqn{T(y) = \bar y}, and the Bayesian p-value is the mid-p
-#' \eqn{\Pr(T(y^{rep}) > T(y)) + \Pr(T(y^{rep}) = T(y)) / 2}, so that ties,
+#' \eqn{T(y) = \bar y}{T(y) = mean(y)}, and the Bayesian p-value is the mid-p
+#' \eqn{\Pr(T(y^{rep}) > T(y)) + \Pr(T(y^{rep}) = T(y)) / 2}{
+#'   Pr(T(yrep) > T(y)) + Pr(T(yrep) = T(y)) / 2}, so that ties,
 #' frequent in small groups of binary verdicts, count half on each side.
 #' Values close to 0 or 1 mean that the model under- or over-predicts the
 #' share of true positives in that group (Gelman et al. 2013, *Bayesian
