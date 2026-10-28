@@ -2,6 +2,9 @@
 
 ## sheepdog (development version)
 
+- The contract test reads the fixture `export-1.3` in crywolf as well
+  (with crywolf \>= 2.1.0.9000): `fp_draws_data()` returns the versions
+  of `occasion_draws.parquet` and refuses a different seed.
 - New
   [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md):
   for each site x species cell, the reviewed clips at high scores, their
