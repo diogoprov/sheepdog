@@ -2,6 +2,8 @@
 
 ## sheepdog (development version)
 
+- Larissa S. M. Sugai and Liliana Piatti, who designed the validation
+  protocol, are now listed as authors (`Authors@R` and `CITATION.cff`).
 - New
   [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
   writes, in one folder, the data of an occupancy model with false
