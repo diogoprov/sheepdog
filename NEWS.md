@@ -1,5 +1,8 @@
 # sheepdog (development version)
 
+- `vignette("crywolf-integration")`: the Curiango data come from seven
+  recorders, not four, and the calibration model is chosen among three
+  candidates, not two.
 - Larissa S. M. Sugai and Liliana Piatti, who designed the validation
   protocol, are now listed as authors (`Authors@R` and `CITATION.cff`).
 - New `export_occupancy_data()` writes, in one folder, the data of an
