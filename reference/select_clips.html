@@ -85,6 +85,7 @@ audio is read or written; cut the clips with <code><a href="cut_clips.html">cut_
 <span>  threshold <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  n_top <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  strata <span class="op">=</span> <span class="st">"night_hour"</span>,</span>
+<span>  covariates <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  recording_fraction <span class="op">=</span> <span class="fl">0.01</span>,</span>
 <span>  n_recordings_per_site <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  recordings <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -167,6 +168,20 @@ column must be constant within an occasion.</p>
 random. With strata without the hour and <code>balance_by_hour = TRUE</code>
 under <code>target_total</code> or <code>max_per_species</code>, <code>inclusion_prob</code> is
 conditional on the first draw (a warning says so).</p></dd>
+
+
+<dt id="arg-covariates">covariates<a class="anchor" aria-label="anchor" href="#arg-covariates"></a></dt>
+<dd><p><code>"random_detections"</code>: optional data frame of
+occasion covariates whose columns can be used in <code>strata</code>, such as
+the bins of an environmental gradient or of an acoustic index made by
+<code><a href="covariate_bins.html">covariate_bins()</a></code>. It is joined to the predictions by the columns it
+shares with them among <code>site</code>, <code>night</code>, <code>recording_date</code>,
+<code>recording_hour</code>, <code>source_audio</code> and <code>occasion_id</code> (compared as
+character; <code>night</code> and <code>recording_date</code> are <code>YYYYMMDD</code>). Occasions
+without a match form a stratum of their own, with a warning. A
+stratum other than site, species and time may be related to the
+verdict, so the calibration should include it or weight the clips by
+<code>inclusion_prob</code> (a message says so).</p></dd>
 
 
 <dt id="arg-recording-fraction">recording_fraction<a class="anchor" aria-label="anchor" href="#arg-recording-fraction"></a></dt>

@@ -21,7 +21,14 @@ Useful links:
 ## Author
 
 **Maintainer**: Diogo B. Provete <dbprovete@gmail.com>
+([ORCID](https://orcid.org/0000-0002-0097-0651))
 
 Authors:
 
 - Diogo B. Provete <dbprovete@gmail.com>
+  ([ORCID](https://orcid.org/0000-0002-0097-0651))
+
+- Larissa Sayuri Moreira Sugai
+  ([ORCID](https://orcid.org/0000-0002-6248-291X))
+
+- Liliana Piatti ([ORCID](https://orcid.org/0000-0001-6324-1723))

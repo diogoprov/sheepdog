@@ -110,7 +110,9 @@ over all cells, more clips would still improve the calibration.</li>
 <code><a href="../reference/suggest_thresholds.html">suggest_thresholds()</a></code>.</strong> Precision by confidence bin
 and the lowest threshold that reaches a target precision, for each site
 x species, with flags for bins and thresholds resting on few clips. They
-show <em>which</em> cells lack support.</li>
+show <em>which</em> cells lack support, and, with
+<code><a href="../reference/covariate_bins.html">covariate_bins()</a></code>, which parts of an environmental gradient
+or of the acoustic background.</li>
 </ul>
 <p>This vignette runs both on the simulated example shipped with the
 package.</p>
@@ -490,6 +492,213 @@ be a site where the species is absent. These are interpretations of the
 model structure, not flags computed by the package.</p>
 </div>
 <div class="section level2">
+<h2 id="stage-1-along-a-gradient">Stage 1 along a gradient<a class="anchor" aria-label="anchor" href="#stage-1-along-a-gradient"></a>
+</h2>
+<p>The checks above split the reviewed clips by site x species. The
+share of false positives can also change along an environmental gradient
+within a site, for instance with the temperature or the rain of the
+night, or with the acoustic background of the recording (wind, rain, a
+chorus of other species). When the gradient is also a covariate of
+occupancy, a model with false positives can only separate the two
+effects if the reviewed clips cover the whole gradient, including its
+ends, which hold few nights and are easily missed by a draw that ignores
+them. Two steps make the gradient part of the design: stratify the draw
+of <code><a href="../reference/select_clips.html">select_clips()</a></code> by bins of the covariate, and repeat the
+checks of stage 1 within each bin.</p>
+<div class="section level3">
+<h3 id="bins-of-the-covariate">Bins of the covariate<a class="anchor" aria-label="anchor" href="#bins-of-the-covariate"></a>
+</h3>
+<p><code><a href="../reference/covariate_bins.html">covariate_bins()</a></code> cuts a covariate of the occasions into
+bins. The table should list every night (or recording) of the study,
+with or without predictions, so that the same bins serve the draw and
+every later table. The covariates of the example are
+<strong>simulated</strong> here, independently of the verdicts, only to
+show the mechanics: a mean temperature per night and an acoustic index
+per recording.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">recordings</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"recordings.csv"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>occasion_id <span class="op">=</span> <span class="fu">tools</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/tools/fileutils.html" class="external-link">file_path_sans_ext</a></span><span class="op">(</span></span>
+<span>           <span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"\\\\"</span>, <span class="st">"/"</span>, <span class="va">source_audio</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>         night <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"^.*_(\\d{8})_\\d{6}$"</span>, <span class="st">"\\1"</span>, <span class="va">occasion_id</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">nights</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">recordings</span>, <span class="va">site</span>, <span class="va">night</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>temp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>, mean <span class="op">=</span> <span class="fl">22</span>, sd <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">temp_bins</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/covariate_bins.html">covariate_bins</a></span><span class="op">(</span><span class="va">nights</span>, <span class="st">"temp"</span>, key <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"night"</span><span class="op">)</span>,</span>
+<span>                            n_bins <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">temp_bins</span>, <span class="va">site</span>, <span class="va">temp_bin</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span>names_from <span class="op">=</span> <span class="va">temp_bin</span>, values_from <span class="op">=</span> <span class="va">n</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 4</span></span></span>
+<span><span class="co">#&gt;   site     q1    q2    q3</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ARA      20    20    20</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> BAI      20    20    20</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> NHE      20    20    20</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> XAR      19    18    19</span></span></code></pre></div>
+<p>By default the breaks are the quantiles of the covariate
+<strong>within each site</strong> (<code>within = "site"</code>), so
+each site contributes nights to every bin. Quantiles over all sites
+(<code>within = NULL</code>) or fixed breaks (<code>breaks =</code>)
+suit a covariate measured on the same scale everywhere, such as
+rainfall; an acoustic index depends on the gain and placement of each
+recorder, so its bins should be computed within sites.</p>
+</div>
+<div class="section level3">
+<h3 id="drawing-clips-along-the-gradient">Drawing clips along the gradient<a class="anchor" aria-label="anchor" href="#drawing-clips-along-the-gradient"></a>
+</h3>
+<p>The bin enters <code>strata</code>, and the table of bins enters
+<code>covariates</code>; it is joined to the predictions by the columns
+they share (here <code>site</code> and <code>night</code>). Every site x
+species x bin stratum then gets <code>n_top</code> occasions:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">detections_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/read_selection_tables.html">read_selection_tables</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"birdnet"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">clips_temp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/select_clips.html">select_clips</a></span><span class="op">(</span><span class="va">detections_raw</span>, <span class="st">"random_detections"</span>,</span>
+<span>                           threshold <span class="op">=</span> <span class="fl">0.5</span>, n_top <span class="op">=</span> <span class="fl">3</span>, strata <span class="op">=</span> <span class="st">"temp_bin"</span>,</span>
+<span>                           covariates <span class="op">=</span> <span class="va">temp_bins</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Sampling mode: random_detections (occasion = file).</span></span>
+<span><span class="co">#&gt; Strata by temp_bin: if the covariate may be related to the verdict, include it in the calibration or weight the clips by inclusion_prob.</span></span>
+<span><span class="co">#&gt; 287 occasions drawn (3 per site x species_code x temp_bin) among 1876 with a prediction &gt;= 0.5.</span></span>
+<span><span class="co">#&gt; 677 clips (every prediction &gt;= 0.5 of the 287 occasions drawn).</span></span>
+<span><span class="va">clips_temp</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">site</span>, <span class="va">species_code</span>, <span class="va">occasion_id</span>, <span class="va">night</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">temp_bins</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"night"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">temp_bin</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 2</span></span></span>
+<span><span class="co">#&gt;   temp_bin     n</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;ord&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> q1          96</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> q2          96</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> q3          95</span></span></code></pre></div>
+<p>The bin does not depend on the score, so <code>inclusion_prob</code>
+stays exact. The message printed by <code><a href="../reference/select_clips.html">select_clips()</a></code> is a
+reminder of the main caveat, discussed below. The clip manifest keeps
+its usual columns; the bin comes back from the same
+<code>temp_bins</code> table whenever it is needed.</p>
+<p>An acoustic index works the same way, with the recording as key. With
+<code>occasion_unit = "minute"</code>, the key would be
+<code>occasion_id</code> of each minute:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">aci</span> <span class="op">&lt;-</span> <span class="va">recordings</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>aci <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>, mean <span class="op">=</span> <span class="fl">150</span>, sd <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">site</span>, <span class="va">occasion_id</span>, <span class="va">aci</span><span class="op">)</span></span>
+<span><span class="va">aci_bins</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/covariate_bins.html">covariate_bins</a></span><span class="op">(</span><span class="va">aci</span>, <span class="st">"aci"</span>, key <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"occasion_id"</span><span class="op">)</span>,</span>
+<span>                           n_bins <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">clips_aci</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/select_clips.html">select_clips</a></span><span class="op">(</span><span class="va">detections_raw</span>, <span class="st">"random_detections"</span>,</span>
+<span>                          threshold <span class="op">=</span> <span class="fl">0.5</span>, n_top <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                          strata <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"month"</span>, <span class="st">"aci_bin"</span><span class="op">)</span>,</span>
+<span>                          covariates <span class="op">=</span> <span class="va">aci_bins</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Sampling mode: random_detections (occasion = file).</span></span>
+<span><span class="co">#&gt; Strata by aci_bin: if the covariate may be related to the verdict, include it in the calibration or weight the clips by inclusion_prob.</span></span>
+<span><span class="co">#&gt; 908 occasions drawn (3 per site x species_code x month x aci_bin) among 1876 with a prediction &gt;= 0.5.</span></span>
+<span><span class="co">#&gt; 2170 clips (every prediction &gt;= 0.5 of the 908 occasions drawn).</span></span></code></pre></div>
+<p>Here the strata cross the index with the month, so that quiet and
+noisy recordings are reviewed in every month; in a real study this would
+let the checks tell a change in calling activity from a change in the
+acoustic background.</p>
+</div>
+<div class="section level3">
+<h3 id="the-checks-of-stage-1-within-bins">The checks of stage 1 within bins<a class="anchor" aria-label="anchor" href="#the-checks-of-stage-1-within-bins"></a>
+</h3>
+<p><code><a href="../reference/precision_by_bin.html">precision_by_bin()</a></code>, <code><a href="../reference/suggest_thresholds.html">suggest_thresholds()</a></code>
+and <code><a href="../reference/cell_status.html">cell_status()</a></code> take a <code>by</code> argument with
+columns that split each site x species cell. The bins are joined to the
+validation tables by the same key (the tables of the example were drawn
+with the <code>"top"</code> design, so they only illustrate the
+call):</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">val_temp</span> <span class="op">&lt;-</span> <span class="va">val_raw</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>night <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">night</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">temp_bins</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"night"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/precision_by_bin.html">precision_by_bin</a></span><span class="op">(</span><span class="va">val_temp</span>, min_n <span class="op">=</span> <span class="fl">15</span>, by <span class="op">=</span> <span class="st">"temp_bin"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">site</span> <span class="op">==</span> <span class="st">"BAI"</span>, <span class="va">species_folder</span> <span class="op">==</span> <span class="st">"phy_cuv"</span>, <span class="va">bin</span> <span class="op">==</span> <span class="st">"[0.9,1]"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 8</span></span></span>
+<span><span class="co">#&gt;   site  species_folder temp_bin bin     n_reviewed n_positive precision</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;ord&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> BAI   phy_cuv        q1       [0.9,1]         15         15         1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> BAI   phy_cuv        q2       [0.9,1]          4          4         1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> BAI   phy_cuv        q3       [0.9,1]          5          5         1</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: low_support &lt;lgl&gt;</span></span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/suggest_thresholds.html">suggest_thresholds</a></span><span class="op">(</span><span class="va">val_temp</span>, target_precision <span class="op">=</span> <span class="fl">0.90</span>, min_n <span class="op">=</span> <span class="fl">15</span>,</span>
+<span>                   by <span class="op">=</span> <span class="st">"temp_bin"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">species_folder</span> <span class="op">==</span> <span class="st">"phy_cuv"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 12 × 6</span></span></span>
+<span><span class="co">#&gt;    site  species_folder temp_bin threshold n_support precision_at_threshold</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;ord&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> ARA   phy_cuv        q1            0.38        26                  1    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> ARA   phy_cuv        q2            0.61        29                  1    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> ARA   phy_cuv        q3            0.19        24                  0.958</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> BAI   phy_cuv        q1            0.48        40                  0.975</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> BAI   phy_cuv        q2           <span style="color: #BB0000;">NA</span>           <span style="color: #BB0000;">NA</span>                 <span style="color: #BB0000;">NA</span>    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> BAI   phy_cuv        q3            0.23        26                  1    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> NHE   phy_cuv        q1            0.45        20                  0.95 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> NHE   phy_cuv        q2            0.36        35                  0.943</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> NHE   phy_cuv        q3            0.16        21                  0.905</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> XAR   phy_cuv        q1            0.14        25                  0.96 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> XAR   phy_cuv        q2            0.27        23                  0.913</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> XAR   phy_cuv        q3            0.51        18                  0.944</span></span></code></pre></div>
+<p>A threshold reached in one bin but not in another shows the part of
+the gradient where more clips are needed, or where the classifier fails.
+With a fitted calibration,
+<code>cell_status(fit, validations, by = "temp_bin")</code> gives the
+status of each site x species x bin cell; keep the column in the
+validations with <code>read_validations(keep = "night")</code> and join
+the bins.</p>
+</div>
+<div class="section level3">
+<h3 id="caveats">Caveats<a class="anchor" aria-label="anchor" href="#caveats"></a>
+</h3>
+<ul>
+<li>
+<strong>A stratum may be related to the verdict.</strong> Unlike the
+score, which is refused in <code>strata</code>, a covariate can be
+related to whether a detection is true: an acoustic index rises when the
+species calls, and the false positive rate may change along the
+gradient. A calibration that ignores the covariate then fits a mixture
+of bins drawn with unequal inclusion probabilities. Include the bin in
+the calibration (e.g. <code>tp ~ logit_conf + (1 | temp_bin)</code>,
+compared with the other candidates by
+<code><a href="../reference/compare_calibration_models.html">compare_calibration_models()</a></code>) or weight the clips by the
+inverse of <code>inclusion_prob</code>.</li>
+<li>
+<strong>The same covariate in the calibration and in the occupancy
+model.</strong> A calibration that varies along the gradient takes over
+part of what the occupancy or detection model would attribute to the
+covariate, as a calibration by month absorbs calling activity. Compare
+the occupancy estimates with and without the covariate in the
+calibration, and report the difference as a sensitivity analysis.</li>
+<li>
+<strong>Never select by the covariate itself.</strong> Taking the
+recordings with the highest index, as the <code>"top"</code> design
+takes the highest scores, is not a probability sample, and its clips
+cannot calibrate the classifier. Stratify, and let the draw within each
+stratum be random.</li>
+<li>
+<strong>The covariate must be constant within an occasion</strong>
+(a night mean for nightly or recording occasions, a minute value for
+minute occasions); <code><a href="../reference/select_clips.html">select_clips()</a></code> refuses strata that vary
+within an occasion. Occasions without a value in <code>covariates</code>
+form a stratum of their own, with a warning.</li>
+<li>
+<strong>More strata, fewer clips per stratum.</strong> Each bin
+multiplies the number of site x species strata; two or three bins per
+covariate are usually enough, and <code>target_total</code> or
+<code>max_per_species</code> keep the total effort bounded.</li>
+</ul>
+<p>The export of a calibration that includes a covariate bin to
+occupancy models with false positives
+(<code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code> and crywolf) is being developed
+together with crywolf. For now, a calibration with a random intercept of
+the bin can already be exported: give the bin as a column of
+<code>occasion_covariates</code> and name it in
+<code>calibration_keys</code> of <code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code>
+(see the calibration keys in
+<code><a href="../articles/crywolf-integration.html">vignette("crywolf-integration")</a></code>).</p>
+</div>
+</div>
+<div class="section level2">
 <h2 id="the-practical-decision">The practical decision<a class="anchor" aria-label="anchor" href="#the-practical-decision"></a>
 </h2>
 <p>Read the two views together:</p>
@@ -526,7 +735,7 @@ computed for the best model of the cross-validation and written to
 <code>effort_curve.csv</code>. The arguments <code>effort_n</code> and
 <code>effort_reps</code> set the training sizes and the number of
 repetitions.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ARA"</span>, <span class="st">"BAI"</span>, <span class="st">"NHE"</span>, <span class="st">"XAR"</span><span class="op">)</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibrate.html">calibrate</a></span><span class="op">(</span></span>
 <span>  validation_files  <span class="op">=</span> <span class="va">val_files</span>,</span>

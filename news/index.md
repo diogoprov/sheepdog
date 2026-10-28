@@ -2,6 +2,26 @@
 
 ## sheepdog (development version)
 
+- New
+  [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md)
+  cuts a covariate of the occasions (an environmental gradient, such as
+  the temperature of the night, or an acoustic index of the recording or
+  minute) into bins, by default quantiles within each site.
+  [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
+  gains `covariates`, so that the `"random_detections"` draw can be
+  stratified by those bins (`strata = "temp_bin"`) with exact inclusion
+  probabilities, and a message recalls that a stratum related to the
+  verdict should enter the calibration.
+  [`precision_by_bin()`](https://provetelab.org/sheepdog/reference/precision_by_bin.md),
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
+  and
+  [`cell_status()`](https://provetelab.org/sheepdog/reference/cell_status.md)
+  gain `by`, to check each site x species cell within the bins.
+  [`vignette("validation-effort")`](https://provetelab.org/sheepdog/articles/validation-effort.md)
+  has a new section, “Stage 1 along a gradient”, with both examples and
+  their caveats.
+- `man/sheepdog-package.Rd` lists the three authors (it was not
+  regenerated when `Authors@R` changed).
 - [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md):
   the Curiango data come from seven recorders, not four, and the
   calibration model is chosen among three candidates, not two.

@@ -17,6 +17,7 @@ select_clips(
   threshold = NULL,
   n_top = 2,
   strata = "night_hour",
+  covariates = NULL,
   recording_fraction = 0.01,
   n_recordings_per_site = NULL,
   recordings = NULL,
@@ -106,6 +107,21 @@ select_clips(
   random. With strata without the hour and `balance_by_hour = TRUE`
   under `target_total` or `max_per_species`, `inclusion_prob` is
   conditional on the first draw (a warning says so).
+
+- covariates:
+
+  `"random_detections"`: optional data frame of occasion covariates
+  whose columns can be used in `strata`, such as the bins of an
+  environmental gradient or of an acoustic index made by
+  [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md).
+  It is joined to the predictions by the columns it shares with them
+  among `site`, `night`, `recording_date`, `recording_hour`,
+  `source_audio` and `occasion_id` (compared as character; `night` and
+  `recording_date` are `YYYYMMDD`). Occasions without a match form a
+  stratum of their own, with a warning. A stratum other than site,
+  species and time may be related to the verdict, so the calibration
+  should include it or weight the clips by `inclusion_prob` (a message
+  says so).
 
 - recording_fraction:
 

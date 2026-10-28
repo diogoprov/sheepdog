@@ -7,7 +7,12 @@ of `"random_recordings"`) are left out.
 ## Usage
 
 ``` r
-precision_by_bin(validation, bins = seq(0.1, 1, by = 0.1), min_n = 15)
+precision_by_bin(
+  validation,
+  bins = seq(0.1, 1, by = 0.1),
+  min_n = 15,
+  by = NULL
+)
 ```
 
 ## Arguments
@@ -26,7 +31,15 @@ precision_by_bin(validation, bins = seq(0.1, 1, by = 0.1), min_n = 15)
   Minimum of reviewed clips for a bin to be taken seriously; bins with
   fewer are flagged in `low_support`.
 
+- by:
+
+  Optional columns of `validation` that split each site x species cell
+  further, e.g. the bin of an environmental gradient or of an acoustic
+  index joined from
+  [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md).
+  They show which parts of the gradient lack reviewed clips.
+
 ## Value
 
-A tibble with `site`, `species_folder`, `bin`, `n_reviewed`,
-`n_positive`, `precision` and `low_support`.
+A tibble with `site`, `species_folder`, the `by` columns, `bin`,
+`n_reviewed`, `n_positive`, `precision` and `low_support`.

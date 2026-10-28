@@ -15,7 +15,11 @@ offers two complementary views of it:
   [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md).**
   Precision by confidence bin and the lowest threshold that reaches a
   target precision, for each site x species, with flags for bins and
-  thresholds resting on few clips. They show *which* cells lack support.
+  thresholds resting on few clips. They show *which* cells lack support,
+  and, with
+  [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md),
+  which parts of an environmental gradient or of the acoustic
+  background.
 
 This vignette runs both on the simulated example shipped with the
 package.
@@ -433,6 +437,223 @@ clips are all false positives (lep_fus at ARA, lep_fus at BAI) gives no
 information on true detections at all; it may be a site where the
 species is absent. These are interpretations of the model structure, not
 flags computed by the package.
+
+## Stage 1 along a gradient
+
+The checks above split the reviewed clips by site x species. The share
+of false positives can also change along an environmental gradient
+within a site, for instance with the temperature or the rain of the
+night, or with the acoustic background of the recording (wind, rain, a
+chorus of other species). When the gradient is also a covariate of
+occupancy, a model with false positives can only separate the two
+effects if the reviewed clips cover the whole gradient, including its
+ends, which hold few nights and are easily missed by a draw that ignores
+them. Two steps make the gradient part of the design: stratify the draw
+of
+[`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
+by bins of the covariate, and repeat the checks of stage 1 within each
+bin.
+
+### Bins of the covariate
+
+[`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md)
+cuts a covariate of the occasions into bins. The table should list every
+night (or recording) of the study, with or without predictions, so that
+the same bins serve the draw and every later table. The covariates of
+the example are **simulated** here, independently of the verdicts, only
+to show the mechanics: a mean temperature per night and an acoustic
+index per recording.
+
+``` r
+
+recordings <- read.csv(file.path(ex, "recordings.csv")) |>
+  mutate(occasion_id = tools::file_path_sans_ext(
+           basename(gsub("\\\\", "/", source_audio))),
+         night = sub("^.*_(\\d{8})_\\d{6}$", "\\1", occasion_id))
+
+set.seed(42)
+nights <- distinct(recordings, site, night) |>
+  mutate(temp = rnorm(n(), mean = 22, sd = 3))
+temp_bins <- covariate_bins(nights, "temp", key = c("site", "night"),
+                            n_bins = 3)
+count(temp_bins, site, temp_bin) |>
+  tidyr::pivot_wider(names_from = temp_bin, values_from = n)
+#> # A tibble: 4 × 4
+#>   site     q1    q2    q3
+#>   <chr> <int> <int> <int>
+#> 1 ARA      20    20    20
+#> 2 BAI      20    20    20
+#> 3 NHE      20    20    20
+#> 4 XAR      19    18    19
+```
+
+By default the breaks are the quantiles of the covariate **within each
+site** (`within = "site"`), so each site contributes nights to every
+bin. Quantiles over all sites (`within = NULL`) or fixed breaks
+(`breaks =`) suit a covariate measured on the same scale everywhere,
+such as rainfall; an acoustic index depends on the gain and placement of
+each recorder, so its bins should be computed within sites.
+
+### Drawing clips along the gradient
+
+The bin enters `strata`, and the table of bins enters `covariates`; it
+is joined to the predictions by the columns they share (here `site` and
+`night`). Every site x species x bin stratum then gets `n_top`
+occasions:
+
+``` r
+
+detections_raw <- suppressMessages(
+  read_selection_tables(file.path(ex, "birdnet")))
+clips_temp <- select_clips(detections_raw, "random_detections",
+                           threshold = 0.5, n_top = 3, strata = "temp_bin",
+                           covariates = temp_bins)
+#> Sampling mode: random_detections (occasion = file).
+#> Strata by temp_bin: if the covariate may be related to the verdict, include it in the calibration or weight the clips by inclusion_prob.
+#> 287 occasions drawn (3 per site x species_code x temp_bin) among 1876 with a prediction >= 0.5.
+#> 677 clips (every prediction >= 0.5 of the 287 occasions drawn).
+clips_temp |>
+  distinct(site, species_code, occasion_id, night) |>
+  left_join(temp_bins, by = c("site", "night")) |>
+  count(temp_bin)
+#> # A tibble: 3 × 2
+#>   temp_bin     n
+#>   <ord>    <int>
+#> 1 q1          96
+#> 2 q2          96
+#> 3 q3          95
+```
+
+The bin does not depend on the score, so `inclusion_prob` stays exact.
+The message printed by
+[`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
+is a reminder of the main caveat, discussed below. The clip manifest
+keeps its usual columns; the bin comes back from the same `temp_bins`
+table whenever it is needed.
+
+An acoustic index works the same way, with the recording as key. With
+`occasion_unit = "minute"`, the key would be `occasion_id` of each
+minute:
+
+``` r
+
+aci <- recordings |>
+  mutate(aci = rnorm(n(), mean = 150, sd = 10)) |>
+  select(site, occasion_id, aci)
+aci_bins <- covariate_bins(aci, "aci", key = c("site", "occasion_id"),
+                           n_bins = 2)
+clips_aci <- select_clips(detections_raw, "random_detections",
+                          threshold = 0.5, n_top = 3,
+                          strata = c("month", "aci_bin"),
+                          covariates = aci_bins)
+#> Sampling mode: random_detections (occasion = file).
+#> Strata by aci_bin: if the covariate may be related to the verdict, include it in the calibration or weight the clips by inclusion_prob.
+#> 908 occasions drawn (3 per site x species_code x month x aci_bin) among 1876 with a prediction >= 0.5.
+#> 2170 clips (every prediction >= 0.5 of the 908 occasions drawn).
+```
+
+Here the strata cross the index with the month, so that quiet and noisy
+recordings are reviewed in every month; in a real study this would let
+the checks tell a change in calling activity from a change in the
+acoustic background.
+
+### The checks of stage 1 within bins
+
+[`precision_by_bin()`](https://provetelab.org/sheepdog/reference/precision_by_bin.md),
+[`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
+and
+[`cell_status()`](https://provetelab.org/sheepdog/reference/cell_status.md)
+take a `by` argument with columns that split each site x species cell.
+The bins are joined to the validation tables by the same key (the tables
+of the example were drawn with the `"top"` design, so they only
+illustrate the call):
+
+``` r
+
+val_temp <- val_raw |>
+  mutate(night = as.character(night)) |>
+  left_join(temp_bins, by = c("site", "night"))
+
+precision_by_bin(val_temp, min_n = 15, by = "temp_bin") |>
+  filter(site == "BAI", species_folder == "phy_cuv", bin == "[0.9,1]")
+#> # A tibble: 3 × 8
+#>   site  species_folder temp_bin bin     n_reviewed n_positive precision
+#>   <chr> <chr>          <ord>    <fct>        <int>      <int>     <dbl>
+#> 1 BAI   phy_cuv        q1       [0.9,1]         15         15         1
+#> 2 BAI   phy_cuv        q2       [0.9,1]          4          4         1
+#> 3 BAI   phy_cuv        q3       [0.9,1]          5          5         1
+#> # ℹ 1 more variable: low_support <lgl>
+
+suggest_thresholds(val_temp, target_precision = 0.90, min_n = 15,
+                   by = "temp_bin") |>
+  filter(species_folder == "phy_cuv")
+#> # A tibble: 12 × 6
+#>    site  species_folder temp_bin threshold n_support precision_at_threshold
+#>    <chr> <chr>          <ord>        <dbl>     <int>                  <dbl>
+#>  1 ARA   phy_cuv        q1            0.38        26                  1    
+#>  2 ARA   phy_cuv        q2            0.61        29                  1    
+#>  3 ARA   phy_cuv        q3            0.19        24                  0.958
+#>  4 BAI   phy_cuv        q1            0.48        40                  0.975
+#>  5 BAI   phy_cuv        q2           NA           NA                 NA    
+#>  6 BAI   phy_cuv        q3            0.23        26                  1    
+#>  7 NHE   phy_cuv        q1            0.45        20                  0.95 
+#>  8 NHE   phy_cuv        q2            0.36        35                  0.943
+#>  9 NHE   phy_cuv        q3            0.16        21                  0.905
+#> 10 XAR   phy_cuv        q1            0.14        25                  0.96 
+#> 11 XAR   phy_cuv        q2            0.27        23                  0.913
+#> 12 XAR   phy_cuv        q3            0.51        18                  0.944
+```
+
+A threshold reached in one bin but not in another shows the part of the
+gradient where more clips are needed, or where the classifier fails.
+With a fitted calibration,
+`cell_status(fit, validations, by = "temp_bin")` gives the status of
+each site x species x bin cell; keep the column in the validations with
+`read_validations(keep = "night")` and join the bins.
+
+### Caveats
+
+- **A stratum may be related to the verdict.** Unlike the score, which
+  is refused in `strata`, a covariate can be related to whether a
+  detection is true: an acoustic index rises when the species calls, and
+  the false positive rate may change along the gradient. A calibration
+  that ignores the covariate then fits a mixture of bins drawn with
+  unequal inclusion probabilities. Include the bin in the calibration
+  (e.g. `tp ~ logit_conf + (1 | temp_bin)`, compared with the other
+  candidates by
+  [`compare_calibration_models()`](https://provetelab.org/sheepdog/reference/compare_calibration_models.md))
+  or weight the clips by the inverse of `inclusion_prob`.
+- **The same covariate in the calibration and in the occupancy model.**
+  A calibration that varies along the gradient takes over part of what
+  the occupancy or detection model would attribute to the covariate, as
+  a calibration by month absorbs calling activity. Compare the occupancy
+  estimates with and without the covariate in the calibration, and
+  report the difference as a sensitivity analysis.
+- **Never select by the covariate itself.** Taking the recordings with
+  the highest index, as the `"top"` design takes the highest scores, is
+  not a probability sample, and its clips cannot calibrate the
+  classifier. Stratify, and let the draw within each stratum be random.
+- **The covariate must be constant within an occasion** (a night mean
+  for nightly or recording occasions, a minute value for minute
+  occasions);
+  [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
+  refuses strata that vary within an occasion. Occasions without a value
+  in `covariates` form a stratum of their own, with a warning.
+- **More strata, fewer clips per stratum.** Each bin multiplies the
+  number of site x species strata; two or three bins per covariate are
+  usually enough, and `target_total` or `max_per_species` keep the total
+  effort bounded.
+
+The export of a calibration that includes a covariate bin to occupancy
+models with false positives
+([`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+and crywolf) is being developed together with crywolf. For now, a
+calibration with a random intercept of the bin can already be exported:
+give the bin as a column of `occasion_covariates` and name it in
+`calibration_keys` of
+[`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+(see the calibration keys in
+[`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md)).
 
 ## The practical decision
 

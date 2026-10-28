@@ -7,7 +7,7 @@ species from a calibration that does not work:
 ## Usage
 
 ``` r
-cell_status(fit, validations, p_min = 0.95, min_n = 15)
+cell_status(fit, validations, p_min = 0.95, min_n = 15, by = NULL)
 ```
 
 ## Arguments
@@ -32,14 +32,23 @@ cell_status(fit, validations, p_min = 0.95, min_n = 15)
 
   Minimum number of reviewed clips in a cell.
 
+- by:
+
+  Optional columns of `validations` that split each cell, e.g. the bin
+  of an environmental gradient or of an acoustic index from
+  [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md)
+  (kept by `read_validations(keep = )` or joined afterwards). Each site
+  x species x `by` cell gets its own status; the threshold uses the `by`
+  columns only if the calibration model does.
+
 ## Value
 
-A tibble with one row per site x species: `site`, `species`,
-`n_reviewed`, `n_tp`, `max_confidence` (highest reviewed score),
-`threshold` (lowest grid score at which the calibrated probability
-reaches `p_min`; `NA` if never), `status` and `reason`. The grid
-contains both observed endpoints and steps of 0.01 within the reviewed
-range.
+A tibble with one row per site x species (x `by`): `site`, `species`,
+the `by` columns, `n_reviewed`, `n_tp`, `max_confidence` (highest
+reviewed score), `threshold` (lowest grid score at which the calibrated
+probability reaches `p_min`; `NA` if never), `status` and `reason`. The
+grid contains both observed endpoints and steps of 0.01 within the
+reviewed range.
 
 ## Details
 

@@ -75,7 +75,12 @@ of <code>"random_recordings"</code>) are left out.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">precision_by_bin</span><span class="op">(</span><span class="va">validation</span>, bins <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">1</span>, by <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>, min_n <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">precision_by_bin</span><span class="op">(</span></span>
+<span>  <span class="va">validation</span>,</span>
+<span>  bins <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">1</span>, by <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>,</span>
+<span>  min_n <span class="op">=</span> <span class="fl">15</span>,</span>
+<span>  by <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -94,11 +99,18 @@ of <code>"random_recordings"</code>) are left out.</p>
 <dd><p>Minimum of reviewed clips for a bin to be taken seriously;
 bins with fewer are flagged in <code>low_support</code>.</p></dd>
 
+
+<dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
+<dd><p>Optional columns of <code>validation</code> that split each site x
+species cell further, e.g. the bin of an environmental gradient or of
+an acoustic index joined from <code><a href="covariate_bins.html">covariate_bins()</a></code>. They show which
+parts of the gradient lack reviewed clips.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with <code>site</code>, <code>species_folder</code>, <code>bin</code>, <code>n_reviewed</code>,
-<code>n_positive</code>, <code>precision</code> and <code>low_support</code>.</p>
+    <p>A tibble with <code>site</code>, <code>species_folder</code>, the <code>by</code> columns, <code>bin</code>,
+<code>n_reviewed</code>, <code>n_positive</code>, <code>precision</code> and <code>low_support</code>.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

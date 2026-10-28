@@ -11,6 +11,8 @@ and pack them.
   : Read BirdNET selection tables
 - [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
   : Select the clips to validate
+- [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md)
+  : Bins of an occasion covariate for stratified clip selection
 - [`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md)
   : Cut the selected clips
 - [`pack_clips()`](https://provetelab.org/sheepdog/reference/pack_clips.md)
