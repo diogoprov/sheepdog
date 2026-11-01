@@ -41,7 +41,7 @@ which use only positive and negative verdicts.'><meta property="og:image" conten
     <li><h6 class="dropdown-header" data-toc-skip>The three stages</h6></li>
     <li><a class="dropdown-item" href="../articles/sampling-designs.html">Choosing a sampling design</a></li>
     <li><a class="dropdown-item" href="../articles/reviewing-in-the-gui.html">Reviewing clips in the BirdNET GUI</a></li>
-    <li><a class="dropdown-item" href="../articles/review-app.html">Reviewing clips in the sheepdog app</a></li>
+    <li><a class="dropdown-item" href="../articles/review-app.html">Sampling, reviewing and exporting in the sheepdog app</a></li>
     <li><a class="dropdown-item" href="../articles/validation-effort.html">How many clips should I validate?</a></li>
     <li><a class="dropdown-item" href="../articles/calibration.html">Calibrating confidence scores</a></li>
     <li><a class="dropdown-item" href="../articles/bayesian-calibration.html">Bayesian calibration with brms</a></li>
@@ -98,7 +98,8 @@ which use only positive and negative verdicts.</p>
 <dl><dt id="arg-manifest">manifest<a class="anchor" aria-label="anchor" href="#arg-manifest"></a></dt>
 <dd><p>Clip manifest: a data frame or the path to
 <code>clip_manifest.csv</code> (from <code><a href="select_clips.html">select_clips()</a></code>, <code><a href="cut_clips.html">cut_clips()</a></code> or
-<code><a href="assign_reviewers.html">assign_reviewers()</a></code>).</p></dd>
+<code><a href="assign_reviewers.html">assign_reviewers()</a></code>). With <code>output_dir</code>, by default
+<code>&lt;output_dir&gt;/clip_manifest.csv</code> when it exists.</p></dd>
 
 
 <dt id="arg-verdicts-file">verdicts_file<a class="anchor" aria-label="anchor" href="#arg-verdicts-file"></a></dt>

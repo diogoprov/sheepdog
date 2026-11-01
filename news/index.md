@@ -2,6 +2,23 @@
 
 ## sheepdog (development version)
 
+- [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md)
+  gains the Sampling and Export tabs, opened with `selection_dir` and
+  `output_dir`. Sampling is a form for the design of
+  [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md):
+  *Draw* shows the clips per site and species and their inclusion
+  probabilities, and warns that `"top"` clips do not estimate the
+  false-positive rate; *Cut clips* calls
+  [`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md)
+  (or simulates it) and writes `clip_manifest.csv`,
+  `extraction_info.csv` and `clips/`, and the new clips go straight to
+  the Review tab. Export calls
+  [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+  with the verdicts of the app (combined by
+  [`consensus_verdicts()`](https://provetelab.org/sheepdog/reference/consensus_verdicts.md)
+  across reviewers) and shows the summary of `schema.json`. New
+  arguments `recordings` and `classifier`;
+  `run_app(manifest, clips_dir)` works as before.
 - New
   [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md): a
   local ‘shiny’ app to review the clips one at a time, with spectrogram,
@@ -16,8 +33,8 @@
   turns that file into the table of
   [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md),
   so the rest of stage 1, the agreement between reviewers and the
-  calibration work unchanged. New article “Reviewing clips in the
-  sheepdog app”. ‘shiny’ joins Suggests.
+  calibration work unchanged. New article “Sampling, reviewing and
+  exporting in the sheepdog app”. ‘shiny’ joins Suggests.
 - [`exclude_training_clips()`](https://provetelab.org/sheepdog/reference/exclude_training_clips.md)
   with a table of
   [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md)

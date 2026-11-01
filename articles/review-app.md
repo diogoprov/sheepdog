@@ -1,13 +1,16 @@
-# Reviewing clips in the sheepdog app
+# Sampling, reviewing and exporting in the sheepdog app
 
 The manual review of stage 1 can be done in the BirdNET GUI ([Reviewing
 clips in the BirdNET
 GUI](https://provetelab.org/sheepdog/articles/reviewing-in-the-gui.md))
-or in a small app that comes with sheepdog. The app shows one clip at a
-time, with its spectrogram, a player and the data of the clip (site,
-night, hour, score and sampling design), and writes each verdict to a
-CSV file as soon as the reviewer clicks. No clip is moved between
-folders, and an interrupted session loses nothing.
+or in a small app that comes with sheepdog. The app can also draw and
+cut the clips and write the occupancy export, so that a validation round
+runs from the selection tables to the tables of the occupancy model
+without leaving it. In the Review tab, the app shows one clip at a time,
+with its spectrogram, a player and the data of the clip (site, night,
+hour, score and sampling design), and writes each verdict to a CSV file
+as soon as the reviewer clicks. No clip is moved between folders, and an
+interrupted session loses nothing.
 
 The app runs on the reviewer’s computer, in the browser, and reads the
 clips from disk; nothing is uploaded. It needs the packages ‘shiny’ and
@@ -20,6 +23,26 @@ install.packages(c("shiny", "av"))
 
 ## Opening the app
 
+For a whole validation round, give
+[`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md) the
+folder of the BirdNET selection tables and the folder of the round. The
+app opens on the Sampling tab, followed by the Review and Export tabs:
+
+``` r
+
+library(sheepdog)
+run_app(selection_dir = "N:/Arara", output_dir = "validation",
+        recordings = "recordings.csv", reviewer = "liliana",
+        max_freq = 8, classifier = "FrogNet v2")
+```
+
+`recordings`, the table of every recording (`site`, `source_audio`), is
+needed by the `"random_recordings"` design and keeps, in the export, the
+occasions without detections. Everything the app writes goes to
+`output_dir`: `clip_manifest.csv`, `extraction_info.csv`, `clips/`,
+`verdicts.csv` and the export in `occupancy/`.
+
+To review clips already cut,
 [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md)
 takes the clip manifest and the folder of cut clips, with one subfolder
 per species, as written by
@@ -29,10 +52,11 @@ or
 
 ``` r
 
-library(sheepdog)
 run_app("validation/clip_manifest.csv", "validation/clips",
         reviewer = "liliana", max_freq = 8)
 ```
+
+and opens only the Review tab.
 
 The verdicts go to `verdicts.csv`, next to the manifest, unless
 `verdicts_file` says otherwise. The name in `reviewer` is written with
@@ -44,6 +68,40 @@ whole band of the recording.
 fuscus.](app-figures/review-app.jpg)
 
 The app with a clip of *Leptodactylus fuscus*.
+
+## Drawing and cutting the clips
+
+The Sampling tab is a form for the sampling design of
+[`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
+([`vignette("sampling-designs")`](https://provetelab.org/sheepdog/articles/sampling-designs.md)
+explains each choice): the mode (`"top"`, `"random_detections"` or
+`"random_recordings"`), the occasion, the threshold of the occupancy
+analysis, `n_top`, the strata of `"random_detections"`, a total per site
+or a maximum per site and species, the minimum score, filters by site,
+species and hour, the seed, and the remapping of the audio paths when
+the recordings moved since BirdNET read them.
+
+*Draw* runs
+[`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
+without touching the audio and shows the number of clips per site and
+species and the inclusion probability of the clips of each species
+(minimum, median and maximum), which the estimates of precision use as
+weights. Messages and warnings of
+[`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
+are shown above the tables; with `"top"`, the app also reminds that
+those clips serve retraining and calibration but do not estimate the
+false-positive rate.
+
+*Cut clips* cuts the drawn clips with
+[`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md)
+and writes `clip_manifest.csv`, `extraction_info.csv` (the provenance of
+the round, with every argument of the draw) and `clips/`, as
+[`extract_validation_clips()`](https://provetelab.org/sheepdog/reference/extract_validation_clips.md)
+does, without the zip packages. With *Simulate*, nothing is cut and the
+table tells, per species, whether each recording was found. The new
+clips go straight to the Review tab. The app does not write over an
+existing `clip_manifest.csv` unless *Replace* is ticked, since the
+verdicts already given refer to its clips.
 
 ## Reviewing
 
@@ -149,6 +207,23 @@ all_reviews <- app_verdicts("validation/clip_manifest.csv",
 reviewer_agreement(all_reviews)
 validation <- consensus_verdicts(all_reviews)
 ```
+
+## Exporting for the occupancy model
+
+The Export tab calls
+[`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+with the detections of `selection_dir`, `recordings` and the verdicts of
+the Review tab. When a clip has verdicts from several reviewers, they
+are combined by
+[`consensus_verdicts()`](https://provetelab.org/sheepdog/reference/consensus_verdicts.md);
+clips not yet reviewed are left out. Choose the occasion used in the
+draw (`"file"` or `"minute"`), the minimum score and the folder of the
+export (`validation/occupancy` by default). After the export, the app
+shows the schema version and the number of rows of each table. The score
+calibration is not in the app yet: for the calibrated tables, call
+[`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+with `fit`
+([`vignette("calibration")`](https://provetelab.org/sheepdog/articles/calibration.md)).
 
 ## The verdicts file
 

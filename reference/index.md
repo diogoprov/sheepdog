@@ -53,7 +53,7 @@ presence and retraining clips.
 Review the clips in a local app and read its verdicts.
 
 - [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md) :
-  Review the clips in a local app
+  Sample, review and export clips in a local app
 - [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md)
   : Verdicts of the review app
 

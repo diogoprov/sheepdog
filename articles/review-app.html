@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Reviewing clips in the sheepdog app • sheepdog</title>
+<title>Sampling, reviewing and exporting in the sheepdog app • sheepdog</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -21,7 +21,7 @@
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Reviewing clips in the sheepdog app">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Sampling, reviewing and exporting in the sheepdog app">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -49,7 +49,7 @@
     <li><h6 class="dropdown-header" data-toc-skip>The three stages</h6></li>
     <li><a class="dropdown-item" href="../articles/sampling-designs.html">Choosing a sampling design</a></li>
     <li><a class="dropdown-item" href="../articles/reviewing-in-the-gui.html">Reviewing clips in the BirdNET GUI</a></li>
-    <li><a class="dropdown-item" href="../articles/review-app.html">Reviewing clips in the sheepdog app</a></li>
+    <li><a class="dropdown-item" href="../articles/review-app.html">Sampling, reviewing and exporting in the sheepdog app</a></li>
     <li><a class="dropdown-item" href="../articles/validation-effort.html">How many clips should I validate?</a></li>
     <li><a class="dropdown-item" href="../articles/calibration.html">Calibrating confidence scores</a></li>
     <li><a class="dropdown-item" href="../articles/bayesian-calibration.html">Bayesian calibration with brms</a></li>
@@ -88,7 +88,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.svg" class="logo" alt=""><h1>Reviewing clips in the sheepdog app</h1>
+      <img src="../logo.svg" class="logo" alt=""><h1>Sampling, reviewing and exporting in the sheepdog app</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/diogoprov/sheepdog/blob/main/vignettes/articles/review-app.Rmd" class="external-link"><code>vignettes/articles/review-app.Rmd</code></a></small>
@@ -98,11 +98,14 @@
     
     
 <p>The manual review of stage 1 can be done in the BirdNET GUI (<a href="reviewing-in-the-gui.html">Reviewing clips in the BirdNET GUI</a>)
-or in a small app that comes with sheepdog. The app shows one clip at a
-time, with its spectrogram, a player and the data of the clip (site,
-night, hour, score and sampling design), and writes each verdict to a
-CSV file as soon as the reviewer clicks. No clip is moved between
-folders, and an interrupted session loses nothing.</p>
+or in a small app that comes with sheepdog. The app can also draw and
+cut the clips and write the occupancy export, so that a validation round
+runs from the selection tables to the tables of the occupancy model
+without leaving it. In the Review tab, the app shows one clip at a time,
+with its spectrogram, a player and the data of the clip (site, night,
+hour, score and sampling design), and writes each verdict to a CSV file
+as soon as the reviewer clicks. No clip is moved between folders, and an
+interrupted session loses nothing.</p>
 <p>The app runs on the reviewer’s computer, in the browser, and reads
 the clips from disk; nothing is uploaded. It needs the packages ‘shiny’
 and ‘av’:</p>
@@ -111,13 +114,29 @@ and ‘av’:</p>
 <div class="section level2">
 <h2 id="opening-the-app">Opening the app<a class="anchor" aria-label="anchor" href="#opening-the-app"></a>
 </h2>
-<p><code><a href="../reference/run_app.html">run_app()</a></code> takes the clip manifest and the folder of cut
-clips, with one subfolder per species, as written by
-<code><a href="../reference/extract_validation_clips.html">extract_validation_clips()</a></code> or <code><a href="../reference/cut_clips.html">cut_clips()</a></code>:</p>
+<p>For a whole validation round, give <code><a href="../reference/run_app.html">run_app()</a></code> the folder
+of the BirdNET selection tables and the folder of the round. The app
+opens on the Sampling tab, followed by the Review and Export tabs:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/diogoprov/sheepdog" class="external-link">sheepdog</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/run_app.html">run_app</a></span><span class="op">(</span><span class="st">"validation/clip_manifest.csv"</span>, <span class="st">"validation/clips"</span>,</span>
+<span><span class="fu"><a href="../reference/run_app.html">run_app</a></span><span class="op">(</span>selection_dir <span class="op">=</span> <span class="st">"N:/Arara"</span>, output_dir <span class="op">=</span> <span class="st">"validation"</span>,</span>
+<span>        recordings <span class="op">=</span> <span class="st">"recordings.csv"</span>, reviewer <span class="op">=</span> <span class="st">"liliana"</span>,</span>
+<span>        max_freq <span class="op">=</span> <span class="fl">8</span>, classifier <span class="op">=</span> <span class="st">"FrogNet v2"</span><span class="op">)</span></span></code></pre></div>
+<p><code>recordings</code>, the table of every recording
+(<code>site</code>, <code>source_audio</code>), is needed by the
+<code>"random_recordings"</code> design and keeps, in the export, the
+occasions without detections. Everything the app writes goes to
+<code>output_dir</code>: <code>clip_manifest.csv</code>,
+<code>extraction_info.csv</code>, <code>clips/</code>,
+<code>verdicts.csv</code> and the export in <code>occupancy/</code>.</p>
+<p>To review clips already cut, <code><a href="../reference/run_app.html">run_app()</a></code> takes the clip
+manifest and the folder of cut clips, with one subfolder per species, as
+written by <code><a href="../reference/extract_validation_clips.html">extract_validation_clips()</a></code> or
+<code><a href="../reference/cut_clips.html">cut_clips()</a></code>:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/run_app.html">run_app</a></span><span class="op">(</span><span class="st">"validation/clip_manifest.csv"</span>, <span class="st">"validation/clips"</span>,</span>
 <span>        reviewer <span class="op">=</span> <span class="st">"liliana"</span>, max_freq <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span></code></pre></div>
+<p>and opens only the Review tab.</p>
 <p>The verdicts go to <code>verdicts.csv</code>, next to the manifest,
 unless <code>verdicts_file</code> says otherwise. The name in
 <code>reviewer</code> is written with each verdict.
@@ -128,6 +147,37 @@ band of the recording.</p>
 <img src="app-figures/review-app.jpg" alt="The app with a clip of Leptodactylus fuscus."><div class="figcaption">The app with a clip of <em>Leptodactylus
 fuscus</em>.</div>
 </div>
+</div>
+<div class="section level2">
+<h2 id="drawing-and-cutting-the-clips">Drawing and cutting the clips<a class="anchor" aria-label="anchor" href="#drawing-and-cutting-the-clips"></a>
+</h2>
+<p>The Sampling tab is a form for the sampling design of
+<code><a href="../reference/select_clips.html">select_clips()</a></code> (<code><a href="../articles/sampling-designs.html">vignette("sampling-designs")</a></code>
+explains each choice): the mode (<code>"top"</code>,
+<code>"random_detections"</code> or <code>"random_recordings"</code>),
+the occasion, the threshold of the occupancy analysis,
+<code>n_top</code>, the strata of <code>"random_detections"</code>, a
+total per site or a maximum per site and species, the minimum score,
+filters by site, species and hour, the seed, and the remapping of the
+audio paths when the recordings moved since BirdNET read them.</p>
+<p><em>Draw</em> runs <code><a href="../reference/select_clips.html">select_clips()</a></code> without touching the
+audio and shows the number of clips per site and species and the
+inclusion probability of the clips of each species (minimum, median and
+maximum), which the estimates of precision use as weights. Messages and
+warnings of <code><a href="../reference/select_clips.html">select_clips()</a></code> are shown above the tables; with
+<code>"top"</code>, the app also reminds that those clips serve
+retraining and calibration but do not estimate the false-positive
+rate.</p>
+<p><em>Cut clips</em> cuts the drawn clips with <code><a href="../reference/cut_clips.html">cut_clips()</a></code>
+and writes <code>clip_manifest.csv</code>,
+<code>extraction_info.csv</code> (the provenance of the round, with
+every argument of the draw) and <code>clips/</code>, as
+<code><a href="../reference/extract_validation_clips.html">extract_validation_clips()</a></code> does, without the zip packages.
+With <em>Simulate</em>, nothing is cut and the table tells, per species,
+whether each recording was found. The new clips go straight to the
+Review tab. The app does not write over an existing
+<code>clip_manifest.csv</code> unless <em>Replace</em> is ticked, since
+the verdicts already given refer to its clips.</p>
 </div>
 <div class="section level2">
 <h2 id="reviewing">Reviewing<a class="anchor" aria-label="anchor" href="#reviewing"></a>
@@ -188,7 +238,7 @@ and negative verdicts. They mark clips worth a second listen.</p>
 returns the same table as <code><a href="../reference/classify_review.html">classify_review()</a></code>, the content of
 <code>validation_by_clip.csv</code>. From there, stage 1 goes on as
 after a review in the BirdNET GUI:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">validation</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/app_verdicts.html">app_verdicts</a></span><span class="op">(</span><span class="st">"validation/clip_manifest.csv"</span>,</span>
 <span>                           <span class="st">"validation/verdicts.csv"</span>,</span>
 <span>                           clips_dir <span class="op">=</span> <span class="st">"validation/clips"</span>,</span>
@@ -209,7 +259,7 @@ with their own name, and the queue shows only their clips, including
 those shared with a second reviewer. There is no need for
 <code><a href="../reference/split_by_reviewer.html">split_by_reviewer()</a></code>: every reviewer reads the same
 <code>clips</code> folder, on a shared drive or a copy of it.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">manifest</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/assign_reviewers.html">assign_reviewers</a></span><span class="op">(</span><span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span><span class="st">"validation/clip_manifest.csv"</span><span class="op">)</span>,</span>
 <span>                             reviewers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"larissa"</span>, <span class="st">"liliana"</span><span class="op">)</span>,</span>
 <span>                             overlap <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
@@ -221,7 +271,7 @@ those shared with a second reviewer. There is no need for
 <span>        reviewer <span class="op">=</span> <span class="st">"larissa"</span><span class="op">)</span></span></code></pre></div>
 <p>The reviewers can write to one shared <code>verdicts.csv</code> or
 keep one file each. With one file each, stack them before reading:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">verdicts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="st">"validation"</span>, <span class="st">"^verdicts_.*\\.csv$"</span>,</span>
 <span>                       full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu">readr</span><span class="fu">::</span><span class="va"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span>, col_types <span class="op">=</span> <span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/cols.html" class="external-link">cols</a></span><span class="op">(</span>.default <span class="op">=</span> <span class="st">"c"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -230,7 +280,7 @@ keep one file each. With one file each, stack them before reading:</p>
 <p>With <code>reviewer = NULL</code>, <code><a href="../reference/app_verdicts.html">app_verdicts()</a></code> keeps
 every reviewer’s verdicts, one row per clip and reviewer, ready for the
 agreement and the consensus:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">all_reviews</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/app_verdicts.html">app_verdicts</a></span><span class="op">(</span><span class="st">"validation/clip_manifest.csv"</span>,</span>
 <span>                            <span class="st">"validation/verdicts.csv"</span>,</span>
 <span>                            clips_dir <span class="op">=</span> <span class="st">"validation/clips"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -238,6 +288,21 @@ agreement and the consensus:</p>
 <span></span>
 <span><span class="fu"><a href="../reference/reviewer_agreement.html">reviewer_agreement</a></span><span class="op">(</span><span class="va">all_reviews</span><span class="op">)</span></span>
 <span><span class="va">validation</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/consensus_verdicts.html">consensus_verdicts</a></span><span class="op">(</span><span class="va">all_reviews</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="exporting-for-the-occupancy-model">Exporting for the occupancy model<a class="anchor" aria-label="anchor" href="#exporting-for-the-occupancy-model"></a>
+</h2>
+<p>The Export tab calls <code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code> with the
+detections of <code>selection_dir</code>, <code>recordings</code> and
+the verdicts of the Review tab. When a clip has verdicts from several
+reviewers, they are combined by <code><a href="../reference/consensus_verdicts.html">consensus_verdicts()</a></code>; clips
+not yet reviewed are left out. Choose the occasion used in the draw
+(<code>"file"</code> or <code>"minute"</code>), the minimum score and
+the folder of the export (<code>validation/occupancy</code> by default).
+After the export, the app shows the schema version and the number of
+rows of each table. The score calibration is not in the app yet: for the
+calibrated tables, call <code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code> with
+<code>fit</code> (<code><a href="../articles/calibration.html">vignette("calibration")</a></code>).</p>
 </div>
 <div class="section level2">
 <h2 id="the-verdicts-file">The verdicts file<a class="anchor" aria-label="anchor" href="#the-verdicts-file"></a>

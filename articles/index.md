@@ -6,7 +6,7 @@
   design](https://provetelab.org/sheepdog/articles/sampling-designs.md):
 - [Reviewing clips in the BirdNET
   GUI](https://provetelab.org/sheepdog/articles/reviewing-in-the-gui.md):
-- [Reviewing clips in the sheepdog
+- [Sampling, reviewing and exporting in the sheepdog
   app](https://provetelab.org/sheepdog/articles/review-app.md):
 - [How many clips should I
   validate?](https://provetelab.org/sheepdog/articles/validation-effort.md):

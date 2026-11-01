@@ -25,6 +25,8 @@ app_verdicts(manifest, verdicts_file, clips_dir = NULL, reviewer = NULL)
   [`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md)
   or
   [`assign_reviewers()`](https://provetelab.org/sheepdog/reference/assign_reviewers.md)).
+  With `output_dir`, by default `<output_dir>/clip_manifest.csv` when it
+  exists.
 
 - verdicts_file:
 
