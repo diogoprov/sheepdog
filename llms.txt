@@ -4,6 +4,7 @@
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://provetelab.org/sheepdog/LICENSE.md)
 [![r-universe](https://diogoprov.r-universe.dev/sheepdog/badges/version)](https://diogoprov.r-universe.dev/sheepdog)
+[![Codecov](https://codecov.io/gh/diogoprov/sheepdog/graph/badge.svg)](https://app.codecov.io/gh/diogoprov/sheepdog)
 
 In the fable, the boy cries “wolf!” and the villagers have to decide
 whether the wolf is real. **sheepdog** does that check for automated

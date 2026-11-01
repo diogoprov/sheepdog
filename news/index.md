@@ -2,6 +2,8 @@
 
 ## sheepdog (development version)
 
+- Test coverage is uploaded to Codecov, with a badge in the README; the
+  coverage checks are informational and never block a merge.
 - `dev/benchmarks/curiango-export.R`: `CALIB_COVARIATE` adds a night
   covariate to the calibration (schema 1.3) and `ADAPT_DELTA` is passed
   to brms; `curiango-flow.R` reads such exports and takes `CLASSIFIERS`.
