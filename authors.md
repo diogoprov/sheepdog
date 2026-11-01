@@ -13,16 +13,16 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/diogoprov/sheepdog/blob/v3.3.0/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/diogoprov/sheepdog/blob/main/DESCRIPTION)
 
 Provete D, Sugai L, Piatti L (2026). *sheepdog: Sample, Validate and
-Calibrate 'BirdNET' Detections*. R package version 3.3.0,
+Calibrate 'BirdNET' Detections*. R package version 3.3.0.9000,
 <https://github.com/diogoprov/sheepdog>.
 
     @Manual{,
       title = {sheepdog: Sample, Validate and Calibrate 'BirdNET' Detections},
       author = {Diogo B. Provete and Larissa Sayuri Moreira Sugai and Liliana Piatti},
       year = {2026},
-      note = {R package version 3.3.0},
+      note = {R package version 3.3.0.9000},
       url = {https://github.com/diogoprov/sheepdog},
     }
