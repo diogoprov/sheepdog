@@ -109,28 +109,62 @@ during training. BirdNET-Analyzer holds out a validation split
 (`--val_split`) drawn from the training folder itself, but clips from
 the same site and night share background noise and calling individuals,
 so a random split of clips tends to overstate performance (our
-recommendation, not a statement of the BirdNET documentation). A
-stricter test keeps whole sites out of training and passes them as
-`--test_data`. Here we hold out one site.
+recommendation, not a statement of the BirdNET documentation).
+[`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md)
+offers two stricter tests, passed as `--test_data`:
+
+- `split = "site"` keeps whole sites (`test_sites`) out of training, and
+  measures how the classifier transfers to sites it was not trained on.
+- `split = "night"` draws, in each site, a proportion `test_prop` of the
+  nights for the test set, for all species together. Drawing the nights
+  separately for each species would put the same recording in the
+  training set for one species and in the test set for another; the
+  checks printed at the end count such shared nights, which should be 0.
+
+The draws use `seed`, so the split can be rebuilt. If other classifiers
+will be compared on the same test set, the nights whose recordings they
+were trained on must stay out of it too.
+[`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md)
+reads the site and night from the names of their training clips (it also
+lists folders recursively), and its table goes to `exclude_from_test`.
+The default pattern expects names such as `ARA01_20211016_190000`; give
+`pattern` for other naming schemes.
+
+``` r
+
+other_model <- training_nights("other_classifier/training_folders",
+                               site_map = c(BEP2 = "BEP"))
+build_training_set(reviewed, "birdnet_training", split = "night",
+                   test_prop = 0.2, exclude_from_test = other_model,
+                   max_per_site_species = 50, copy = FALSE)
+```
+
+`max_per_site_species` caps the positive training clips of each site x
+species, taking them from the nights in turn so that as many nights as
+possible are kept; the test set and the negatives are not reduced. With
+`copy = FALSE`, only `training_set.csv` is written, so the split can be
+checked on a computer without the clips; `remap_from` and `remap_to` fix
+the paths when the clips are copied on another computer or drive. Below
+we hold out one site of the example.
 
 ## Building the training folders
 
 [`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md)
 copies the reviewed clips into the BirdNET layout: positives in
 `<set>/<species_code>/` and negatives in `<set>/-<species_code>/`, where
-`<set>` is `train`, or `test` for the sites in `test_sites`. It reads
-each clip from `reviewed_path`, the place where the review left it,
-leaves out whole-recording clips (which have no confidence score),
-writes the table of copied clips to `training_set.csv`, and warns about
-classes with fewer positive training files than `min_files` (100 by
-default, the number recommended by the BirdNET documentation).
+`<set>` is `train` or `test`. It reads each clip from `reviewed_path`,
+the place where the review left it, leaves out whole-recording clips
+(which have no confidence score), writes the table of copied clips to
+`training_set.csv`, and warns about classes with fewer positive training
+files than `min_files` (100 by default, the number recommended by the
+BirdNET documentation).
 
 ``` r
 
 training_root <- file.path(tempdir(), "birdnet_training")
 unlink(training_root, recursive = TRUE)
 training_set <- build_training_set(reviewed, training_root,
-                                   test_sites = "NHE") |>
+                                   split = "site", test_sites = "NHE") |>
   suppressMessages()
 #> Warning: Class(es) with fewer than 100 positive training files: Leptodactylus
 #> fuscus_lep-fus (48), Pseudis platensis_pse-pla (76)
@@ -246,12 +280,18 @@ Keep `training_set.csv` with the new classifier. Before reviewing the
 detections of the retrained classifier,
 [`exclude_training_clips()`](https://provetelab.org/sheepdog/reference/exclude_training_clips.md)
 drops from the new manifest the clips that overlap, for the same species
-and recording, a clip used in training:
+and recording, a clip used in training. With `level = "recording"` or
+`"night"` it drops every clip of a recording or night used in training,
+and with `any_species = TRUE` it does so for every species, since a
+recording used to train one species was also heard by the classifier for
+the others. It also takes the table of
+[`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md):
 
 ``` r
 
 manifest_v2 <- select_clips(detections_v2, ...) |>
-  exclude_training_clips(file.path(training_root, "training_set.csv"))
+  exclude_training_clips(file.path(training_root, "training_set.csv"),
+                         level = "recording", any_species = TRUE)
 ```
 
 [`extract_validation_clips()`](https://provetelab.org/sheepdog/reference/extract_validation_clips.md)

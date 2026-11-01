@@ -5,14 +5,14 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Leave the training clips out of a manifest — exclude_training_clips"><meta name="description" content="Drops from a clip manifest the clips that overlap, for the same species
-and the same recording, a clip used to train the classifier (the
-training_set.csv written by build_training_set()). Use it before
-reviewing the detections of a retrained classifier: scores of the
-clips it was trained on are biased upwards."><meta property="og:description" content="Drops from a clip manifest the clips that overlap, for the same species
-and the same recording, a clip used to train the classifier (the
-training_set.csv written by build_training_set()). Use it before
-reviewing the detections of a retrained classifier: scores of the
+</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Leave the training clips out of a manifest — exclude_training_clips"><meta name="description" content="Drops from a clip manifest the clips that share data with the clips used
+to train the classifier (the training_set.csv written by
+build_training_set(), or the table of training_nights()). Use it
+before reviewing the detections of a retrained classifier: scores of the
+clips it was trained on are biased upwards."><meta property="og:description" content="Drops from a clip manifest the clips that share data with the clips used
+to train the classifier (the training_set.csv written by
+build_training_set(), or the table of training_nights()). Use it
+before reviewing the detections of a retrained classifier: scores of the
 clips it was trained on are biased upwards."><meta property="og:image" content="https://provetelab.org/sheepdog/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -72,16 +72,21 @@ clips it was trained on are biased upwards."><meta property="og:image" content="
     </div>
 
     <div class="ref-description section level2">
-    <p>Drops from a clip manifest the clips that overlap, for the same species
-and the same recording, a clip used to train the classifier (the
-<code>training_set.csv</code> written by <code><a href="build_training_set.html">build_training_set()</a></code>). Use it before
-reviewing the detections of a retrained classifier: scores of the
+    <p>Drops from a clip manifest the clips that share data with the clips used
+to train the classifier (the <code>training_set.csv</code> written by
+<code><a href="build_training_set.html">build_training_set()</a></code>, or the table of <code><a href="training_nights.html">training_nights()</a></code>). Use it
+before reviewing the detections of a retrained classifier: scores of the
 clips it was trained on are biased upwards.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">exclude_training_clips</span><span class="op">(</span><span class="va">manifest</span>, <span class="va">training_set</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">exclude_training_clips</span><span class="op">(</span></span>
+<span>  <span class="va">manifest</span>,</span>
+<span>  <span class="va">training_set</span>,</span>
+<span>  level <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"clip"</span>, <span class="st">"recording"</span>, <span class="st">"night"</span><span class="op">)</span>,</span>
+<span>  any_species <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -94,13 +99,36 @@ from <code>clip_manifest.csv</code>.</p></dd>
 
 
 <dt id="arg-training-set">training_set<a class="anchor" aria-label="anchor" href="#arg-training-set"></a></dt>
-<dd><p>Table returned by <code><a href="build_training_set.html">build_training_set()</a></code>, or the
-path to its <code>training_set.csv</code>.</p></dd>
+<dd><p>Table returned by <code><a href="build_training_set.html">build_training_set()</a></code> or
+<code><a href="training_nights.html">training_nights()</a></code>, or the path to a <code>training_set.csv</code>.</p></dd>
+
+
+<dt id="arg-level">level<a class="anchor" aria-label="anchor" href="#arg-level"></a></dt>
+<dd><p>What a training clip excludes; see Levels.</p></dd>
+
+
+<dt id="arg-any-species">any_species<a class="anchor" aria-label="anchor" href="#arg-any-species"></a></dt>
+<dd><p>Exclude across species?</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>The manifest without the overlapping clips.</p>
+    <p>The manifest without the excluded clips.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="levels">Levels<a class="anchor" aria-label="anchor" href="#levels"></a></h2>
+
+
+<ul><li><p><code>"clip"</code>: clips that overlap in time a training clip of the same
+recording.</p></li>
+<li><p><code>"recording"</code>: every clip of a recording with a training clip.</p></li>
+<li><p><code>"night"</code>: every clip of a site x night with a training clip.</p></li>
+</ul><p>With <code>any_species = FALSE</code>, only clips of the same species are dropped;
+with <code>TRUE</code>, a recording or night used to train one species is
+left out for all of them. A table of <code><a href="training_nights.html">training_nights()</a></code> has no species,
+clip times or <code>source_audio</code>: it takes <code>level = "recording"</code> (matched on
+the site, date and time read from <code>source_audio</code> with the default
+pattern of <code><a href="training_nights.html">training_nights()</a></code>) or <code>"night"</code>, always for any species.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

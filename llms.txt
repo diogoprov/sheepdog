@@ -322,6 +322,8 @@ presence and retraining clips.
   : Build the training folders for BirdNET-Analyzer
 - [`exclude_training_clips()`](https://provetelab.org/sheepdog/reference/exclude_training_clips.md)
   : Leave the training clips out of a manifest
+- [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md)
+  : Nights and recordings of clips used to train a classifier
 
 ## Stage 1 - Several reviewers
 

@@ -5,19 +5,19 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Build the training folders for BirdNET-Analyzer — build_training_set"><meta name="description" content="Copies the reviewed clips into the folder layout that the training
-script of BirdNET-Analyzer expects: one folder per class, named after
-the label (species_code, so the retrained classifier keeps the labels
-of the current one), with the negatives of a class in a folder with the
-same name prefixed by -. Clips of the sites in test_sites go to a
-separate test folder, to be passed as --test_data, so that the new
-classifier is evaluated on sites it was not trained on."><meta property="og:description" content="Copies the reviewed clips into the folder layout that the training
-script of BirdNET-Analyzer expects: one folder per class, named after
-the label (species_code, so the retrained classifier keeps the labels
-of the current one), with the negatives of a class in a folder with the
-same name prefixed by -. Clips of the sites in test_sites go to a
-separate test folder, to be passed as --test_data, so that the new
-classifier is evaluated on sites it was not trained on."><meta property="og:image" content="https://provetelab.org/sheepdog/logo.svg"></head><body>
+</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Build the training folders for BirdNET-Analyzer — build_training_set"><meta name="description" content="Splits the reviewed clips into a training and a test set and copies them
+into the folder layout that the training script of BirdNET-Analyzer
+expects: one folder per class, named after the label (species_code, so
+the retrained classifier keeps the labels of the current one), with the
+negatives of a class in a folder with the same name prefixed by -. The
+test clips go to a separate test folder, to be passed as
+--test_data."><meta property="og:description" content="Splits the reviewed clips into a training and a test set and copies them
+into the folder layout that the training script of BirdNET-Analyzer
+expects: one folder per class, named after the label (species_code, so
+the retrained classifier keeps the labels of the current one), with the
+negatives of a class in a folder with the same name prefixed by -. The
+test clips go to a separate test folder, to be passed as
+--test_data."><meta property="og:image" content="https://provetelab.org/sheepdog/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -76,13 +76,13 @@ classifier is evaluated on sites it was not trained on."><meta property="og:imag
     </div>
 
     <div class="ref-description section level2">
-    <p>Copies the reviewed clips into the folder layout that the training
-script of BirdNET-Analyzer expects: one folder per class, named after
-the label (<code>species_code</code>, so the retrained classifier keeps the labels
-of the current one), with the negatives of a class in a folder with the
-same name prefixed by <code>-</code>. Clips of the sites in <code>test_sites</code> go to a
-separate <code>test</code> folder, to be passed as <code>--test_data</code>, so that the new
-classifier is evaluated on sites it was not trained on.</p>
+    <p>Splits the reviewed clips into a training and a test set and copies them
+into the folder layout that the training script of BirdNET-Analyzer
+expects: one folder per class, named after the label (<code>species_code</code>, so
+the retrained classifier keeps the labels of the current one), with the
+negatives of a class in a folder with the same name prefixed by <code>-</code>. The
+test clips go to a separate <code>test</code> folder, to be passed as
+<code>--test_data</code>.</p>
     </div>
 
     <div class="section level2">
@@ -90,9 +90,18 @@ classifier is evaluated on sites it was not trained on.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">build_training_set</span><span class="op">(</span></span>
 <span>  <span class="va">validation</span>,</span>
 <span>  <span class="va">output_dir</span>,</span>
+<span>  split <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"night"</span>, <span class="st">"site_species_night"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  test_sites <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  test_prop <span class="op">=</span> <span class="fl">0.2</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">2026</span>,</span>
+<span>  max_per_site_species <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  exclude_from_test <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  negatives <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  min_files <span class="op">=</span> <span class="fl">100</span></span>
+<span>  min_files <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  copy <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  remap_from <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  remap_to <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  strict <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -104,33 +113,81 @@ classifier is evaluated on sites it was not trained on.</p>
 <dd><p>Reviewed clips, as returned by <code><a href="classify_review.html">classify_review()</a></code>,
 <code><a href="post_validation.html">post_validation()</a></code> (<code>$validation</code>) or <code><a href="read_validation_tables.html">read_validation_tables()</a></code>. It
 needs <code>site</code>, <code>species_code</code>, <code>clip_file</code>, <code>verdict</code> and
-<code>reviewed_path</code> (the path where the review left each clip).</p></dd>
+<code>reviewed_path</code> (the path where the review left each clip), and
+<code>night</code> for the splits by night.</p></dd>
 
 
 <dt id="arg-output-dir">output_dir<a class="anchor" aria-label="anchor" href="#arg-output-dir"></a></dt>
-<dd><p>Output folder; <code>train/</code> and, with <code>test_sites</code>,
+<dd><p>Output folder; <code>train/</code> and, if any clip is held out,
 <code>test/</code> are created in it.</p></dd>
 
 
+<dt id="arg-split">split<a class="anchor" aria-label="anchor" href="#arg-split"></a></dt>
+<dd><p>How to split the clips into training and test sets; see
+Splits.</p></dd>
+
+
 <dt id="arg-test-sites">test_sites<a class="anchor" aria-label="anchor" href="#arg-test-sites"></a></dt>
-<dd><p>Sites held out for testing. <code>NULL</code> puts every clip in
-<code>train/</code>.</p></dd>
+<dd><p>Sites held out for testing with <code>split = "site"</code>.
+<code>NULL</code> puts every clip in <code>train/</code>.</p></dd>
+
+
+<dt id="arg-test-prop">test_prop<a class="anchor" aria-label="anchor" href="#arg-test-prop"></a></dt>
+<dd><p>Proportion of the nights of each site (or site x
+species) drawn for the test set.</p></dd>
+
+
+<dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
+<dd><p>Seed of the draws.</p></dd>
+
+
+<dt id="arg-max-per-site-species">max_per_site_species<a class="anchor" aria-label="anchor" href="#arg-max-per-site-species"></a></dt>
+<dd><p>Optional maximum number of positive
+training clips per site x species. Larger sets are reduced by taking
+clips from the nights in turn, in random order, which keeps as many
+nights as possible. Test clips and negatives are not reduced.</p></dd>
+
+
+<dt id="arg-exclude-from-test">exclude_from_test<a class="anchor" aria-label="anchor" href="#arg-exclude-from-test"></a></dt>
+<dd><p>Optional table with <code>site</code> and <code>night</code> (e.g.
+from <code><a href="training_nights.html">training_nights()</a></code>): nights that must not be in the test set,
+such as nights whose recordings trained another classifier that will
+be compared on it. They are left out of the draw and stay in the
+training set.</p></dd>
 
 
 <dt id="arg-negatives">negatives<a class="anchor" aria-label="anchor" href="#arg-negatives"></a></dt>
-<dd><p>Copy the negative clips into <code>-&lt;species_code&gt;</code> folders.</p></dd>
+<dd><p>Include the negative clips, in <code>-&lt;species_code&gt;</code>
+folders.</p></dd>
 
 
 <dt id="arg-min-files">min_files<a class="anchor" aria-label="anchor" href="#arg-min-files"></a></dt>
 <dd><p>Minimum number of positive training files per class
 below which a warning is raised.</p></dd>
 
+
+<dt id="arg-copy">copy<a class="anchor" aria-label="anchor" href="#arg-copy"></a></dt>
+<dd><p>Copy the clips? With <code>FALSE</code>, only <code>training_set.csv</code> is
+written, so that the split can be built on a computer without the
+clips and copied later.</p></dd>
+
+
+<dt id="arg-remap-from-remap-to">remap_from, remap_to<a class="anchor" aria-label="anchor" href="#arg-remap-from-remap-to"></a></dt>
+<dd><p>Optional prefix of <code>reviewed_path</code> and its
+replacement, for clips reviewed on another computer or drive.</p></dd>
+
+
+<dt id="arg-strict">strict<a class="anchor" aria-label="anchor" href="#arg-strict"></a></dt>
+<dd><p>Raise an error if any check is above 0?</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with one row per copied clip: <code>site</code>, <code>species_code</code>,
+    <p>A tibble with one row per clip: <code>site</code>, <code>species_code</code>,
 <code>verdict</code>, <code>set</code> (<code>"train"</code> or <code>"test"</code>), <code>class_folder</code>, <code>clip_file</code>,
-<code>source_audio</code>, <code>clip_start</code>, <code>clip_end</code>, <code>from</code> and <code>to</code>, invisibly.</p>
+<code>source_audio</code>, <code>clip_start</code>, <code>clip_end</code>, <code>from</code>, <code>to</code> and <code>night</code>,
+invisibly, with the checks in the attribute <code>"checks"</code>. With
+<code>copy = TRUE</code>, clips that could not be copied are left out.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -140,9 +197,47 @@ files per species; classes below <code>min_files</code> in the training set rais
 a warning. Whole-recording clips of <code>"random_recordings"</code> (longer than
 3 s, <code>confidence</code> = <code>NA</code>) are left out: their label says only that the
 species was heard somewhere in the recording.</p>
-<p>The table of copied clips is also written to <code>training_set.csv</code> in
+<p>The table of clips is also written to <code>training_set.csv</code> in
 <code>output_dir</code>; keep it with the classifier, to leave these clips out of
 later validation rounds with <code><a href="exclude_training_clips.html">exclude_training_clips()</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="splits">Splits<a class="anchor" aria-label="anchor" href="#splits"></a></h2>
+
+
+<p>Clips of the same night are correlated, so a split by clip leaks
+information from the training into the test set.</p><ul><li><p><code>"site"</code>: the clips of <code>test_sites</code> form the test set, which then
+measures transfer to sites the classifier was not trained on.</p></li>
+<li><p><code>"night"</code>: in each site, <code>ceiling(n * test_prop)</code> of its <code>n</code> nights
+are drawn for the test set, for all species together, so that no
+recording is training data for one species and test data for another.</p></li>
+<li><p><code>"site_species_night"</code>: the nights are drawn within each site x
+species with at least two nights (the split of the 2.x scripts of the
+FrogNet project). The same night can then be in the training set for
+one species and in the test set for another, which breaks the
+independence of the test set; it is kept only to reproduce earlier
+training sets, and warns.</p></li>
+<li><p><code>"none"</code>: every clip goes to the training set.</p></li>
+</ul><p>The draws use <code>seed</code> (and <code>seed + 1</code> for <code>max_per_site_species</code>) and
+leave the global random number generator as it was. They follow the
+order of the rows of <code>validation</code>: the same clips in another order give
+another split.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="checks">Checks<a class="anchor" aria-label="anchor" href="#checks"></a></h2>
+
+
+<p>At the end, three counts are reported, and kept in the attribute
+<code>"checks"</code> of the result: test nights (site x night) that also have
+training clips, test nights listed in <code>exclude_from_test</code>, and test
+clips that overlap a training clip of the same species in the same
+recording. All should be 0 with <code>split = "night"</code>. With
+<code>strict = TRUE</code>, any count above 0 is an error.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="training_nights.html">training_nights()</a></code>, <code><a href="exclude_training_clips.html">exclude_training_clips()</a></code>,
+<code><a href="../articles/retraining.html">vignette("retraining")</a></code>.</p></div>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

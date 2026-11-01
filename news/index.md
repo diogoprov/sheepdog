@@ -2,6 +2,32 @@
 
 ## sheepdog (development version)
 
+- [`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md)
+  gains `split`: `"site"` (the previous behaviour, with `test_sites`),
+  `"night"` (a proportion `test_prop` of the nights of each site goes to
+  the test set, for all species together), `"site_species_night"`
+  (nights drawn within site x species, as in the 2.x FrogNet scripts;
+  warns, since a night can then be in both sets) and `"none"`. The draws
+  use `seed` and leave the global random number generator as it was. New
+  arguments: `max_per_site_species` (cap on the positive training clips
+  of a site x species, taken from the nights in turn),
+  `exclude_from_test` (nights that must stay out of the test set),
+  `copy = FALSE` (write only `training_set.csv`), `remap_from` /
+  `remap_to` and `strict`. The result gains `night` and the attribute
+  `"checks"`: test nights with training clips, test nights in
+  `exclude_from_test` and test clips overlapping training clips. On the
+  FrogNet M3 data, the result is identical clip by clip to the reference
+  script for `split = "night"` and `"site_species_night"`.
+- New
+  [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md):
+  site, recording and night from the names of training clips (a
+  configurable regular expression, folders listed recursively,
+  `site_map`, `night_cutoff`), for `exclude_from_test` and
+  [`exclude_training_clips()`](https://provetelab.org/sheepdog/reference/exclude_training_clips.md).
+- [`exclude_training_clips()`](https://provetelab.org/sheepdog/reference/exclude_training_clips.md)
+  gains `level` (`"clip"`, the previous behaviour, `"recording"` or
+  `"night"`) and `any_species`, and takes the table of
+  [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md).
 - The README figures are redrawn (`data-raw/diagram_pipeline.R`,
   `data-raw/diagram_extraction.R`): the pipeline shows the reviewers,
   the model selection by log-loss, the Bayesian calibration and its
