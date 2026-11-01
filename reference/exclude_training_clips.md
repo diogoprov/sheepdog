@@ -15,7 +15,8 @@ exclude_training_clips(
   manifest,
   training_set,
   level = c("clip", "recording", "night"),
-  any_species = FALSE
+  any_species = FALSE,
+  pattern = NULL
 )
 ```
 
@@ -43,6 +44,19 @@ exclude_training_clips(
 
   Exclude across species?
 
+- pattern:
+
+  With a table of
+  [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md)
+  and `level = "recording"`, the regular expression that reads the
+  recordings from `source_audio`. By default, the one recorded in the
+  table by
+  [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md)
+  (lost if the table was rebuilt, e.g. by
+  [`dplyr::bind_rows()`](https://dplyr.tidyverse.org/reference/bind_rows.html)),
+  else the default of
+  [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md).
+
 ## Value
 
 The manifest without the excluded clips.
@@ -61,7 +75,7 @@ with `TRUE`, a recording or night used to train one species is left out
 for all of them. A table of
 [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md)
 has no species, clip times or `source_audio`: it takes
-`level = "recording"` (matched on the site, date and time read from
-`source_audio` with the default pattern of
-[`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md))
-or `"night"`, always for any species.
+`level = "recording"` or `"night"`, always for any species. With
+`"recording"`, the site, date and time are read from `source_audio` of
+the manifest with `pattern`, which should be the one given to
+[`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md).

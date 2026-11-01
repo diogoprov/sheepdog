@@ -2,6 +2,16 @@
 
 ## sheepdog (development version)
 
+- [`exclude_training_clips()`](https://provetelab.org/sheepdog/reference/exclude_training_clips.md)
+  with a table of
+  [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md)
+  and `level = "recording"` reads `source_audio` with the pattern given
+  to
+  [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md)
+  (kept in the attribute `"pattern"` of its table), or with the new
+  argument `pattern`, instead of always the default pattern; it warns
+  when no `source_audio` matches, instead of excluding nothing in
+  silence.
 - [`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md)
   gains `split`: `"site"` (the previous behaviour, with `test_sites`),
   `"night"` (a proportion `test_prop` of the nights of each site goes to
