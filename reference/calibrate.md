@@ -141,9 +141,8 @@ calibrate(
 
 - brms_args:
 
-  `engine = "brms"`: list of further arguments for
-  [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html)
-  (e.g. `list(chains = 4, cores = 4, backend = "cmdstanr")`).
+  `engine = "brms"`: list of further arguments for `brms::brm()` (e.g.
+  `list(chains = 4, cores = 4, backend = "cmdstanr")`).
 
 - rule:
 

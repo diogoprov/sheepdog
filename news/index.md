@@ -2,6 +2,27 @@
 
 ## sheepdog (development version)
 
+- The README figures are redrawn (`data-raw/diagram_pipeline.R`,
+  `data-raw/diagram_extraction.R`): the pipeline shows the reviewers,
+  the model selection by log-loss, the Bayesian calibration and its
+  checks,
+  [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md),
+  [`cell_status()`](https://provetelab.org/sheepdog/reference/cell_status.md),
+  [`community_matrices_draws()`](https://provetelab.org/sheepdog/reference/community_matrices_draws.md)
+  and the occupancy branch
+  ([`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+  \>
+  [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md)
+  \> crywolf); the extraction flow shows the strata of
+  `"random_detections"` and
+  [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md).
+  The README function table lists
+  [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md),
+  [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md),
+  [`calibration_ppc()`](https://provetelab.org/sheepdog/reference/calibration_ppc.md),
+  [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+  and
+  [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md).
 - The contract test reads the fixture `export-1.3` in crywolf as well
   (with crywolf \>= 2.1.0.9000): `fp_draws_data()` returns the versions
   of `occasion_draws.parquet` and refuses a different seed.

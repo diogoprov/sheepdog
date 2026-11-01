@@ -14,21 +14,26 @@ classifiers in passive acoustic monitoring (PAM). It runs three stages:
 1.  **Validation data.** Build clip sets for manual review from the
     BirdNET selection tables: top-score, random-occasion or
     random-recording designs, one folder per species, ready for the
-    review tab of the BirdNET GUI. Then summarise the reviewed clips:
+    review tab of the BirdNET GUI. The random draws can be stratified
+    along an environmental gradient. Then summarise the reviewed clips:
     precision by confidence bin, suggested thresholds, confirmed
-    presence by night and clips for retraining.
+    presence by night, clips for retraining and the cells that still
+    need review.
 2.  **Calibration.** Turn confidence scores into probabilities of true
     detection with hierarchical logistic models (species and site x
-    species effects, compared by cross-validation). Score every
-    detection and build nightly detection histories.
+    species effects, compared by cross-validation), fitted with ‘lme4’
+    or, in a Bayesian framework, with ‘brms’. Score every detection and
+    build nightly detection histories.
 3.  **Community matrices.** Turn the calibrated histories into
     effort-standardised site x month matrices for multivariate
     ordinations.
 
 sheepdog was developed for the FrogNet project (anurans of the Pantanal
 and Cerrado, Mato Grosso do Sul, Brazil), but it works with the output
-of any BirdNET custom classifier. Its validation outputs feed occupancy
-models with false positives fitted with
+of any BirdNET custom classifier.
+[`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+writes its validation and calibration outputs in a documented format for
+occupancy models with false positives, such as those fitted with
 [crywolf](https://github.com/diogoprov/crywolf). The two packages are
 independent: sheepdog does not depend on crywolf.
 
@@ -135,12 +140,13 @@ Each stage is also available as separate functions:
 
 | Stage | Functions |
 |----|----|
-| 1\. Selecting and cutting clips | [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md), [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md) (a pure function that returns the clip manifest without touching audio), [`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md), [`pack_clips()`](https://provetelab.org/sheepdog/reference/pack_clips.md) |
+| 1\. Selecting and cutting clips | [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md), [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md) (a pure function that returns the clip manifest without touching audio), [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md) (strata along a gradient), [`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md), [`pack_clips()`](https://provetelab.org/sheepdog/reference/pack_clips.md) |
 | 1\. Several reviewers | [`assign_reviewers()`](https://provetelab.org/sheepdog/reference/assign_reviewers.md), [`split_by_reviewer()`](https://provetelab.org/sheepdog/reference/split_by_reviewer.md), [`reviewer_agreement()`](https://provetelab.org/sheepdog/reference/reviewer_agreement.md) (Cohen’s or Fleiss’ kappa), [`consensus_verdicts()`](https://provetelab.org/sheepdog/reference/consensus_verdicts.md) |
-| 1\. After the review | [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md), [`precision_by_bin()`](https://provetelab.org/sheepdog/reference/precision_by_bin.md), [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md), [`nightly_presence()`](https://provetelab.org/sheepdog/reference/nightly_presence.md), [`retraining_clips()`](https://provetelab.org/sheepdog/reference/retraining_clips.md), [`read_validation_tables()`](https://provetelab.org/sheepdog/reference/read_validation_tables.md) |
+| 1\. After the review | [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md), [`precision_by_bin()`](https://provetelab.org/sheepdog/reference/precision_by_bin.md), [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md), [`nightly_presence()`](https://provetelab.org/sheepdog/reference/nightly_presence.md), [`retraining_clips()`](https://provetelab.org/sheepdog/reference/retraining_clips.md), [`read_validation_tables()`](https://provetelab.org/sheepdog/reference/read_validation_tables.md), [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md) (cells, or bins, that still need review) |
 | 1\. Retraining | [`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md) (training folders for BirdNET-Analyzer), [`exclude_training_clips()`](https://provetelab.org/sheepdog/reference/exclude_training_clips.md) |
 | 2\. Calibration | [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md), [`calibration_models()`](https://provetelab.org/sheepdog/reference/calibration_models.md), [`calibration_folds()`](https://provetelab.org/sheepdog/reference/calibration_folds.md), [`compare_calibration_models()`](https://provetelab.org/sheepdog/reference/compare_calibration_models.md), [`select_calibration_model()`](https://provetelab.org/sheepdog/reference/select_calibration_model.md), [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md), [`calibration_effort()`](https://provetelab.org/sheepdog/reference/calibration_effort.md), [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md), [`detection_history()`](https://provetelab.org/sheepdog/reference/detection_history.md), [`summarise_history()`](https://provetelab.org/sheepdog/reference/summarise_history.md) |
-| 2\. Bayesian calibration | [`calibration_prior()`](https://provetelab.org/sheepdog/reference/calibration_prior.md), [`prior_predictive_calibration()`](https://provetelab.org/sheepdog/reference/prior_predictive_calibration.md), [`calibration_diagnostics()`](https://provetelab.org/sheepdog/reference/calibration_diagnostics.md), [`calibration_sensitivity()`](https://provetelab.org/sheepdog/reference/calibration_sensitivity.md), [`plot_calibration_draws()`](https://provetelab.org/sheepdog/reference/plot_calibration_draws.md), [`history_draws()`](https://provetelab.org/sheepdog/reference/history_draws.md) |
+| 2\. Bayesian calibration | [`calibration_prior()`](https://provetelab.org/sheepdog/reference/calibration_prior.md), [`prior_predictive_calibration()`](https://provetelab.org/sheepdog/reference/prior_predictive_calibration.md), [`calibration_diagnostics()`](https://provetelab.org/sheepdog/reference/calibration_diagnostics.md), [`calibration_ppc()`](https://provetelab.org/sheepdog/reference/calibration_ppc.md), [`plot_calibration_ppc()`](https://provetelab.org/sheepdog/reference/plot_calibration_ppc.md), [`calibration_sensitivity()`](https://provetelab.org/sheepdog/reference/calibration_sensitivity.md), [`plot_calibration_draws()`](https://provetelab.org/sheepdog/reference/plot_calibration_draws.md), [`history_draws()`](https://provetelab.org/sheepdog/reference/history_draws.md) |
+| Occupancy data | [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md) (schema `sheepdog-occupancy`), [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md) (one detection data set per posterior draw) |
 | 3\. Community matrices | [`cell_status()`](https://provetelab.org/sheepdog/reference/cell_status.md), [`suggest_core_species()`](https://provetelab.org/sheepdog/reference/suggest_core_species.md), [`community_matrices()`](https://provetelab.org/sheepdog/reference/community_matrices.md), [`community_matrices_draws()`](https://provetelab.org/sheepdog/reference/community_matrices_draws.md) |
 
 The [articles](https://provetelab.org/sheepdog/articles/) cover each
@@ -224,9 +230,17 @@ specifies their columns, types and the definition of an occasion;
 example files are in `system.file("extdata", package = "sheepdog")`. Do
 not pass the whole-recording clips of `"random_recordings"`
 (`confidence = NA`) to the `validation` argument of
-[`crywolf::fp_aggregate()`](https://provetelab.org/crywolf/reference/fp_aggregate.html):
-they are the second method (manual annotation), not confirmations of
-detections.
+`crywolf::fp_aggregate()`: they are the second method (manual
+annotation), not confirmations of detections.
+
+[`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+writes occasions, detections, verdicts and, with a Bayesian calibration,
+its posterior draws to one folder, described by `schema.json` (schema
+`sheepdog-occupancy`).
+[`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md)
+turns that folder into one detection data set per posterior draw, so
+that any occupancy software can propagate the uncertainty of the
+calibration; crywolf reads the folder directly.
 
 ## From the scripts (v1.2.0) to the package (v2.0.0)
 

@@ -94,13 +94,13 @@
 <p>In the fable, the boy cries “wolf!” and the villagers have to decide whether the wolf is real. <strong>sheepdog</strong> does that check for automated detections from <a href="https://github.com/birdnet-team/BirdNET-Analyzer" class="external-link">BirdNET</a> custom classifiers in passive acoustic monitoring (PAM). It runs three stages:</p>
 <ol style="list-style-type: decimal">
 <li>
-<strong>Validation data.</strong> Build clip sets for manual review from the BirdNET selection tables: top-score, random-occasion or random-recording designs, one folder per species, ready for the review tab of the BirdNET GUI. Then summarise the reviewed clips: precision by confidence bin, suggested thresholds, confirmed presence by night and clips for retraining.</li>
+<strong>Validation data.</strong> Build clip sets for manual review from the BirdNET selection tables: top-score, random-occasion or random-recording designs, one folder per species, ready for the review tab of the BirdNET GUI. The random draws can be stratified along an environmental gradient. Then summarise the reviewed clips: precision by confidence bin, suggested thresholds, confirmed presence by night, clips for retraining and the cells that still need review.</li>
 <li>
-<strong>Calibration.</strong> Turn confidence scores into probabilities of true detection with hierarchical logistic models (species and site x species effects, compared by cross-validation). Score every detection and build nightly detection histories.</li>
+<strong>Calibration.</strong> Turn confidence scores into probabilities of true detection with hierarchical logistic models (species and site x species effects, compared by cross-validation), fitted with ‘lme4’ or, in a Bayesian framework, with ‘brms’. Score every detection and build nightly detection histories.</li>
 <li>
 <strong>Community matrices.</strong> Turn the calibrated histories into effort-standardised site x month matrices for multivariate ordinations.</li>
 </ol>
-<p>sheepdog was developed for the FrogNet project (anurans of the Pantanal and Cerrado, Mato Grosso do Sul, Brazil), but it works with the output of any BirdNET custom classifier. Its validation outputs feed occupancy models with false positives fitted with <a href="https://github.com/diogoprov/crywolf" class="external-link">crywolf</a>. The two packages are independent: sheepdog does not depend on crywolf.</p>
+<p>sheepdog was developed for the FrogNet project (anurans of the Pantanal and Cerrado, Mato Grosso do Sul, Brazil), but it works with the output of any BirdNET custom classifier. <code><a href="reference/export_occupancy_data.html">export_occupancy_data()</a></code> writes its validation and calibration outputs in a documented format for occupancy models with false positives, such as those fitted with <a href="https://github.com/diogoprov/crywolf" class="external-link">crywolf</a>. The two packages are independent: sheepdog does not depend on crywolf.</p>
 <div class="float">
 <img src="reference/figures/pipeline.png" alt="The three stages of sheepdog"><div class="figcaption">The three stages of sheepdog</div>
 </div>
@@ -179,7 +179,7 @@
 <tr>
 <td>1. Selecting and cutting clips</td>
 <td>
-<code><a href="reference/read_selection_tables.html">read_selection_tables()</a></code>, <code><a href="reference/select_clips.html">select_clips()</a></code> (a pure function that returns the clip manifest without touching audio), <code><a href="reference/cut_clips.html">cut_clips()</a></code>, <code><a href="reference/pack_clips.html">pack_clips()</a></code>
+<code><a href="reference/read_selection_tables.html">read_selection_tables()</a></code>, <code><a href="reference/select_clips.html">select_clips()</a></code> (a pure function that returns the clip manifest without touching audio), <code><a href="reference/covariate_bins.html">covariate_bins()</a></code> (strata along a gradient), <code><a href="reference/cut_clips.html">cut_clips()</a></code>, <code><a href="reference/pack_clips.html">pack_clips()</a></code>
 </td>
 </tr>
 <tr>
@@ -191,8 +191,7 @@
 <tr>
 <td>1. After the review</td>
 <td>
-<code><a href="reference/classify_review.html">classify_review()</a></code>, <code><a href="reference/precision_by_bin.html">precision_by_bin()</a></code>, <code><a href="reference/suggest_thresholds.html">suggest_thresholds()</a></code>, <code><a href="reference/nightly_presence.html">nightly_presence()</a></code>, <code><a href="reference/retraining_clips.html">retraining_clips()</a></code>, <code><a href="reference/read_validation_tables.html">read_validation_tables()</a></code>
-</td>
+<code><a href="reference/classify_review.html">classify_review()</a></code>, <code><a href="reference/precision_by_bin.html">precision_by_bin()</a></code>, <code><a href="reference/suggest_thresholds.html">suggest_thresholds()</a></code>, <code><a href="reference/nightly_presence.html">nightly_presence()</a></code>, <code><a href="reference/retraining_clips.html">retraining_clips()</a></code>, <code><a href="reference/read_validation_tables.html">read_validation_tables()</a></code>, <code><a href="reference/review_support.html">review_support()</a></code> (cells, or bins, that still need review)</td>
 </tr>
 <tr>
 <td>1. Retraining</td>
@@ -209,8 +208,13 @@
 <tr>
 <td>2. Bayesian calibration</td>
 <td>
-<code><a href="reference/calibration_prior.html">calibration_prior()</a></code>, <code><a href="reference/prior_predictive_calibration.html">prior_predictive_calibration()</a></code>, <code><a href="reference/calibration_diagnostics.html">calibration_diagnostics()</a></code>, <code><a href="reference/calibration_sensitivity.html">calibration_sensitivity()</a></code>, <code><a href="reference/plot_calibration_draws.html">plot_calibration_draws()</a></code>, <code><a href="reference/history_draws.html">history_draws()</a></code>
+<code><a href="reference/calibration_prior.html">calibration_prior()</a></code>, <code><a href="reference/prior_predictive_calibration.html">prior_predictive_calibration()</a></code>, <code><a href="reference/calibration_diagnostics.html">calibration_diagnostics()</a></code>, <code><a href="reference/calibration_ppc.html">calibration_ppc()</a></code>, <code><a href="reference/plot_calibration_ppc.html">plot_calibration_ppc()</a></code>, <code><a href="reference/calibration_sensitivity.html">calibration_sensitivity()</a></code>, <code><a href="reference/plot_calibration_draws.html">plot_calibration_draws()</a></code>, <code><a href="reference/history_draws.html">history_draws()</a></code>
 </td>
+</tr>
+<tr>
+<td>Occupancy data</td>
+<td>
+<code><a href="reference/export_occupancy_data.html">export_occupancy_data()</a></code> (schema <code>sheepdog-occupancy</code>), <code><a href="reference/occasion_draws.html">occasion_draws()</a></code> (one detection data set per posterior draw)</td>
 </tr>
 <tr>
 <td>3. Community matrices</td>
@@ -251,7 +255,8 @@
 <div class="section level2">
 <h2 id="integration-with-crywolf">Integration with crywolf<a class="anchor" aria-label="anchor" href="#integration-with-crywolf"></a>
 </h2>
-<p><code>clip_manifest.csv</code> and <code>validation_by_clip.csv</code> are the hand-off to occupancy models with false positives. <code><a href="articles/crywolf-integration.html">vignette("crywolf-integration")</a></code> specifies their columns, types and the definition of an occasion; example files are in <code>system.file("extdata", package = "sheepdog")</code>. Do not pass the whole-recording clips of <code>"random_recordings"</code> (<code>confidence = NA</code>) to the <code>validation</code> argument of <code><a href="https://provetelab.org/crywolf/reference/fp_aggregate.html" class="external-link">crywolf::fp_aggregate()</a></code>: they are the second method (manual annotation), not confirmations of detections.</p>
+<p><code>clip_manifest.csv</code> and <code>validation_by_clip.csv</code> are the hand-off to occupancy models with false positives. <code><a href="articles/crywolf-integration.html">vignette("crywolf-integration")</a></code> specifies their columns, types and the definition of an occasion; example files are in <code>system.file("extdata", package = "sheepdog")</code>. Do not pass the whole-recording clips of <code>"random_recordings"</code> (<code>confidence = NA</code>) to the <code>validation</code> argument of <code>crywolf::fp_aggregate()</code>: they are the second method (manual annotation), not confirmations of detections.</p>
+<p><code><a href="reference/export_occupancy_data.html">export_occupancy_data()</a></code> writes occasions, detections, verdicts and, with a Bayesian calibration, its posterior draws to one folder, described by <code>schema.json</code> (schema <code>sheepdog-occupancy</code>). <code><a href="reference/occasion_draws.html">occasion_draws()</a></code> turns that folder into one detection data set per posterior draw, so that any occupancy software can propagate the uncertainty of the calibration; crywolf reads the folder directly.</p>
 </div>
 <div class="section level2">
 <h2 id="from-the-scripts-v120-to-the-package-v200">From the scripts (v1.2.0) to the package (v2.0.0)<a class="anchor" aria-label="anchor" href="#from-the-scripts-v120-to-the-package-v200"></a>
