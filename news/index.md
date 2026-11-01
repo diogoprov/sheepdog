@@ -2,6 +2,21 @@
 
 ## sheepdog (development version)
 
+- [`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md)
+  gains `negatives_folder`: with a non-event class of BirdNET-Analyzer
+  (e.g. `"Noise"`), every negative goes to that folder, named
+  `<species>-<site>-<clip_file>`, instead of a `-<species_code>` folder.
+  In BirdNET-Analyzer 2.4.0 those folders get the label -1, which makes
+  the loss unbounded and inflates the validation AUPRC (BirdNET-Analyzer
+  issue 1033); the documentation recommends `"Noise"` until this is
+  fixed. `NULL`, the default, keeps the previous layout.
+- [`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md)
+  gains `val_prop` and `val_seed`: a validation set by night, drawn from
+  the training nights left after the test draw and the cap, never from
+  `exclude_from_test`, written to `val/` to be passed as `--test_data`.
+  It gives the same split as a second call on the training rows (checked
+  on the FrogNet M3 training set: 288 nights and 824 clips). The checks
+  gain `val_nights_in_train` and `val_nights_excluded`.
 - [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md)
   gains the Sampling and Export tabs, opened with `selection_dir` and
   `output_dir`. Sampling is a form for the design of

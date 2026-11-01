@@ -242,6 +242,33 @@ reduced. With <code>copy = FALSE</code>, only
 a computer without the clips; <code>remap_from</code> and
 <code>remap_to</code> fix the paths when the clips are copied on another
 computer or drive. Below we hold out one site of the example.</p>
+<div class="section level3">
+<h3 id="a-validation-set-by-night">A validation set by night<a class="anchor" aria-label="anchor" href="#a-validation-set-by-night"></a>
+</h3>
+<p>With <code>--test_data</code>, BirdNET-Analyzer uses the given folder
+as its validation set, on which <code>--autotune</code> chooses the
+hyperparameters, in place of the split by file it would otherwise draw
+from the training folder (and which, for the reason above, leaks
+nights). Passing the test set there would select the model on its own
+test set. <code>val_prop</code> draws a third set, by night, from the
+training nights left after the test draw and after
+<code>max_per_site_species</code>, never from
+<code>exclude_from_test</code>; its clips go to <code>val/</code>, to be
+passed as <code>--test_data</code>, and <code>test/</code> is kept for
+the final evaluation of the chosen model:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/build_training_set.html">build_training_set</a></span><span class="op">(</span><span class="va">reviewed</span>, <span class="st">"birdnet_training"</span>, split <span class="op">=</span> <span class="st">"night"</span>,</span>
+<span>                   test_prop <span class="op">=</span> <span class="fl">0.2</span>, val_prop <span class="op">=</span> <span class="fl">0.15</span>,</span>
+<span>                   exclude_from_test <span class="op">=</span> <span class="va">other_model</span>,</span>
+<span>                   max_per_site_species <span class="op">=</span> <span class="fl">50</span>, negatives_folder <span class="op">=</span> <span class="st">"Noise"</span>,</span>
+<span>                   copy <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<p>The validation draw uses <code>val_seed</code>, <code>seed + 1</code>
+by default, and gives the same nights as a second call of
+<code><a href="../reference/build_training_set.html">build_training_set()</a></code> with <code>split = "night"</code> on
+the training rows of the first. The checks then also count validation
+nights with training clips and validation nights in
+<code>exclude_from_test</code>, which should be 0.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="building-the-training-folders">Building the training folders<a class="anchor" aria-label="anchor" href="#building-the-training-folders"></a>
@@ -250,14 +277,26 @@ computer or drive. Below we hold out one site of the example.</p>
 BirdNET layout: positives in
 <code>&lt;set&gt;/&lt;species_code&gt;/</code> and negatives in
 <code>&lt;set&gt;/-&lt;species_code&gt;/</code>, where
-<code>&lt;set&gt;</code> is <code>train</code> or <code>test</code>. It
-reads each clip from <code>reviewed_path</code>, the place where the
-review left it, leaves out whole-recording clips (which have no
-confidence score), writes the table of copied clips to
+<code>&lt;set&gt;</code> is <code>train</code>, <code>val</code> or
+<code>test</code>. It reads each clip from <code>reviewed_path</code>,
+the place where the review left it, leaves out whole-recording clips
+(which have no confidence score), writes the table of copied clips to
 <code>training_set.csv</code>, and warns about classes with fewer
 positive training files than <code>min_files</code> (100 by default, the
 number recommended by the BirdNET documentation).</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<p>In BirdNET-Analyzer 2.4.0, and in its main branch of October 2026,
+the <code>-&lt;species_code&gt;</code> folders do not work as
+documented: their clips get the label -1, which makes their loss
+negative and unbounded, inflates the validation AUPRC, and keeps them
+all in the training split (<a href="https://github.com/birdnet-team/BirdNET-Analyzer/issues/1033" class="external-link">issue
+1033</a>). Until this is fixed, <code>negatives_folder = "Noise"</code>
+puts every negative in the non-event folder <code>Noise</code>, named
+<code>&lt;species&gt;-&lt;site&gt;-&lt;clip_file&gt;</code> to keep its
+origin; their label is then 0 for every class.
+<code>training_set.csv</code> records <code>Noise</code> as their
+<code>class_folder</code>, and <code><a href="../reference/exclude_training_clips.html">exclude_training_clips()</a></code>
+works as before.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">training_root</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"birdnet_training"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="va">training_root</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">training_set</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_training_set.html">build_training_set</a></span><span class="op">(</span><span class="va">reviewed</span>, <span class="va">training_root</span>,</span>
@@ -284,7 +323,7 @@ number recommended by the BirdNET documentation).</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> train negative   615</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> train positive  <span style="text-decoration: underline;">1</span>212</span></span></code></pre></div>
 <p>How many positive training files each class received:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">n_pos</span> <span class="op">&lt;-</span> <span class="va">training_set</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">set</span> <span class="op">==</span> <span class="st">"train"</span>, <span class="va">verdict</span> <span class="op">==</span> <span class="st">"positive"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">species_code</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -342,18 +381,22 @@ annotated calls into 3 s clips before using them as positives.</li>
 <p>Training runs in a Python environment with BirdNET-Analyzer
 installed. The commands below follow the example of the documentation
 (they are not run here):</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> birdnet_analyzer.train birdnet_training/train <span class="dt">\</span></span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="at">--test_data</span> birdnet_training/test <span class="dt">\</span></span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="at">-o</span> checkpoints/custom/Custom_Classifier.tflite</span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a></span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> birdnet_analyzer.analyze recordings/ <span class="dt">\</span></span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="at">--classifier</span> checkpoints/custom/Custom_Classifier.tflite</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> birdnet_analyzer.train birdnet_training/train <span class="dt">\</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  <span class="at">--test_data</span> birdnet_training/val <span class="dt">\</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  <span class="at">-o</span> checkpoints/custom/Custom_Classifier.tflite</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> birdnet_analyzer.analyze recordings/ <span class="dt">\</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="at">--classifier</span> checkpoints/custom/Custom_Classifier.tflite</span></code></pre></div>
 <p>Use <code>--model_format raven</code> (or <code>both</code>) if the
 classifier will also be used in Raven. Hyperparameters such as
 <code>--hidden_units</code>, <code>--learning_rate</code>,
 <code>--dropout</code> and the upsampling options affect the result; the
 documentation recommends trying several settings, or
-<code>--autotune</code>.</p>
+<code>--autotune</code>. Without <code>val_prop</code>, pass
+<code>test/</code> as <code>--test_data</code> only when no
+hyperparameter is chosen on it; otherwise evaluate on <code>test/</code>
+afterwards, with the analysis of the test clips by the chosen
+classifier.</p>
 </div>
 <div class="section level2">
 <h2 id="after-retraining">After retraining<a class="anchor" aria-label="anchor" href="#after-retraining"></a>
@@ -379,7 +422,7 @@ it drops every clip of a recording or night used in training, and with
 recording used to train one species was also heard by the classifier for
 the others. It also takes the table of
 <code><a href="../reference/training_nights.html">training_nights()</a></code>:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">manifest_v2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/select_clips.html">select_clips</a></span><span class="op">(</span><span class="va">detections_v2</span>, <span class="va">...</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/exclude_training_clips.html">exclude_training_clips</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">training_root</span>, <span class="st">"training_set.csv"</span><span class="op">)</span>,</span>
 <span>                         level <span class="op">=</span> <span class="st">"recording"</span>, any_species <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>

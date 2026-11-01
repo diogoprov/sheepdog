@@ -9,15 +9,17 @@
 into the folder layout that the training script of BirdNET-Analyzer
 expects: one folder per class, named after the label (species_code, so
 the retrained classifier keeps the labels of the current one), with the
-negatives of a class in a folder with the same name prefixed by -. The
-test clips go to a separate test folder, to be passed as
---test_data."><meta property="og:description" content="Splits the reviewed clips into a training and a test set and copies them
+negatives of a class in a folder with the same name prefixed by - (or
+all negatives in one non-event folder; see Negatives). The test clips go
+to a separate test folder; with val_prop, a validation set by night
+goes to val, to be passed as --test_data (see Splits)."><meta property="og:description" content="Splits the reviewed clips into a training and a test set and copies them
 into the folder layout that the training script of BirdNET-Analyzer
 expects: one folder per class, named after the label (species_code, so
 the retrained classifier keeps the labels of the current one), with the
-negatives of a class in a folder with the same name prefixed by -. The
-test clips go to a separate test folder, to be passed as
---test_data."><meta property="og:image" content="https://provetelab.org/sheepdog/logo.svg"></head><body>
+negatives of a class in a folder with the same name prefixed by - (or
+all negatives in one non-event folder; see Negatives). The test clips go
+to a separate test folder; with val_prop, a validation set by night
+goes to val, to be passed as --test_data (see Splits)."><meta property="og:image" content="https://provetelab.org/sheepdog/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -81,9 +83,10 @@ test clips go to a separate test folder, to be passed as
 into the folder layout that the training script of BirdNET-Analyzer
 expects: one folder per class, named after the label (<code>species_code</code>, so
 the retrained classifier keeps the labels of the current one), with the
-negatives of a class in a folder with the same name prefixed by <code>-</code>. The
-test clips go to a separate <code>test</code> folder, to be passed as
-<code>--test_data</code>.</p>
+negatives of a class in a folder with the same name prefixed by <code>-</code> (or
+all negatives in one non-event folder; see Negatives). The test clips go
+to a separate <code>test</code> folder; with <code>val_prop</code>, a validation set by night
+goes to <code>val</code>, to be passed as <code>--test_data</code> (see Splits).</p>
     </div>
 
     <div class="section level2">
@@ -97,7 +100,10 @@ test clips go to a separate <code>test</code> folder, to be passed as
 <span>  seed <span class="op">=</span> <span class="fl">2026</span>,</span>
 <span>  max_per_site_species <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  exclude_from_test <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  val_prop <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  val_seed <span class="op">=</span> <span class="va">seed</span> <span class="op">+</span> <span class="fl">1</span>,</span>
 <span>  negatives <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  negatives_folder <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  min_files <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  copy <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  remap_from <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -153,13 +159,30 @@ nights as possible. Test clips and negatives are not reduced.</p></dd>
 <dd><p>Optional table with <code>site</code> and <code>night</code> (e.g.
 from <code><a href="training_nights.html">training_nights()</a></code>): nights that must not be in the test set,
 such as nights whose recordings trained another classifier that will
-be compared on it. They are left out of the draw and stay in the
-training set.</p></dd>
+be compared on it. They are left out of the draws of the test and
+validation sets and stay in the training set.</p></dd>
+
+
+<dt id="arg-val-prop">val_prop<a class="anchor" aria-label="anchor" href="#arg-val-prop"></a></dt>
+<dd><p>Optional proportion of the training nights of each site
+drawn for the validation set (<code>val/</code>); see Splits. <code>NULL</code> draws none.</p></dd>
+
+
+<dt id="arg-val-seed">val_seed<a class="anchor" aria-label="anchor" href="#arg-val-seed"></a></dt>
+<dd><p>Seed of the validation draw. The default, <code>seed + 1</code>, is
+also the seed of <code>max_per_site_species</code>; the two draws are separate,
+and the default reproduces the training sets of the FrogNet project.</p></dd>
 
 
 <dt id="arg-negatives">negatives<a class="anchor" aria-label="anchor" href="#arg-negatives"></a></dt>
-<dd><p>Include the negative clips, in <code>-&lt;species_code&gt;</code>
-folders.</p></dd>
+<dd><p>Include the negative clips?</p></dd>
+
+
+<dt id="arg-negatives-folder">negatives_folder<a class="anchor" aria-label="anchor" href="#arg-negatives-folder"></a></dt>
+<dd><p><code>NULL</code> puts the negatives of each class in a
+<code>-&lt;species_code&gt;</code> folder. A non-event class of BirdNET-Analyzer
+(<code>"Noise"</code>, <code>"Other"</code>, <code>"Background"</code> or <code>"Silence"</code>) puts all of them
+in that folder instead; see Negatives.</p></dd>
 
 
 <dt id="arg-min-files">min_files<a class="anchor" aria-label="anchor" href="#arg-min-files"></a></dt>
@@ -185,7 +208,8 @@ replacement, for clips reviewed on another computer or drive.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A tibble with one row per clip: <code>site</code>, <code>species_code</code>,
-<code>verdict</code>, <code>set</code> (<code>"train"</code> or <code>"test"</code>), <code>class_folder</code>, <code>clip_file</code>,
+<code>verdict</code>, <code>set</code> (<code>"train"</code>, <code>"val"</code> or <code>"test"</code>), <code>class_folder</code>,
+<code>clip_file</code>,
 <code>source_audio</code>, <code>clip_start</code>, <code>clip_end</code>, <code>from</code>, <code>to</code> and <code>night</code>,
 invisibly, with the checks in the attribute <code>"checks"</code>. With
 <code>copy = TRUE</code>, clips that could not be copied are left out.</p>
@@ -219,21 +243,54 @@ one species and in the test set for another, which breaks the
 independence of the test set; it is kept only to reproduce earlier
 training sets, and warns.</p></li>
 <li><p><code>"none"</code>: every clip goes to the training set.</p></li>
-</ul><p>The draws use <code>seed</code> (and <code>seed + 1</code> for <code>max_per_site_species</code>) and
-leave the global random number generator as it was. They follow the
+</ul><p>With <code>val_prop</code>, a validation set is drawn after the test set and after
+<code>max_per_site_species</code>, among the nights left in the training set: in
+each site, <code>ceiling(n * val_prop)</code> of its <code>n</code> training nights, never
+from <code>exclude_from_test</code>. Its clips go to <code>val/</code>. BirdNET-Analyzer draws
+its own validation set by file, which leaks nights, and its autotune
+chooses the hyperparameters on it; pass <code>val/</code> as <code>--test_data</code> so that
+the validation is by night, and keep <code>test/</code> for the final evaluation.
+The result is the same as a second call of <code>build_training_set()</code> with
+<code>split = "night"</code>, <code>test_prop = val_prop</code> and <code>seed = val_seed</code> on the
+training rows of the first.</p>
+<p>The draws use <code>seed</code> (<code>seed + 1</code> for <code>max_per_site_species</code>, and
+<code>val_seed</code> for the validation set) and leave the global random number
+generator as it was. They follow the
 order of the rows of <code>validation</code>: the same clips in another order give
 another split.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="negatives">Negatives<a class="anchor" aria-label="anchor" href="#negatives"></a></h2>
+
+
+<p>BirdNET-Analyzer (version 2.4.0 and its main branch of October 2026)
+gives the label -1 to the clips of <code>-&lt;species_code&gt;</code> folders. That label
+enters the loss functions unchanged, which makes the loss of those clips
+negative and unbounded; <code>keras.metrics.AUC</code> does not count -1 as a
+negative, which inflates the validation AUPRC whenever the validation
+set holds such clips; and the internal random split puts all of them in
+the training set. Clips of the non-event folders (<code>"Noise"</code>, <code>"Other"</code>,
+<code>"Background"</code>, <code>"Silence"</code>, in any case) get the label 0 and do not
+have these problems (reported in
+<a href="https://github.com/birdnet-team/BirdNET-Analyzer/issues/1033" class="external-link">https://github.com/birdnet-team/BirdNET-Analyzer/issues/1033</a>). Until
+it is fixed, use <code>negatives_folder = "Noise"</code>: every negative goes to
+that folder, as <code>&lt;species&gt;-&lt;site&gt;-&lt;clip_file&gt;</code> (the short species code
+after the last <code>_</code> of <code>species_code</code>), so that the file keeps its origin
+and clips of different species do not collide. The negatives then train
+the classifier against all classes, not only their own.</p>
     </div>
     <div class="section level2">
     <h2 id="checks">Checks<a class="anchor" aria-label="anchor" href="#checks"></a></h2>
 
 
-<p>At the end, three counts are reported, and kept in the attribute
+<p>At the end, the counts are reported, and kept in the attribute
 <code>"checks"</code> of the result: test nights (site x night) that also have
 training clips, test nights listed in <code>exclude_from_test</code>, and test
 clips that overlap a training clip of the same species in the same
-recording. All should be 0 with <code>split = "night"</code>. With
-<code>strict = TRUE</code>, any count above 0 is an error.</p>
+recording; with <code>val_prop</code>, also validation nights with training clips
+and validation nights listed in <code>exclude_from_test</code>. All should be 0
+with <code>split = "night"</code>. With <code>strict = TRUE</code>, any count above 0 is an
+error.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

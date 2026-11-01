@@ -147,17 +147,57 @@ checked on a computer without the clips; `remap_from` and `remap_to` fix
 the paths when the clips are copied on another computer or drive. Below
 we hold out one site of the example.
 
+### A validation set by night
+
+With `--test_data`, BirdNET-Analyzer uses the given folder as its
+validation set, on which `--autotune` chooses the hyperparameters, in
+place of the split by file it would otherwise draw from the training
+folder (and which, for the reason above, leaks nights). Passing the test
+set there would select the model on its own test set. `val_prop` draws a
+third set, by night, from the training nights left after the test draw
+and after `max_per_site_species`, never from `exclude_from_test`; its
+clips go to `val/`, to be passed as `--test_data`, and `test/` is kept
+for the final evaluation of the chosen model:
+
+``` r
+
+build_training_set(reviewed, "birdnet_training", split = "night",
+                   test_prop = 0.2, val_prop = 0.15,
+                   exclude_from_test = other_model,
+                   max_per_site_species = 50, negatives_folder = "Noise",
+                   copy = FALSE)
+```
+
+The validation draw uses `val_seed`, `seed + 1` by default, and gives
+the same nights as a second call of
+[`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md)
+with `split = "night"` on the training rows of the first. The checks
+then also count validation nights with training clips and validation
+nights in `exclude_from_test`, which should be 0.
+
 ## Building the training folders
 
 [`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md)
 copies the reviewed clips into the BirdNET layout: positives in
 `<set>/<species_code>/` and negatives in `<set>/-<species_code>/`, where
-`<set>` is `train` or `test`. It reads each clip from `reviewed_path`,
-the place where the review left it, leaves out whole-recording clips
-(which have no confidence score), writes the table of copied clips to
-`training_set.csv`, and warns about classes with fewer positive training
-files than `min_files` (100 by default, the number recommended by the
-BirdNET documentation).
+`<set>` is `train`, `val` or `test`. It reads each clip from
+`reviewed_path`, the place where the review left it, leaves out
+whole-recording clips (which have no confidence score), writes the table
+of copied clips to `training_set.csv`, and warns about classes with
+fewer positive training files than `min_files` (100 by default, the
+number recommended by the BirdNET documentation).
+
+In BirdNET-Analyzer 2.4.0, and in its main branch of October 2026, the
+`-<species_code>` folders do not work as documented: their clips get the
+label -1, which makes their loss negative and unbounded, inflates the
+validation AUPRC, and keeps them all in the training split ([issue
+1033](https://github.com/birdnet-team/BirdNET-Analyzer/issues/1033)).
+Until this is fixed, `negatives_folder = "Noise"` puts every negative in
+the non-event folder `Noise`, named `<species>-<site>-<clip_file>` to
+keep its origin; their label is then 0 for every class.
+`training_set.csv` records `Noise` as their `class_folder`, and
+[`exclude_training_clips()`](https://provetelab.org/sheepdog/reference/exclude_training_clips.md)
+works as before.
 
 ``` r
 
@@ -248,7 +288,7 @@ run here):
 
 ``` sh
 python -m birdnet_analyzer.train birdnet_training/train \
-  --test_data birdnet_training/test \
+  --test_data birdnet_training/val \
   -o checkpoints/custom/Custom_Classifier.tflite
 
 python -m birdnet_analyzer.analyze recordings/ \
@@ -259,7 +299,10 @@ Use `--model_format raven` (or `both`) if the classifier will also be
 used in Raven. Hyperparameters such as `--hidden_units`,
 `--learning_rate`, `--dropout` and the upsampling options affect the
 result; the documentation recommends trying several settings, or
-`--autotune`.
+`--autotune`. Without `val_prop`, pass `test/` as `--test_data` only
+when no hyperparameter is chosen on it; otherwise evaluate on `test/`
+afterwards, with the analysis of the test clips by the chosen
+classifier.
 
 ## After retraining
 

@@ -4,9 +4,10 @@ Splits the reviewed clips into a training and a test set and copies them
 into the folder layout that the training script of BirdNET-Analyzer
 expects: one folder per class, named after the label (`species_code`, so
 the retrained classifier keeps the labels of the current one), with the
-negatives of a class in a folder with the same name prefixed by `-`. The
-test clips go to a separate `test` folder, to be passed as
-`--test_data`.
+negatives of a class in a folder with the same name prefixed by `-` (or
+all negatives in one non-event folder; see Negatives). The test clips go
+to a separate `test` folder; with `val_prop`, a validation set by night
+goes to `val`, to be passed as `--test_data` (see Splits).
 
 ## Usage
 
@@ -20,7 +21,10 @@ build_training_set(
   seed = 2026,
   max_per_site_species = NULL,
   exclude_from_test = NULL,
+  val_prop = NULL,
+  val_seed = seed + 1,
   negatives = TRUE,
+  negatives_folder = NULL,
   min_files = 100,
   copy = TRUE,
   remap_from = NULL,
@@ -78,11 +82,30 @@ build_training_set(
   [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md)):
   nights that must not be in the test set, such as nights whose
   recordings trained another classifier that will be compared on it.
-  They are left out of the draw and stay in the training set.
+  They are left out of the draws of the test and validation sets and
+  stay in the training set.
+
+- val_prop:
+
+  Optional proportion of the training nights of each site drawn for the
+  validation set (`val/`); see Splits. `NULL` draws none.
+
+- val_seed:
+
+  Seed of the validation draw. The default, `seed + 1`, is also the seed
+  of `max_per_site_species`; the two draws are separate, and the default
+  reproduces the training sets of the FrogNet project.
 
 - negatives:
 
-  Include the negative clips, in `-<species_code>` folders.
+  Include the negative clips?
+
+- negatives_folder:
+
+  `NULL` puts the negatives of each class in a `-<species_code>` folder.
+  A non-event class of BirdNET-Analyzer (`"Noise"`, `"Other"`,
+  `"Background"` or `"Silence"`) puts all of them in that folder
+  instead; see Negatives.
 
 - min_files:
 
@@ -107,10 +130,10 @@ build_training_set(
 ## Value
 
 A tibble with one row per clip: `site`, `species_code`, `verdict`, `set`
-(`"train"` or `"test"`), `class_folder`, `clip_file`, `source_audio`,
-`clip_start`, `clip_end`, `from`, `to` and `night`, invisibly, with the
-checks in the attribute `"checks"`. With `copy = TRUE`, clips that could
-not be copied are left out.
+(`"train"`, `"val"` or `"test"`), `class_folder`, `clip_file`,
+`source_audio`, `clip_start`, `clip_end`, `from`, `to` and `night`,
+invisibly, with the checks in the attribute `"checks"`. With
+`copy = TRUE`, clips that could not be copied are left out.
 
 ## Details
 
@@ -147,19 +170,50 @@ information from the training into the test set.
 
 - `"none"`: every clip goes to the training set.
 
-The draws use `seed` (and `seed + 1` for `max_per_site_species`) and
-leave the global random number generator as it was. They follow the
-order of the rows of `validation`: the same clips in another order give
-another split.
+With `val_prop`, a validation set is drawn after the test set and after
+`max_per_site_species`, among the nights left in the training set: in
+each site, `ceiling(n * val_prop)` of its `n` training nights, never
+from `exclude_from_test`. Its clips go to `val/`. BirdNET-Analyzer draws
+its own validation set by file, which leaks nights, and its autotune
+chooses the hyperparameters on it; pass `val/` as `--test_data` so that
+the validation is by night, and keep `test/` for the final evaluation.
+The result is the same as a second call of `build_training_set()` with
+`split = "night"`, `test_prop = val_prop` and `seed = val_seed` on the
+training rows of the first.
+
+The draws use `seed` (`seed + 1` for `max_per_site_species`, and
+`val_seed` for the validation set) and leave the global random number
+generator as it was. They follow the order of the rows of `validation`:
+the same clips in another order give another split.
+
+## Negatives
+
+BirdNET-Analyzer (version 2.4.0 and its main branch of October 2026)
+gives the label -1 to the clips of `-<species_code>` folders. That label
+enters the loss functions unchanged, which makes the loss of those clips
+negative and unbounded; `keras.metrics.AUC` does not count -1 as a
+negative, which inflates the validation AUPRC whenever the validation
+set holds such clips; and the internal random split puts all of them in
+the training set. Clips of the non-event folders (`"Noise"`, `"Other"`,
+`"Background"`, `"Silence"`, in any case) get the label 0 and do not
+have these problems (reported in
+<https://github.com/birdnet-team/BirdNET-Analyzer/issues/1033>). Until
+it is fixed, use `negatives_folder = "Noise"`: every negative goes to
+that folder, as `<species>-<site>-<clip_file>` (the short species code
+after the last `_` of `species_code`), so that the file keeps its origin
+and clips of different species do not collide. The negatives then train
+the classifier against all classes, not only their own.
 
 ## Checks
 
-At the end, three counts are reported, and kept in the attribute
+At the end, the counts are reported, and kept in the attribute
 `"checks"` of the result: test nights (site x night) that also have
 training clips, test nights listed in `exclude_from_test`, and test
 clips that overlap a training clip of the same species in the same
-recording. All should be 0 with `split = "night"`. With `strict = TRUE`,
-any count above 0 is an error.
+recording; with `val_prop`, also validation nights with training clips
+and validation nights listed in `exclude_from_test`. All should be 0
+with `split = "night"`. With `strict = TRUE`, any count above 0 is an
+error.
 
 ## See also
 
