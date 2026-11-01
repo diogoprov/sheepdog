@@ -1,5 +1,10 @@
 # Changelog
 
+## sheepdog (development version)
+
+- `dev/roadmap-integration.md`: CRAN submissions of sheepdog 3.3.2 and
+  crywolf 2.1.0, and steps 5 to 7 of `crywolf::fp_occu_dyn()`.
+
 ## sheepdog 3.3.2
 
 Submission candidate for CRAN, replacing 3.3.1 (never uploaded).
