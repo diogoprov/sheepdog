@@ -13,7 +13,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/diogoprov/sheepdog/blob/v3.3.2/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/diogoprov/sheepdog/blob/main/DESCRIPTION)
 
 Provete D, Sugai L, Piatti L (2026). *sheepdog: Sample, Validate and
 Calibrate 'BirdNET' Detections*. R package version 3.3.2,
