@@ -41,8 +41,9 @@ fit_calibration(
 
 - ...:
 
-  `engine = "brms"`: further arguments for `brms::brm()` (e.g. `chains`,
-  `iter`, `cores`, `backend`, `seed`).
+  `engine = "brms"`: further arguments for
+  [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html)
+  (e.g. `chains`, `iter`, `cores`, `backend`, `seed`).
 
 ## Value
 
@@ -78,5 +79,7 @@ builds an example centred on an already calibrated score. After the fit,
 runs and a warning is raised when R-hat, the effective sample sizes or
 the divergent transitions fail the usual limits. Check the prior with
 [`prior_predictive_calibration()`](https://provetelab.org/sheepdog/reference/prior_predictive_calibration.md),
-the fit with `brms::pp_check()` and the sensitivity to the prior with
+the fit with
+[`brms::pp_check()`](https://mc-stan.org/bayesplot/reference/pp_check.html)
+and the sensitivity to the prior with
 [`calibration_sensitivity()`](https://provetelab.org/sheepdog/reference/calibration_sensitivity.md).

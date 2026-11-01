@@ -30,8 +30,9 @@ prior_predictive_calibration(formula, validations, prior, ...)
 
 - ...:
 
-  Further arguments for `brms::brm()` (e.g. `chains`, `iter`, `backend`,
-  `seed`).
+  Further arguments for
+  [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html)
+  (e.g. `chains`, `iter`, `backend`, `seed`).
 
 ## Value
 

@@ -11,6 +11,7 @@ articles:
   migration-3.0.0: migration-3.0.0.html
   performance: performance.html
   retraining: retraining.html
+  articles/review-app: review-app.html
   articles/pt/reviewing-in-the-gui: pt/reviewing-in-the-gui.html
   articles/reviewing-in-the-gui: reviewing-in-the-gui.html
   articles/pt/sampling-designs: pt/sampling-designs.html
@@ -18,7 +19,7 @@ articles:
   articles/pt/sheepdog: pt/sheepdog.html
   sheepdog: sheepdog.html
   validation-effort: validation-effort.html
-last_built: 2026-11-01T04:06Z
+last_built: 2026-11-01T04:47Z
 urls:
   reference: https://provetelab.org/sheepdog/reference
   article: https://provetelab.org/sheepdog/articles

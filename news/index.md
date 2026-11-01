@@ -2,6 +2,22 @@
 
 ## sheepdog (development version)
 
+- New
+  [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md): a
+  local ‘shiny’ app to review the clips one at a time, with spectrogram,
+  player, the data of each clip and keyboard shortcuts (`p`, `n`, `u`,
+  arrows); `max_freq` limits the spectrogram band. Each verdict
+  (`"positive"`, `"negative"` or `"uncertain"`) is appended at once to a
+  CSV file, so an interrupted review resumes where it stopped; with a
+  manifest from
+  [`assign_reviewers()`](https://provetelab.org/sheepdog/reference/assign_reviewers.md),
+  each reviewer sees only their clips. New
+  [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md)
+  turns that file into the table of
+  [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md),
+  so the rest of stage 1, the agreement between reviewers and the
+  calibration work unchanged. New article “Reviewing clips in the
+  sheepdog app”. ‘shiny’ joins Suggests.
 - [`exclude_training_clips()`](https://provetelab.org/sheepdog/reference/exclude_training_clips.md)
   with a table of
   [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md)
@@ -167,9 +183,10 @@
   `p_min` (`"threshold"`). It writes `occasion_draws.parquet` in the
   export (schema version 1.2), so that any occupancy software can
   propagate the uncertainty of the calibration. The random numbers
-  follow those of `crywolf::fp_draws_data()`, and a test checks that
-  both give the same detections; `tests/testthat/fixtures/export-1.2/`
-  holds the shared case.
+  follow those of
+  [`crywolf::fp_draws_data()`](https://provetelab.org/crywolf/reference/fp_draws_data.html),
+  and a test checks that both give the same detections;
+  `tests/testthat/fixtures/export-1.2/` holds the shared case.
 - [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md)
   runs the whole flow on the Curiango data (one-minute recordings, two
   classifiers): export, posterior predictive check of the calibration,

@@ -102,7 +102,8 @@ Only `positive` and `negative` are reviewed verdicts. Clips of
 multiple-method design (Miller et al. 2011,
 <https://doi.org/10.1890/10-1396.1>), that is, manual annotation of
 recordings. They are not confirmations of detections and must not go to
-the `validation` argument of `crywolf::fp_aggregate()`.
+the `validation` argument of
+[`crywolf::fp_aggregate()`](https://provetelab.org/crywolf/reference/fp_aggregate.html).
 
 ## Export for occupancy models
 
@@ -227,9 +228,10 @@ in every draw. With `rule = "sample"` a prediction is judged true at
 random with its probability of being true; with `"threshold"`, when that
 probability is at least `p_min`. Fitting the occupancy model to each
 draw and pooling the posteriors propagates the uncertainty of the
-calibration (Monte Carlo propagation); `crywolf::fp_draws_data()` reads
-the table when its settings match the request and otherwise draws the
-same detections itself.
+calibration (Monte Carlo propagation);
+[`crywolf::fp_draws_data()`](https://provetelab.org/crywolf/reference/fp_draws_data.html)
+reads the table when its settings match the request and otherwise draws
+the same detections itself.
 
 ``` r
 

@@ -33,6 +33,7 @@ score_detections() can score new detections."><meta property="og:image" content=
     <li><h6 class="dropdown-header" data-toc-skip>The three stages</h6></li>
     <li><a class="dropdown-item" href="../articles/sampling-designs.html">Choosing a sampling design</a></li>
     <li><a class="dropdown-item" href="../articles/reviewing-in-the-gui.html">Reviewing clips in the BirdNET GUI</a></li>
+    <li><a class="dropdown-item" href="../articles/review-app.html">Reviewing clips in the sheepdog app</a></li>
     <li><a class="dropdown-item" href="../articles/validation-effort.html">How many clips should I validate?</a></li>
     <li><a class="dropdown-item" href="../articles/calibration.html">Calibrating confidence scores</a></li>
     <li><a class="dropdown-item" href="../articles/bayesian-calibration.html">Bayesian calibration with brms</a></li>
@@ -107,7 +108,7 @@ from <code><a href="calibration_prior.html">calibration_prior()</a></code>. Requ
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p><code>engine = "brms"</code>: further arguments for <code>brms::brm()</code> (e.g.
+<dd><p><code>engine = "brms"</code>: further arguments for <code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code> (e.g.
 <code>chains</code>, <code>iter</code>, <code>cores</code>, <code>backend</code>, <code>seed</code>).</p></dd>
 
 </dl></div>
@@ -135,7 +136,7 @@ explicitly; <code><a href="calibration_prior.html">calibration_prior()</a></code
 already calibrated score. After the fit, <code><a href="calibration_diagnostics.html">calibration_diagnostics()</a></code>
 runs and a warning is raised when R-hat, the effective sample sizes or
 the divergent transitions fail the usual limits. Check the prior with
-<code><a href="prior_predictive_calibration.html">prior_predictive_calibration()</a></code>, the fit with <code>brms::pp_check()</code> and
+<code><a href="prior_predictive_calibration.html">prior_predictive_calibration()</a></code>, the fit with <code><a href="https://mc-stan.org/bayesplot/reference/pp_check.html" class="external-link">brms::pp_check()</a></code> and
 the sensitivity to the prior with <code><a href="calibration_sensitivity.html">calibration_sensitivity()</a></code>.</p>
     </div>
 

@@ -48,6 +48,15 @@ presence and retraining clips.
 - [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md)
   : Nights and recordings of clips used to train a classifier
 
+## Stage 1 - Review app
+
+Review the clips in a local app and read its verdicts.
+
+- [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md) :
+  Review the clips in a local app
+- [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md)
+  : Verdicts of the review app
+
 ## Stage 1 - Several reviewers
 
 Split the clips among reviewers, measure their agreement and combine

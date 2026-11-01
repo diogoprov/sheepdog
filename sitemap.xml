@@ -15,6 +15,7 @@
 <url><loc>https://provetelab.org/sheepdog/articles/pt/sampling-designs.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/articles/pt/sheepdog.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/articles/retraining.html</loc></url>
+<url><loc>https://provetelab.org/sheepdog/articles/review-app.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/articles/reviewing-in-the-gui.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/articles/sampling-designs.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/articles/sheepdog.html</loc></url>
@@ -22,6 +23,7 @@
 <url><loc>https://provetelab.org/sheepdog/authors.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/index.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/news/index.html</loc></url>
+<url><loc>https://provetelab.org/sheepdog/reference/app_verdicts.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/reference/assign_reviewers.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/reference/build_community_matrices.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/reference/build_training_set.html</loc></url>
@@ -64,6 +66,7 @@
 <url><loc>https://provetelab.org/sheepdog/reference/retraining_clips.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/reference/review_support.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/reference/reviewer_agreement.html</loc></url>
+<url><loc>https://provetelab.org/sheepdog/reference/run_app.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/reference/score_detections.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/reference/select_calibration_model.html</loc></url>
 <url><loc>https://provetelab.org/sheepdog/reference/select_clips.html</loc></url>

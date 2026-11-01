@@ -41,6 +41,7 @@ occasion-level counterpart of history_draws(), which works by night."><meta prop
     <li><h6 class="dropdown-header" data-toc-skip>The three stages</h6></li>
     <li><a class="dropdown-item" href="../articles/sampling-designs.html">Choosing a sampling design</a></li>
     <li><a class="dropdown-item" href="../articles/reviewing-in-the-gui.html">Reviewing clips in the BirdNET GUI</a></li>
+    <li><a class="dropdown-item" href="../articles/review-app.html">Reviewing clips in the sheepdog app</a></li>
     <li><a class="dropdown-item" href="../articles/validation-effort.html">How many clips should I validate?</a></li>
     <li><a class="dropdown-item" href="../articles/calibration.html">Calibrating confidence scores</a></li>
     <li><a class="dropdown-item" href="../articles/bayesian-calibration.html">Bayesian calibration with brms</a></li>
@@ -170,7 +171,7 @@ with a warning, not a non-detection.</p>
     <h2 id="reproducibility">Reproducibility<a class="anchor" aria-label="anchor" href="#reproducibility"></a></h2>
 
 
-<p>The random numbers follow those of <code>crywolf::fp_draws_data()</code>, so that
+<p>The random numbers follow those of <code><a href="https://provetelab.org/crywolf/reference/fp_draws_data.html" class="external-link">crywolf::fp_draws_data()</a></code>, so that
 both give the same detections for the same export, rule and seed: the
 seed is set once per species with R's default generators
 (Mersenne-Twister, Inversion, Rejection), and each draw, in increasing

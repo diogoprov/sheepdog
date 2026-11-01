@@ -52,6 +52,7 @@
     <li><h6 class="dropdown-header" data-toc-skip>The three stages</h6></li>
     <li><a class="dropdown-item" href="articles/sampling-designs.html">Choosing a sampling design</a></li>
     <li><a class="dropdown-item" href="articles/reviewing-in-the-gui.html">Reviewing clips in the BirdNET GUI</a></li>
+    <li><a class="dropdown-item" href="articles/review-app.html">Reviewing clips in the sheepdog app</a></li>
     <li><a class="dropdown-item" href="articles/validation-effort.html">How many clips should I validate?</a></li>
     <li><a class="dropdown-item" href="articles/calibration.html">Calibrating confidence scores</a></li>
     <li><a class="dropdown-item" href="articles/bayesian-calibration.html">Bayesian calibration with brms</a></li>
@@ -183,6 +184,12 @@
 </td>
 </tr>
 <tr>
+<td>1. Review app</td>
+<td>
+<code><a href="reference/run_app.html">run_app()</a></code> (local ‘shiny’ app: spectrogram, player and keyboard verdicts written to a CSV), <code><a href="reference/app_verdicts.html">app_verdicts()</a></code>
+</td>
+</tr>
+<tr>
 <td>1. Several reviewers</td>
 <td>
 <code><a href="reference/assign_reviewers.html">assign_reviewers()</a></code>, <code><a href="reference/split_by_reviewer.html">split_by_reviewer()</a></code>, <code><a href="reference/reviewer_agreement.html">reviewer_agreement()</a></code> (Cohen’s or Fleiss’ kappa), <code><a href="reference/consensus_verdicts.html">consensus_verdicts()</a></code>
@@ -255,7 +262,7 @@
 <div class="section level2">
 <h2 id="integration-with-crywolf">Integration with crywolf<a class="anchor" aria-label="anchor" href="#integration-with-crywolf"></a>
 </h2>
-<p><code>clip_manifest.csv</code> and <code>validation_by_clip.csv</code> are the hand-off to occupancy models with false positives. <code><a href="articles/crywolf-integration.html">vignette("crywolf-integration")</a></code> specifies their columns, types and the definition of an occasion; example files are in <code>system.file("extdata", package = "sheepdog")</code>. Do not pass the whole-recording clips of <code>"random_recordings"</code> (<code>confidence = NA</code>) to the <code>validation</code> argument of <code>crywolf::fp_aggregate()</code>: they are the second method (manual annotation), not confirmations of detections.</p>
+<p><code>clip_manifest.csv</code> and <code>validation_by_clip.csv</code> are the hand-off to occupancy models with false positives. <code><a href="articles/crywolf-integration.html">vignette("crywolf-integration")</a></code> specifies their columns, types and the definition of an occasion; example files are in <code>system.file("extdata", package = "sheepdog")</code>. Do not pass the whole-recording clips of <code>"random_recordings"</code> (<code>confidence = NA</code>) to the <code>validation</code> argument of <code><a href="https://provetelab.org/crywolf/reference/fp_aggregate.html" class="external-link">crywolf::fp_aggregate()</a></code>: they are the second method (manual annotation), not confirmations of detections.</p>
 <p><code><a href="reference/export_occupancy_data.html">export_occupancy_data()</a></code> writes occasions, detections, verdicts and, with a Bayesian calibration, its posterior draws to one folder, described by <code>schema.json</code> (schema <code>sheepdog-occupancy</code>). <code><a href="reference/occasion_draws.html">occasion_draws()</a></code> turns that folder into one detection data set per posterior draw, so that any occupancy software can propagate the uncertainty of the calibration; crywolf reads the folder directly.</p>
 </div>
 <div class="section level2">

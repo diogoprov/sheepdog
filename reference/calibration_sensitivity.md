@@ -29,8 +29,10 @@ calibration_sensitivity(fit, variable = NULL, ...)
 
 - ...:
 
-  Further arguments for `priorsense::powerscale_sensitivity()`.
+  Further arguments for
+  [`priorsense::powerscale_sensitivity()`](https://mc-stan.org/priorsense/reference/powerscale-sensitivity.html).
 
 ## Value
 
-The table of `priorsense::powerscale_sensitivity()`.
+The table of
+[`priorsense::powerscale_sensitivity()`](https://mc-stan.org/priorsense/reference/powerscale-sensitivity.html).
