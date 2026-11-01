@@ -1,6 +1,34 @@
 # Changelog
 
-## sheepdog (development version)
+## sheepdog 3.3.0
+
+This release adds the data contract with the crywolf package and the
+Monte Carlo propagation of the calibration (phases 0 and 1 of the
+integration), a local app to draw, review and export clips, and the
+splits and checks for retraining BirdNET-Analyzer.
+
+- Integration with crywolf:
+  [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+  (schema `sheepdog-occupancy` 1.1-1.3),
+  [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md),
+  [`calibration_ppc()`](https://provetelab.org/sheepdog/reference/calibration_ppc.md),
+  [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md)
+  and a contract test against crywolf.
+- Review:
+  [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md),
+  [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md)
+  and
+  [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md).
+- Retraining:
+  [`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md)
+  with splits by night, a validation set by night, a cap per site x
+  species and non-event negatives;
+  [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md)
+  and
+  [`exclude_training_clips()`](https://provetelab.org/sheepdog/reference/exclude_training_clips.md)
+  by recording or night.
+
+### All changes
 
 - [`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md)
   gains `negatives_folder`: with a non-event class of BirdNET-Analyzer

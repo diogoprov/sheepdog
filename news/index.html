@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">sheepdog</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.2.1.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,7 +64,13 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="sheepdog-development-version">sheepdog (development version)<a class="anchor" aria-label="anchor" href="#sheepdog-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="3.3.0" id="sheepdog-330">sheepdog 3.3.0<a class="anchor" aria-label="anchor" href="#sheepdog-330"></a></h2>
+<p>This release adds the data contract with the crywolf package and the Monte Carlo propagation of the calibration (phases 0 and 1 of the integration), a local app to draw, review and export clips, and the splits and checks for retraining BirdNET-Analyzer.</p>
+<ul><li>Integration with crywolf: <code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code> (schema <code>sheepdog-occupancy</code> 1.1-1.3), <code><a href="../reference/occasion_draws.html">occasion_draws()</a></code>, <code><a href="../reference/calibration_ppc.html">calibration_ppc()</a></code>, <code><a href="../reference/covariate_bins.html">covariate_bins()</a></code> and a contract test against crywolf.</li>
+<li>Review: <code><a href="../reference/run_app.html">run_app()</a></code>, <code><a href="../reference/app_verdicts.html">app_verdicts()</a></code> and <code><a href="../reference/review_support.html">review_support()</a></code>.</li>
+<li>Retraining: <code><a href="../reference/build_training_set.html">build_training_set()</a></code> with splits by night, a validation set by night, a cap per site x species and non-event negatives; <code><a href="../reference/training_nights.html">training_nights()</a></code> and <code><a href="../reference/exclude_training_clips.html">exclude_training_clips()</a></code> by recording or night.</li>
+</ul><div class="section level3">
+<h3 id="all-changes-3-3-0">All changes<a class="anchor" aria-label="anchor" href="#all-changes-3-3-0"></a></h3>
 <ul><li>
 <code><a href="../reference/build_training_set.html">build_training_set()</a></code> gains <code>negatives_folder</code>: with a non-event class of BirdNET-Analyzer (e.g. <code>"Noise"</code>), every negative goes to that folder, named <code>&lt;species&gt;-&lt;site&gt;-&lt;clip_file&gt;</code>, instead of a <code>-&lt;species_code&gt;</code> folder. In BirdNET-Analyzer 2.4.0 those folders get the label -1, which makes the loss unbounded and inflates the validation AUPRC (BirdNET-Analyzer issue 1033); the documentation recommends <code>"Noise"</code> until this is fixed. <code>NULL</code>, the default, keeps the previous layout.</li>
 <li>
@@ -107,6 +113,7 @@
 <code><a href="../articles/sampling-designs.html">vignette("sampling-designs")</a></code> gains a section on recorders that run the classifier on the device and discard the audio: keep a probability sample of the raw audio, drawn without looking at the scores, so that the calibration and the false-positive rate can still be estimated.</li>
 <li>The v1.2.0 reproduction test compares the <code>auc_sd</code> column of the effort curve with a relative tolerance of 1e-2 (1e-3 elsewhere): with lme4 2.1-0 this standard deviation over three small fits moves by about 0.4%.</li>
 </ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="3.2.1" id="sheepdog-321">sheepdog 3.2.1<a class="anchor" aria-label="anchor" href="#sheepdog-321"></a></h2>
 <ul><li>Added fast tests for posterior matrix uncertainty, training provenance, overlap boundaries, missing clips and degenerate reviewer agreement.</li>

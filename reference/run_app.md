@@ -83,11 +83,14 @@ run_app(
 
 - launch.browser:
 
-  Open the app in the browser? Passed to `shiny::runApp()`.
+  Open the app in the browser? Passed to
+  [`shiny::runApp()`](https://rdrr.io/pkg/shiny/man/runApp.html).
 
 - ...:
 
-  Further arguments to `shiny::runApp()`, e.g. `port`.
+  Further arguments to
+  [`shiny::runApp()`](https://rdrr.io/pkg/shiny/man/runApp.html), e.g.
+  `port`.
 
 ## Value
 
