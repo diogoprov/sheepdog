@@ -283,10 +283,10 @@ crywolf is planned.
 This section runs the whole flow, from the classifier scores to the
 occupancy estimates, on real data: the Common Pauraque (*Nyctidromus
 albicollis*) recordings of Piatti et al. (data:
-<https://doi.org/10.5281/zenodo.21795898>; article:
-<https://doi.org/10.1002/jav.03737>). The models take hours, so the code
-below is not run here; the results are read from tables cached in the
-package, written by `dev/benchmarks/curiango-export.R` and
+<https://doi.org/10.5281/zenodo.21795898>; article accepted in the
+*Journal of Avian Biology*). The models take hours, so the code below is
+not run here; the results are read from tables cached in the package,
+written by `dev/benchmarks/curiango-export.R` and
 `dev/benchmarks/curiango-flow.R` of the source repository.
 
 Seven recorders, one per site, took one-minute recordings; the occasion

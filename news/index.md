@@ -1,6 +1,15 @@
 # Changelog
 
-## sheepdog (development version)
+## sheepdog 3.3.1
+
+Submission candidate for CRAN, replacing 3.3.0 (never uploaded). The
+installed package is the same as 3.3.0, apart from the vignette below.
+
+- [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md)
+  cites the Curiango article as accepted, without its DOI, which the
+  publisher has not yet registered (the link failed the URL check).
+
+### Repository only
 
 - Test coverage is uploaded to Codecov, with a badge in the README; the
   coverage checks are informational and never block a merge.

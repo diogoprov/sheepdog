@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">sheepdog</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.3.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.3.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,11 +60,16 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/diogoprov/sheepdog/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/diogoprov/sheepdog/blob/v3.3.1/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="sheepdog-development-version">sheepdog (development version)<a class="anchor" aria-label="anchor" href="#sheepdog-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="3.3.1" id="sheepdog-331">sheepdog 3.3.1<a class="anchor" aria-label="anchor" href="#sheepdog-331"></a></h2>
+<p>Submission candidate for CRAN, replacing 3.3.0 (never uploaded). The installed package is the same as 3.3.0, apart from the vignette below.</p>
+<ul><li>
+<code><a href="../articles/crywolf-integration.html">vignette("crywolf-integration")</a></code> cites the Curiango article as accepted, without its DOI, which the publisher has not yet registered (the link failed the URL check).</li>
+</ul><div class="section level3">
+<h3 id="repository-only-3-3-1">Repository only<a class="anchor" aria-label="anchor" href="#repository-only-3-3-1"></a></h3>
 <ul><li>Test coverage is uploaded to Codecov, with a badge in the README; the coverage checks are informational and never block a merge.</li>
 <li>
 <code>dev/benchmarks/curiango-export.R</code>: <code>CALIB_COVARIATE</code> adds a night covariate to the calibration (schema 1.3) and <code>ADAPT_DELTA</code> is passed to brms; <code>curiango-flow.R</code> reads such exports and takes <code>CLASSIFIERS</code>. On the Curiango, a calibration with night temperature restores the temperature effect on occupancy that the Monte Carlo path had lost with the custom classifier.</li>
@@ -73,6 +78,7 @@
 <li>
 <code>inst/benchmarks/curiango-mc-stability.csv</code>: stability of the pooled Monte Carlo summaries of the Curiango by number of versions (M = 2-50). Rule of thumb, from a pilot run: M = 100 x the largest between-fit share of the variance keeps the Monte Carlo error under 10% of the posterior SD.</li>
 </ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="3.3.0" id="sheepdog-330">sheepdog 3.3.0<a class="anchor" aria-label="anchor" href="#sheepdog-330"></a></h2>
 <p>This release adds the data contract with the crywolf package and the Monte Carlo propagation of the calibration (phases 0 and 1 of the integration), a local app to draw, review and export clips, and the splits and checks for retraining BirdNET-Analyzer.</p>
