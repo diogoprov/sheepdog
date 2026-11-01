@@ -2,6 +2,12 @@
 
 ## sheepdog (development version)
 
+- `dev/benchmarks/curiango-export.R`: `CALIB_COVARIATE` adds a night
+  covariate to the calibration (schema 1.3) and `ADAPT_DELTA` is passed
+  to brms; `curiango-flow.R` reads such exports and takes `CLASSIFIERS`.
+  On the Curiango, a calibration with night temperature restores the
+  temperature effect on occupancy that the Monte Carlo path had lost
+  with the custom classifier.
 - `dev/benchmarks/`: `curiango-mc-stability.R` (choice of the number of
   versions M of the Monte Carlo propagation) and `curiango-fig4-mc.R`
   (the Monte Carlo path beside the threshold paths of the Curiango

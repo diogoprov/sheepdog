@@ -66,6 +66,8 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="sheepdog-development-version">sheepdog (development version)<a class="anchor" aria-label="anchor" href="#sheepdog-development-version"></a></h2>
 <ul><li>
+<code>dev/benchmarks/curiango-export.R</code>: <code>CALIB_COVARIATE</code> adds a night covariate to the calibration (schema 1.3) and <code>ADAPT_DELTA</code> is passed to brms; <code>curiango-flow.R</code> reads such exports and takes <code>CLASSIFIERS</code>. On the Curiango, a calibration with night temperature restores the temperature effect on occupancy that the Monte Carlo path had lost with the custom classifier.</li>
+<li>
 <code>dev/benchmarks/</code>: <code>curiango-mc-stability.R</code> (choice of the number of versions M of the Monte Carlo propagation) and <code>curiango-fig4-mc.R</code> (the Monte Carlo path beside the threshold paths of the Curiango article); <code>curiango-flow.R</code> can save the draws of each fit (<code>DRAWS_DIR</code>).</li>
 <li>
 <code>inst/benchmarks/curiango-mc-stability.csv</code>: stability of the pooled Monte Carlo summaries of the Curiango by number of versions (M = 2-50). Rule of thumb, from a pilot run: M = 100 x the largest between-fit share of the variance keeps the Monte Carlo error under 10% of the posterior SD.</li>
