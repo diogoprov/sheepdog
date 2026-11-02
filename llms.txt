@@ -374,6 +374,8 @@ build nightly detection histories.
   : Effort curve of the calibration
 - [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md)
   : Score every detection with the calibration model
+- [`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md)
+  : Confidence thresholds from the calibration model
 - [`detection_history()`](https://provetelab.org/sheepdog/reference/detection_history.md)
   : Nightly detection history
 - [`summarise_history()`](https://provetelab.org/sheepdog/reference/summarise_history.md)

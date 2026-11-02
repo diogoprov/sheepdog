@@ -276,7 +276,7 @@ coef(fit_global)
 #>  -0.5310926   1.5993695
 lme4::fixef(fit_full)
 #> (Intercept)  logit_conf 
-#>  -0.2818959   2.8003911
+#>   -0.281896    2.800392
 lme4::VarCorr(fit_full)
 #>  Groups       Name        Std.Dev. Corr  
 #>  site:species (Intercept) 1.19511        
@@ -457,6 +457,86 @@ scored |> select(site, species, night, confidence, p_tp)
 #> 10 ARA   sci_nas 20211001      0.623 0.785 
 #> # ℹ 7,543 more rows
 ```
+
+## Confidence thresholds from the calibration
+
+Stage 1 suggests a threshold per site and species from the reviewed
+clips of that cell alone
+([`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)).
+The calibration model gives a second route, following Wood & Kahl
+(2024): the threshold is the score at which the calibrated probability
+of a true positive reaches a target. Because the model has species and
+site effects, a cell with few reviewed clips borrows strength from the
+others, and the threshold does not depend on how the reviewed clips were
+spread over the scores, as long as they were chosen by their score only.
+
+[`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md)
+has two rules. With `rule = "probability"`, the threshold is the lowest
+score at which P(TP) reaches the target and stays above it for every
+higher score:
+
+``` r
+
+thr_p <- calibrated_thresholds(fit_full, target = 0.95, scored = scored)
+thr_p
+#> # A tibble: 32 × 4
+#>    site  species threshold p_tp_at_threshold
+#>    <chr> <chr>       <dbl>             <dbl>
+#>  1 ARA   boa_ran      0.65             0.956
+#>  2 ARA   den_nan      0.8              0.950
+#>  3 ARA   lep_fus     NA               NA    
+#>  4 ARA   pse_pla     NA               NA    
+#>  5 ARA   lep_pod      0.61             0.953
+#>  6 ARA   sci_nas      0.89             0.953
+#>  7 ARA   phy_cuv      0.62             0.957
+#>  8 ARA   ela_bic      0.61             0.951
+#>  9 XAR   boa_ran      0.78             0.953
+#> 10 XAR   lep_pod      0.6              0.951
+#> # ℹ 22 more rows
+```
+
+With `rule = "precision"`, the threshold is the lowest score at which
+the expected precision of the detections kept (the mean P(TP) of every
+detection of the cell above the threshold) reaches the target. It
+answers the same question as
+[`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md),
+but from every detection of the selection tables instead of the reviewed
+clips, and it is lower than the threshold of `"probability"`, because
+the detections above a score are more reliable than a detection at that
+score:
+
+``` r
+
+thr_q <- calibrated_thresholds(fit_full, target = 0.95, rule = "precision",
+                               scored = scored)
+thr_q
+#> # A tibble: 32 × 6
+#>    site  species threshold precision_at_threshold n_above n_detections
+#>    <chr> <chr>       <dbl>                  <dbl>   <int>        <int>
+#>  1 ARA   boa_ran      0.44                  0.951     291          346
+#>  2 ARA   den_nan      0.72                  0.955      80          384
+#>  3 ARA   ela_bic      0.39                  0.954     152          168
+#>  4 ARA   lep_fus     NA                    NA          NA           33
+#>  5 ARA   lep_pod      0.27                  0.953     159          168
+#>  6 ARA   phy_cuv      0.31                  0.954     188          196
+#>  7 ARA   pse_pla     NA                    NA          NA          225
+#>  8 ARA   sci_nas      0.82                  0.953      31          233
+#>  9 BAI   boa_ran      0.6                   0.952     102          175
+#> 10 BAI   den_nan      0.93                  0.956       6          236
+#> # ℹ 22 more rows
+```
+
+A threshold is `NA` when the cell never reaches the target. With a model
+fitted with `engine = "brms"`, `rule = "probability"` also returns
+`threshold_lower`, the score at which the lower quantile of the
+posterior of P(TP) reaches the target.
+
+Two cautions. With a site effect, P(TP \| score, site) mixes the error
+of the classifier with how often the species calls at the site; for a
+threshold this is what is wanted, but it is not a property of the
+classifier alone. And the site-confirmation design of the false-positive
+occupancy models in ‘crywolf’ needs clips drawn at random, not chosen by
+score: a sample designed for the thresholds does not serve it.
 
 ## Nightly detection histories
 

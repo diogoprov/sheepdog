@@ -42,3 +42,16 @@ A tibble with `site`, `species_folder`, the `by` columns, `threshold`,
 `n_support` and `precision_at_threshold` (`NA` when no cut reaches the
 target). Without any reviewed clip with a confidence, the tibble has no
 rows.
+
+## Details
+
+The precision is computed from the reviewed clips of each cell alone, so
+it is reliable only when the clips were drawn at random within the cell
+and are numerous.
+[`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md)
+derives the thresholds from the calibration model of stage 2 instead.
+
+## See also
+
+[`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md)
+for thresholds from the calibration model.

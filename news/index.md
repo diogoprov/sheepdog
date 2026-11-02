@@ -2,6 +2,21 @@
 
 ## sheepdog (development version)
 
+- New
+  [`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md):
+  confidence thresholds per site and species from the calibration model
+  of stage 2
+  ([`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)),
+  following Wood & Kahl (2024), instead of from the reviewed clips of
+  each cell alone as in
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md).
+  `rule = "probability"` gives the lowest score at which P(TP) reaches
+  the target; `rule = "precision"` the lowest score at which the
+  expected precision of the detections kept, from
+  [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md),
+  reaches it. With a `brms` model, a conservative threshold from the
+  lower quantile of the posterior is added. The calibration vignette has
+  a new section.
 - [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)
   also reads the per-audio selection tables that the BirdNET GUI writes
   by default (`<audio>.BirdNET.selection.table.txt`, new argument

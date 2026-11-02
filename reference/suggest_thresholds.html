@@ -116,6 +116,18 @@ parts of the gradient lack reviewed clips.</p></dd>
 cut reaches the target). Without any reviewed clip with a confidence,
 the tibble has no rows.</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The precision is computed from the reviewed clips of each cell alone, so
+it is reliable only when the clips were drawn at random within the cell
+and are numerous. <code><a href="calibrated_thresholds.html">calibrated_thresholds()</a></code> derives the thresholds from
+the calibration model of stage 2 instead.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="calibrated_thresholds.html">calibrated_thresholds()</a></code> for thresholds from the calibration
+model.</p></div>
+    </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
