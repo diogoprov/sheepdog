@@ -140,11 +140,11 @@ são padronizados (por exemplo, <code>Begin Time (s)</code> passa a
 <code>begin_time</code>).</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">det</span> <span class="op">&lt;-</span> <span class="fu"><a href="../../reference/read_selection_tables.html">read_selection_tables</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"birdnet"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 4 selection table(s) found:</span></span>
-<span><span class="co">#&gt;   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA/BirdNET_SelectionTable.txt</span></span>
-<span><span class="co">#&gt;   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI/BirdNET_SelectionTable.txt</span></span>
-<span><span class="co">#&gt;   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE/BirdNET_SelectionTable.txt</span></span>
-<span><span class="co">#&gt;   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR/BirdNET_SelectionTable.txt</span></span>
+<span><span class="co">#&gt; 4 combined table(s) and 0 per-audio table(s) found in 4 folder(s):</span></span>
+<span><span class="co">#&gt;   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA: BirdNET_SelectionTable.txt</span></span>
+<span><span class="co">#&gt;   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI: BirdNET_SelectionTable.txt</span></span>
+<span><span class="co">#&gt;   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE: BirdNET_SelectionTable.txt</span></span>
+<span><span class="co">#&gt;   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR: BirdNET_SelectionTable.txt</span></span>
 <span><span class="co">#&gt; 7553 predictions read from 4 site(s).</span></span>
 <span><span class="va">det</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">site</span>, <span class="va">species_code</span>, <span class="va">confidence</span>, <span class="va">begin_path</span>, <span class="va">file_offset</span><span class="op">)</span> <span class="op">|&gt;</span></span>

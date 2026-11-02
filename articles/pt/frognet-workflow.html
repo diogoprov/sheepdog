@@ -117,9 +117,13 @@ roda com os arquivos de exemplo incluídos no pacote.</p>
 </h2>
 <p>A pasta de cada local contém um
 <code>BirdNET_SelectionTable.txt</code> que concatena as predições do
-classificador customizado em todas as gravações do local. As gravações
-ficam em um NAS mapeado como <code>N:/</code> no Windows; no Mac, os
-mesmos caminhos são remapeados.</p>
+classificador customizado em todas as gravações do local. Ele é gravado
+pela GUI do BirdNET quando a opção “Combine selection tables” está
+marcada nas configurações de saída. Por padrão, a GUI grava uma tabela
+por arquivo de áudio; o sheepdog também lê essas tabelas e empilha as de
+cada pasta de local. As gravações ficam em um NAS mapeado como
+<code>N:/</code> no Windows; no Mac, os mesmos caminhos são
+remapeados.</p>
 <p>Verifique primeiro a seleção com <code>simulate = TRUE</code>: o
 manifesto é gravado, mas nenhum áudio é cortado.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">

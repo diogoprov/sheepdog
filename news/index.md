@@ -2,6 +2,21 @@
 
 ## sheepdog (development version)
 
+- [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)
+  also reads the per-audio selection tables that the BirdNET GUI writes
+  by default (`<audio>.BirdNET.selection.table.txt`, new argument
+  `per_audio_pattern`), besides the combined table of each site
+  (`BirdNET_SelectionTable.txt`, written when “Combine selection tables”
+  is checked). The per-audio tables of a folder are stacked and the
+  `Selection` column is renumbered, which gives the same result as the
+  combined table.
+  [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md),
+  [`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md)
+  and
+  [`extract_validation_clips()`](https://provetelab.org/sheepdog/reference/extract_validation_clips.md)
+  accept them too: in `tables` and `prediction_tables`, give the folder
+  of a site instead of the path of its combined table. The vignettes say
+  where each format comes from.
 - `export_occupancy_data(species = )` now filters by the species asked
   for. The argument was masked by the `species` column of the
   predictions, so any value left no prediction and stopped the export.

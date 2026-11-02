@@ -70,7 +70,9 @@ calibrate(
 - prediction_tables:
 
   Named character vector of the complete selection tables, named by
-  site.
+  site: the path of each combined table, or the folder of the per-audio
+  tables of each site (see
+  [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md)).
 
 - output_dir:
 

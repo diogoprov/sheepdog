@@ -108,14 +108,24 @@ matrices (stage 3) are covered in other articles (see <a href="#where-next">Wher
 <h2 id="example-data">Example data<a class="anchor" aria-label="anchor" href="#example-data"></a>
 </h2>
 <p>The package ships a small simulated data set: BirdNET selection
-tables (Raven format) of several sites recorded from October 2021 to
-March 2022, with predictions of a custom classifier for anuran species.
-False-positive rates vary among species and sites, and the confidence
-scores of false positives overlap those of true detections. The
-generator is <code>data-raw/make_example_data.R</code> in the source
-repository. The <code>Begin Path</code> column points to recordings on a
-fictitious network drive (<code>N:\pam\audio\...</code>); the audio
-files themselves are not distributed.</p>
+tables (Raven format), one combined table per site, of several sites
+recorded from October 2021 to March 2022, with predictions of a custom
+classifier for anuran species. False-positive rates vary among species
+and sites, and the confidence scores of false positives overlap those of
+true detections. The generator is
+<code>data-raw/make_example_data.R</code> in the source repository. The
+<code>Begin Path</code> column points to recordings on a fictitious
+network drive (<code>N:\pam\audio\...</code>); the audio files
+themselves are not distributed.</p>
+<p>The example has one combined selection table per site,
+<code>BirdNET_SelectionTable.txt</code>. To get it, run BirdNET once per
+site with “Raven selection table” as the result type and “Combine
+selection tables” checked in the output settings. By default the GUI
+writes one table per audio file instead
+(<code>&lt;audio&gt;.BirdNET.selection.table.txt</code>). sheepdog reads
+those too: the tables of each site folder are stacked, and the
+<code>Selection</code> column is renumbered, with the same result as the
+combined table.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example"</span>, package <span class="op">=</span> <span class="st">"sheepdog"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"birdnet"</span><span class="op">)</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -132,11 +142,11 @@ standardised (e.g. <code>Begin Time (s)</code> becomes
 <code>begin_time</code>).</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">det</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_selection_tables.html">read_selection_tables</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"birdnet"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 4 selection table(s) found:</span></span>
-<span><span class="co">#&gt;   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA/BirdNET_SelectionTable.txt</span></span>
-<span><span class="co">#&gt;   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI/BirdNET_SelectionTable.txt</span></span>
-<span><span class="co">#&gt;   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE/BirdNET_SelectionTable.txt</span></span>
-<span><span class="co">#&gt;   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR/BirdNET_SelectionTable.txt</span></span>
+<span><span class="co">#&gt; 4 combined table(s) and 0 per-audio table(s) found in 4 folder(s):</span></span>
+<span><span class="co">#&gt;   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA: BirdNET_SelectionTable.txt</span></span>
+<span><span class="co">#&gt;   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI: BirdNET_SelectionTable.txt</span></span>
+<span><span class="co">#&gt;   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE: BirdNET_SelectionTable.txt</span></span>
+<span><span class="co">#&gt;   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR: BirdNET_SelectionTable.txt</span></span>
 <span><span class="co">#&gt; 7553 predictions read from 4 site(s).</span></span>
 <span><span class="va">det</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">site</span>, <span class="va">species_code</span>, <span class="va">confidence</span>, <span class="va">begin_path</span>, <span class="va">file_offset</span><span class="op">)</span> <span class="op">|&gt;</span></span>

@@ -13,6 +13,7 @@ extract_validation_clips(
   output_dir,
   ...,
   table_pattern = "^BirdNET_SelectionTable\\.txt$",
+  per_audio_pattern = "\\.BirdNET\\.selection\\.table\\.txt$",
   make_zip = TRUE,
   simulate = FALSE,
   classifier = NULL
@@ -38,7 +39,12 @@ extract_validation_clips(
 
 - table_pattern:
 
-  Regular expression for the table file names.
+  Regular expression for the file names of combined tables.
+
+- per_audio_pattern:
+
+  Regular expression for the file names of per-audio tables. `NULL`
+  reads only combined tables.
 
 - make_zip:
 

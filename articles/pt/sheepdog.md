@@ -50,11 +50,11 @@ passa a `begin_time`).
 ``` r
 
 det <- read_selection_tables(file.path(ex, "birdnet"))
-#> 4 selection table(s) found:
-#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA/BirdNET_SelectionTable.txt
-#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI/BirdNET_SelectionTable.txt
-#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE/BirdNET_SelectionTable.txt
-#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR/BirdNET_SelectionTable.txt
+#> 4 combined table(s) and 0 per-audio table(s) found in 4 folder(s):
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR: BirdNET_SelectionTable.txt
 #> 7553 predictions read from 4 site(s).
 det |>
   dplyr::select(site, species_code, confidence, begin_path, file_offset) |>

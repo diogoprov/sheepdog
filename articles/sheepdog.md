@@ -14,14 +14,23 @@ library(sheepdog)
 ## Example data
 
 The package ships a small simulated data set: BirdNET selection tables
-(Raven format) of several sites recorded from October 2021 to March
-2022, with predictions of a custom classifier for anuran species.
-False-positive rates vary among species and sites, and the confidence
-scores of false positives overlap those of true detections. The
-generator is `data-raw/make_example_data.R` in the source repository.
-The `Begin Path` column points to recordings on a fictitious network
-drive (`N:\pam\audio\...`); the audio files themselves are not
-distributed.
+(Raven format), one combined table per site, of several sites recorded
+from October 2021 to March 2022, with predictions of a custom classifier
+for anuran species. False-positive rates vary among species and sites,
+and the confidence scores of false positives overlap those of true
+detections. The generator is `data-raw/make_example_data.R` in the
+source repository. The `Begin Path` column points to recordings on a
+fictitious network drive (`N:\pam\audio\...`); the audio files
+themselves are not distributed.
+
+The example has one combined selection table per site,
+`BirdNET_SelectionTable.txt`. To get it, run BirdNET once per site with
+“Raven selection table” as the result type and “Combine selection
+tables” checked in the output settings. By default the GUI writes one
+table per audio file instead (`<audio>.BirdNET.selection.table.txt`).
+sheepdog reads those too: the tables of each site folder are stacked,
+and the `Selection` column is renumbered, with the same result as the
+combined table.
 
 ``` r
 
@@ -42,11 +51,11 @@ the column names are standardised (e.g. `Begin Time (s)` becomes
 ``` r
 
 det <- read_selection_tables(file.path(ex, "birdnet"))
-#> 4 selection table(s) found:
-#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA/BirdNET_SelectionTable.txt
-#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI/BirdNET_SelectionTable.txt
-#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE/BirdNET_SelectionTable.txt
-#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR/BirdNET_SelectionTable.txt
+#> 4 combined table(s) and 0 per-audio table(s) found in 4 folder(s):
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR: BirdNET_SelectionTable.txt
 #> 7553 predictions read from 4 site(s).
 det |>
   dplyr::select(site, species_code, confidence, begin_path, file_offset) |>
