@@ -2,6 +2,19 @@
 
 ## sheepdog (development version)
 
+- `export_occupancy_data(species = )` now filters by the species asked
+  for. The argument was masked by the `species` column of the
+  predictions, so any value left no prediction and stopped the export.
+  [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
+  uses the same filter and is protected the same way.
+- [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+  gains `min_verified` (default 10) and warns about species with
+  predictions but fewer reviewed detection clips, or without any
+  positive or any negative clip: their false-positive rates will rest on
+  the other species or on the prior. A simulation in
+  `dev/verification-by-species/` shows that no sampling design of
+  [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
+  gives a truly rare species enough reviewed clips.
 - New fixture of the data contract,
   `tests/testthat/fixtures/export-1.3-ms` (built by
   `data-raw/make_export_fixture_ms.R`), shared with crywolf for its

@@ -121,6 +121,7 @@ draws are a Parquet file).</p>
 <span>  audio_pattern <span class="op">=</span> <span class="st">"\\.(wav|flac|mp3)$"</span>,</span>
 <span>  remap_from <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  remap_to <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  min_verified <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  classifier <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -248,6 +249,15 @@ a reader can map the covariate back; the values of
 <dd><p>Replace the prefix <code>remap_from</code> of the
 <code>begin_path</code> paths by <code>remap_to</code>, e.g. <code>"N:/"</code> and <code>"/Volumes/Arara/"</code>.
 Backslashes are turned into forward slashes first.</p></dd>
+
+
+<dt id="arg-min-verified">min_verified<a class="anchor" aria-label="anchor" href="#arg-min-verified"></a></dt>
+<dd><p>Species with predictions but fewer than this
+number of reviewed detection clips (positive or negative), or without
+any positive or any negative clip, are named in a warning: their
+false-positive rate will rest on the other species (a community
+model) or on the prior. The default is a floor, not a sample size
+calculation. Only used with <code>validation</code>.</p></dd>
 
 
 <dt id="arg-classifier">classifier<a class="anchor" aria-label="anchor" href="#arg-classifier"></a></dt>

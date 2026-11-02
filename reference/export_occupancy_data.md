@@ -38,6 +38,7 @@ export_occupancy_data(
   audio_pattern = "\\.(wav|flac|mp3)$",
   remap_from = NULL,
   remap_to = NULL,
+  min_verified = 10,
   classifier = NULL,
   overwrite = FALSE
 )
@@ -169,6 +170,15 @@ export_occupancy_data(
   Replace the prefix `remap_from` of the `begin_path` paths by
   `remap_to`, e.g. `"N:/"` and `"/Volumes/Arara/"`. Backslashes are
   turned into forward slashes first.
+
+- min_verified:
+
+  Species with predictions but fewer than this number of reviewed
+  detection clips (positive or negative), or without any positive or any
+  negative clip, are named in a warning: their false-positive rate will
+  rest on the other species (a community model) or on the prior. The
+  default is a floor, not a sample size calculation. Only used with
+  `validation`.
 
 - classifier:
 
