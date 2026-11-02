@@ -19,6 +19,20 @@
   a multi-species fixture of the data contract and a check of
   verification per species.
 
+## sheepdog 3.3.3
+
+Resubmission to CRAN, answering the review of 3.3.2. The installed code
+is the same as 3.3.2.
+
+- DESCRIPTION cites the methods the package implements: the
+  multiple-method (Miller et al. 2011) and observation-confirmation
+  (Chambert et al. 2015) designs and the conversion of confidence scores
+  into probabilities (Wood & Kahl 2024).
+- `Additional_repositories` lists only
+  <https://diogoprov.r-universe.dev> (for crywolf, in Suggests); the
+  repository of cmdstanr, which sheepdog does not use, is no longer
+  declared.
+
 ## sheepdog 3.3.2
 
 Submission candidate for CRAN, replacing 3.3.1 (never uploaded).
