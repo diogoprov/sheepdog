@@ -104,6 +104,30 @@ precision by confidence bin, the lowest threshold reaching the target
 precision by species, the confirmed presence by night and the positive
 clips for retraining.
 
+A round reviewed in the sheepdog app
+([`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md))
+has a verdicts file instead of subfolders.
+[`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md)
+reads it with `verdicts_file`; `review_dir` then only points to the
+clips:
+
+``` r
+
+post_validation(
+  review_dir    = "N:/Arara/validation_random/clips",
+  manifest_path = "N:/Arara/validation_random/clip_manifest.csv",
+  output_dir    = "N:/Arara/validation_random/results",
+  verdicts_file = "N:/Arara/validation_random/verdicts.csv"
+)
+```
+
+A clip marked more than once keeps the last verdict, and a message says
+how many were marked again. For a `"random_detections"` round, give the
+manifest that still has `inclusion_prob`, not a blind copy without it:
+the precision tables then also give the precision weighted by
+`1 / inclusion_prob`, which estimates the precision among all the
+detections above the threshold rather than among the reviewed clips.
+
 ## Stage 2: calibration
 
 The reviewed clips of every site calibrate the confidence score into a

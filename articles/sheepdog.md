@@ -378,7 +378,10 @@ plot_precision(prec, target_precision = 0.90, min_n = 15)
 lists the positive clips for retraining the classifier. With real data,
 [`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md)
 runs all of the above in one call and writes each table to a CSV file,
-together with the figure.
+together with the figure. It reads the verdicts from the review folders
+of the BirdNET GUI or, with `verdicts_file`, from the verdicts file of
+the review app
+([`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md)).
 
 ## Where next
 

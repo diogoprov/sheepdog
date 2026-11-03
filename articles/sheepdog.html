@@ -433,7 +433,10 @@ drawn as a line of its own colour within the species panels.</p>
 <p><code><a href="../reference/retraining_clips.html">retraining_clips()</a></code> lists the positive clips for
 retraining the classifier. With real data,
 <code><a href="../reference/post_validation.html">post_validation()</a></code> runs all of the above in one call and
-writes each table to a CSV file, together with the figure.</p>
+writes each table to a CSV file, together with the figure. It reads the
+verdicts from the review folders of the BirdNET GUI or, with
+<code>verdicts_file</code>, from the verdicts file of the review app
+(<code><a href="../reference/run_app.html">run_app()</a></code>).</p>
 </div>
 <div class="section level2">
 <h2 id="where-next">Where next<a class="anchor" aria-label="anchor" href="#where-next"></a>

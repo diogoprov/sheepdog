@@ -185,6 +185,24 @@ GUI, which moves each clip into <code>Positive/</code> or
 clip), the precision by confidence bin, the lowest threshold reaching
 the target precision by species, the confirmed presence by night and the
 positive clips for retraining.</p>
+<p>A round reviewed in the sheepdog app (<code><a href="../reference/run_app.html">run_app()</a></code>) has a
+verdicts file instead of subfolders. <code><a href="../reference/post_validation.html">post_validation()</a></code>
+reads it with <code>verdicts_file</code>; <code>review_dir</code> then
+only points to the clips:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/post_validation.html">post_validation</a></span><span class="op">(</span></span>
+<span>  review_dir    <span class="op">=</span> <span class="st">"N:/Arara/validation_random/clips"</span>,</span>
+<span>  manifest_path <span class="op">=</span> <span class="st">"N:/Arara/validation_random/clip_manifest.csv"</span>,</span>
+<span>  output_dir    <span class="op">=</span> <span class="st">"N:/Arara/validation_random/results"</span>,</span>
+<span>  verdicts_file <span class="op">=</span> <span class="st">"N:/Arara/validation_random/verdicts.csv"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>A clip marked more than once keeps the last verdict, and a message
+says how many were marked again. For a <code>"random_detections"</code>
+round, give the manifest that still has <code>inclusion_prob</code>, not
+a blind copy without it: the precision tables then also give the
+precision weighted by <code>1 / inclusion_prob</code>, which estimates
+the precision among all the detections above the threshold rather than
+among the reviewed clips.</p>
 </div>
 <div class="section level2">
 <h2 id="stage-2-calibration">Stage 2: calibration<a class="anchor" aria-label="anchor" href="#stage-2-calibration"></a>
@@ -193,7 +211,7 @@ positive clips for retraining.</p>
 a probability of true detection. In FrogNet the manifest of site BEP
 came out as <code>BEP2</code> and UEMS is abbreviated UEM, so
 <code>site_map</code> fixes the names.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dir_proj</span> <span class="op">&lt;-</span> <span class="st">"~/Library/CloudStorage/Box-Box/Meus Artigos/2026-codigo FrogNet"</span></span>
 <span><span class="va">sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"UEMS"</span>, <span class="st">"MIM"</span>, <span class="st">"ARA"</span>, <span class="st">"BAI"</span>, <span class="st">"XAR"</span>, <span class="st">"REF"</span>, <span class="st">"BEP"</span><span class="op">)</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibrate.html">calibrate</a></span><span class="op">(</span></span>
@@ -235,7 +253,7 @@ alone, and about 3.15 million detections were scored.</p>
 positives, so the entry rule is strict: at least two reliable detections
 in the night, only the core species (reliable calibration at every
 site), and site x month cells with at least five recorded nights.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/build_community_matrices.html">build_community_matrices</a></span><span class="op">(</span></span>
 <span>  <span class="st">"~/FrogNet_calibration/nightly_detection_history.csv"</span>,</span>
 <span>  <span class="st">"~/FrogNet_community_matrices"</span>,</span>
@@ -253,7 +271,7 @@ out; use them at most in a sensitivity analysis.</p>
 </h2>
 <p>The example validation table shipped with the package comes from
 simulated data:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/diogoprov/sheepdog" class="external-link">sheepdog</a></span><span class="op">)</span></span>
 <span><span class="va">val</span> <span class="op">&lt;-</span> <span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"validation_by_clip.csv"</span>, package <span class="op">=</span> <span class="st">"sheepdog"</span><span class="op">)</span>,</span>
