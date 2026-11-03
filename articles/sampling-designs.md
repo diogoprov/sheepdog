@@ -1,11 +1,11 @@
 # Choosing a sampling design
 
 [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
-offers three sampling designs, set by `sampling_mode`. They answer
-different questions, and a validation sample drawn for one purpose is
-generally not valid for another. This vignette states what each design
-is for, runs the three on the example data shipped with the package and
-compares the clips they select.
+offers three sampling designs to draw detections from, set by
+`sampling_mode`. They answer different questions, and a validation
+sample drawn for one purpose is generally not valid for another. This
+vignette states what each design is for, runs the three on the example
+data shipped with the package and compares the clips they select.
 
 | `sampling_mode` | unit drawn | selection | use |
 |----|----|----|----|
@@ -29,7 +29,7 @@ them by ear.
 
 ## Example data
 
-The example consists of simulated BirdNET selection tables (Raven
+The example consists of simulated BirdNET selection tables (Raven Pro
 format) of anuran calls at several sites over six months (October 2021
 to March 2022), plus the list of every recording made
 (`recordings.csv`), including those without any prediction. The audio

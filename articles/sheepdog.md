@@ -14,14 +14,14 @@ library(sheepdog)
 ## Example data
 
 The package ships a small simulated data set: BirdNET selection tables
-(Raven format), one combined table per site, of several sites recorded
-from October 2021 to March 2022, with predictions of a custom classifier
-for anuran species. False-positive rates vary among species and sites,
-and the confidence scores of false positives overlap those of true
-detections. The generator is `data-raw/make_example_data.R` in the
-source repository. The `Begin Path` column points to recordings on a
-fictitious network drive (`N:\pam\audio\...`); the audio files
-themselves are not distributed.
+(Raven Pro format), one combined table per site, of several sites
+recorded from October 2021 to March 2022, with predictions of a custom
+classifier for anuran species. False-positive rates vary among species
+and sites, and the distribution of confidence scores of false positives
+overlap those of true detections. The generator is
+`data-raw/make_example_data.R` in the source repository. The
+`Begin Path` column points to recordings on a fictitious network drive
+(`N:\pam\audio\...`); the audio files themselves are not distributed.
 
 The example has one combined selection table per site,
 `BirdNET_SelectionTable.txt`. To get it, run BirdNET once per site with
@@ -97,7 +97,7 @@ XAR).
 ## Selecting the clips to review
 
 [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
-applies the sampling design to the predictions and returns the clip
+applies a chosen sampling design to the predictions and returns the clip
 manifest, one row per clip to cut. It reads and writes no audio. The
 default `"top"` design keeps the `n_top` predictions with the highest
 confidence per site x species x night x hour; `max_per_species` then
@@ -137,9 +137,10 @@ dplyr::count(man, site, species_folder) |>
 The manifest has 1273 clips.
 
 The `"top"` design serves classifier retraining and the
-score-to-probability calibration of stage 2. It should not be used to
+score-to-probability calibration of stage 2. ***It should not be used to
 estimate false-positive rates, because top-score clips hold fewer false
-positives than a random sample; the random designs are described in
+positives than a random sample***; to learn more about random designs,
+see
 [`vignette("sampling-designs")`](https://provetelab.org/sheepdog/articles/sampling-designs.md).
 
 The manifest links each clip to its source recording. Its columns are

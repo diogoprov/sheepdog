@@ -93,16 +93,16 @@
 </h1>
 </div>
 <p><a href="https://doi.org/10.5281/zenodo.22696210" class="external-link"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.22696210.svg" alt="DOI"></a> <a href="LICENSE.html"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a> <a href="https://diogoprov.r-universe.dev/sheepdog" class="external-link"><img src="https://diogoprov.r-universe.dev/sheepdog/badges/version" alt="r-universe"></a> <a href="https://app.codecov.io/gh/diogoprov/sheepdog" class="external-link"><img src="https://codecov.io/gh/diogoprov/sheepdog/graph/badge.svg" alt="Codecov"></a></p>
-<p>In the fable, the boy cries “wolf!” and the villagers have to decide whether the wolf is real. <strong>sheepdog</strong> does that check for automated detections from <a href="https://github.com/birdnet-team/BirdNET-Analyzer" class="external-link">BirdNET</a> custom classifiers in passive acoustic monitoring (PAM). It runs three stages:</p>
+<p>In the fable, the boy cries “wolf!” and the villagers have to decide whether the wolf is real. <strong>sheepdog</strong> does that check for automated predictions from <a href="https://github.com/birdnet-team/BirdNET-Analyzer" class="external-link">BirdNET</a> pretrained and custom classifiers in passive acoustic monitoring (PAM). It runs three stages:</p>
 <ol style="list-style-type: decimal">
 <li>
-<strong>Validation data.</strong> Build clip sets for manual review from the BirdNET selection tables: top-score, random-occasion or random-recording designs, one folder per species, ready for the review tab of the BirdNET GUI. The random draws can be stratified along an environmental gradient. Then summarise the reviewed clips: precision by confidence bin, suggested thresholds, confirmed presence by night, clips for retraining and the cells that still need review.</li>
+<strong>Validation data.</strong> Build clip sets for manual review from the output BirdNET selection tables: top-score, random-occasion or random-recording designs, one folder per species, ready for the review tab of the BirdNET GUI. The random draws can be stratified along an environmental gradient. Then summarise the reviewed clips: precision by confidence bin, suggested thresholds, confirmed presence by night, clips for retraining and the cells that still need review.</li>
 <li>
 <strong>Calibration.</strong> Turn confidence scores into probabilities of true detection with hierarchical logistic models (species and site x species effects, compared by cross-validation), fitted with ‘lme4’ or, in a Bayesian framework, with ‘brms’. Score every detection and build nightly detection histories.</li>
 <li>
 <strong>Community matrices.</strong> Turn the calibrated histories into effort-standardised site x month matrices for multivariate ordinations.</li>
 </ol>
-<p>sheepdog was developed for the FrogNet project (anurans of the Pantanal and Cerrado, Mato Grosso do Sul, Brazil), but it works with the output of any BirdNET custom classifier. <code><a href="reference/export_occupancy_data.html">export_occupancy_data()</a></code> writes its validation and calibration outputs in a documented format for occupancy models with false positives, such as those fitted with <a href="https://github.com/diogoprov/crywolf" class="external-link">crywolf</a>. The two packages are independent: sheepdog does not depend on crywolf.</p>
+<p>sheepdog was developed for the FrogNet project (anurans of the Pantanal and Cerrado, Mato Grosso do Sul, Brazil), but it works with the output of any BirdNET pretrained and custom classifier. <code><a href="reference/export_occupancy_data.html">export_occupancy_data()</a></code> writes its validation and calibration outputs in a documented format for occupancy models with false positives, such as those fitted with <a href="https://github.com/diogoprov/crywolf" class="external-link">crywolf</a>. The two packages are independent: sheepdog does not depend on crywolf.</p>
 <div class="float">
 <img src="reference/figures/pipeline.png" alt="The three stages of sheepdog"><div class="figcaption">The three stages of sheepdog</div>
 </div>
@@ -118,14 +118,14 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"diogoprov/sheepdog"</span><span class="op">)</span></span></code></pre></div>
-<p>Cutting audio needs <a href="https://cran.r-project.org/package=av" class="external-link">av</a> (it bundles ffmpeg), the hierarchical calibration needs <a href="https://cran.r-project.org/package=lme4" class="external-link">lme4</a>, and the figures need <a href="https://cran.r-project.org/package=ggplot2" class="external-link">ggplot2</a>:</p>
+<p>BirdNET works on 3s clips. Creating audio snippets needs <a href="https://cran.r-project.org/package=av" class="external-link">av</a> (it bundles ffmpeg), the hierarchical calibration needs <a href="https://cran.r-project.org/package=lme4" class="external-link">lme4</a>, and the figures need <a href="https://cran.r-project.org/package=ggplot2" class="external-link">ggplot2</a>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"av"</span>, <span class="st">"lme4"</span>, <span class="st">"ggplot2"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="calibration-performance">Calibration performance<a class="anchor" aria-label="anchor" href="#calibration-performance"></a>
 </h2>
-<p>For one species, calibration automatically compares global and site-effect models; with one site, it keeps only estimable candidates. Explicit model lists remain available in <code><a href="reference/compare_calibration_models.html">compare_calibration_models()</a></code>.</p>
+<p>In threshold-based approaches, calibration automatically compares global and site-effect models per species; with one site, it keeps only estimable candidates. Explicit model lists remain available in <code><a href="reference/compare_calibration_models.html">compare_calibration_models()</a></code>.</p>
 <p>The <a href="https://provetelab.org/sheepdog/articles/performance.html">performance article</a> summarises the Curiango benchmark, regression checks, computing times and an explicitly simulated multispecies benchmark. The results do not show a consistent advantage of one selection rule across datasets.</p>
 </div>
 <div class="section level2">
