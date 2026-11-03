@@ -13,19 +13,19 @@ compares the clips they select.
 | `"random_detections"` | occasion with a detection | random, within score-independent strata | false-positive rates, observation-confirmation design |
 | `"random_recordings"` | recording or minute | random, among all recorded | false-positive and false-negative rates, multiple-method design |
 
-![Three cards match each sampling_mode of select_clips() to the question
-it answers: top for retraining and calibration, random_detections for
-false-positive rates, random_recordings for false-positive and
-false-negative rates. Below, three panels show how to cap the effort,
-why top clips underestimate false positives and the steps after the
-review.](figures/sampling-designs.svg)
+![The same night of twelve hourly recordings, shown three times. “top”
+keeps the highest-scoring prediction of each recording;
+“random_detections” draws recordings with a detection above the
+threshold and reviews every detection in them; “random_recordings” draws
+recordings among all, including ones without predictions, and annotates
+them by ear.](figures/sampling-designs.svg)
 
-Three cards match each sampling_mode of select_clips() to the question
-it answers: top for retraining and calibration, random_detections for
-false-positive rates, random_recordings for false-positive and
-false-negative rates. Below, three panels show how to cap the effort,
-why top clips underestimate false positives and the steps after the
-review.
+The same night of twelve hourly recordings, shown three times. “top”
+keeps the highest-scoring prediction of each recording;
+“random_detections” draws recordings with a detection above the
+threshold and reviews every detection in them; “random_recordings” draws
+recordings among all, including ones without predictions, and annotates
+them by ear.
 
 ## Example data
 

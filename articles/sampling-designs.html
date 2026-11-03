@@ -139,12 +139,12 @@ select.</p>
 </tbody>
 </table>
 <div class="float">
-<img src="figures/sampling-designs.svg" style="width:100.0%" alt="Three cards match each sampling_mode of select_clips() to the question it answers: top for retraining and calibration, random_detections for false-positive rates, random_recordings for false-positive and false-negative rates. Below, three panels show how to cap the effort, why top clips underestimate false positives and the steps after the review."><div class="figcaption">Three cards match each sampling_mode of
-select_clips() to the question it answers: top for retraining and
-calibration, random_detections for false-positive rates,
-random_recordings for false-positive and false-negative rates. Below,
-three panels show how to cap the effort, why top clips underestimate
-false positives and the steps after the review.</div>
+<img src="figures/sampling-designs.svg" style="width:100.0%" alt="The same night of twelve hourly recordings, shown three times. “top” keeps the highest-scoring prediction of each recording; “random_detections” draws recordings with a detection above the threshold and reviews every detection in them; “random_recordings” draws recordings among all, including ones without predictions, and annotates them by ear."><div class="figcaption">The same night of twelve hourly recordings,
+shown three times. “top” keeps the highest-scoring prediction of each
+recording; “random_detections” draws recordings with a detection above
+the threshold and reviews every detection in them; “random_recordings”
+draws recordings among all, including ones without predictions, and
+annotates them by ear.</div>
 </div>
 <div class="section level2">
 <h2 id="example-data">Example data<a class="anchor" aria-label="anchor" href="#example-data"></a>
