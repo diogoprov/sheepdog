@@ -46,6 +46,10 @@ app_verdicts(manifest, verdicts_file, clips_dir = NULL, reviewer = NULL)
   and
   [`consensus_verdicts()`](https://provetelab.org/sheepdog/reference/consensus_verdicts.md).
 
+  A clip marked more than once by the same reviewer keeps the last
+  verdict; a message says how many clips were marked again and how many
+  of them changed verdict.
+
 ## Value
 
 The manifest with `verdict` (`"positive"`, `"negative"`, `"uncertain"`

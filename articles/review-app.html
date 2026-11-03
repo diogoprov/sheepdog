@@ -235,22 +235,42 @@ and negative verdicts. They mark clips worth a second listen.</p>
 <div class="section level2">
 <h2 id="from-the-verdicts-to-the-validation-table">From the verdicts to the validation table<a class="anchor" aria-label="anchor" href="#from-the-verdicts-to-the-validation-table"></a>
 </h2>
-<p><code><a href="../reference/app_verdicts.html">app_verdicts()</a></code> joins the verdicts to the manifest and
-returns the same table as <code><a href="../reference/classify_review.html">classify_review()</a></code>, the content of
-<code>validation_by_clip.csv</code>. From there, stage 1 goes on as
-after a review in the BirdNET GUI:</p>
+<p><code><a href="../reference/post_validation.html">post_validation()</a></code> reads the verdicts file in place of
+the review folders and writes the same outputs as after a review in the
+BirdNET GUI (<code>validation_by_clip.csv</code>, the precision by bin,
+the suggested thresholds, the nightly presence and the clips for
+retraining):</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/post_validation.html">post_validation</a></span><span class="op">(</span><span class="st">"validation/clips"</span>,</span>
+<span>                       manifest_path <span class="op">=</span> <span class="st">"validation/clip_manifest.csv"</span>,</span>
+<span>                       output_dir <span class="op">=</span> <span class="st">"validation/post"</span>,</span>
+<span>                       verdicts_file <span class="op">=</span> <span class="st">"validation/verdicts.csv"</span><span class="op">)</span></span></code></pre></div>
+<p>The verdicts file keeps every click, so a clip marked twice has two
+lines. The last verdict of each reviewer counts, and a message says how
+many clips were marked again and how many of them changed verdict. Clips
+reviewed by more than one reviewer are combined with
+<code><a href="../reference/consensus_verdicts.html">consensus_verdicts()</a></code> (next section);
+<code>reviewer = "liliana"</code> uses the verdicts of one reviewer
+only. The first argument, the folder of the clips, fills
+<code>reviewed_path</code>, which <code><a href="../reference/build_training_set.html">build_training_set()</a></code>
+needs to copy the clips (<code><a href="../articles/retraining.html">vignette("retraining")</a></code>).</p>
+<p>When the clips were drawn with <code>"random_detections"</code>, keep
+<code>inclusion_prob</code> in the manifest given to
+<code><a href="../reference/post_validation.html">post_validation()</a></code>: the precision tables then also give the
+precision weighted by <code>1 / inclusion_prob</code>
+(<code>precision_weighted</code>). If the reviewers worked from a blind
+manifest without it, pass the full manifest instead, since the verdicts
+are matched by <code>species_folder</code> and
+<code>clip_file</code>.</p>
+<p><code><a href="../reference/app_verdicts.html">app_verdicts()</a></code> returns the validation table alone, for
+those who want to run the steps one by one:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">validation</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/app_verdicts.html">app_verdicts</a></span><span class="op">(</span><span class="st">"validation/clip_manifest.csv"</span>,</span>
 <span>                           <span class="st">"validation/verdicts.csv"</span>,</span>
 <span>                           clips_dir <span class="op">=</span> <span class="st">"validation/clips"</span>,</span>
 <span>                           reviewer <span class="op">=</span> <span class="st">"liliana"</span><span class="op">)</span></span>
-<span><span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/write_delim.html" class="external-link">write_csv</a></span><span class="op">(</span><span class="va">validation</span>, <span class="st">"validation/validation_by_clip.csv"</span><span class="op">)</span></span>
-<span></span>
 <span><span class="fu"><a href="../reference/precision_by_bin.html">precision_by_bin</a></span><span class="op">(</span><span class="va">validation</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/suggest_thresholds.html">suggest_thresholds</a></span><span class="op">(</span><span class="va">validation</span><span class="op">)</span></span></code></pre></div>
-<p><code>clips_dir</code> fills <code>reviewed_path</code>, which
-<code><a href="../reference/build_training_set.html">build_training_set()</a></code> needs to copy the clips
-(<code><a href="../articles/retraining.html">vignette("retraining")</a></code>).</p>
 </div>
 <div class="section level2">
 <h2 id="several-reviewers">Several reviewers<a class="anchor" aria-label="anchor" href="#several-reviewers"></a>
@@ -260,7 +280,7 @@ with their own name, and the queue shows only their clips, including
 those shared with a second reviewer. There is no need for
 <code><a href="../reference/split_by_reviewer.html">split_by_reviewer()</a></code>: every reviewer reads the same
 <code>clips</code> folder, on a shared drive or a copy of it.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">manifest</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/assign_reviewers.html">assign_reviewers</a></span><span class="op">(</span><span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span><span class="st">"validation/clip_manifest.csv"</span><span class="op">)</span>,</span>
 <span>                             reviewers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"larissa"</span>, <span class="st">"liliana"</span><span class="op">)</span>,</span>
 <span>                             overlap <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
@@ -272,7 +292,7 @@ those shared with a second reviewer. There is no need for
 <span>        reviewer <span class="op">=</span> <span class="st">"larissa"</span><span class="op">)</span></span></code></pre></div>
 <p>The reviewers can write to one shared <code>verdicts.csv</code> or
 keep one file each. With one file each, stack them before reading:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">verdicts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="st">"validation"</span>, <span class="st">"^verdicts_.*\\.csv$"</span>,</span>
 <span>                       full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu">readr</span><span class="fu">::</span><span class="va"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span>, col_types <span class="op">=</span> <span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/cols.html" class="external-link">cols</a></span><span class="op">(</span>.default <span class="op">=</span> <span class="st">"c"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -281,7 +301,7 @@ keep one file each. With one file each, stack them before reading:</p>
 <p>With <code>reviewer = NULL</code>, <code><a href="../reference/app_verdicts.html">app_verdicts()</a></code> keeps
 every reviewer’s verdicts, one row per clip and reviewer, ready for the
 agreement and the consensus:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">all_reviews</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/app_verdicts.html">app_verdicts</a></span><span class="op">(</span><span class="st">"validation/clip_manifest.csv"</span>,</span>
 <span>                            <span class="st">"validation/verdicts.csv"</span>,</span>
 <span>                            clips_dir <span class="op">=</span> <span class="st">"validation/clips"</span><span class="op">)</span> <span class="op">|&gt;</span></span>

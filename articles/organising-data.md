@@ -107,9 +107,9 @@ rec
 #> # A tibble: 3 × 2
 #>   site  source_audio                                             
 #>   <chr> <chr>                                                    
-#> 1 ARA   /tmp/RtmpVjUNXg/audio/ARA/ARA01_20211001_190000.wav      
-#> 2 ARA   /tmp/RtmpVjUNXg/audio/ARA/ARA01_20211001_200000.wav      
-#> 3 BAI   /tmp/RtmpVjUNXg/audio/BAI/card1/BAI01_20211001_190000.wav
+#> 1 ARA   /tmp/RtmpNPP8AQ/audio/ARA/ARA01_20211001_190000.wav      
+#> 2 ARA   /tmp/RtmpNPP8AQ/audio/ARA/ARA01_20211001_200000.wav      
+#> 3 BAI   /tmp/RtmpNPP8AQ/audio/BAI/card1/BAI01_20211001_190000.wav
 ```
 
 The paths must match `Begin Path`. When the list is built on a computer
@@ -145,7 +145,7 @@ and [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md).
 | choose clips | [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md) | predictions, recordings | a manifest in R |
 | cut clips | [`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md), [`extract_validation_clips()`](https://provetelab.org/sheepdog/reference/extract_validation_clips.md) | the audio, through `Begin Path` | `clips/<species>/`, `clip_manifest.csv` |
 | review | file manager (`Positive`/`Negative` subfolders) or [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md) | clips, manifest | folders, or a verdicts CSV |
-| join verdicts | [`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md) | review folder, manifest | `validation_by_clip.csv` and summaries |
+| join verdicts | [`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md) | review folder or `verdicts.csv`, manifest | `validation_by_clip.csv` and summaries |
 | calibrate | [`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md) | `validation_by_clip.csv`, selection tables | calibration outputs, detection histories |
 
 See

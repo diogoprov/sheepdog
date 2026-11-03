@@ -1,10 +1,14 @@
 # Summarise the manual validation
 
-Runs the whole post-validation step: classifies the reviewed clips and
-writes, to `output_dir`:
+Runs the whole post-validation step: reads the verdicts of the reviewed
+clips and writes, to `output_dir`:
 
 - `validation_by_clip.csv`: manifest + verdict of each clip
-  ([`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md));
+  ([`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md)
+  for a review in the BirdNET GUI,
+  [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md)
+  for a review in
+  [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md));
 
 - `precision_by_bin.csv`: precision by species x confidence bin
   ([`precision_by_bin()`](https://provetelab.org/sheepdog/reference/precision_by_bin.md));
@@ -27,14 +31,16 @@ writes, to `output_dir`:
 
 ``` r
 post_validation(
-  review_dir,
+  review_dir = NULL,
   manifest_path,
   output_dir,
   positive_pattern = "positiv",
   negative_pattern = "negativ",
   bins = seq(0.1, 1, by = 0.1),
   target_precision = 0.9,
-  min_n = 15
+  min_n = 15,
+  verdicts_file = NULL,
+  reviewer = NULL
 )
 ```
 
@@ -42,8 +48,13 @@ post_validation(
 
 - review_dir:
 
-  Folder with the reviewed clips (the `clips` folder of the validation
-  package, after the review).
+  Folder with the reviewed clips. For a review in the BirdNET GUI, the
+  `clips` folder after the review, whose subfolders give the verdicts.
+  With `verdicts_file`, optional: the folder of the clips, used to fill
+  `reviewed_path` (needed by
+  [`retraining_clips()`](https://provetelab.org/sheepdog/reference/retraining_clips.md)
+  and
+  [`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md)).
 
 - manifest_path:
 
@@ -72,11 +83,38 @@ post_validation(
   Minimum of reviewed clips for a bin to be taken seriously; bins with
   fewer are flagged in `low_support`.
 
+- verdicts_file:
+
+  Optional verdicts file written by
+  [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md),
+  used instead of the subfolders of `review_dir`.
+
+- reviewer:
+
+  With `verdicts_file`, optional reviewer(s) whose verdicts are used, as
+  in
+  [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md).
+
 ## Value
 
 A list with the tables `validation`, `precision`, `thresholds`,
 `presence` and `retraining`, invisibly.
 
 ## Details
+
+The verdicts come from the folders of a review in the BirdNET GUI
+(`review_dir`) or from the verdicts file of
+[`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md)
+(`verdicts_file`). In the second case, a clip marked more than once
+keeps the last verdict of each reviewer, and clips reviewed by more than
+one reviewer are combined with
+[`consensus_verdicts()`](https://provetelab.org/sheepdog/reference/consensus_verdicts.md):
+conflicting verdicts become `"disagreement"` and, like `"uncertain"`,
+are left out of the precision and the thresholds.
+
+With `inclusion_prob` in the manifest (clips of `"random_detections"`),
+the precision tables also give the precision weighted by
+`1 / inclusion_prob`; see
+[`precision_by_bin()`](https://provetelab.org/sheepdog/reference/precision_by_bin.md).
 
 This is the function form of the v1.2.0 script `pos_validacao.R`.

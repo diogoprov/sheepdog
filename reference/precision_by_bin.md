@@ -42,4 +42,19 @@ precision_by_bin(
 ## Value
 
 A tibble with `site`, `species_folder`, the `by` columns, `bin`,
-`n_reviewed`, `n_positive`, `precision` and `low_support`.
+`n_reviewed`, `n_positive`, `precision`, `precision_weighted` (only with
+`inclusion_prob`) and `low_support`.
+
+## Details
+
+When `validation` has `inclusion_prob` (clips drawn with
+`"random_detections"` in
+[`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)),
+the table also gets `precision_weighted`, the precision weighted by
+`1 / inclusion_prob`. It estimates the precision among all the
+predictions of the bin from which the clips were drawn, not only among
+the reviewed ones; the two differ when the clips of a bin come from
+strata drawn with different probabilities. It is `NA` in bins with any
+clip without `inclusion_prob` (clips of `"top"`). A blind review
+manifest may lack `inclusion_prob`: join it back from the full manifest
+first.

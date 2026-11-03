@@ -387,6 +387,13 @@ number of clips per occasion equals
 <p>This check is worth repeating on the validation table before passing
 it to an occupancy model: a clip missing from an occasion breaks the
 assumption that all of its detections were confirmed.</p>
+<p>Because the strata are drawn with different probabilities, the share
+of positive verdicts among the reviewed clips is not the precision among
+all the predictions. <code><a href="../reference/precision_by_bin.html">precision_by_bin()</a></code>,
+<code><a href="../reference/suggest_thresholds.html">suggest_thresholds()</a></code> and <code><a href="../reference/post_validation.html">post_validation()</a></code> add
+the precision weighted by <code>1 / inclusion_prob</code>
+(<code>precision_weighted</code>) whenever the validation table carries
+<code>inclusion_prob</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="random_recordings-multiple-method-design">

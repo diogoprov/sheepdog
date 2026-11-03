@@ -2,6 +2,27 @@
 
 ## sheepdog (development version)
 
+- [`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md)
+  reads the verdicts of the review app: with `verdicts_file` (and
+  optionally `reviewer`) it takes the verdicts from
+  [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md)
+  instead of the review folders, combines clips reviewed by more than
+  one reviewer with
+  [`consensus_verdicts()`](https://provetelab.org/sheepdog/reference/consensus_verdicts.md)
+  and writes the same outputs. `review_dir` is then optional and only
+  fills `reviewed_path`.
+- [`precision_by_bin()`](https://provetelab.org/sheepdog/reference/precision_by_bin.md)
+  adds `precision_weighted` and
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
+  adds `precision_weighted_at_threshold` when the reviewed clips carry
+  `inclusion_prob` (`"random_detections"`): the precision weighted by
+  `1 / inclusion_prob`, which estimates the precision among all the
+  predictions rather than among the reviewed clips. The thresholds are
+  still chosen from the unweighted precision, and tables without
+  `inclusion_prob` are unchanged.
+- [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md)
+  reports how many clips a reviewer marked more than once and how many
+  of them changed verdict (the last verdict counts).
 - New
   [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md):
   builds the list of all recordings (`site`, `source_audio`) from the

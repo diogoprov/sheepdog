@@ -116,7 +116,10 @@ which use only positive and negative verdicts.</p>
 <dd><p>Optional reviewer: only their verdicts are used. With
 <code>NULL</code>, every reviewer's verdicts are kept, one row per clip and
 reviewer, ready for <code><a href="reviewer_agreement.html">reviewer_agreement()</a></code> and
-<code><a href="consensus_verdicts.html">consensus_verdicts()</a></code>.</p></dd>
+<code><a href="consensus_verdicts.html">consensus_verdicts()</a></code>.</p>
+<p>A clip marked more than once by the same reviewer keeps the last
+verdict; a message says how many clips were marked again and how many of
+them changed verdict.</p></dd>
 
 </dl></div>
     <div class="section level2">

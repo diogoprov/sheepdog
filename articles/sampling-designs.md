@@ -303,6 +303,17 @@ This check is worth repeating on the validation table before passing it
 to an occupancy model: a clip missing from an occasion breaks the
 assumption that all of its detections were confirmed.
 
+Because the strata are drawn with different probabilities, the share of
+positive verdicts among the reviewed clips is not the precision among
+all the predictions.
+[`precision_by_bin()`](https://provetelab.org/sheepdog/reference/precision_by_bin.md),
+[`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
+and
+[`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md)
+add the precision weighted by `1 / inclusion_prob`
+(`precision_weighted`) whenever the validation table carries
+`inclusion_prob`.
+
 ## `"random_recordings"`: multiple-method design
 
 In the multiple-method design (Miller et al. 2011), a second,

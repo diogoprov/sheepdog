@@ -113,8 +113,9 @@ parts of the gradient lack reviewed clips.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A tibble with <code>site</code>, <code>species_folder</code>, the <code>by</code> columns,
-<code>threshold</code>, <code>n_support</code> and <code>precision_at_threshold</code> (<code>NA</code> when no
-cut reaches the target). Without any reviewed clip with a confidence,
+<code>threshold</code>, <code>n_support</code>, <code>precision_at_threshold</code> (<code>NA</code> when no
+cut reaches the target) and <code>precision_weighted_at_threshold</code> (only
+with <code>inclusion_prob</code>). Without any reviewed clip with a confidence,
 the tibble has no rows.</p>
     </div>
     <div class="section level2">
@@ -123,6 +124,10 @@ the tibble has no rows.</p>
 it is reliable only when the clips were drawn at random within the cell
 and are numerous. <code><a href="calibrated_thresholds.html">calibrated_thresholds()</a></code> derives the thresholds from
 the calibration model of stage 2 instead.</p>
+<p>The threshold is chosen from the unweighted precision. With
+<code>inclusion_prob</code> in <code>validation</code>, the table also gives
+<code>precision_weighted_at_threshold</code>, the precision at the threshold
+weighted by <code>1 / inclusion_prob</code>, as in <code><a href="precision_by_bin.html">precision_by_bin()</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

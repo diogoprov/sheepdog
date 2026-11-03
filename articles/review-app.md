@@ -133,11 +133,43 @@ positive and negative verdicts. They mark clips worth a second listen.
 
 ## From the verdicts to the validation table
 
+[`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md)
+reads the verdicts file in place of the review folders and writes the
+same outputs as after a review in the BirdNET GUI
+(`validation_by_clip.csv`, the precision by bin, the suggested
+thresholds, the nightly presence and the clips for retraining):
+
+``` r
+
+res <- post_validation("validation/clips",
+                       manifest_path = "validation/clip_manifest.csv",
+                       output_dir = "validation/post",
+                       verdicts_file = "validation/verdicts.csv")
+```
+
+The verdicts file keeps every click, so a clip marked twice has two
+lines. The last verdict of each reviewer counts, and a message says how
+many clips were marked again and how many of them changed verdict. Clips
+reviewed by more than one reviewer are combined with
+[`consensus_verdicts()`](https://provetelab.org/sheepdog/reference/consensus_verdicts.md)
+(next section); `reviewer = "liliana"` uses the verdicts of one reviewer
+only. The first argument, the folder of the clips, fills
+`reviewed_path`, which
+[`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md)
+needs to copy the clips
+([`vignette("retraining")`](https://provetelab.org/sheepdog/articles/retraining.md)).
+
+When the clips were drawn with `"random_detections"`, keep
+`inclusion_prob` in the manifest given to
+[`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md):
+the precision tables then also give the precision weighted by
+`1 / inclusion_prob` (`precision_weighted`). If the reviewers worked
+from a blind manifest without it, pass the full manifest instead, since
+the verdicts are matched by `species_folder` and `clip_file`.
+
 [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md)
-joins the verdicts to the manifest and returns the same table as
-[`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md),
-the content of `validation_by_clip.csv`. From there, stage 1 goes on as
-after a review in the BirdNET GUI:
+returns the validation table alone, for those who want to run the steps
+one by one:
 
 ``` r
 
@@ -145,16 +177,9 @@ validation <- app_verdicts("validation/clip_manifest.csv",
                            "validation/verdicts.csv",
                            clips_dir = "validation/clips",
                            reviewer = "liliana")
-readr::write_csv(validation, "validation/validation_by_clip.csv")
-
 precision_by_bin(validation)
 suggest_thresholds(validation)
 ```
-
-`clips_dir` fills `reviewed_path`, which
-[`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md)
-needs to copy the clips
-([`vignette("retraining")`](https://provetelab.org/sheepdog/articles/retraining.md)).
 
 ## Several reviewers
 

@@ -183,13 +183,14 @@ val <- readr::read_csv(
   system.file("extdata", "validation_by_clip.csv", package = "sheepdog"),
   show_col_types = FALSE)
 precision_by_bin(val, min_n = 3)
-#> # A tibble: 4 × 7
-#>   site  species_folder bin       n_reviewed n_positive precision low_support
-#>   <chr> <chr>          <fct>          <int>      <int>     <dbl> <lgl>      
-#> 1 ARA   boa_ran        [0.5,0.6)          3          1     0.333 FALSE      
-#> 2 ARA   boa_ran        [0.6,0.7)          2          1     0.5   TRUE       
-#> 3 ARA   boa_ran        [0.7,0.8)          3          3     1     FALSE      
-#> 4 ARA   boa_ran        [0.9,1]            3          3     1     FALSE
+#> # A tibble: 4 × 8
+#>   site  species_folder bin    n_reviewed n_positive precision precision_weighted
+#>   <chr> <chr>          <fct>       <int>      <int>     <dbl>              <dbl>
+#> 1 ARA   boa_ran        [0.5,…          3          1     0.333              0.375
+#> 2 ARA   boa_ran        [0.6,…          2          1     0.5                0.5  
+#> 3 ARA   boa_ran        [0.7,…          3          3     1                  1    
+#> 4 ARA   boa_ran        [0.9,…          3          3     1                  1    
+#> # ℹ 1 more variable: low_support <lgl>
 nightly_presence(val)
 #> # A tibble: 3 × 8
 #>   site  species_folder    night n_clips n_reviewed n_positive presence 

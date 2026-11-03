@@ -39,9 +39,10 @@ suggest_thresholds(validation, target_precision = 0.9, min_n = 15, by = NULL)
 ## Value
 
 A tibble with `site`, `species_folder`, the `by` columns, `threshold`,
-`n_support` and `precision_at_threshold` (`NA` when no cut reaches the
-target). Without any reviewed clip with a confidence, the tibble has no
-rows.
+`n_support`, `precision_at_threshold` (`NA` when no cut reaches the
+target) and `precision_weighted_at_threshold` (only with
+`inclusion_prob`). Without any reviewed clip with a confidence, the
+tibble has no rows.
 
 ## Details
 
@@ -50,6 +51,12 @@ it is reliable only when the clips were drawn at random within the cell
 and are numerous.
 [`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md)
 derives the thresholds from the calibration model of stage 2 instead.
+
+The threshold is chosen from the unweighted precision. With
+`inclusion_prob` in `validation`, the table also gives
+`precision_weighted_at_threshold`, the precision at the threshold
+weighted by `1 / inclusion_prob`, as in
+[`precision_by_bin()`](https://provetelab.org/sheepdog/reference/precision_by_bin.md).
 
 ## See also
 

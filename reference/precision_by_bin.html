@@ -112,7 +112,20 @@ parts of the gradient lack reviewed clips.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A tibble with <code>site</code>, <code>species_folder</code>, the <code>by</code> columns, <code>bin</code>,
-<code>n_reviewed</code>, <code>n_positive</code>, <code>precision</code> and <code>low_support</code>.</p>
+<code>n_reviewed</code>, <code>n_positive</code>, <code>precision</code>, <code>precision_weighted</code> (only
+with <code>inclusion_prob</code>) and <code>low_support</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>When <code>validation</code> has <code>inclusion_prob</code> (clips drawn with
+<code>"random_detections"</code> in <code><a href="select_clips.html">select_clips()</a></code>), the table also gets
+<code>precision_weighted</code>, the precision weighted by <code>1 / inclusion_prob</code>.
+It estimates the precision among all the predictions of the bin from
+which the clips were drawn, not only among the reviewed ones; the two
+differ when the clips of a bin come from strata drawn with different
+probabilities. It is <code>NA</code> in bins with any clip without
+<code>inclusion_prob</code> (clips of <code>"top"</code>). A blind review manifest may lack
+<code>inclusion_prob</code>: join it back from the full manifest first.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
