@@ -3,6 +3,23 @@
 ## sheepdog (development version)
 
 - New
+  [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md):
+  builds the list of all recordings (`site`, `source_audio`) from the
+  audio folders, including those without any prediction, for
+  `recordings` in
+  [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md),
+  [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+  and
+  [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md).
+  The site is the first folder below the root; `remap_from`/`remap_to`
+  rewrite the prefix to match `Begin Path`, and `predictions` checks
+  that the audio files of the predictions are in the list. It can write
+  `recordings.csv`
+  ([\#81](https://github.com/diogoprov/sheepdog/issues/81)).
+- New article, “Organising the data”: the folder layout sheepdog
+  expects, file names, the paths written by BirdNET and the list of
+  recordings.
+- New
   [`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md):
   confidence thresholds per site and species from the calibration model
   of stage 2

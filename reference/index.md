@@ -9,6 +9,8 @@ and pack them.
   : Build the validation clip set
 - [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)
   : Read BirdNET selection tables
+- [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md)
+  : List every recording made, from the audio folders
 - [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
   : Select the clips to validate
 - [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md)

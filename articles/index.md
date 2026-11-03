@@ -2,6 +2,8 @@
 
 ### The three stages
 
+- [Organising the
+  data](https://provetelab.org/sheepdog/articles/organising-data.md):
 - [Choosing a sampling
   design](https://provetelab.org/sheepdog/articles/sampling-designs.md):
 - [Reviewing clips in the BirdNET
