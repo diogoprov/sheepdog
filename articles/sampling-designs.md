@@ -20,6 +20,13 @@ false-negative rates. Below, three panels show how to cap the effort,
 why top clips underestimate false positives and the steps after the
 review.](figures/sampling-designs.svg)
 
+Three cards match each sampling_mode of select_clips() to the question
+it answers: top for retraining and calibration, random_detections for
+false-positive rates, random_recordings for false-positive and
+false-negative rates. Below, three panels show how to cap the effort,
+why top clips underestimate false positives and the steps after the
+review.
+
 ## Example data
 
 The example consists of simulated BirdNET selection tables (Raven
@@ -439,7 +446,7 @@ ggplot(curves, aes(confidence, ecdf, colour = design)) +
 
 ![Empirical cumulative distribution of confidence for all detections,
 random_detections clips and top
-clips.](sampling-designs_files/figure-html/unnamed-chunk-18-1.png)
+clips.](sampling-designs_files/figure-html/unnamed-chunk-17-1.png)
 
 ## Limiting the effort
 

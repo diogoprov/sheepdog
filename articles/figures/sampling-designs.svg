@@ -1,0 +1,256 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 1600" width="1320" height="1600" role="img" aria-labelledby="ttl desc">
+<title id="ttl">Choosing a sampling design in select_clips()</title>
+<desc id="desc">Three cards match each sampling_mode of select_clips() to the question it answers: top for retraining and calibration, random_detections for false-positive rates, random_recordings for false-positive and false-negative rates. Below, three panels explain how to cap the effort, why top clips underestimate false positives and what follows the review.</desc>
+<rect x="0" y="0" width="1320" height="1600" rx="0" fill="#ffffff" stroke="none" stroke-width="1"/>
+<text x="54" y="62" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#5b6573" font-weight="normal" text-anchor="start">sheepdog · select_clips(pred, sampling_mode = …)</text>
+<text x="54" y="108" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="38" fill="#1d232b" font-weight="bold" text-anchor="start">Pick the sampling design by the question</text>
+<text x="54" y="152" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="38" fill="#1d232b" font-weight="bold" text-anchor="start">you need to answer</text>
+<text x="1266" y="104" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" fill="#5b6573" font-weight="normal" text-anchor="end">The three designs answer different questions.</text>
+<text x="1266" y="126" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" fill="#5b6573" font-weight="normal" text-anchor="end">A validation sample drawn for one purpose is</text>
+<text x="1266" y="148" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" fill="#5b6573" text-anchor="end">generally <tspan font-weight="bold" fill="#1d232b">not valid</tspan> for another.</text>
+<line x1="54" y1="176" x2="1266" y2="176" stroke="#1d232b" stroke-width="1.5"/>
+<rect x="54" y="204" width="392" height="830" rx="10" fill="#ffffff" stroke="#d5dae1" stroke-width="1"/>
+<path d="M54 214 a10 10 0 0 1 10 -10 h372 a10 10 0 0 1 10 10 v134 h-392 z" fill="#1f4e9c"/>
+<text x="74" y="234" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#ffffff" font-weight="bold" text-anchor="start">TRAIN &amp; CALIBRATE</text>
+<text x="74" y="262" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" fill="#ffffff" font-weight="bold" text-anchor="start">Which clips best teach or calibrate</text>
+<text x="74" y="287" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" fill="#ffffff" font-weight="bold" text-anchor="start">my classifier?</text>
+<rect x="74" y="302" width="190.4" height="28" rx="4" fill="rgba(255,255,255,0.16)" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>
+<text x="81" y="321" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#ffffff" font-weight="normal" text-anchor="start">sampling_mode = "top"</text>
+<rect x="88" y="370" width="338" height="86" rx="4" fill="#f4f6f8" stroke="none" stroke-width="1"/>
+<text transform="translate(78,452) rotate(-90)" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="10" fill="#5b6573">confidence ↑</text>
+<rect x="101.0" y="430.2" width="25.8" height="25.8" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<rect x="132.8" y="391.5" width="25.8" height="64.5" rx="0" fill="#1f4e9c" stroke="none" stroke-width="1"/>
+<rect x="164.6" y="417.3" width="25.8" height="38.7" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<rect x="196.4" y="408.7" width="25.8" height="47.300000000000004" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<rect x="228.2" y="385.48" width="25.8" height="70.52" rx="0" fill="#1f4e9c" stroke="none" stroke-width="1"/>
+<rect x="260.0" y="434.5" width="25.8" height="21.5" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<rect x="291.8" y="413.0" width="25.8" height="43.0" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<rect x="323.6" y="402.68" width="25.8" height="53.32" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<rect x="355.4" y="421.6" width="25.8" height="34.4" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<rect x="387.2" y="388.92" width="25.8" height="67.08" rx="0" fill="#1f4e9c" stroke="none" stroke-width="1"/>
+<line x1="92" y1="417.3" x2="422" y2="417.3" stroke="#5b6573" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="250.0" y="474" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6573" font-weight="normal" text-anchor="middle">Each bar = one prediction (order arbitrary) · filled = selected</text>
+<text x="74" y="500" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="normal" text-anchor="start">Keeps the highest-confidence predictions in each</text>
+<text x="74" y="518" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="normal" text-anchor="start">site × species × night × hour stratum.</text>
+<text x="74" y="548" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6573" font-weight="normal" text-anchor="start">Unit drawn</text>
+<text x="170" y="548" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="bold" text-anchor="start">Prediction</text>
+<text x="74" y="572" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6573" font-weight="normal" text-anchor="start">Selection</text>
+<text x="170" y="572" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="bold" text-anchor="start">Highest confidence per stratum</text>
+<text x="74" y="596" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6573" font-weight="normal" text-anchor="start">Use for</text>
+<text x="170" y="596" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="bold" text-anchor="start">Classifier retraining; calibrate()</text>
+<text x="170" y="614" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="bold" text-anchor="start">score → probability</text>
+<text x="74" y="646" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11.5" fill="#5b6573" font-weight="bold" text-anchor="start">KEY ARGUMENTS</text>
+<rect x="74" y="657" width="82.2" height="22" rx="4" fill="#e6edf8" stroke="none" stroke-width="1"/>
+<text x="80" y="672" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#1f4e9c" font-weight="normal" text-anchor="start">n_top = 2</text>
+<text x="74" y="692" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">predictions kept per stratum</text>
+<rect x="74" y="705" width="121.2" height="22" rx="4" fill="#e6edf8" stroke="none" stroke-width="1"/>
+<text x="80" y="720" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#1f4e9c" font-weight="normal" text-anchor="start">min_confidence</text>
+<text x="74" y="740" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">discard predictions below this score first</text>
+<rect x="74" y="753" width="58.8" height="22" rx="4" fill="#e6edf8" stroke="none" stroke-width="1"/>
+<text x="80" y="768" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#1f4e9c" font-weight="normal" text-anchor="start">strata</text>
+<text x="74" y="788" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">grouping for the per-stratum pick</text>
+<rect x="72" y="950" width="356" height="64" rx="6" fill="#fdf3e6" stroke="none" stroke-width="1"/>
+<path d="M90 968 l8 14 h-16 z" fill="none" stroke="#7a4a12" stroke-width="1.4"/>
+<text x="90" y="980" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="9" fill="#7a4a12" font-weight="bold" text-anchor="middle">!</text>
+<text x="108" y="975" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#7a4a12" font-weight="normal" text-anchor="start">Not a probability sample (inclusion_prob = NA).</text>
+<text x="108" y="991" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#7a4a12" font-weight="normal" text-anchor="start">Never use it to estimate false-positive rates.</text>
+<rect x="471" y="204" width="392" height="830" rx="10" fill="#ffffff" stroke="#d5dae1" stroke-width="1"/>
+<path d="M471 214 a10 10 0 0 1 10 -10 h372 a10 10 0 0 1 10 10 v134 h-392 z" fill="#a8460f"/>
+<text x="491" y="234" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#ffffff" font-weight="bold" text-anchor="start">FALSE POSITIVES</text>
+<text x="491" y="262" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" fill="#ffffff" font-weight="bold" text-anchor="start">How many of my detections are false</text>
+<text x="491" y="287" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" fill="#ffffff" font-weight="bold" text-anchor="start">positives?</text>
+<rect x="491" y="302" width="308.0" height="28" rx="4" fill="rgba(255,255,255,0.16)" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>
+<text x="498" y="321" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#ffffff" font-weight="normal" text-anchor="start">sampling_mode = "random_detections"</text>
+<rect x="505" y="370" width="338" height="86" rx="4" fill="#f4f6f8" stroke="none" stroke-width="1"/>
+<text transform="translate(495,452) rotate(-90)" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="10" fill="#5b6573">confidence ↑</text>
+<rect x="518.0" y="430.2" width="25.8" height="25.8" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<rect x="549.8" y="402.68" width="25.8" height="53.32" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<rect x="581.6" y="419.88" width="25.8" height="36.12" rx="0" fill="#a8460f" stroke="none" stroke-width="1"/>
+<rect x="613.4" y="408.7" width="25.8" height="47.300000000000004" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<rect x="645.2" y="387.2" width="25.8" height="68.8" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<rect x="677.0" y="431.92" width="25.8" height="24.080000000000002" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<rect x="708.8" y="414.72" width="25.8" height="41.28" rx="0" fill="#a8460f" stroke="none" stroke-width="1"/>
+<rect x="740.6" y="399.24" width="25.8" height="56.760000000000005" rx="0" fill="#a8460f" stroke="none" stroke-width="1"/>
+<rect x="772.4" y="419.88" width="25.8" height="36.12" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<rect x="804.2" y="392.36" width="25.8" height="63.64" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<line x1="509" y1="417.3" x2="839" y2="417.3" stroke="#5b6573" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="667.0" y="474" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6573" font-weight="normal" text-anchor="middle">Each bar = one prediction (order arbitrary) · filled = selected</text>
+<text x="491" y="500" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="normal" text-anchor="start">Draws occasions with a detection ≥ threshold at</text>
+<text x="491" y="518" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="normal" text-anchor="start">random, whatever their score; every detection in a</text>
+<text x="491" y="536" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="normal" text-anchor="start">drawn occasion is reviewed.</text>
+<text x="491" y="566" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6573" font-weight="normal" text-anchor="start">Unit drawn</text>
+<text x="587" y="566" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="bold" text-anchor="start">Occasion with a detection</text>
+<text x="491" y="590" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6573" font-weight="normal" text-anchor="start">Selection</text>
+<text x="587" y="590" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="bold" text-anchor="start">Random, within score-independent</text>
+<text x="587" y="608" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="bold" text-anchor="start">strata</text>
+<text x="491" y="632" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6573" font-weight="normal" text-anchor="start">Use for</text>
+<text x="587" y="632" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="bold" text-anchor="start">Observation-confirmation design</text>
+<text x="587" y="650" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="bold" text-anchor="start">(Chambert et al. 2015)</text>
+<text x="491" y="682" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11.5" fill="#5b6573" font-weight="bold" text-anchor="start">KEY ARGUMENTS</text>
+<rect x="491" y="693" width="82.2" height="22" rx="4" fill="#f9ebe2" stroke="none" stroke-width="1"/>
+<text x="497" y="708" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#a8460f" font-weight="normal" text-anchor="start">threshold</text>
+<text x="491" y="728" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">required; must equal the occupancy-analysis threshold</text>
+<rect x="491" y="741" width="183.6" height="22" rx="4" fill="#f9ebe2" stroke="none" stroke-width="1"/>
+<text x="497" y="756" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#a8460f" font-weight="normal" text-anchor="start">occasion_unit = "file"</text>
+<text x="491" y="776" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">or "minute": whole recording or one-minute occasion</text>
+<rect x="491" y="789" width="51.0" height="22" rx="4" fill="#f9ebe2" stroke="none" stroke-width="1"/>
+<text x="497" y="804" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#a8460f" font-weight="normal" text-anchor="start">n_top</text>
+<text x="491" y="824" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">occasions drawn per stratum</text>
+<rect x="491" y="837" width="175.79999999999998" height="22" rx="4" fill="#f9ebe2" stroke="none" stroke-width="1"/>
+<text x="497" y="852" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#a8460f" font-weight="normal" text-anchor="start">strata = "night_hour"</text>
+<text x="491" y="872" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">or "night", "site_species", "hour", "week", "month", or</text>
+<text x="491" y="888" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">your own columns (never confidence/rank)</text>
+<rect x="489" y="950" width="356" height="64" rx="6" fill="#fdf3e6" stroke="none" stroke-width="1"/>
+<path d="M507 968 l8 14 h-16 z" fill="none" stroke="#7a4a12" stroke-width="1.4"/>
+<text x="507" y="980" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="9" fill="#7a4a12" font-weight="bold" text-anchor="middle">!</text>
+<text x="525" y="975" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#7a4a12" font-weight="normal" text-anchor="start">Check clips per occasion =</text>
+<text x="525" y="991" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#7a4a12" font-weight="normal" text-anchor="start">n_detections_occasion: a missing clip breaks the</text>
+<text x="525" y="1007" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#7a4a12" font-weight="normal" text-anchor="start">“all detections confirmed” assumption.</text>
+<rect x="888" y="204" width="392" height="830" rx="10" fill="#ffffff" stroke="#d5dae1" stroke-width="1"/>
+<path d="M888 214 a10 10 0 0 1 10 -10 h372 a10 10 0 0 1 10 10 v134 h-392 z" fill="#116a52"/>
+<text x="908" y="234" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#ffffff" font-weight="bold" text-anchor="start">FALSE POSITIVES + NEGATIVES</text>
+<text x="908" y="262" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" fill="#ffffff" font-weight="bold" text-anchor="start">What does the classifier miss, and</text>
+<text x="908" y="287" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" fill="#ffffff" font-weight="bold" text-anchor="start">what does it get wrong?</text>
+<rect x="908" y="302" width="308.0" height="28" rx="4" fill="rgba(255,255,255,0.16)" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>
+<text x="915" y="321" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="14" fill="#ffffff" font-weight="normal" text-anchor="start">sampling_mode = "random_recordings"</text>
+<rect x="922" y="370" width="338" height="86" rx="4" fill="#f4f6f8" stroke="none" stroke-width="1"/>
+<text transform="translate(912,452) rotate(-90)" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="10" fill="#5b6573">confidence ↑</text>
+<rect x="935.0" y="431.92" width="25.8" height="24.080000000000002" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<rect x="966.8" y="402.68" width="25.8" height="53.32" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<rect x="998.6" y="444" width="25.8" height="10" rx="0" fill="none" stroke="#5b6573" stroke-width="1" stroke-dasharray="3 2"/>
+<rect x="1030.4" y="413.0" width="25.8" height="43.0" rx="0" fill="#116a52" stroke="none" stroke-width="1"/>
+<rect x="1062.2" y="399.24" width="25.8" height="56.760000000000005" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<rect x="1094.0" y="447.4" width="25.8" height="8.6" rx="0" fill="#116a52" stroke="none" stroke-width="1"/>
+<rect x="1125.8" y="417.3" width="25.8" height="38.7" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<rect x="1157.6" y="408.7" width="25.8" height="47.300000000000004" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<rect x="1189.4" y="444" width="25.8" height="10" rx="0" fill="none" stroke="#5b6573" stroke-width="1" stroke-dasharray="3 2"/>
+<rect x="1221.2" y="400.96" width="25.8" height="55.04" rx="0" fill="#c9ced6" stroke="none" stroke-width="1"/>
+<text x="1084.0" y="474" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6573" font-weight="normal" text-anchor="middle">Each bar = one recording (order arbitrary) · dashed = no predictions</text>
+<text x="908" y="500" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="normal" text-anchor="start">Draws recordings at random among all recorded,</text>
+<text x="908" y="518" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="normal" text-anchor="start">including ones with no predictions (dashed), and</text>
+<text x="908" y="536" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="normal" text-anchor="start">annotates them by ear.</text>
+<text x="908" y="566" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6573" font-weight="normal" text-anchor="start">Unit drawn</text>
+<text x="1004" y="566" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="bold" text-anchor="start">Recording or minute</text>
+<text x="908" y="590" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6573" font-weight="normal" text-anchor="start">Selection</text>
+<text x="1004" y="590" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="bold" text-anchor="start">Random, among all recorded</text>
+<text x="908" y="614" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6573" font-weight="normal" text-anchor="start">Use for</text>
+<text x="1004" y="614" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="bold" text-anchor="start">Multiple-method design (Miller et al.</text>
+<text x="1004" y="632" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#1d232b" font-weight="bold" text-anchor="start">2011)</text>
+<text x="908" y="664" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11.5" fill="#5b6573" font-weight="bold" text-anchor="start">KEY ARGUMENTS</text>
+<rect x="908" y="675" width="90.0" height="22" rx="4" fill="#e3f2ec" stroke="none" stroke-width="1"/>
+<text x="914" y="690" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#116a52" font-weight="normal" text-anchor="start">recordings</text>
+<text x="908" y="710" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">required: list of ALL recordings, with or without</text>
+<text x="908" y="726" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">predictions</text>
+<rect x="908" y="739" width="207.0" height="22" rx="4" fill="#e3f2ec" stroke="none" stroke-width="1"/>
+<text x="914" y="754" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#116a52" font-weight="normal" text-anchor="start">recording_fraction = 0.01</text>
+<text x="908" y="774" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">or n_recordings_per_site; raise it for small projects</text>
+<rect x="908" y="787" width="160.2" height="22" rx="4" fill="#e3f2ec" stroke="none" stroke-width="1"/>
+<text x="914" y="802" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#116a52" font-weight="normal" text-anchor="start">species = "boa-ran"</text>
+<text x="908" y="822" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">limit annotation to target species to save listening</text>
+<text x="908" y="838" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">effort</text>
+<rect x="908" y="851" width="199.2" height="22" rx="4" fill="#e3f2ec" stroke="none" stroke-width="1"/>
+<text x="914" y="866" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#116a52" font-weight="normal" text-anchor="start">recording_duration = 300</text>
+<text x="908" y="886" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">sets clip_end for whole recordings</text>
+<rect x="906" y="950" width="356" height="64" rx="6" fill="#fdf3e6" stroke="none" stroke-width="1"/>
+<path d="M924 968 l8 14 h-16 z" fill="none" stroke="#7a4a12" stroke-width="1.4"/>
+<text x="924" y="980" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="9" fill="#7a4a12" font-weight="bold" text-anchor="middle">!</text>
+<text x="942" y="975" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#7a4a12" font-weight="normal" text-anchor="start">Not confirmations of detections: confidence and</text>
+<text x="942" y="991" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#7a4a12" font-weight="normal" text-anchor="start">rank are NA, and they are handled differently</text>
+<text x="942" y="1007" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#7a4a12" font-weight="normal" text-anchor="start">downstream.</text>
+<line x1="54" y1="1066" x2="1266" y2="1066" stroke="#1d232b" stroke-width="1.5"/>
+<text x="54" y="1106" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" fill="#1d232b" font-weight="bold" text-anchor="start">After choosing a design</text>
+<text x="322" y="1106" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" fill="#5b6573" font-weight="normal" text-anchor="start">three things to know</text>
+<rect x="54" y="1130" width="392" height="440" rx="10" fill="#f4f6f8" stroke="none" stroke-width="1"/>
+<circle cx="86" cy="1164" r="13" fill="#1d232b"/>
+<text x="86" y="1169" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#ffffff" font-weight="bold" text-anchor="middle">1</text>
+<text x="110" y="1169" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16" fill="#1d232b" font-weight="bold" text-anchor="start">Too many clips to listen to?</text>
+<text x="110" y="1190" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#5b6573" font-weight="normal" text-anchor="start">Cap the total with one of these arguments.</text>
+<rect x="72" y="1216" width="356" height="336" rx="6" fill="#ffffff" stroke="#d5dae1" stroke-width="1"/>
+<text x="84" y="1238" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11" fill="#5b6573" font-weight="bold" text-anchor="start">Argument</text>
+<text x="278" y="1238" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="10.5" fill="#1f4e9c" font-weight="bold" text-anchor="middle">top</text>
+<text x="334" y="1238" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="10.5" fill="#a8460f" font-weight="bold" text-anchor="middle">rand. det.</text>
+<text x="392" y="1238" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="10.5" fill="#116a52" font-weight="bold" text-anchor="middle">rand. rec.</text>
+<line x1="72" y1="1250" x2="428" y2="1250" stroke="#d5dae1" stroke-width="1"/>
+<text x="84" y="1270" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" fill="#1d232b" font-weight="bold" text-anchor="start">target_total</text>
+<text x="84" y="1288" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11.5" fill="#5b6573" font-weight="normal" text-anchor="start">total per site, split evenly</text>
+<text x="84" y="1303" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11.5" fill="#5b6573" font-weight="normal" text-anchor="start">across species</text>
+<text x="278" y="1280" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" fill="#1f4e9c" font-weight="bold" text-anchor="middle">✓</text>
+<text x="334" y="1280" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" fill="#a8460f" font-weight="bold" text-anchor="middle">✓</text>
+<text x="392" y="1280" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" fill="#5b6573" font-weight="normal" text-anchor="middle">–</text>
+<line x1="72" y1="1322" x2="428" y2="1322" stroke="#d5dae1" stroke-width="1"/>
+<text x="84" y="1342" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" fill="#1d232b" font-weight="bold" text-anchor="start">max_per_species</text>
+<text x="84" y="1360" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11.5" fill="#5b6573" font-weight="normal" text-anchor="start">fixed cap per site × species</text>
+<text x="84" y="1375" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11.5" fill="#5b6573" font-weight="normal" text-anchor="start">(ignored if target_total is</text>
+<text x="84" y="1390" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11.5" fill="#5b6573" font-weight="normal" text-anchor="start">set)</text>
+<text x="278" y="1352" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" fill="#1f4e9c" font-weight="bold" text-anchor="middle">✓</text>
+<text x="334" y="1352" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" fill="#a8460f" font-weight="bold" text-anchor="middle">✓</text>
+<text x="392" y="1352" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" fill="#5b6573" font-weight="normal" text-anchor="middle">–</text>
+<line x1="72" y1="1409" x2="428" y2="1409" stroke="#d5dae1" stroke-width="1"/>
+<text x="84" y="1429" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" fill="#1d232b" font-weight="bold" text-anchor="start">balance_by_hour = TRUE</text>
+<text x="84" y="1447" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11.5" fill="#5b6573" font-weight="normal" text-anchor="start">spread picks round-robin across</text>
+<text x="84" y="1462" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11.5" fill="#5b6573" font-weight="normal" text-anchor="start">hours</text>
+<text x="278" y="1439" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" fill="#1f4e9c" font-weight="bold" text-anchor="middle">✓</text>
+<text x="334" y="1439" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" fill="#a8460f" font-weight="bold" text-anchor="middle">✓</text>
+<text x="392" y="1439" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" fill="#5b6573" font-weight="normal" text-anchor="middle">–</text>
+<line x1="72" y1="1481" x2="428" y2="1481" stroke="#d5dae1" stroke-width="1"/>
+<text x="84" y="1501" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" fill="#1d232b" font-weight="bold" text-anchor="start">recording_fraction</text>
+<text x="84" y="1519" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11.5" fill="#5b6573" font-weight="normal" text-anchor="start">or n_recordings_per_site:</text>
+<text x="84" y="1534" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="11.5" fill="#5b6573" font-weight="normal" text-anchor="start">recordings per site to annotate</text>
+<text x="278" y="1511" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" fill="#5b6573" font-weight="normal" text-anchor="middle">–</text>
+<text x="334" y="1511" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" fill="#5b6573" font-weight="normal" text-anchor="middle">–</text>
+<text x="392" y="1511" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" fill="#116a52" font-weight="bold" text-anchor="middle">✓</text>
+<rect x="471" y="1130" width="392" height="440" rx="10" fill="#f4f6f8" stroke="none" stroke-width="1"/>
+<circle cx="503" cy="1164" r="13" fill="#1d232b"/>
+<text x="503" y="1169" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#ffffff" font-weight="bold" text-anchor="middle">2</text>
+<text x="527" y="1169" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16" fill="#1d232b" font-weight="bold" text-anchor="start">Why not use “top” for false positives?</text>
+<text x="527" y="1190" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#5b6573" font-weight="normal" text-anchor="start">Because it only picks the high scorers. Median</text>
+<text x="527" y="1207" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#5b6573" font-weight="normal" text-anchor="start">confidence of the clips each design selects</text>
+<text x="527" y="1224" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#5b6573" font-weight="normal" text-anchor="start">(vignette example):</text>
+<rect x="489" y="1252" width="356" height="166" rx="6" fill="#ffffff" stroke="#d5dae1" stroke-width="1"/>
+<text x="503" y="1278" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#1d232b" font-weight="normal" text-anchor="start">All detections ≥ threshold (reference)</text>
+<text x="831" y="1278" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#1d232b" font-weight="bold" text-anchor="end">0.72</text>
+<rect x="503" y="1286" width="328" height="10" rx="2" fill="#e6e9ee" stroke="none" stroke-width="1"/>
+<rect x="503" y="1286" width="236.16" height="10" rx="2" fill="#6b7480" stroke="none" stroke-width="1"/>
+<text x="503" y="1322" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#1d232b" font-weight="normal" text-anchor="start">random_detections (weighted by 1 / inclusion_prob)</text>
+<text x="831" y="1322" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#1d232b" font-weight="bold" text-anchor="end">0.72</text>
+<rect x="503" y="1330" width="328" height="10" rx="2" fill="#e6e9ee" stroke="none" stroke-width="1"/>
+<rect x="503" y="1330" width="236.16" height="10" rx="2" fill="#a8460f" stroke="none" stroke-width="1"/>
+<text x="503" y="1366" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#1d232b" font-weight="normal" text-anchor="start">top</text>
+<text x="831" y="1366" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#1d232b" font-weight="bold" text-anchor="end">0.81</text>
+<rect x="503" y="1374" width="328" height="10" rx="2" fill="#e6e9ee" stroke="none" stroke-width="1"/>
+<rect x="503" y="1374" width="265.68" height="10" rx="2" fill="#1f4e9c" stroke="none" stroke-width="1"/>
+<line x1="739.16" y1="1282" x2="739.16" y2="1402" stroke="#1d232b" stroke-width="1.2" stroke-dasharray="3 2"/>
+<text x="503" y="1410" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="10.5" fill="#5b6573" font-weight="normal" text-anchor="start">0</text>
+<text x="831" y="1410" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="10.5" fill="#5b6573" font-weight="normal" text-anchor="end">1</text>
+<text x="667.0" y="1410" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="10.5" fill="#5b6573" font-weight="normal" text-anchor="middle">dashed = all detections (0.72)</text>
+<text x="489" y="1444" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d232b"><tspan fill="#a8460f" font-weight="bold">random_detections</tspan> matches the real mix of scores ✓</text>
+<text x="489" y="1466" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d232b"><tspan fill="#1f4e9c" font-weight="bold">top</tspan> is shifted up → fewer false positives in the</text>
+<text x="489" y="1484" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#1d232b">sample → false-positive rate <tspan font-weight="bold">underestimated</tspan> ✗</text>
+<rect x="888" y="1130" width="392" height="440" rx="10" fill="#f4f6f8" stroke="none" stroke-width="1"/>
+<circle cx="920" cy="1164" r="13" fill="#1d232b"/>
+<text x="920" y="1169" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#ffffff" font-weight="bold" text-anchor="middle">3</text>
+<text x="944" y="1169" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16" fill="#1d232b" font-weight="bold" text-anchor="start">What happens next?</text>
+<text x="944" y="1190" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5" fill="#5b6573" font-weight="normal" text-anchor="start">From selected clips to an occupancy model.</text>
+<rect x="906" y="1216" width="356" height="280" rx="6" fill="#ffffff" stroke="#d5dae1" stroke-width="1"/>
+<text x="924" y="1246" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6573" font-weight="bold" text-anchor="start">1</text>
+<text x="950" y="1246" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1d232b" font-weight="bold" text-anchor="start">Choose clips</text>
+<text x="950" y="1265" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">select_clips()</text>
+<line x1="906" y1="1276" x2="1262" y2="1276" stroke="#d5dae1" stroke-width="1"/>
+<text x="924" y="1298" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6573" font-weight="bold" text-anchor="start">2</text>
+<text x="950" y="1298" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1d232b" font-weight="bold" text-anchor="start">Cut the audio clips</text>
+<text x="950" y="1317" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">cut_clips() or extract_validation_clips()</text>
+<line x1="906" y1="1328" x2="1262" y2="1328" stroke="#d5dae1" stroke-width="1"/>
+<text x="924" y="1350" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6573" font-weight="bold" text-anchor="start">3</text>
+<text x="950" y="1350" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1d232b" font-weight="bold" text-anchor="start">Listen and record a verdict</text>
+<text x="950" y="1369" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">positive / negative / unsure</text>
+<line x1="906" y1="1380" x2="1262" y2="1380" stroke="#d5dae1" stroke-width="1"/>
+<text x="924" y="1402" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6573" font-weight="bold" text-anchor="start">4</text>
+<text x="950" y="1402" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1d232b" font-weight="bold" text-anchor="start">Join verdicts back to the table</text>
+<text x="950" y="1421" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">post_validation()</text>
+<line x1="906" y1="1432" x2="1262" y2="1432" stroke="#d5dae1" stroke-width="1"/>
+<text x="924" y="1454" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13" fill="#5b6573" font-weight="bold" text-anchor="start">5</text>
+<text x="950" y="1454" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="13.5" fill="#1d232b" font-weight="bold" text-anchor="start">Fit the occupancy model</text>
+<text x="950" y="1473" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">vignette("crywolf-integration")</text>
+<text x="906" y="1520" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">random_detections clips carry inclusion_prob: weight them</text>
+<text x="906" y="1536" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" fill="#5b6573" font-weight="normal" text-anchor="start">by 1 / inclusion_prob when estimating rates.</text>
+</svg>
