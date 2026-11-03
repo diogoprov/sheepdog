@@ -113,7 +113,12 @@ cell with few reviewed clips borrows strength from the others.</p>
 
 <dt id="arg-target">target<a class="anchor" aria-label="anchor" href="#arg-target"></a></dt>
 <dd><p>Target probability (<code>"probability"</code>) or precision
-(<code>"precision"</code>).</p></dd>
+(<code>"precision"</code>). The default, 0.95, is the <code>p_min</code> of
+<code><a href="score_detections.html">score_detections()</a></code> and <code><a href="calibrate.html">calibrate()</a></code>, so that the probability
+threshold is the score equivalent of the cut on P(TP) used for the
+detection histories. It is the same for both rules; the <code>"precision"</code>
+threshold is lower for the same target (see Details).
+<code><a href="suggest_thresholds.html">suggest_thresholds()</a></code> uses 0.90 by default.</p></dd>
 
 
 <dt id="arg-rule">rule<a class="anchor" aria-label="anchor" href="#arg-rule"></a></dt>
@@ -202,6 +207,12 @@ false-positive occupancy models needs instead clips drawn at random
 of the classifier with how often the species calls at the site. For a
 threshold this is what is wanted: the precision at a site depends on
 both. It is not a measure of the classifier alone.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="suggest_thresholds.html">suggest_thresholds()</a></code> for thresholds from the reviewed clips of
+each cell; <code><a href="calibrate.html">calibrate()</a></code>, which writes these thresholds to
+<code>thresholds.csv</code>.</p></div>
     </div>
 
     <div class="section level2">

@@ -26,6 +26,14 @@ Writes to `output_dir`:
 - `calibrated_detections_<site>.csv`, one per site
   ([`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md));
 
+- `thresholds.csv`
+  ([`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md)
+  with `rule = "probability"` and `target = p_min`): for each site x
+  species, the lowest confidence score at which P(TP) reaches `p_min`,
+  the score equivalent of the cut on P(TP) used by the detection
+  history. Useful to filter detections in software that only takes a
+  score threshold;
+
 - `nightly_detection_history.csv`
   ([`detection_history()`](https://provetelab.org/sheepdog/reference/detection_history.md));
 
@@ -177,8 +185,8 @@ calibrate(
 
 ## Value
 
-A list with `comparison`, `fit`, `effort` (or `NULL`), `scored` and
-`history`, invisibly.
+A list with `comparison`, `fit`, `effort` (or `NULL`), `scored`,
+`thresholds` and `history`, invisibly.
 
 ## Details
 

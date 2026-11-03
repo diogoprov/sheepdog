@@ -347,7 +347,7 @@ choice:</p>
 <span><span class="co">#&gt;  -0.5310926   1.5993695</span></span>
 <span><span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/nlme/man/fixed.effects.html" class="external-link">fixef</a></span><span class="op">(</span><span class="va">fit_full</span><span class="op">)</span></span>
 <span><span class="co">#&gt; (Intercept)  logit_conf </span></span>
-<span><span class="co">#&gt;   -0.281896    2.800392</span></span>
+<span><span class="co">#&gt;  -0.2818954   2.8003920</span></span>
 <span><span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/nlme/man/VarCorr.html" class="external-link">VarCorr</a></span><span class="op">(</span><span class="va">fit_full</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Groups       Name        Std.Dev. Corr  </span></span>
 <span><span class="co">#&gt;  site:species (Intercept) 1.19511        </span></span>
@@ -590,6 +590,88 @@ threshold this is what is wanted, but it is not a property of the
 classifier alone. And the site-confirmation design of the false-positive
 occupancy models in ‘crywolf’ needs clips drawn at random, not chosen by
 score: a sample designed for the thresholds does not serve it.</p>
+<p><code><a href="../reference/calibrate.html">calibrate()</a></code> writes the <code>"probability"</code>
+thresholds with <code>target = p_min</code> to
+<code>thresholds.csv</code>. They are the score equivalent of the cut on
+P(TP) used for the detection histories below, and serve to filter
+detections in software that only accepts a score threshold.</p>
+<div class="section level3">
+<h3 id="choosing-a-confidence-threshold">Choosing a confidence threshold<a class="anchor" aria-label="anchor" href="#choosing-a-confidence-threshold"></a>
+</h3>
+<p>The routes to a threshold answer different questions and need
+different samples of reviewed clips:</p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th>question</th>
+<th>tool</th>
+<th>threshold</th>
+<th>reviewed clips needed</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>one cut for every site and species, as in the BirdNET output</td>
+<td>
+<code><a href="../reference/fit_calibration.html">fit_calibration()</a></code> with <code>m0_global</code>, then
+<code><a href="../reference/calibrated_thresholds.html">calibrated_thresholds()</a></code>
+</td>
+<td>one score</td>
+<td>any sample that spans the scores</td>
+</tr>
+<tr class="even">
+<td>what share of the detections above a score are true, in this
+cell?</td>
+<td><code><a href="../reference/suggest_thresholds.html">suggest_thresholds()</a></code></td>
+<td>per site x species</td>
+<td>drawn at random within the cell, and numerous</td>
+</tr>
+<tr class="odd">
+<td>at which score is a detection reliable, borrowing strength across
+cells?</td>
+<td><code>calibrated_thresholds(rule = "probability")</code></td>
+<td>per site x species</td>
+<td>chosen by score only (e.g. <code>"top"</code>), if the model form is
+right</td>
+</tr>
+<tr class="even">
+<td>what share of all the detections kept are true, borrowing
+strength?</td>
+<td><code>calibrated_thresholds(rule = "precision")</code></td>
+<td>per site x species, lower</td>
+<td>as above, plus the selection tables</td>
+</tr>
+<tr class="odd">
+<td>can the score threshold be dropped?</td>
+<td>
+<code>score_detections(p_min = )</code> and
+<code><a href="../reference/detection_history.html">detection_history()</a></code>
+</td>
+<td>on P(TP), not on the score</td>
+<td>as above</td>
+</tr>
+</tbody>
+</table>
+<p>A single threshold is the simplest choice, but the comparison above
+shows that the score at which P(TP) reaches 0.95 varies widely among
+sites and species, so a single cut keeps many false positives in some
+cells and discards many true detections in others.</p>
+<p>Thresholds that differ among sites have a consequence for the
+occupancy model. The detection probability depends on the threshold, so
+per-site thresholds make it differ among sites for a reason unrelated to
+the species; the detection submodel should then include the site, or the
+threshold itself, as a covariate. Whatever the threshold, the false
+positives that remain above it are what the false-positive occupancy
+models of ‘crywolf’ estimate, and the <code>"random_detections"</code>
+sample that confirms them must be drawn with the same threshold as the
+analysis (see <code><a href="../articles/sampling-designs.html">vignette("sampling-designs")</a></code>). Thresholding
+P(TP) instead of the score keeps the meaning of a detection the same in
+every cell.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="nightly-detection-histories">Nightly detection histories<a class="anchor" aria-label="anchor" href="#nightly-detection-histories"></a>
@@ -873,7 +955,8 @@ output.</p>
 <span><span class="co">#&gt;  [3] "calibrated_detections_NHE.csv" "calibrated_detections_XAR.csv"</span></span>
 <span><span class="co">#&gt;  [5] "calibration_curves.png"        "calibration_model.rds"        </span></span>
 <span><span class="co">#&gt;  [7] "calibration_model.txt"         "detection_summary.csv"        </span></span>
-<span><span class="co">#&gt;  [9] "model_comparison.csv"          "nightly_detection_history.csv"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [9] "model_comparison.csv"          "nightly_detection_history.csv"</span></span>
+<span><span class="co">#&gt; [11] "thresholds.csv"</span></span></code></pre></div>
 <p><code>nightly_detection_history.csv</code> is the input of the
 occupancy and community analyses (see
 <code><a href="../articles/frognet-workflow.html">vignette("frognet-workflow")</a></code>). Five folds and the example’s

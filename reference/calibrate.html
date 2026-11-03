@@ -21,6 +21,11 @@ effort_curve.csv (calibration_effort()), when effort_curve is
 TRUE;
 calibrated_detections_&amp;lt;site&amp;gt;.csv, one per site
 (score_detections());
+thresholds.csv (calibrated_thresholds() with
+rule = &quot;probability&quot; and target = p_min): for each site x species,
+the lowest confidence score at which P(TP) reaches p_min, the score
+equivalent of the cut on P(TP) used by the detection history. Useful to
+filter detections in software that only takes a score threshold;
 nightly_detection_history.csv (detection_history());
 detection_summary.csv (summarise_history()).
 
@@ -40,6 +45,11 @@ effort_curve.csv (calibration_effort()), when effort_curve is
 TRUE;
 calibrated_detections_&amp;lt;site&amp;gt;.csv, one per site
 (score_detections());
+thresholds.csv (calibrated_thresholds() with
+rule = &quot;probability&quot; and target = p_min): for each site x species,
+the lowest confidence score at which P(TP) reaches p_min, the score
+equivalent of the cut on P(TP) used by the detection history. Useful to
+filter detections in software that only takes a score threshold;
 nightly_detection_history.csv (detection_history());
 detection_summary.csv (summarise_history()).
 
@@ -118,6 +128,11 @@ installed;</p></li>
 <code>TRUE</code>;</p></li>
 <li><p><code>calibrated_detections_&lt;site&gt;.csv</code>, one per site
 (<code><a href="score_detections.html">score_detections()</a></code>);</p></li>
+<li><p><code>thresholds.csv</code> (<code><a href="calibrated_thresholds.html">calibrated_thresholds()</a></code> with
+<code>rule = "probability"</code> and <code>target = p_min</code>): for each site x species,
+the lowest confidence score at which P(TP) reaches <code>p_min</code>, the score
+equivalent of the cut on P(TP) used by the detection history. Useful to
+filter detections in software that only takes a score threshold;</p></li>
 <li><p><code>nightly_detection_history.csv</code> (<code><a href="detection_history.html">detection_history()</a></code>);</p></li>
 <li><p><code>detection_summary.csv</code> (<code><a href="summarise_history.html">summarise_history()</a></code>).</p></li>
 </ul></div>
@@ -268,8 +283,8 @@ nonmissing and nonempty. <code>NULL</code> keeps the original clip folds.</p></d
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list with <code>comparison</code>, <code>fit</code>, <code>effort</code> (or <code>NULL</code>), <code>scored</code>
-and <code>history</code>, invisibly.</p>
+    <p>A list with <code>comparison</code>, <code>fit</code>, <code>effort</code> (or <code>NULL</code>), <code>scored</code>,
+<code>thresholds</code> and <code>history</code>, invisibly.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

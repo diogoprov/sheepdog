@@ -36,7 +36,17 @@ calibrated_thresholds(
 
 - target:
 
-  Target probability (`"probability"`) or precision (`"precision"`).
+  Target probability (`"probability"`) or precision (`"precision"`). The
+  default, 0.95, is the `p_min` of
+  [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md)
+  and
+  [`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md),
+  so that the probability threshold is the score equivalent of the cut
+  on P(TP) used for the detection histories. It is the same for both
+  rules; the `"precision"` threshold is lower for the same target (see
+  Details).
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
+  uses 0.90 by default.
 
 - rule:
 
@@ -138,6 +148,13 @@ needs instead clips drawn at random
 error of the classifier with how often the species calls at the site.
 For a threshold this is what is wanted: the precision at a site depends
 on both. It is not a measure of the classifier alone.
+
+## See also
+
+[`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
+for thresholds from the reviewed clips of each cell;
+[`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md),
+which writes these thresholds to `thresholds.csv`.
 
 ## Examples
 

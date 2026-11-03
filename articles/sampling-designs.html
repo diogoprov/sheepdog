@@ -137,6 +137,7 @@ select.</p>
 </tr>
 </tbody>
 </table>
+<p><img src="figures/sampling-designs.svg" class="r-plt" alt="Three cards match each sampling_mode of select_clips() to the question it answers: top for retraining and calibration, random_detections for false-positive rates, random_recordings for false-positive and false-negative rates. Below, three panels show how to cap the effort, why top clips underestimate false positives and the steps after the review." width="100%"></p>
 <div class="section level2">
 <h2 id="example-data">Example data<a class="anchor" aria-label="anchor" href="#example-data"></a>
 </h2>
@@ -511,7 +512,7 @@ biased low.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Confidence"</span>, y <span class="op">=</span> <span class="st">"Cumulative proportion"</span>, colour <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="sampling-designs_files/figure-html/unnamed-chunk-17-1.png" class="r-plt" alt="Empirical cumulative distribution of confidence for all detections, random_detections clips and top clips." width="576"></p>
+<p><img src="sampling-designs_files/figure-html/unnamed-chunk-18-1.png" class="r-plt" alt="Empirical cumulative distribution of confidence for all detections, random_detections clips and top clips." width="576"></p>
 </div>
 <div class="section level2">
 <h2 id="limiting-the-effort">Limiting the effort<a class="anchor" aria-label="anchor" href="#limiting-the-effort"></a>

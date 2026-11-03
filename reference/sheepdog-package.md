@@ -3,10 +3,17 @@
 Tools to check whether automated detections from 'BirdNET' custom
 classifiers in passive acoustic monitoring are real. The package builds
 clip sets for manual validation (top-score, random-occasion or
-random-recording designs), summarises the reviewed clips, calibrates
-confidence scores into probabilities of true detection with hierarchical
-logistic models, and turns calibrated detections into nightly detection
-histories and effort-standardised community matrices.
+random-recording designs), following the multiple-method and
+observation-confirmation designs for false-positive occupancy models of
+Miller et al. (2011)
+[doi:10.1890/10-1396.1](https://doi.org/10.1890/10-1396.1) and Chambert
+et al. (2015) [doi:10.1890/14-1507.1](https://doi.org/10.1890/14-1507.1)
+, summarises the reviewed clips, converts confidence scores into
+probabilities of true detection, as recommended by Wood and Kahl (2024)
+[doi:10.1007/s10336-024-02144-5](https://doi.org/10.1007/s10336-024-02144-5)
+, with hierarchical logistic models, and turns calibrated detections
+into nightly detection histories and effort-standardised community
+matrices.
 
 ## See also
 

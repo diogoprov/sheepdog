@@ -16,7 +16,19 @@
   [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md),
   reaches it. With a `brms` model, a conservative threshold from the
   lower quantile of the posterior is added. The calibration vignette has
-  a new section.
+  a new section. The default target, 0.95, is the `p_min` of
+  [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md)
+  and
+  [`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md).
+- [`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md)
+  writes `thresholds.csv` and returns `thresholds`: the
+  [`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md)
+  of each site x species with `rule = "probability"` and
+  `target = p_min`, the score equivalent of the cut on P(TP) used for
+  the detection histories.
+- The sampling-designs vignette opens with a figure that matches each
+  design to the question it answers, and the calibration vignette has a
+  guide to choosing a confidence threshold.
 - [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)
   also reads the per-audio selection tables that the BirdNET GUI writes
   by default (`<audio>.BirdNET.selection.table.txt`, new argument

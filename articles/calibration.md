@@ -276,7 +276,7 @@ coef(fit_global)
 #>  -0.5310926   1.5993695
 lme4::fixef(fit_full)
 #> (Intercept)  logit_conf 
-#>   -0.281896    2.800392
+#>  -0.2818954   2.8003920
 lme4::VarCorr(fit_full)
 #>  Groups       Name        Std.Dev. Corr  
 #>  site:species (Intercept) 1.19511        
@@ -537,6 +537,42 @@ threshold this is what is wanted, but it is not a property of the
 classifier alone. And the site-confirmation design of the false-positive
 occupancy models in ‘crywolf’ needs clips drawn at random, not chosen by
 score: a sample designed for the thresholds does not serve it.
+
+[`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md)
+writes the `"probability"` thresholds with `target = p_min` to
+`thresholds.csv`. They are the score equivalent of the cut on P(TP) used
+for the detection histories below, and serve to filter detections in
+software that only accepts a score threshold.
+
+### Choosing a confidence threshold
+
+The routes to a threshold answer different questions and need different
+samples of reviewed clips:
+
+| question | tool | threshold | reviewed clips needed |
+|----|----|----|----|
+| one cut for every site and species, as in the BirdNET output | [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md) with `m0_global`, then [`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md) | one score | any sample that spans the scores |
+| what share of the detections above a score are true, in this cell? | [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md) | per site x species | drawn at random within the cell, and numerous |
+| at which score is a detection reliable, borrowing strength across cells? | `calibrated_thresholds(rule = "probability")` | per site x species | chosen by score only (e.g. `"top"`), if the model form is right |
+| what share of all the detections kept are true, borrowing strength? | `calibrated_thresholds(rule = "precision")` | per site x species, lower | as above, plus the selection tables |
+| can the score threshold be dropped? | `score_detections(p_min = )` and [`detection_history()`](https://provetelab.org/sheepdog/reference/detection_history.md) | on P(TP), not on the score | as above |
+
+A single threshold is the simplest choice, but the comparison above
+shows that the score at which P(TP) reaches 0.95 varies widely among
+sites and species, so a single cut keeps many false positives in some
+cells and discards many true detections in others.
+
+Thresholds that differ among sites have a consequence for the occupancy
+model. The detection probability depends on the threshold, so per-site
+thresholds make it differ among sites for a reason unrelated to the
+species; the detection submodel should then include the site, or the
+threshold itself, as a covariate. Whatever the threshold, the false
+positives that remain above it are what the false-positive occupancy
+models of ‘crywolf’ estimate, and the `"random_detections"` sample that
+confirms them must be drawn with the same threshold as the analysis (see
+[`vignette("sampling-designs")`](https://provetelab.org/sheepdog/articles/sampling-designs.md)).
+Thresholding P(TP) instead of the score keeps the meaning of a detection
+the same in every cell.
 
 ## Nightly detection histories
 
@@ -838,6 +874,7 @@ list.files(out_dir)
 #>  [5] "calibration_curves.png"        "calibration_model.rds"        
 #>  [7] "calibration_model.txt"         "detection_summary.csv"        
 #>  [9] "model_comparison.csv"          "nightly_detection_history.csv"
+#> [11] "thresholds.csv"
 ```
 
 `nightly_detection_history.csv` is the input of the occupancy and
