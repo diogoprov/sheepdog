@@ -123,7 +123,7 @@ Called for its side effect; returns when the app is closed.
 - **Intro**: a graphical abstract of the sampling designs and an Audio
   panel to choose the audio folder, the BirdNET results and the
   validation folder (with a dialog of the system), with a summary of the
-  recordings per site and day. Folders given to `run_app()` are
+  recordings per site and night. Folders given to `run_app()` are
   confirmed when the app opens. Without them, the app opens on this tab.
 
 - **Sampling** (with `selection_dir` and `output_dir`): a form for the

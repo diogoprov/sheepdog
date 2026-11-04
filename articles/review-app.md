@@ -105,14 +105,15 @@ review. The Sampling and Export tabs ask for the BirdNET results and the
 validation folder until both are set.
 
 Below the folders, a grid shows the recordings per site (columns) and
-day (rows). The size of each square is the number of recordings that
-day, and its colour the share of the hours recorded that day with at
-least one prediction, at any score. Hovering over a square shows the
-recordings, the hours and the number of predictions. The *Species* box
-limits the colour and the counts to the chosen species. Without the
-audio folder, only the recordings with predictions are counted, and the
-panel says so. The grid shows at a glance the days a recorder stopped
-and the sites or days with few predictions.
+night (rows); recordings before noon belong to the night before. The
+size of each square is the number of recordings that night, and its
+colour the share of the hours recorded that night with at least one
+prediction, at any score. Hovering over a square shows the recordings,
+the hours and the number of predictions. The *Species* box limits the
+colour and the counts to the chosen species. Without the audio folder,
+only the recordings with predictions are counted, and the panel says so.
+The grid shows at a glance the nights a recorder stopped and the sites
+or nights with few predictions.
 
 ![The app with a clip of Leptodactylus
 fuscus.](app-figures/review-app.jpg)

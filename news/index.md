@@ -2,6 +2,11 @@
 
 ## sheepdog (development version)
 
+- [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md):
+  `"random_detections"` now says so when every candidate occasion was
+  taken (all `inclusion_prob` equal to 1), which is a census and not a
+  random draw.
+
 - [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md):
   the app opens on a new Intro tab with a graphical abstract of the
   sampling designs and an Audio panel, where the audio folder (new
@@ -12,7 +17,7 @@
   are confirmed when the app opens, and
   [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md)
   can be called without arguments. The panel shows the recordings per
-  site and day, coloured by the share of hours with predictions of the
+  site and night, coloured by the share of hours with predictions of the
   chosen species, with the number of predictions on hover.
 
 - [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md):

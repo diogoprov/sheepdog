@@ -147,6 +147,7 @@ rd_file <- select_clips(pred, sampling_mode = "random_detections",
 #> Sampling mode: random_detections (occasion = file).
 #> 1876 occasions drawn (1 per site x species_code x night x recording_hour) among 1876 with a prediction >= 0.5.
 #> 4738 clips (every prediction >= 0.5 of the 1876 occasions drawn).
+#> Every candidate occasion was taken (inclusion_prob = 1): this is a census of them, not a random draw. For a sample, use wider `strata` or a smaller `n_top`.
 table(rd_file$inclusion_prob)
 #> 
 #>    1 
