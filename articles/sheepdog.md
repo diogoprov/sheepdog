@@ -137,10 +137,9 @@ dplyr::count(man, site, species_folder) |>
 The manifest has 1273 clips.
 
 The `"top"` design serves classifier retraining and the
-score-to-probability calibration of stage 2. ***It should not be used to
+score-to-probability calibration of stage 2. It should not be used to
 estimate false-positive rates, because top-score clips hold fewer false
-positives than a random sample***; to learn more about random designs,
-see
+positives than a random sample; the random designs are described in
 [`vignette("sampling-designs")`](https://provetelab.org/sheepdog/articles/sampling-designs.md).
 
 The manifest links each clip to its source recording. Its columns are
