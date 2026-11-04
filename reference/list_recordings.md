@@ -110,7 +110,7 @@ list_recordings(audio)
 #> # A tibble: 3 × 2
 #>   site  source_audio                                       
 #>   <chr> <chr>                                              
-#> 1 ARA   /tmp/RtmpM4FETt/audio/ARA/ARA01_20211001_190000.wav
-#> 2 ARA   /tmp/RtmpM4FETt/audio/ARA/ARA01_20211001_200000.wav
-#> 3 BAI   /tmp/RtmpM4FETt/audio/BAI/BAI01_20211001_190000.wav
+#> 1 ARA   /tmp/RtmpBurThi/audio/ARA/ARA01_20211001_190000.wav
+#> 2 ARA   /tmp/RtmpBurThi/audio/ARA/ARA01_20211001_200000.wav
+#> 3 BAI   /tmp/RtmpBurThi/audio/BAI/BAI01_20211001_190000.wav
 ```

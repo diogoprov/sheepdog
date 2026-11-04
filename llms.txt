@@ -14,13 +14,14 @@ and custom classifiers in passive acoustic monitoring (PAM). It runs
 three stages:
 
 1.  **Validation data.** Build clip sets for manual review from the
-    output BirdNET selection tables: top-score, random-occasion or
+    BirdNET selection tables: top-score, random-occasion or
     random-recording designs, one folder per species, ready for the
-    review tab of the BirdNET GUI. The random draws can be stratified
-    along an environmental gradient. Then summarise the reviewed clips:
-    precision by confidence bin, suggested thresholds, confirmed
-    presence by night, clips for retraining and the cells that still
-    need review.
+    review tab of the BirdNET GUI or for the review app of the package
+    ([`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md)).
+    The random draws can be stratified along an environmental gradient.
+    Then summarise the reviewed clips: precision by confidence bin,
+    suggested thresholds, confirmed presence by night, clips for
+    retraining and the cells that still need review.
 2.  **Calibration.** Turn confidence scores into probabilities of true
     detection with hierarchical logistic models (species and site x
     species effects, compared by cross-validation), fitted with ‘lme4’
@@ -127,6 +128,11 @@ post_validation(review_dir    = "N:/Arara/validation/clips",
                 manifest_path = "N:/Arara/validation/clip_manifest.csv",
                 output_dir    = "N:/Arara/validation/results")
 
+# or after the review in the app, run_app()
+post_validation(manifest_path = "N:/Arara/validation/clip_manifest.csv",
+                output_dir    = "N:/Arara/validation/results",
+                verdicts_file = "N:/Arara/validation/verdicts.csv")
+
 # 2. Calibration and nightly detection histories
 calibrate(validation_files  = c("UEM/validation_by_clip.csv",
                                 "ARA/validation_by_clip.csv"),
@@ -144,12 +150,12 @@ Each stage is also available as separate functions:
 
 | Stage | Functions |
 |----|----|
-| 1\. Selecting and cutting clips | [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md), [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md) (a pure function that returns the clip manifest without touching audio), [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md) (strata along a gradient), [`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md), [`pack_clips()`](https://provetelab.org/sheepdog/reference/pack_clips.md) |
-| 1\. Review app | [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md) (local ‘shiny’ app: draw and cut the clips, review them with spectrogram, player and keyboard verdicts written to a CSV, and export the occupancy tables), [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md) |
+| 1\. Selecting and cutting clips | [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md), [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md) (every recording made, with or without predictions), [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md) (a pure function that returns the clip manifest without touching audio), [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md) (strata along a gradient), [`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md), [`pack_clips()`](https://provetelab.org/sheepdog/reference/pack_clips.md) |
+| 1\. Review app | [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md) (local ‘shiny’ app: choose the folders and see the recordings per site and night, draw and cut the clips, review them with spectrogram, player and keyboard verdicts written to a CSV, and export the occupancy tables), [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md) |
 | 1\. Several reviewers | [`assign_reviewers()`](https://provetelab.org/sheepdog/reference/assign_reviewers.md), [`split_by_reviewer()`](https://provetelab.org/sheepdog/reference/split_by_reviewer.md), [`reviewer_agreement()`](https://provetelab.org/sheepdog/reference/reviewer_agreement.md) (Cohen’s or Fleiss’ kappa), [`consensus_verdicts()`](https://provetelab.org/sheepdog/reference/consensus_verdicts.md) |
-| 1\. After the review | [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md), [`precision_by_bin()`](https://provetelab.org/sheepdog/reference/precision_by_bin.md), [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md), [`nightly_presence()`](https://provetelab.org/sheepdog/reference/nightly_presence.md), [`retraining_clips()`](https://provetelab.org/sheepdog/reference/retraining_clips.md), [`read_validation_tables()`](https://provetelab.org/sheepdog/reference/read_validation_tables.md), [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md) (cells, or bins, that still need review) |
-| 1\. Retraining | [`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md) (training folders for BirdNET-Analyzer), [`exclude_training_clips()`](https://provetelab.org/sheepdog/reference/exclude_training_clips.md) |
-| 2\. Calibration | [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md), [`calibration_models()`](https://provetelab.org/sheepdog/reference/calibration_models.md), [`calibration_folds()`](https://provetelab.org/sheepdog/reference/calibration_folds.md), [`compare_calibration_models()`](https://provetelab.org/sheepdog/reference/compare_calibration_models.md), [`select_calibration_model()`](https://provetelab.org/sheepdog/reference/select_calibration_model.md), [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md), [`calibration_effort()`](https://provetelab.org/sheepdog/reference/calibration_effort.md), [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md), [`detection_history()`](https://provetelab.org/sheepdog/reference/detection_history.md), [`summarise_history()`](https://provetelab.org/sheepdog/reference/summarise_history.md) |
+| 1\. After the review | [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md), [`precision_by_bin()`](https://provetelab.org/sheepdog/reference/precision_by_bin.md), [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md), [`plot_precision()`](https://provetelab.org/sheepdog/reference/plot_precision.md), [`nightly_presence()`](https://provetelab.org/sheepdog/reference/nightly_presence.md), [`retraining_clips()`](https://provetelab.org/sheepdog/reference/retraining_clips.md), [`read_validation_tables()`](https://provetelab.org/sheepdog/reference/read_validation_tables.md), [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md) (cells, or bins, that still need review) |
+| 1\. Retraining | [`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md) (training folders for BirdNET-Analyzer), [`exclude_training_clips()`](https://provetelab.org/sheepdog/reference/exclude_training_clips.md), [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md) |
+| 2\. Calibration | [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md), [`calibration_models()`](https://provetelab.org/sheepdog/reference/calibration_models.md), [`calibration_folds()`](https://provetelab.org/sheepdog/reference/calibration_folds.md), [`compare_calibration_models()`](https://provetelab.org/sheepdog/reference/compare_calibration_models.md), [`select_calibration_model()`](https://provetelab.org/sheepdog/reference/select_calibration_model.md), [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md), [`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md) (a threshold per site x species from the model), [`calibration_effort()`](https://provetelab.org/sheepdog/reference/calibration_effort.md), [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md), [`detection_history()`](https://provetelab.org/sheepdog/reference/detection_history.md), [`summarise_history()`](https://provetelab.org/sheepdog/reference/summarise_history.md) |
 | 2\. Bayesian calibration | [`calibration_prior()`](https://provetelab.org/sheepdog/reference/calibration_prior.md), [`prior_predictive_calibration()`](https://provetelab.org/sheepdog/reference/prior_predictive_calibration.md), [`calibration_diagnostics()`](https://provetelab.org/sheepdog/reference/calibration_diagnostics.md), [`calibration_ppc()`](https://provetelab.org/sheepdog/reference/calibration_ppc.md), [`plot_calibration_ppc()`](https://provetelab.org/sheepdog/reference/plot_calibration_ppc.md), [`calibration_sensitivity()`](https://provetelab.org/sheepdog/reference/calibration_sensitivity.md), [`plot_calibration_draws()`](https://provetelab.org/sheepdog/reference/plot_calibration_draws.md), [`history_draws()`](https://provetelab.org/sheepdog/reference/history_draws.md) |
 | Occupancy data | [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md) (schema `sheepdog-occupancy`), [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md) (one detection data set per posterior draw) |
 | 3\. Community matrices | [`cell_status()`](https://provetelab.org/sheepdog/reference/cell_status.md), [`suggest_core_species()`](https://provetelab.org/sheepdog/reference/suggest_core_species.md), [`community_matrices()`](https://provetelab.org/sheepdog/reference/community_matrices.md), [`community_matrices_draws()`](https://provetelab.org/sheepdog/reference/community_matrices_draws.md) |
@@ -162,7 +168,9 @@ shows the complete workflow.
 The selection tables must have the standard BirdNET/Raven columns
 `Begin Time (s)`, `End Time (s)`, `Species Code`, `Confidence`,
 `Begin Path` and `File Offset (s)`, and the recordings must be named
-`..._YYYYMMDD_HHMMSS`.
+`..._YYYYMMDD_HHMMSS`. The site is the name of the folder; when the
+files of several sites share a folder, `site_pattern` reads it from the
+file name.
 
 ## Sampling designs
 
@@ -193,9 +201,12 @@ extract_validation_clips()](reference/figures/extraction_flow.png)
 The first stage, extract_validation_clips()
 
 The manifest records `occasion_id`, `n_detections_occasion` and
-`inclusion_prob` (the probability that the occasion was drawn). Every
-draw uses a fixed seed, so a rerun selects the same clips, and the cut
-is idempotent: an interrupted run resumes where it stopped.
+`inclusion_prob` (the probability that the occasion was drawn), with
+which
+[`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md)
+also reports the precision weighted by `1 / inclusion_prob`. Every draw
+uses a fixed seed, so a rerun selects the same clips, and the cut is
+idempotent: an interrupted run resumes where it stopped.
 
 ## Calibration
 

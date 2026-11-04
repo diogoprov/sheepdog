@@ -95,7 +95,7 @@
 <p>In the fable, the boy cries “wolf!” and the villagers have to decide whether the wolf is real. <strong>sheepdog</strong> does that check for automated predictions from <a href="https://github.com/birdnet-team/BirdNET-Analyzer" class="external-link">BirdNET</a> pretrained and custom classifiers in passive acoustic monitoring (PAM). It runs three stages:</p>
 <ol style="list-style-type: decimal">
 <li>
-<strong>Validation data.</strong> Build clip sets for manual review from the output BirdNET selection tables: top-score, random-occasion or random-recording designs, one folder per species, ready for the review tab of the BirdNET GUI. The random draws can be stratified along an environmental gradient. Then summarise the reviewed clips: precision by confidence bin, suggested thresholds, confirmed presence by night, clips for retraining and the cells that still need review.</li>
+<strong>Validation data.</strong> Build clip sets for manual review from the BirdNET selection tables: top-score, random-occasion or random-recording designs, one folder per species, ready for the review tab of the BirdNET GUI or for the review app of the package (<code><a href="reference/run_app.html">run_app()</a></code>). The random draws can be stratified along an environmental gradient. Then summarise the reviewed clips: precision by confidence bin, suggested thresholds, confirmed presence by night, clips for retraining and the cells that still need review.</li>
 <li>
 <strong>Calibration.</strong> Turn confidence scores into probabilities of true detection with hierarchical logistic models (species and site x species effects, compared by cross-validation), fitted with ‘lme4’ or, in a Bayesian framework, with ‘brms’. Score every detection and build nightly detection histories.</li>
 <li>
@@ -155,6 +155,11 @@
 <span>                manifest_path <span class="op">=</span> <span class="st">"N:/Arara/validation/clip_manifest.csv"</span>,</span>
 <span>                output_dir    <span class="op">=</span> <span class="st">"N:/Arara/validation/results"</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># or after the review in the app, run_app()</span></span>
+<span><span class="fu"><a href="reference/post_validation.html">post_validation</a></span><span class="op">(</span>manifest_path <span class="op">=</span> <span class="st">"N:/Arara/validation/clip_manifest.csv"</span>,</span>
+<span>                output_dir    <span class="op">=</span> <span class="st">"N:/Arara/validation/results"</span>,</span>
+<span>                verdicts_file <span class="op">=</span> <span class="st">"N:/Arara/validation/verdicts.csv"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="co"># 2. Calibration and nightly detection histories</span></span>
 <span><span class="fu"><a href="reference/calibrate.html">calibrate</a></span><span class="op">(</span>validation_files  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"UEM/validation_by_clip.csv"</span>,</span>
 <span>                                <span class="st">"ARA/validation_by_clip.csv"</span><span class="op">)</span>,</span>
@@ -180,13 +185,13 @@
 <tr>
 <td>1. Selecting and cutting clips</td>
 <td>
-<code><a href="reference/read_selection_tables.html">read_selection_tables()</a></code>, <code><a href="reference/select_clips.html">select_clips()</a></code> (a pure function that returns the clip manifest without touching audio), <code><a href="reference/covariate_bins.html">covariate_bins()</a></code> (strata along a gradient), <code><a href="reference/cut_clips.html">cut_clips()</a></code>, <code><a href="reference/pack_clips.html">pack_clips()</a></code>
+<code><a href="reference/read_selection_tables.html">read_selection_tables()</a></code>, <code><a href="reference/list_recordings.html">list_recordings()</a></code> (every recording made, with or without predictions), <code><a href="reference/select_clips.html">select_clips()</a></code> (a pure function that returns the clip manifest without touching audio), <code><a href="reference/covariate_bins.html">covariate_bins()</a></code> (strata along a gradient), <code><a href="reference/cut_clips.html">cut_clips()</a></code>, <code><a href="reference/pack_clips.html">pack_clips()</a></code>
 </td>
 </tr>
 <tr>
 <td>1. Review app</td>
 <td>
-<code><a href="reference/run_app.html">run_app()</a></code> (local ‘shiny’ app: draw and cut the clips, review them with spectrogram, player and keyboard verdicts written to a CSV, and export the occupancy tables), <code><a href="reference/app_verdicts.html">app_verdicts()</a></code>
+<code><a href="reference/run_app.html">run_app()</a></code> (local ‘shiny’ app: choose the folders and see the recordings per site and night, draw and cut the clips, review them with spectrogram, player and keyboard verdicts written to a CSV, and export the occupancy tables), <code><a href="reference/app_verdicts.html">app_verdicts()</a></code>
 </td>
 </tr>
 <tr>
@@ -198,18 +203,18 @@
 <tr>
 <td>1. After the review</td>
 <td>
-<code><a href="reference/classify_review.html">classify_review()</a></code>, <code><a href="reference/precision_by_bin.html">precision_by_bin()</a></code>, <code><a href="reference/suggest_thresholds.html">suggest_thresholds()</a></code>, <code><a href="reference/nightly_presence.html">nightly_presence()</a></code>, <code><a href="reference/retraining_clips.html">retraining_clips()</a></code>, <code><a href="reference/read_validation_tables.html">read_validation_tables()</a></code>, <code><a href="reference/review_support.html">review_support()</a></code> (cells, or bins, that still need review)</td>
+<code><a href="reference/classify_review.html">classify_review()</a></code>, <code><a href="reference/precision_by_bin.html">precision_by_bin()</a></code>, <code><a href="reference/suggest_thresholds.html">suggest_thresholds()</a></code>, <code><a href="reference/plot_precision.html">plot_precision()</a></code>, <code><a href="reference/nightly_presence.html">nightly_presence()</a></code>, <code><a href="reference/retraining_clips.html">retraining_clips()</a></code>, <code><a href="reference/read_validation_tables.html">read_validation_tables()</a></code>, <code><a href="reference/review_support.html">review_support()</a></code> (cells, or bins, that still need review)</td>
 </tr>
 <tr>
 <td>1. Retraining</td>
 <td>
-<code><a href="reference/build_training_set.html">build_training_set()</a></code> (training folders for BirdNET-Analyzer), <code><a href="reference/exclude_training_clips.html">exclude_training_clips()</a></code>
+<code><a href="reference/build_training_set.html">build_training_set()</a></code> (training folders for BirdNET-Analyzer), <code><a href="reference/exclude_training_clips.html">exclude_training_clips()</a></code>, <code><a href="reference/training_nights.html">training_nights()</a></code>
 </td>
 </tr>
 <tr>
 <td>2. Calibration</td>
 <td>
-<code><a href="reference/read_validations.html">read_validations()</a></code>, <code><a href="reference/calibration_models.html">calibration_models()</a></code>, <code><a href="reference/calibration_folds.html">calibration_folds()</a></code>, <code><a href="reference/compare_calibration_models.html">compare_calibration_models()</a></code>, <code><a href="reference/select_calibration_model.html">select_calibration_model()</a></code>, <code><a href="reference/fit_calibration.html">fit_calibration()</a></code>, <code><a href="reference/calibration_effort.html">calibration_effort()</a></code>, <code><a href="reference/score_detections.html">score_detections()</a></code>, <code><a href="reference/detection_history.html">detection_history()</a></code>, <code><a href="reference/summarise_history.html">summarise_history()</a></code>
+<code><a href="reference/read_validations.html">read_validations()</a></code>, <code><a href="reference/calibration_models.html">calibration_models()</a></code>, <code><a href="reference/calibration_folds.html">calibration_folds()</a></code>, <code><a href="reference/compare_calibration_models.html">compare_calibration_models()</a></code>, <code><a href="reference/select_calibration_model.html">select_calibration_model()</a></code>, <code><a href="reference/fit_calibration.html">fit_calibration()</a></code>, <code><a href="reference/calibrated_thresholds.html">calibrated_thresholds()</a></code> (a threshold per site x species from the model), <code><a href="reference/calibration_effort.html">calibration_effort()</a></code>, <code><a href="reference/score_detections.html">score_detections()</a></code>, <code><a href="reference/detection_history.html">detection_history()</a></code>, <code><a href="reference/summarise_history.html">summarise_history()</a></code>
 </td>
 </tr>
 <tr>
@@ -232,7 +237,7 @@
 </tbody>
 </table>
 <p>The <a href="https://provetelab.org/sheepdog/articles/">articles</a> cover each stage with runnable examples; <code><a href="articles/frognet-workflow.html">vignette("frognet-workflow")</a></code> shows the complete workflow.</p>
-<p>The selection tables must have the standard BirdNET/Raven columns <code>Begin Time (s)</code>, <code>End Time (s)</code>, <code>Species Code</code>, <code>Confidence</code>, <code>Begin Path</code> and <code>File Offset (s)</code>, and the recordings must be named <code>..._YYYYMMDD_HHMMSS</code>.</p>
+<p>The selection tables must have the standard BirdNET/Raven columns <code>Begin Time (s)</code>, <code>End Time (s)</code>, <code>Species Code</code>, <code>Confidence</code>, <code>Begin Path</code> and <code>File Offset (s)</code>, and the recordings must be named <code>..._YYYYMMDD_HHMMSS</code>. The site is the name of the folder; when the files of several sites share a folder, <code>site_pattern</code> reads it from the file name.</p>
 </div>
 <div class="section level2">
 <h2 id="sampling-designs">Sampling designs<a class="anchor" aria-label="anchor" href="#sampling-designs"></a>
@@ -249,7 +254,7 @@
 <div class="float">
 <img src="reference/figures/extraction_flow.png" alt="The first stage, extract_validation_clips()"><div class="figcaption">The first stage, extract_validation_clips()</div>
 </div>
-<p>The manifest records <code>occasion_id</code>, <code>n_detections_occasion</code> and <code>inclusion_prob</code> (the probability that the occasion was drawn). Every draw uses a fixed seed, so a rerun selects the same clips, and the cut is idempotent: an interrupted run resumes where it stopped.</p>
+<p>The manifest records <code>occasion_id</code>, <code>n_detections_occasion</code> and <code>inclusion_prob</code> (the probability that the occasion was drawn), with which <code><a href="reference/post_validation.html">post_validation()</a></code> also reports the precision weighted by <code>1 / inclusion_prob</code>. Every draw uses a fixed seed, so a rerun selects the same clips, and the cut is idempotent: an interrupted run resumes where it stopped.</p>
 </div>
 <div class="section level2">
 <h2 id="calibration">Calibration<a class="anchor" aria-label="anchor" href="#calibration"></a>
