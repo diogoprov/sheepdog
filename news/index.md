@@ -30,6 +30,26 @@
   audio. The clip number is shown above the spectrogram, and space now
   plays or pauses the clip (the right arrow moves to the next one).
 
+- New argument `site_pattern` of
+  [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md),
+  [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md),
+  [`extract_validation_clips()`](https://provetelab.org/sheepdog/reference/extract_validation_clips.md)
+  and
+  [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md)
+  (also a field of the Audio panel): a regular expression with one
+  capture group that takes the site from the file name, for recordings
+  or tables of several sites in one folder.
+
+- [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md):
+  the moved-recording check of the Sampling tab reuses the list of the
+  audio folder made by the Audio panel instead of scanning the folder
+  again at each draw, and the folder dialog also works on Linux (through
+  ‘tcltk’, when there is a display).
+
+- The review-app article describes the Intro tab, the Audio panel and
+  its recording summary, `site_pattern` and the spectrogram controls,
+  and gives the new default of `max_freq` (12 kHz).
+
 - [`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md)
   reads the verdicts of the review app: with `verdicts_file` (and
   optionally `reviewer`) it takes the verdicts from

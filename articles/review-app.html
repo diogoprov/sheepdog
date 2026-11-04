@@ -142,8 +142,58 @@ written by <code><a href="../reference/extract_validation_clips.html">extract_va
 unless <code>verdicts_file</code> says otherwise. The name in
 <code>reviewer</code> is written with each verdict.
 <code>max_freq</code> limits the spectrogram to the band of the calls,
-in kHz (8 kHz covers most anuran calls); by default it shows the whole
-band of the recording.</p>
+in kHz: 12 kHz by default (8 kHz covers most anuran calls), and
+<code>NULL</code> shows the whole band of the recording. It can also be
+changed in the Review tab.</p>
+<p><code><a href="../reference/run_app.html">run_app()</a></code> can also be called with no arguments, and the
+folders chosen in the app (next section). When it was given folders, the
+app opens by asking whether they are still right: <em>Keep them</em>, or
+<em>Change them</em> in the Audio panel.</p>
+</div>
+<div class="section level2">
+<h2 id="the-intro-tab-and-the-audio-panel">The Intro tab and the Audio panel<a class="anchor" aria-label="anchor" href="#the-intro-tab-and-the-audio-panel"></a>
+</h2>
+<p>The Intro tab has two pages, on the left. <em>Graphical abstract</em>
+is the figure of the sampling designs. <em>Audio panel</em> holds the
+folders of the round, each with a <em>Browse…</em> button that opens the
+folder dialog of the system (RStudio, macOS, Windows, or Linux with a
+display):</p>
+<ul>
+<li>
+<strong>Audio folder</strong> (<code>audio_dir</code> in
+<code><a href="../reference/run_app.html">run_app()</a></code>): the folder of the recordings, subfolders
+included. Every recording is listed with <code><a href="../reference/list_recordings.html">list_recordings()</a></code>
+and written to <code>recordings.csv</code>, in the validation folder or
+in the <code>recordings</code> CSV given to <code><a href="../reference/run_app.html">run_app()</a></code>.</li>
+<li>
+<strong>BirdNET results</strong> (<code>selection_dir</code>): the
+folder of the selection tables.</li>
+<li>
+<strong>Validation folder</strong> (<code>output_dir</code>): where
+the clips, the manifest, the verdicts and the export are written. It is
+created if missing.</li>
+<li>
+<strong>Site from the file name</strong>
+(<code>site_pattern</code>): optional. The site is normally the name of
+the folder of each site. When the recordings or the tables of several
+sites share one folder, give a regular expression with the site in
+parentheses: <code>^[^_]+_([^_]+)_</code> reads <code>Campus01</code>
+from <code>Campinas_Campus01_20261003_074339.flac</code>.</li>
+</ul>
+<p><em>Apply and reload</em> checks the folders, reads them and reloads
+the app; on an error, the previous folders are kept. The <em>Loaded</em>
+box shows the number of predictions and recordings, the clip manifest
+and the clips to review. The Sampling and Export tabs ask for the
+BirdNET results and the validation folder until both are set.</p>
+<p>Below the folders, a grid shows the recordings per site (columns) and
+day (rows). The size of each square is the number of recordings that
+day, and its colour the share of the hours recorded that day with at
+least one prediction, at any score. Hovering over a square shows the
+recordings, the hours and the number of predictions. The
+<em>Species</em> box limits the colour and the counts to the chosen
+species. Without the audio folder, only the recordings with predictions
+are counted, and the panel says so. The grid shows at a glance the days
+a recorder stopped and the sites or days with few predictions.</p>
 <div class="float">
 <img src="app-figures/review-app.jpg" alt="The app with a clip of Leptodactylus fuscus."><div class="figcaption">The app with a clip of <em>Leptodactylus
 fuscus</em>.</div>
@@ -192,9 +242,25 @@ the verdicts already given refer to its clips.</p>
 </h2>
 <p>On the left, the species filter and the option <em>Only clips not yet
 reviewed</em> choose the clips in the queue, and a counter shows how
-many have been reviewed. On the right, the spectrogram (time in seconds,
-frequency in kHz, louder sounds darker), the player, which starts each
-clip on its own, and the buttons:</p>
+many have been reviewed. On the right, above the spectrogram, the
+position in the queue (for example, <em>Clip 2 of 945 | 1 of 945 clips
+reviewed</em>) and the controls of the spectrogram:</p>
+<ul>
+<li>
+<strong>Palette</strong>: Gray (louder sounds darker), Viridis,
+Inferno, Mako or Heat;</li>
+<li>
+<strong>FFT window</strong>: 256 to 2048 samples, with 90% overlap.
+Larger windows sharpen the frequency and blur the time;</li>
+<li>
+<strong>Max. kHz</strong>: the top of the plot (12 kHz by default);
+empty shows the whole band;</li>
+<li>
+<strong>Brightness</strong> and <strong>Contrast</strong>.</li>
+</ul>
+<p>Below, the spectrogram (time in seconds, frequency in kHz), with a
+dashed line that follows the audio while it plays, the player, which
+starts each clip on its own, and the buttons:</p>
 <table class="table">
 <colgroup>
 <col width="33%">

@@ -135,6 +135,15 @@ folder that holds the tables (the prefix <code>output_</code> is
 dropped). Both the combined table and the per-audio tables of the
 BirdNET GUI are read.</li>
 <li>
+<strong>Several sites in one folder.</strong> When the recordings or
+the tables of several sites sit in the same folder, give
+<code>site_pattern</code>, a regular expression with the site in
+parentheses, to <code><a href="../reference/list_recordings.html">list_recordings()</a></code>,
+<code><a href="../reference/read_selection_tables.html">read_selection_tables()</a></code> and <code><a href="../reference/run_app.html">run_app()</a></code>:
+<code>"^[^_]+_([^_]+)_"</code> reads <code>Campus01</code> from
+<code>Campinas_Campus01_20261003_074339.flac</code>. The site then comes
+from the file name instead of the folder.</li>
+<li>
 <strong>sheepdog outputs.</strong> Clips, manifests, verdicts and
 calibration outputs go to a separate folder, so that a rerun never
 touches the audio or the BirdNET output.</li>
@@ -201,9 +210,9 @@ audio folders instead. Here on a small simulated tree:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 2</span></span></span>
 <span><span class="co">#&gt;   site  source_audio                                             </span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ARA   /tmp/RtmpzT01wG/audio/ARA/ARA01_20211001_190000.wav      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ARA   /tmp/RtmpzT01wG/audio/ARA/ARA01_20211001_200000.wav      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> BAI   /tmp/RtmpzT01wG/audio/BAI/card1/BAI01_20211001_190000.wav</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ARA   /tmp/RtmpSU1f4Z/audio/ARA/ARA01_20211001_190000.wav      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ARA   /tmp/RtmpSU1f4Z/audio/ARA/ARA01_20211001_200000.wav      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> BAI   /tmp/RtmpSU1f4Z/audio/BAI/card1/BAI01_20211001_190000.wav</span></span></code></pre></div>
 <p>The paths must match <code>Begin Path</code>. When the list is built
 on a computer other than the one that ran BirdNET, rewrite the prefix
 with <code>remap_from</code> and <code>remap_to</code>, and give the

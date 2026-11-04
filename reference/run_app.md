@@ -16,6 +16,7 @@ run_app(
   output_dir = NULL,
   recordings = NULL,
   audio_dir = NULL,
+  site_pattern = NULL,
   classifier = NULL,
   launch.browser = interactive(),
   ...
@@ -86,6 +87,16 @@ run_app(
   and written to the `recordings` CSV when it is a path, or else to
   `<output_dir>/recordings.csv`; the list is used as `recordings`. Can
   also be chosen in the app (Intro \> Audio panel).
+
+- site_pattern:
+
+  Optional regular expression with one capture group that takes the site
+  from the file names, when the recordings or the selection tables of
+  several sites share a folder (see
+  [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md)
+  and
+  [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)).
+  Can also be set in the Audio panel.
 
 - classifier:
 

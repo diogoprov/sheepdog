@@ -35,6 +35,16 @@ folder:
   takes the site from the name of the folder that holds the tables (the
   prefix `output_` is dropped). Both the combined table and the
   per-audio tables of the BirdNET GUI are read.
+- **Several sites in one folder.** When the recordings or the tables of
+  several sites sit in the same folder, give `site_pattern`, a regular
+  expression with the site in parentheses, to
+  [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md),
+  [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)
+  and
+  [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md):
+  `"^[^_]+_([^_]+)_"` reads `Campus01` from
+  `Campinas_Campus01_20261003_074339.flac`. The site then comes from the
+  file name instead of the folder.
 - **sheepdog outputs.** Clips, manifests, verdicts and calibration
   outputs go to a separate folder, so that a rerun never touches the
   audio or the BirdNET output.
@@ -107,9 +117,9 @@ rec
 #> # A tibble: 3 × 2
 #>   site  source_audio                                             
 #>   <chr> <chr>                                                    
-#> 1 ARA   /tmp/RtmpzT01wG/audio/ARA/ARA01_20211001_190000.wav      
-#> 2 ARA   /tmp/RtmpzT01wG/audio/ARA/ARA01_20211001_200000.wav      
-#> 3 BAI   /tmp/RtmpzT01wG/audio/BAI/card1/BAI01_20211001_190000.wav
+#> 1 ARA   /tmp/RtmpSU1f4Z/audio/ARA/ARA01_20211001_190000.wav      
+#> 2 ARA   /tmp/RtmpSU1f4Z/audio/ARA/ARA01_20211001_200000.wav      
+#> 3 BAI   /tmp/RtmpSU1f4Z/audio/BAI/card1/BAI01_20211001_190000.wav
 ```
 
 The paths must match `Begin Path`. When the list is built on a computer

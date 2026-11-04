@@ -83,7 +83,8 @@ output folders is removed, so <code>output_UEM/</code> becomes site <code>UEM</c
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">read_selection_tables</span><span class="op">(</span></span>
 <span>  <span class="va">data_dir</span>,</span>
 <span>  table_pattern <span class="op">=</span> <span class="st">"^BirdNET_SelectionTable\\.txt$"</span>,</span>
-<span>  per_audio_pattern <span class="op">=</span> <span class="st">"\\.BirdNET\\.selection\\.table\\.txt$"</span></span>
+<span>  per_audio_pattern <span class="op">=</span> <span class="st">"\\.BirdNET\\.selection\\.table\\.txt$"</span>,</span>
+<span>  site_pattern <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -103,6 +104,15 @@ tables.</p></dd>
 <dt id="arg-per-audio-pattern">per_audio_pattern<a class="anchor" aria-label="anchor" href="#arg-per-audio-pattern"></a></dt>
 <dd><p>Regular expression for the file names of
 per-audio tables. <code>NULL</code> reads only combined tables.</p></dd>
+
+
+<dt id="arg-site-pattern">site_pattern<a class="anchor" aria-label="anchor" href="#arg-site-pattern"></a></dt>
+<dd><p>Optional regular expression with one capture group
+that takes the site from the name of the audio file in <code>Begin Path</code>,
+instead of from the folder of the table. For example,
+<code>"^[^_]+_([^_]+)_"</code> reads <code>Campus01</code> from
+<code>Campinas_Campus01_20261003_074339.flac</code>. Use the same pattern in
+<code><a href="list_recordings.html">list_recordings()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -128,7 +138,10 @@ the column sheepdog uses to place a detection.</p></li>
 </ul><p>Run BirdNET once per site, so that the tables of each site end up in
 their own folder: per-audio tables in subfolders of a site folder would be
 read as separate sites. A folder that holds a combined table is read from
-it alone, and its per-audio tables are ignored, with a message.</p>
+it alone, and its per-audio tables are ignored, with a message. When the
+tables of several sites share a folder, <code>site_pattern</code> takes the site
+from the name of the audio file of each prediction (<code>Begin Path</code>)
+instead.</p>
 <p>Column names are standardised to lower case without units or punctuation,
 e.g. <code>Begin Time (s)</code> becomes <code>begin_time</code> and <code>File Offset (s)</code> becomes
 <code>file_offset</code>.</p>

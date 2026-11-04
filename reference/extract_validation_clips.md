@@ -14,6 +14,7 @@ extract_validation_clips(
   ...,
   table_pattern = "^BirdNET_SelectionTable\\.txt$",
   per_audio_pattern = "\\.BirdNET\\.selection\\.table\\.txt$",
+  site_pattern = NULL,
   make_zip = TRUE,
   simulate = FALSE,
   classifier = NULL
@@ -45,6 +46,14 @@ extract_validation_clips(
 
   Regular expression for the file names of per-audio tables. `NULL`
   reads only combined tables.
+
+- site_pattern:
+
+  Optional regular expression with one capture group that takes the site
+  from the name of the audio file in `Begin Path`, instead of from the
+  folder of the table. For example, `"^[^_]+_([^_]+)_"` reads `Campus01`
+  from `Campinas_Campus01_20261003_074339.flac`. Use the same pattern in
+  [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md).
 
 - make_zip:
 

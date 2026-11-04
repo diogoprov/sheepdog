@@ -16,6 +16,7 @@ list_recordings(
   audio_dir,
   audio_pattern = "\\.(wav|flac|mp3)$",
   site = NULL,
+  site_pattern = NULL,
   remap_from = NULL,
   remap_to = NULL,
   predictions = NULL,
@@ -37,6 +38,14 @@ list_recordings(
 
   `NULL` (the site is the first folder below `audio_dir`) or a single
   site name for every file.
+
+- site_pattern:
+
+  Optional regular expression with one capture group that takes the site
+  from the file name, for recordings of several sites in the same
+  folder. For example, `"^[^_]+_([^_]+)_"` reads `Campus01` from
+  `Campinas_Campus01_20261003_074339.flac`. It replaces the folder rule
+  and cannot be combined with `site`.
 
 - remap_from, remap_to:
 
@@ -101,7 +110,7 @@ list_recordings(audio)
 #> # A tibble: 3 × 2
 #>   site  source_audio                                       
 #>   <chr> <chr>                                              
-#> 1 ARA   /tmp/RtmpGzXFTp/audio/ARA/ARA01_20211001_190000.wav
-#> 2 ARA   /tmp/RtmpGzXFTp/audio/ARA/ARA01_20211001_200000.wav
-#> 3 BAI   /tmp/RtmpGzXFTp/audio/BAI/BAI01_20211001_190000.wav
+#> 1 ARA   /tmp/Rtmpj15K5s/audio/ARA/ARA01_20211001_190000.wav
+#> 2 ARA   /tmp/Rtmpj15K5s/audio/ARA/ARA01_20211001_200000.wav
+#> 3 BAI   /tmp/Rtmpj15K5s/audio/BAI/BAI01_20211001_190000.wav
 ```

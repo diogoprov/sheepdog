@@ -90,6 +90,7 @@ multiple-method design and the occasions of the occupancy models need.</p>
 <span>  <span class="va">audio_dir</span>,</span>
 <span>  audio_pattern <span class="op">=</span> <span class="st">"\\.(wav|flac|mp3)$"</span>,</span>
 <span>  site <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  site_pattern <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  remap_from <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  remap_to <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  predictions <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -113,6 +114,14 @@ insensitive).</p></dd>
 <dt id="arg-site">site<a class="anchor" aria-label="anchor" href="#arg-site"></a></dt>
 <dd><p><code>NULL</code> (the site is the first folder below <code>audio_dir</code>) or a
 single site name for every file.</p></dd>
+
+
+<dt id="arg-site-pattern">site_pattern<a class="anchor" aria-label="anchor" href="#arg-site-pattern"></a></dt>
+<dd><p>Optional regular expression with one capture group
+that takes the site from the file name, for recordings of several sites
+in the same folder. For example, <code>"^[^_]+_([^_]+)_"</code> reads <code>Campus01</code>
+from <code>Campinas_Campus01_20261003_074339.flac</code>. It replaces the folder
+rule and cannot be combined with <code>site</code>.</p></dd>
 
 
 <dt id="arg-remap-from-remap-to">remap_from, remap_to<a class="anchor" aria-label="anchor" href="#arg-remap-from-remap-to"></a></dt>
@@ -172,9 +181,9 @@ as most recorders write them; the files whose names do not are reported.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 2</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   site  source_audio                                       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> ARA   /tmp/RtmpGzXFTp/audio/ARA/ARA01_20211001_190000.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> ARA   /tmp/RtmpGzXFTp/audio/ARA/ARA01_20211001_200000.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> BAI   /tmp/RtmpGzXFTp/audio/BAI/BAI01_20211001_190000.wav</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> ARA   /tmp/Rtmpj15K5s/audio/ARA/ARA01_20211001_190000.wav</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> ARA   /tmp/Rtmpj15K5s/audio/ARA/ARA01_20211001_200000.wav</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> BAI   /tmp/Rtmpj15K5s/audio/BAI/BAI01_20211001_190000.wav</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

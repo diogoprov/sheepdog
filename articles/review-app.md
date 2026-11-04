@@ -63,8 +63,56 @@ and opens only the Review tab.
 The verdicts go to `verdicts.csv`, next to the manifest, unless
 `verdicts_file` says otherwise. The name in `reviewer` is written with
 each verdict. `max_freq` limits the spectrogram to the band of the
-calls, in kHz (8 kHz covers most anuran calls); by default it shows the
-whole band of the recording.
+calls, in kHz: 12 kHz by default (8 kHz covers most anuran calls), and
+`NULL` shows the whole band of the recording. It can also be changed in
+the Review tab.
+
+[`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md) can
+also be called with no arguments, and the folders chosen in the app
+(next section). When it was given folders, the app opens by asking
+whether they are still right: *Keep them*, or *Change them* in the Audio
+panel.
+
+## The Intro tab and the Audio panel
+
+The Intro tab has two pages, on the left. *Graphical abstract* is the
+figure of the sampling designs. *Audio panel* holds the folders of the
+round, each with a *Browse…* button that opens the folder dialog of the
+system (RStudio, macOS, Windows, or Linux with a display):
+
+- **Audio folder** (`audio_dir` in
+  [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md)):
+  the folder of the recordings, subfolders included. Every recording is
+  listed with
+  [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md)
+  and written to `recordings.csv`, in the validation folder or in the
+  `recordings` CSV given to
+  [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md).
+- **BirdNET results** (`selection_dir`): the folder of the selection
+  tables.
+- **Validation folder** (`output_dir`): where the clips, the manifest,
+  the verdicts and the export are written. It is created if missing.
+- **Site from the file name** (`site_pattern`): optional. The site is
+  normally the name of the folder of each site. When the recordings or
+  the tables of several sites share one folder, give a regular
+  expression with the site in parentheses: `^[^_]+_([^_]+)_` reads
+  `Campus01` from `Campinas_Campus01_20261003_074339.flac`.
+
+*Apply and reload* checks the folders, reads them and reloads the app;
+on an error, the previous folders are kept. The *Loaded* box shows the
+number of predictions and recordings, the clip manifest and the clips to
+review. The Sampling and Export tabs ask for the BirdNET results and the
+validation folder until both are set.
+
+Below the folders, a grid shows the recordings per site (columns) and
+day (rows). The size of each square is the number of recordings that
+day, and its colour the share of the hours recorded that day with at
+least one prediction, at any score. Hovering over a square shows the
+recordings, the hours and the number of predictions. The *Species* box
+limits the colour and the counts to the chosen species. Without the
+audio folder, only the recordings with predictions are counted, and the
+panel says so. The grid shows at a glance the days a recorder stopped
+and the sites or days with few predictions.
 
 ![The app with a clip of Leptodactylus
 fuscus.](app-figures/review-app.jpg)
@@ -117,9 +165,21 @@ verdicts already given refer to its clips.
 
 On the left, the species filter and the option *Only clips not yet
 reviewed* choose the clips in the queue, and a counter shows how many
-have been reviewed. On the right, the spectrogram (time in seconds,
-frequency in kHz, louder sounds darker), the player, which starts each
-clip on its own, and the buttons:
+have been reviewed. On the right, above the spectrogram, the position in
+the queue (for example, *Clip 2 of 945 \| 1 of 945 clips reviewed*) and
+the controls of the spectrogram:
+
+- **Palette**: Gray (louder sounds darker), Viridis, Inferno, Mako or
+  Heat;
+- **FFT window**: 256 to 2048 samples, with 90% overlap. Larger windows
+  sharpen the frequency and blur the time;
+- **Max. kHz**: the top of the plot (12 kHz by default); empty shows the
+  whole band;
+- **Brightness** and **Contrast**.
+
+Below, the spectrogram (time in seconds, frequency in kHz), with a
+dashed line that follows the audio while it plays, the player, which
+starts each clip on its own, and the buttons:
 
 | Button         | Key                     | Verdict                          |
 |----------------|-------------------------|----------------------------------|
