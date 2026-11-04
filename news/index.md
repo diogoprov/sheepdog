@@ -2,6 +2,34 @@
 
 ## sheepdog (development version)
 
+- [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md):
+  the app opens on a new Intro tab with a graphical abstract of the
+  sampling designs and an Audio panel, where the audio folder (new
+  `audio_dir` argument, listed into `recordings.csv`), the BirdNET
+  results and the validation folder can be chosen with the system’s
+  folder dialog. Folders given to
+  [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md)
+  are confirmed when the app opens, and
+  [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md)
+  can be called without arguments. The panel shows the recordings per
+  site and day, coloured by the share of hours with predictions of the
+  chosen species, with the number of predictions on hover.
+
+- [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md):
+  every field has a short help note; the threshold is marked
+  “(required)” for `"random_detections"`. After each draw the Sampling
+  tab checks that the recordings exist and, with *Audio folder*, finds
+  moved recordings by file name and offers to use them. A cut that finds
+  no audio says so, and a manifest without cut clips no longer stops the
+  app from opening.
+
+- [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md),
+  Review tab: the spectrogram has a palette, the FFT window, the maximum
+  frequency (12 kHz by default, also `max_freq`), brightness and
+  contrast above it, uses 90% overlap, and a dashed line follows the
+  audio. The clip number is shown above the spectrogram, and space now
+  plays or pauses the clip (the right arrow moves to the next one).
+
 - [`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md)
   reads the verdicts of the review app: with `verdicts_file` (and
   optionally `reviewer`) it takes the verdicts from
@@ -11,6 +39,7 @@
   [`consensus_verdicts()`](https://provetelab.org/sheepdog/reference/consensus_verdicts.md)
   and writes the same outputs. `review_dir` is then optional and only
   fills `reviewed_path`.
+
 - [`precision_by_bin()`](https://provetelab.org/sheepdog/reference/precision_by_bin.md)
   adds `precision_weighted` and
   [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
@@ -20,9 +49,11 @@
   predictions rather than among the reviewed clips. The thresholds are
   still chosen from the unweighted precision, and tables without
   `inclusion_prob` are unchanged.
+
 - [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md)
   reports how many clips a reviewer marked more than once and how many
   of them changed verdict (the last verdict counts).
+
 - New
   [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md):
   builds the list of all recordings (`site`, `source_audio`) from the
@@ -37,9 +68,11 @@
   that the audio files of the predictions are in the list. It can write
   `recordings.csv`
   ([\#81](https://github.com/diogoprov/sheepdog/issues/81)).
+
 - New article, “Organising the data”: the folder layout sheepdog
   expects, file names, the paths written by BirdNET and the list of
   recordings.
+
 - New
   [`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md):
   confidence thresholds per site and species from the calibration model
@@ -58,15 +91,18 @@
   [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md)
   and
   [`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md).
+
 - [`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md)
   writes `thresholds.csv` and returns `thresholds`: the
   [`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md)
   of each site x species with `rule = "probability"` and
   `target = p_min`, the score equivalent of the cut on P(TP) used for
   the detection histories.
+
 - The sampling-designs vignette opens with a figure that matches each
   design to the question it answers, and the calibration vignette has a
   guide to choosing a confidence threshold.
+
 - [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)
   also reads the per-audio selection tables that the BirdNET GUI writes
   by default (`<audio>.BirdNET.selection.table.txt`, new argument
@@ -82,11 +118,13 @@
   accept them too: in `tables` and `prediction_tables`, give the folder
   of a site instead of the path of its combined table. The vignettes say
   where each format comes from.
+
 - `export_occupancy_data(species = )` now filters by the species asked
   for. The argument was masked by the `species` column of the
   predictions, so any value left no prediction and stopped the export.
   [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
   uses the same filter and is protected the same way.
+
 - [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
   gains `min_verified` (default 10) and warns about species with
   predictions but fewer reviewed detection clips, or without any
@@ -95,6 +133,7 @@
   `dev/verification-by-species/` shows that no sampling design of
   [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
   gives a truly rare species enough reviewed clips.
+
 - New fixture of the data contract,
   `tests/testthat/fixtures/export-1.3-ms` (built by
   `data-raw/make_export_fixture_ms.R`), shared with crywolf for its
@@ -104,9 +143,13 @@
   contract tests check that every table and the occasion versions keep
   their keys by species, and that crywolf reads each species with the
   versions of the export.
+
 - `dev/roadmap-integration.md`: CRAN submissions of sheepdog 3.3.2 and
-  crywolf 2.1.0, and steps 5 to 7 of `crywolf::fp_occu_dyn()`.
-- `dev/roadmap-integration.md`: step 8 of `crywolf::fp_occu_dyn()`
+  crywolf 2.1.0, and steps 5 to 7 of
+  [`crywolf::fp_occu_dyn()`](https://provetelab.org/crywolf/reference/fp_occu_dyn.html).
+
+- `dev/roadmap-integration.md`: step 8 of
+  [`crywolf::fp_occu_dyn()`](https://provetelab.org/crywolf/reference/fp_occu_dyn.html)
   (blocked cross-validation on the Curiango data) and the multi-species
   model (phase 5) moved ahead of phase 2, with the sheepdog side of it:
   a multi-species fixture of the data contract and a check of

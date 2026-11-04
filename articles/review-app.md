@@ -26,7 +26,9 @@ install.packages(c("shiny", "av"))
 For a whole validation round, give
 [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md) the
 folder of the BirdNET selection tables and the folder of the round. The
-app opens on the Sampling tab, followed by the Review and Export tabs:
+app opens on the Intro tab, a figure of what each sampling mode,
+occasion and stratum picks, followed by the Sampling, Review and Export
+tabs:
 
 ``` r
 
@@ -81,6 +83,14 @@ or a maximum per site and species, the minimum score, filters by site,
 species and hour, the seed, and the remapping of the audio paths when
 the recordings moved since BirdNET read them.
 
+After each draw, the app checks that the recordings of the drawn clips
+exist. When some are missing and *Audio folder* names the folder where
+the recordings are now (subfolders included), the app looks for them
+there by file name and asks whether to use the files it found. If you
+accept, the manifest keeps the BirdNET path in `begin_path` and the new
+one in `source_audio`, and `extraction_info.csv` records the audio
+folder.
+
 *Draw* runs
 [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
 without touching the audio and shows the number of clips per site and
@@ -111,12 +121,13 @@ have been reviewed. On the right, the spectrogram (time in seconds,
 frequency in kHz, louder sounds darker), the player, which starts each
 clip on its own, and the buttons:
 
-| Button | Key | Verdict |
-|----|----|----|
-| Positive | `p` | the species is heard in the clip |
-| Negative | `n` | it is not |
-| Uncertain | `u` | the reviewer cannot tell |
-| Next, Previous | right arrow or space, left arrow | none: moves through the queue |
+| Button         | Key                     | Verdict                          |
+|----------------|-------------------------|----------------------------------|
+| Positive       | `p`                     | the species is heard in the clip |
+| Negative       | `n`                     | it is not                        |
+| Uncertain      | `u`                     | the reviewer cannot tell         |
+| Next, Previous | right arrow, left arrow | none: moves through the queue    |
+| Play, pause    | space                   | none: plays or pauses the clip   |
 
 After a verdict, the app moves to the next clip. A clip can be reviewed
 again by going back to it (untick *Only clips not yet reviewed* to see

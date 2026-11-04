@@ -11,10 +11,11 @@ run_app(
   clips_dir = NULL,
   verdicts_file = NULL,
   reviewer = NULL,
-  max_freq = NULL,
+  max_freq = 12,
   selection_dir = NULL,
   output_dir = NULL,
   recordings = NULL,
+  audio_dir = NULL,
   classifier = NULL,
   launch.browser = interactive(),
   ...
@@ -54,8 +55,9 @@ run_app(
 
 - max_freq:
 
-  Optional upper limit of the spectrogram, in kHz (e.g. `8` for most
-  anuran calls). The whole band by default.
+  Upper limit of the spectrogram, in kHz: 12 by default (e.g. `8` for
+  most anuran calls). `NULL` shows the whole band. It can also be
+  changed in the Review tab.
 
 - selection_dir:
 
@@ -75,6 +77,15 @@ run_app(
   or the path to its CSV: needed by `"random_recordings"` and, in the
   export, to keep the occasions without detections (see
   [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)).
+
+- audio_dir:
+
+  Optional folder of the recordings, subfolders included. Every
+  recording is listed with
+  [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md)
+  and written to the `recordings` CSV when it is a path, or else to
+  `<output_dir>/recordings.csv`; the list is used as `recordings`. Can
+  also be chosen in the app (Intro \> Audio panel).
 
 - classifier:
 
@@ -97,6 +108,12 @@ run_app(
 Called for its side effect; returns when the app is closed.
 
 ## Details
+
+- **Intro**: a graphical abstract of the sampling designs and an Audio
+  panel to choose the audio folder, the BirdNET results and the
+  validation folder (with a dialog of the system), with a summary of the
+  recordings per site and day. Folders given to `run_app()` are
+  confirmed when the app opens. Without them, the app opens on this tab.
 
 - **Sampling** (with `selection_dir` and `output_dir`): a form for the
   sampling design of
@@ -138,7 +155,7 @@ nothing is uploaded.
 ## Keyboard
 
 In the Review tab: `p` positive, `n` negative, `u` uncertain, right
-arrow or space next clip, left arrow previous clip.
+arrow next clip, left arrow previous clip, space play or pause.
 
 ## Verdicts file
 
