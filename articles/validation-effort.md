@@ -105,7 +105,7 @@ select(cv, model, auc_mean, auc_sd)
 #> 2 m3_plus_site            0.928 0.00640
 #> 3 m2_species_slope        0.916 0.00556
 #> 4 m1_species_intercept    0.902 0.00544
-#> 5 m0_global               0.862 0.0121
+#> 5 m0_global               0.862 0.0120
 ```
 
 The effort curve below is drawn for the global model (`m0_global`, a
