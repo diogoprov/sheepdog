@@ -145,7 +145,7 @@ cv |> select(model, auc_mean, auc_sd, n_failed)
 #> 2 m3_plus_site            0.928 0.00640        0
 #> 3 m2_species_slope        0.916 0.00556        0
 #> 4 m1_species_intercept    0.902 0.00544        0
-#> 5 m0_global               0.862 0.0120         0
+#> 5 m0_global               0.862 0.0121         0
 ```
 
 The table is ordered by mean AUC. Read the differences between models
@@ -771,6 +771,8 @@ Before using calibrated probabilities, check that:
     estimates how many clips per site x species are needed for a stable
     AUC.
 
+4.  **The probabilities hold for each species.** See the next section.
+
 The calibration also assumes that, within a score level, the reviewed
 clips are representative of all the detections of that species at that
 site. The model is conditional on the score, so the `"top"` design,
@@ -779,6 +781,59 @@ It fails if the clips were chosen by another criterion related to
 correctness (for example, only clips that sounded clear, or only the
 nights of peak activity), or if the reviewed period differs from the
 scored one in noise or in species composition.
+
+## Checking the quality of P(TP) by species
+
+The measures above describe a model over all the clips. A logistic
+regression can still fit poorly for one species, and the mean AUC does
+not show it: the AUC rises when species differ in precision, and partial
+pooling lends a species with an uninformative score the curve of the
+others.
+[`calibration_quality()`](https://provetelab.org/sheepdog/reference/calibration_quality.md)
+refits one model by cross-validation and scores the held-out predictions
+within each group. It compares the model with a null model, the share of
+true positives of the group in the training folds (`logloss_gain`),
+reports the AUC of the probabilities (`auc`) and of the raw score
+(`auc_score`) within the group, and the calibration intercept and slope.
+[`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md)
+writes this table to `calibration_quality.csv`.
+
+``` r
+
+quality <- calibration_quality(val, models$m4_species_x_site)
+quality |>
+  select(species, n_fp, auc, auc_score, logloss_gain, cal_slope, status) |>
+  mutate(across(where(is.numeric), \(x) round(x, 2)))
+#> # A tibble: 8 × 7
+#>   species  n_fp   auc auc_score logloss_gain cal_slope status
+#>   <fct>   <dbl> <dbl>     <dbl>        <dbl>     <dbl> <chr> 
+#> 1 boa_ran    88  0.98      0.97         0.42      1.01 ok    
+#> 2 den_nan   161  0.85      0.79         0.21      0.95 ok    
+#> 3 ela_bic    34  1         1            0.29      0.92 ok    
+#> 4 lep_fus   151  0.89      0.79         0.29      1.18 ok    
+#> 5 lep_pod    43  0.99      0.99         0.35      1.07 ok    
+#> 6 phy_cuv    32  0.98      0.98         0.25      0.9  ok    
+#> 7 pse_pla   220  0.7       0.54         0.07      0.9  poor  
+#> 8 sci_nas   161  0.8       0.74         0.16      0.93 ok
+```
+
+The mean AUC of this model is 0.942, but the score of `pse_pla` has an
+AUC of 0.54 within the species: its probabilities reach an `auc` of 0.7
+through the site x species intercepts, not through the score. They
+mostly give the precision of each cell, and a threshold on the score
+would separate little. `status` marks such a group as `"poor"`, and
+`reason` says why. `by = c("site", "species")` gives the same table for
+each cell, which holds fewer clips, so more groups come out as
+`"insufficient"` (fewer than `min_class` clips of a verdict).
+
+The limits behind `status` (`auc_min`, `slope_range`, `intercept_max`)
+are screening values, to be set for each project. Discrimination is also
+measured over the scores that were reviewed: the `"top"` design
+concentrates the clips at high scores, and can give a low AUC even with
+a good classifier, so check `conf_min` and `conf_max` before blaming the
+classifier. A group marked `"poor"` needs more clips, ideally from
+`"random_detections"`, a different model, or a decision to leave it out
+of the analyses that use P(TP).
 
 ## One species, or one site
 
@@ -872,9 +927,9 @@ list.files(out_dir)
 #>  [1] "calibrated_detections_ARA.csv" "calibrated_detections_BAI.csv"
 #>  [3] "calibrated_detections_NHE.csv" "calibrated_detections_XAR.csv"
 #>  [5] "calibration_curves.png"        "calibration_model.rds"        
-#>  [7] "calibration_model.txt"         "detection_summary.csv"        
-#>  [9] "model_comparison.csv"          "nightly_detection_history.csv"
-#> [11] "thresholds.csv"
+#>  [7] "calibration_model.txt"         "calibration_quality.csv"      
+#>  [9] "detection_summary.csv"         "model_comparison.csv"         
+#> [11] "nightly_detection_history.csv" "thresholds.csv"
 ```
 
 `nightly_detection_history.csv` is the input of the occupancy and

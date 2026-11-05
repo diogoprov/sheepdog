@@ -185,7 +185,10 @@ calibrate(
 
 ## Value
 
-A list with `comparison`, `fit`, `effort` (or `NULL`), `scored`,
+A list with `comparison`, `quality` (from
+[`calibration_quality()`](https://provetelab.org/sheepdog/reference/calibration_quality.md),
+by species, or by site with one species, also written to
+`calibration_quality.csv`), `fit`, `effort` (or `NULL`), `scored`,
 `thresholds` and `history`, invisibly.
 
 ## Details

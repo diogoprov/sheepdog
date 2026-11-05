@@ -238,7 +238,7 @@ recordings or nights.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> m3_plus_site            0.928 0.006<span style="text-decoration: underline;">40</span>        0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> m2_species_slope        0.916 0.005<span style="text-decoration: underline;">56</span>        0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> m1_species_intercept    0.902 0.005<span style="text-decoration: underline;">44</span>        0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> m0_global               0.862 0.012<span style="text-decoration: underline;">0</span>         0</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> m0_global               0.862 0.012<span style="text-decoration: underline;">1</span>         0</span></span></code></pre></div>
 <p>The table is ordered by mean AUC. Read the differences between models
 together with the spread among folds (<code>auc_sd</code>), and check
 <code>n_failed</code> (folds whose fit failed and were left out of the
@@ -858,6 +858,8 @@ should increase with the score, follow the observed precision, and rest
 on enough clips near <code>p_min</code>.
 <code><a href="../reference/calibration_effort.html">calibration_effort()</a></code> estimates how many clips per site x
 species are needed for a stable AUC.</p></li>
+<li><p><strong>The probabilities hold for each species.</strong> See the
+next section.</p></li>
 </ol>
 <p>The calibration also assumes that, within a score level, the reviewed
 clips are representative of all the detections of that species at that
@@ -867,6 +869,58 @@ holds. It fails if the clips were chosen by another criterion related to
 correctness (for example, only clips that sounded clear, or only the
 nights of peak activity), or if the reviewed period differs from the
 scored one in noise or in species composition.</p>
+</div>
+<div class="section level2">
+<h2 id="checking-the-quality-of-ptp-by-species">Checking the quality of P(TP) by species<a class="anchor" aria-label="anchor" href="#checking-the-quality-of-ptp-by-species"></a>
+</h2>
+<p>The measures above describe a model over all the clips. A logistic
+regression can still fit poorly for one species, and the mean AUC does
+not show it: the AUC rises when species differ in precision, and partial
+pooling lends a species with an uninformative score the curve of the
+others. <code><a href="../reference/calibration_quality.html">calibration_quality()</a></code> refits one model by
+cross-validation and scores the held-out predictions within each group.
+It compares the model with a null model, the share of true positives of
+the group in the training folds (<code>logloss_gain</code>), reports the
+AUC of the probabilities (<code>auc</code>) and of the raw score
+(<code>auc_score</code>) within the group, and the calibration intercept
+and slope. <code><a href="../reference/calibrate.html">calibrate()</a></code> writes this table to
+<code>calibration_quality.csv</code>.</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">quality</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibration_quality.html">calibration_quality</a></span><span class="op">(</span><span class="va">val</span>, <span class="va">models</span><span class="op">$</span><span class="va">m4_species_x_site</span><span class="op">)</span></span>
+<span><span class="va">quality</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">species</span>, <span class="va">n_fp</span>, <span class="va">auc</span>, <span class="va">auc_score</span>, <span class="va">logloss_gain</span>, <span class="va">cal_slope</span>, <span class="va">status</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.numeric</span><span class="op">)</span>, \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 7</span></span></span>
+<span><span class="co">#&gt;   species  n_fp   auc auc_score logloss_gain cal_slope status</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> boa_ran    88  0.98      0.97         0.42      1.01 ok    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> den_nan   161  0.85      0.79         0.21      0.95 ok    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> ela_bic    34  1         1            0.29      0.92 ok    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> lep_fus   151  0.89      0.79         0.29      1.18 ok    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> lep_pod    43  0.99      0.99         0.35      1.07 ok    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> phy_cuv    32  0.98      0.98         0.25      0.9  ok    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> pse_pla   220  0.7       0.54         0.07      0.9  poor  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> sci_nas   161  0.8       0.74         0.16      0.93 ok</span></span></code></pre></div>
+<p>The mean AUC of this model is 0.942, but the score of
+<code>pse_pla</code> has an AUC of 0.54 within the species: its
+probabilities reach an <code>auc</code> of 0.7 through the site x
+species intercepts, not through the score. They mostly give the
+precision of each cell, and a threshold on the score would separate
+little. <code>status</code> marks such a group as <code>"poor"</code>,
+and <code>reason</code> says why. <code>by = c("site", "species")</code>
+gives the same table for each cell, which holds fewer clips, so more
+groups come out as <code>"insufficient"</code> (fewer than
+<code>min_class</code> clips of a verdict).</p>
+<p>The limits behind <code>status</code> (<code>auc_min</code>,
+<code>slope_range</code>, <code>intercept_max</code>) are screening
+values, to be set for each project. Discrimination is also measured over
+the scores that were reviewed: the <code>"top"</code> design
+concentrates the clips at high scores, and can give a low AUC even with
+a good classifier, so check <code>conf_min</code> and
+<code>conf_max</code> before blaming the classifier. A group marked
+<code>"poor"</code> needs more clips, ideally from
+<code>"random_detections"</code>, a different model, or a decision to
+leave it out of the analyses that use P(TP).</p>
 </div>
 <div class="section level2">
 <h2 id="one-species-or-one-site">One species, or one site<a class="anchor" aria-label="anchor" href="#one-species-or-one-site"></a>
@@ -903,7 +957,7 @@ transfer to new sites. Rare species may be absent from a particular
 train or test partition.</p>
 <p>Retain the metadata explicitly when assembling the stages by
 hand:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">val_grouped</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_validations.html">read_validations</a></span><span class="op">(</span><span class="va">val_files</span>, keep <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"source_audio"</span>, <span class="st">"night"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">folds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibration_folds.html">calibration_folds</a></span><span class="op">(</span><span class="va">val_grouped</span>, k_folds <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">2026</span>,</span>
 <span>                           fold_group <span class="op">=</span> <span class="st">"night"</span><span class="op">)</span></span>
@@ -940,7 +994,7 @@ final fit. Use <code>uncorrelated = TRUE</code> to include the
 uncorrelated m4 variant in the candidates. Read the comparison,
 <code>calibration_model.txt</code> and the curves before using the
 output.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"calibration"</span><span class="op">)</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibrate.html">calibrate</a></span><span class="op">(</span>validation_files  <span class="op">=</span> <span class="va">val_files</span>,</span>
 <span>                 prediction_tables <span class="op">=</span> <span class="va">tables</span>,</span>
@@ -954,9 +1008,9 @@ output.</p>
 <span><span class="co">#&gt;  [1] "calibrated_detections_ARA.csv" "calibrated_detections_BAI.csv"</span></span>
 <span><span class="co">#&gt;  [3] "calibrated_detections_NHE.csv" "calibrated_detections_XAR.csv"</span></span>
 <span><span class="co">#&gt;  [5] "calibration_curves.png"        "calibration_model.rds"        </span></span>
-<span><span class="co">#&gt;  [7] "calibration_model.txt"         "detection_summary.csv"        </span></span>
-<span><span class="co">#&gt;  [9] "model_comparison.csv"          "nightly_detection_history.csv"</span></span>
-<span><span class="co">#&gt; [11] "thresholds.csv"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [7] "calibration_model.txt"         "calibration_quality.csv"      </span></span>
+<span><span class="co">#&gt;  [9] "detection_summary.csv"         "model_comparison.csv"         </span></span>
+<span><span class="co">#&gt; [11] "nightly_detection_history.csv" "thresholds.csv"</span></span></code></pre></div>
 <p><code>nightly_detection_history.csv</code> is the input of the
 occupancy and community analyses (see
 <code><a href="../articles/frognet-workflow.html">vignette("frognet-workflow")</a></code>). Five folds and the example’s

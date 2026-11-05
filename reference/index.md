@@ -90,6 +90,8 @@ build nightly detection histories.
   : Compare calibration models by cross-validation
 - [`select_calibration_model()`](https://provetelab.org/sheepdog/reference/select_calibration_model.md)
   : Select the calibration model
+- [`calibration_quality()`](https://provetelab.org/sheepdog/reference/calibration_quality.md)
+  : Check the quality of the calibrated probabilities by species
 - [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
   : Fit the calibration model
 - [`calibration_effort()`](https://provetelab.org/sheepdog/reference/calibration_effort.md)

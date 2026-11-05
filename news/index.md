@@ -2,6 +2,18 @@
 
 ## sheepdog (development version)
 
+- New
+  [`calibration_quality()`](https://provetelab.org/sheepdog/reference/calibration_quality.md):
+  checks the calibrated probabilities by species (or by cell) on
+  held-out clips, with the gain in log-loss over a null model, the AUC
+  of the probabilities and of the raw score within the group, the
+  calibration intercept and slope, and a `status`. The measures of
+  [`compare_calibration_models()`](https://provetelab.org/sheepdog/reference/compare_calibration_models.md)
+  cover all the clips and can hide a species whose score says little.
+  [`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md)
+  writes `calibration_quality.csv`, returns `quality` and names the
+  groups marked `"poor"`.
+
 - [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md):
   `"random_detections"` now says so when every candidate occasion was
   taken (all `inclusion_prob` equal to 1), which is a census and not a
