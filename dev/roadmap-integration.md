@@ -235,7 +235,7 @@ pacote importa o outro.
 | Tabela | Uma linha por | Colunas principais |
 |---|---|---|
 | `occasions.csv` | ocasião (arquivo ou minuto) | `site`, `occasion_id`, `night`, `start`, `duration`, `recorder`, covariáveis de ocasião |
-| `scores.csv` | ocasião × espécie | `occasion_id`, `species_code`, `max_score`, `n_windows`, `n_above_min` (número de janelas com score ≥ `min_confidence`); scores abaixo de `min_confidence` são censurados e o valor de corte vai no `schema.json` |
+| `scores.csv` | ocasião × espécie | `occasion_id`, `species_code`, `max_score`, `n_above_min` (número de janelas com score ≥ `min_confidence`); scores abaixo de `min_confidence` são censurados e o valor de corte vai no `schema.json` |
 | `detections.csv` (opcional) | janela com score ≥ `min_confidence` | `occasion_id`, `species_code`, `window_start`, `score` |
 | `validation.csv` | clipe revisado | `occasion_id`, `species_code`, `window_start`, `verdict` (`TRUE`/`FALSE`/`NA`), `sampling_mode`, `inclusion_prob`, `stratum`, `reviewer`, `consensus` |
 | `recordings_verified.csv` | ocasião anotada por completo | `occasion_id`, `species_code`, `present` (o caso `random_recordings`: o estado da ocasião, não de um clipe) |
@@ -249,8 +249,9 @@ Decisões embutidas, a conferir:
   score da hora). Não é estatística suficiente para Rhinehart et al.
   (2022), que usam o score de cada arquivo (corrigido em 02/11/2026): o
   máximo de *n* janelas tem distribuição própria, que depende de
-  `n_windows` (ver "Distribuição do máximo" na fase 2). Por isso
-  `n_windows` está em `scores.csv`. Guardar as janelas (`detections.csv`)
+  *n* (ver "Distribuição do máximo" na fase 2). O export **não** grava
+  `n_windows` (conferido em 05/11/2026): *n* sai de `duration` e do passo
+  das janelas, ou entra como acréscimo ao esquema. Guardar as janelas (`detections.csv`)
   deixa aberta a fase 4 e o modelo por janela.
 - **Veredito de clipe ≠ estado da ocasião.** Um positivo prova que houve
   canto na ocasião; um negativo no clipe de maior score não prova ausência
@@ -318,8 +319,9 @@ de divergência que produziu o erro de visitas do artigo do JAV).
 
 - O esquema 1.x basta; se faltar algo, entra como acréscimo 1.x (por
   exemplo, o score do clipe revisado quando difere do da ocasião).
-  `scores.csv` dá s_ik (`max_score`, censura em `min_confidence`) e n_ik
-  (`n_windows`), `detections.csv` as predições por janela, `validation.csv`
+  `scores.csv` dá s_ik (`max_score`, censura em `min_confidence`) e o
+  número de janelas acima do corte (`n_above_min`); n_ik ainda não está no
+  contrato (ver acima). `detections.csv` as predições por janela, `validation.csv`
   o score de cada clipe, `recordings_verified.csv` o w_ik observado e
   `occasion_covariates` as covariáveis **d**_ik e **g**_ik.
 - Dados e desenho da validação ficam no sheepdog; f₁/f₀ e o ajuste, só no
@@ -428,6 +430,24 @@ parâmetros fixos, ocasiões com mais janelas parecem ter mais canto. Opções,
 A janela de independência também precisa ser conferida: janelas de 3 s
 sobrepostas não são independentes.
 
+Acrescentado em 05/11/2026 (inferência minha, a testar):
+
+- **O Curiango não tem esse problema.** No depósito, as linhas de um minuto
+  repetem um único score, sem offset, e ele coincide com a maior janela do
+  conjunto de teste em só cerca de metade dos minutos
+  (`dev/benchmarks/curiango-export.R`). Ali o score é do arquivo, como em
+  Rhinehart et al., e o modelo por janela não roda.
+- **Forma fechada para a opção 3.** Com φ a fração de janelas com canto, n
+  o total de janelas e m as janelas com score ≥ c: com w = 0,
+  ∏ f₀(s_j) · F₀(c)^(n−m); com w = 1,
+  ∏ [φ f₁(s_j) + (1−φ) f₀(s_j)] · [φ F₁(c) + (1−φ) F₀(c)]^(n−m). Dispensa
+  Φⁿ e usa todas as janelas observadas. Falta testar a dependência entre
+  janelas e a confusão entre φ e θ.
+- **Clipe negativo.** Quando o clipe revisado é a janela do máximo, somar
+  N(s | μ_0, σ_0) à emissão da ocasião conta o mesmo score duas vezes,
+  como está na DAG. No modelo por janela, o veredito só fixa o estado
+  daquela janela. A DAG ainda precisa dessa correção.
+
 ### Identificação: o que Rhinehart et al. (2022) mostram
 
 Do texto principal e do material suplementar:
@@ -486,7 +506,7 @@ Também é inferência minha; precisa de simulação (abaixo).
 |---|---|
 | `simulate_fp()` com scores: gerar os scores por janela de f₀/f₁ com covariáveis e tomar o máximo por ocasião | os scores simulados reproduzem as curvas de precisão e recall da Fig. 3 do Curiango com parâmetros escolhidos à mão |
 | Distribuição do máximo: comparar as opções 1–3 com n_ik variando entre ocasiões | escolha documentada; viés em ψ e θ quando n_ik é ignorado |
-| Stan: verossimilhança por sítio marginalizando z e w (dois níveis de soma; com Markov, forward de dois estados dentro da noite) | log-densidade em R = Stan; com σ → 0 e limiar fixo, reduz-se ao modelo de Miller (conferir numericamente) |
+| Stan: verossimilhança por sítio marginalizando z e w (dois níveis de soma; com Markov, forward de dois estados dentro da noite) | log-densidade em R = Stan; com o score dicotomizado em y = 1[s > c], reduz-se ao modelo de Miller, com p10 = 1 − F₀(c) e p11 = θ(1 − F₁(c)) + (1 − θ)p10 (feito para o v0 em `dev/fase2/`, 05/11/2026; σ → 0 não serve, porque leva p10 a 0 ou 1) |
 | `fp_occu_score()`: função nova; fórmulas `occ`, `det`, `score1`, `score0`; métodos `summary`, `predict`, `loo`, `fp_ppc` (incluindo o PPC dos scores) | testes de recuperação e SBC uniforme, como no `fp_occu()` |
 | Simulação da ignorabilidade: validação aleatória × por score × "top", com f bem e mal especificada | tabela de viés e cobertura; vira uma vinheta |
 | Curiango, os dois classificadores, sem limiar | comparado por LOO e pela Fig. 4 do artigo; a hipótese é que os dois classificadores convirjam mais entre si do que nos caminhos com limiar |

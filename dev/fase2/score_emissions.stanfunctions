@@ -1,0 +1,36 @@
+// Emissions of the joint score-occupancy model: the log likelihood of one
+// score given the component, and of the occasions of a site with z and w
+// marginalized. Kept apart from the program, through #include, in the form
+// of crywolf's src/stan/fp_emissions.stanfunctions, to ease the migration.
+  // log density of one score given the component: cens = 0 observed,
+  // 1 below c_lo, 2 above c_hi. The censored terms are computed once per
+  // log-density evaluation and passed in (lcens = [below, above]), because
+  // normal_lcdf dominates the cost and mu and sigma are constant in v0.
+  real emission(real s, int cens, real mu, real sigma, vector lcens) {
+    if (cens == 0) return normal_lpdf(s | mu, sigma);
+    return lcens[cens];
+  }
+  real site_lik(int first, int last, real eta_psi, vector eta_theta,
+                vector s, array[] int cens, array[] int v,
+                real mu0, real mu1, real sigma0, real sigma1,
+                vector lcens0, vector lcens1) {
+    real lp1 = log_inv_logit(eta_psi);   // z = 1
+    real lp0 = log1m_inv_logit(eta_psi); // z = 0
+    for (n in first:last) {
+      real e0 = emission(s[n], cens[n], mu0, sigma0, lcens0);
+      real e1 = emission(s[n], cens[n], mu1, sigma1, lcens1);
+      real lt = log_inv_logit(eta_theta[n]);
+      real l1t = log1m_inv_logit(eta_theta[n]);
+      if (v[n] == 1) {          // verified call: w = 1, so z = 1
+        lp1 += lt + e1;
+        lp0 = negative_infinity();
+      } else if (v[n] == 0) {   // verified absence of a call: w = 0
+        lp1 += l1t + e0;
+        lp0 += e0;
+      } else {                  // not verified
+        lp1 += log_sum_exp(lt + e1, l1t + e0);
+        lp0 += e0;
+      }
+    }
+    return log_sum_exp(lp1, lp0);
+  }

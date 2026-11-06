@@ -43,8 +43,9 @@ leia o roadmap.
    distribuição própria: sem canto, P(s ≤ x) = Φ((x − μ₀)/σ₀)ⁿ, que sobe
    com n. Se isso for ignorado, ocasiões com mais janelas parecem ter mais
    canto. Isto é inferência minha e precisa de simulação; as opções estão
-   no roadmap, em "Distribuição do máximo". `n_windows` já está em
-   `scores.csv`.
+   no roadmap, em "Distribuição do máximo". `n_windows` **não** está em
+   `scores.csv` (corrigido em 05/11/2026; o export grava `max_score` e
+   `n_above_min`).
 4. **O que é novo na fase 2** em relação aos dois artigos:
    - covariáveis nas distribuições dos scores (**g**_ik); nos dois
      artigos, μ e σ são constantes;
@@ -75,6 +76,14 @@ leia o roadmap.
    do classificador com a taxa de canto do sítio. Há evidência empírica no
    Curiango (sheepdog#67). No modelo conjunto, a prevalência vem de ψ e θ,
    e o classificador entra só por f₀ e f₁.
+
+## Correções de 05/11/2026
+
+Conferidas no código; o detalhe está no roadmap e em `dev/fase2/README.md`:
+`n_windows` não existe no export; no Curiango o score é do minuto, não um
+máximo de janelas; o critério "σ → 0 reduz-se a Miller" foi trocado pela
+dicotomização do score; o clipe negativo da DAG conta o score duas vezes
+quando é a janela do máximo. O protótipo do modelo está em `dev/fase2/`.
 
 ## Decisões relacionadas, tomadas em 02–04/11/2026
 
