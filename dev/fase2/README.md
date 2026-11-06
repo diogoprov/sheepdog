@@ -24,6 +24,8 @@ um limiar.
 | `summarise_diag_v0.R` | compara os reajustes com os ajustes originais; recebe `OUT_DIR` |
 | `results/diag_v0/refit_all.rds` | os 38 reajustes do diagnóstico; serve de `OUT_DIR` para `summarise_diag_v0.R` |
 | `results/val_v0/task_all.rds` | os 1.020 ajustes da validação; serve de `OUT_DIR` para os dois scripts |
+| `probe_cell_v0.R`, `summarise_probe_v0.R`, `probe_same_sets_v0.R` | investigação da célula que reprovou, por máxima verossimilhança |
+| `results/probe_v0/ml_all.rds` | os 8.000 conjuntos da sonda, com as emissões livres e fixas |
 | `results/val2_v0/task_all.rds` | os 720 ajustes da segunda validação; serve de `OUT_DIR` para os dois scripts |
 
 ## Modelo v0
@@ -226,16 +228,48 @@ foi retomada; o `seed` vem do id, então os ajustes não mudam.
 A falha da célula é assimétrica em logit(0,1): 7 intervalos acima de θ e 2
 abaixo, com viés +0,019 e RMSE 0,042. Somando as células principais, a cobertura
 de θ em logit(0,1) é 0,922 (EP 0,014), abaixo do nominal; a de ψ é 0,950. Em
-logit(0,3) ficam em 0,942 e 0,956. Entre 16 células, uma a cerca de 2 EP do
-nominal pode ser acaso; o viés da célula, o maior da grade e cerca de 3,5 EP
-acima de zero, sugere que há algo real, mas a causa não foi testada.
-Interpretação, não resultado: com Δ = 3 e pouca verificação, as classes se
-sobrepõem e o modelo tende a atribuir à classe verdadeira parte dos scores da
-falsa.
+logit(0,3) ficam em 0,942 e 0,956. A investigação está na seção seguinte.
 
 Em logit(0,3), as emissões ficam bem menos informadas, com ψ e θ preservados:
 largura do intervalo de λ₀ e Δ em torno de 2,5, contra 0,6 em logit(0,1), e viés
 de −0,22 e +0,20. Mesma identificação fraca de f₀ do diagnóstico.
+
+## Investigação da célula que reprovou (06/11/2026)
+
+Sem Stan, com máxima verossimilhança em `loglik_v0`, em c = logit(0,1):
+`probe_cell_v0.R` usa 1.000 conjuntos novos por célula, com as emissões livres e
+fixas na verdade; `probe_same_sets_v0.R` usa os mesmos conjuntos da grade e
+compara par a par com as médias posteriores. O intervalo é de Wald, no logit.
+
+Modelo e simulador coincidem, e a largura dos intervalos não é o problema: na
+célula, o desvio-padrão de θ̂ é 0,037 e a largura implica 0,035.
+
+| θ = 0,6, 5%, Δ = 3 | viés | cobertura |
+|---|---|---|
+| Verossimilhança, 1.000 conjuntos novos | +0,001 (EP 0,001) | 0,938 |
+| Verossimilhança, os 60 conjuntos da grade | +0,011 (EP 0,005) | 0,933 |
+| Stan, os 60 conjuntos da grade | +0,019 | 0,850 |
+
+Os +0,019 se dividem em duas partes:
+
+- **+0,011 é da amostra.** A verossimilhança erra igual nesses 60 conjuntos, e
+  esse viés some em 1.000 conjuntos. A verossimilhança não tem viés nessa célula.
+- **+0,008 é do Stan em relação à verossimilhança**, e é sistemático: +0,008 também
+  com θ = 0,3 e Δ = 3, contra +0,001 com Δ = 5. Não foi separado se vem dos priors
+  das emissões, ainda provisórios, ou da assimetria da posterior (média contra
+  moda).
+
+Fixar as emissões na verdade não muda a cobertura de forma importante: ela fica
+perto de 0,95 nos dois casos. Dentro da célula, o erro de θ̂ acompanha o de μ₁
+(r = −0,78) e o de σ₁ (r = +0,60), como esperado, porque θ depende de quanto de
+f₁ cai abaixo de c. Isso descreve a variação entre conjuntos, não o viés médio.
+
+Leitura: o critério 2 segue reprovado como foi fixado, mas a cobertura de 0,85
+parece em boa parte azar da amostra. Extrapolando da verossimilhança, um
+deslocamento de 0,008 a 0,009 daria cobertura perto de 0,93 nessa célula; isso é
+inferência, não foi medido com MCMC em muitos conjuntos. Para o passo 3: definir
+os priors por prior predictive check e repetir essa célula, medindo o
+deslocamento em relação à verossimilhança.
 
 ## Para o passo do Curiango (sugestões da sessão do crywolf, a decidir)
 
