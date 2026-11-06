@@ -18,6 +18,8 @@ nightly_presence.csv: confirmed presence by site x species x night
 (nightly_presence());
 retraining_clips.csv: positive clips for retraining
 (retraining_clips());
+thresholds_compared.csv: empirical and model thresholds, with fit
+(compare_thresholds());
 precision_by_bin.png: precision curves (plot_precision()), when
 'ggplot2' is installed.
 
@@ -34,6 +36,8 @@ nightly_presence.csv: confirmed presence by site x species x night
 (nightly_presence());
 retraining_clips.csv: positive clips for retraining
 (retraining_clips());
+thresholds_compared.csv: empirical and model thresholds, with fit
+(compare_thresholds());
 precision_by_bin.png: precision curves (plot_precision()), when
 'ggplot2' is installed.
 
@@ -110,6 +114,8 @@ precision, by species (<code><a href="suggest_thresholds.html">suggest_threshold
 (<code><a href="nightly_presence.html">nightly_presence()</a></code>);</p></li>
 <li><p><code>retraining_clips.csv</code>: positive clips for retraining
 (<code><a href="retraining_clips.html">retraining_clips()</a></code>);</p></li>
+<li><p><code>thresholds_compared.csv</code>: empirical and model thresholds, with <code>fit</code>
+(<code><a href="compare_thresholds.html">compare_thresholds()</a></code>);</p></li>
 <li><p><code>precision_by_bin.png</code>: precision curves (<code><a href="plot_precision.html">plot_precision()</a></code>), when
 'ggplot2' is installed.</p></li>
 </ul></div>
@@ -129,7 +135,11 @@ precision, by species (<code><a href="suggest_thresholds.html">suggest_threshold
 <span>  reviewer <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  weighted <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  previous <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  candidates <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  candidates <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  fit <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  scored <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  quality <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sustained <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -184,7 +194,7 @@ instead of the subfolders of <code>review_dir</code>.</p></dd>
 verdicts are used, as in <code><a href="app_verdicts.html">app_verdicts()</a></code>.</p></dd>
 
 
-<dt id="arg-weighted">weighted<a class="anchor" aria-label="anchor" href="#arg-weighted"></a></dt>
+<dt id="arg-weighted-sustained">weighted, sustained<a class="anchor" aria-label="anchor" href="#arg-weighted-sustained"></a></dt>
 <dd><p>Passed to <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>.</p></dd>
 
 
@@ -199,11 +209,20 @@ keeps the clips of this round only; the summaries and
 <dd><p>With <code>previous</code>, the <code>candidates.csv</code> of the first
 round. <code>NULL</code> looks for it beside <code>manifest_path</code> and <code>previous</code>.</p></dd>
 
+
+<dt id="arg-fit">fit<a class="anchor" aria-label="anchor" href="#arg-fit"></a></dt>
+<dd><p>Optional model of <code><a href="fit_calibration.html">fit_calibration()</a></code>. With it,
+<code><a href="compare_thresholds.html">compare_thresholds()</a></code> writes <code>thresholds_compared.csv</code>.</p></dd>
+
+
+<dt id="arg-scored-quality">scored, quality<a class="anchor" aria-label="anchor" href="#arg-scored-quality"></a></dt>
+<dd><p>With <code>fit</code>, passed to <code><a href="compare_thresholds.html">compare_thresholds()</a></code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list with the tables <code>validation</code>, <code>precision</code>, <code>thresholds</code>,
-<code>presence</code> and <code>retraining</code>, invisibly.</p>
+<code>presence</code> and <code>retraining</code> (and <code>compared</code>, with <code>fit</code>), invisibly.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

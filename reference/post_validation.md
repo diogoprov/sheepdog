@@ -23,6 +23,9 @@ clips and writes, to `output_dir`:
 - `retraining_clips.csv`: positive clips for retraining
   ([`retraining_clips()`](https://provetelab.org/sheepdog/reference/retraining_clips.md));
 
+- `thresholds_compared.csv`: empirical and model thresholds, with `fit`
+  ([`compare_thresholds()`](https://provetelab.org/sheepdog/reference/compare_thresholds.md));
+
 - `precision_by_bin.png`: precision curves
   ([`plot_precision()`](https://provetelab.org/sheepdog/reference/plot_precision.md)),
   when 'ggplot2' is installed.
@@ -43,7 +46,11 @@ post_validation(
   reviewer = NULL,
   weighted = NULL,
   previous = NULL,
-  candidates = NULL
+  candidates = NULL,
+  fit = NULL,
+  scored = NULL,
+  quality = NULL,
+  sustained = FALSE
 )
 ```
 
@@ -98,7 +105,7 @@ post_validation(
   in
   [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md).
 
-- weighted:
+- weighted, sustained:
 
   Passed to
   [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md).
@@ -116,10 +123,23 @@ post_validation(
   With `previous`, the `candidates.csv` of the first round. `NULL` looks
   for it beside `manifest_path` and `previous`.
 
+- fit:
+
+  Optional model of
+  [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md).
+  With it,
+  [`compare_thresholds()`](https://provetelab.org/sheepdog/reference/compare_thresholds.md)
+  writes `thresholds_compared.csv`.
+
+- scored, quality:
+
+  With `fit`, passed to
+  [`compare_thresholds()`](https://provetelab.org/sheepdog/reference/compare_thresholds.md).
+
 ## Value
 
 A list with the tables `validation`, `precision`, `thresholds`,
-`presence` and `retraining`, invisibly.
+`presence` and `retraining` (and `compared`, with `fit`), invisibly.
 
 ## Details
 

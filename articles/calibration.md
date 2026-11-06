@@ -145,7 +145,7 @@ cv |> select(model, auc_mean, auc_sd, n_failed)
 #> 2 m3_plus_site            0.928 0.00640        0
 #> 3 m2_species_slope        0.916 0.00556        0
 #> 4 m1_species_intercept    0.902 0.00544        0
-#> 5 m0_global               0.862 0.0121         0
+#> 5 m0_global               0.862 0.0120         0
 ```
 
 The table is ordered by mean AUC. Read the differences between models
@@ -543,6 +543,26 @@ writes the `"probability"` thresholds with `target = p_min` to
 `thresholds.csv`. They are the score equivalent of the cut on P(TP) used
 for the detection histories below, and serve to filter detections in
 software that only accepts a score threshold.
+
+### Comparing the thresholds
+
+[`compare_thresholds()`](https://provetelab.org/sheepdog/reference/compare_thresholds.md)
+puts the empirical threshold of
+[`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
+and the model thresholds side by side for each site x species, and
+`post_validation(fit = )` writes the table to `thresholds_compared.csv`.
+Compare `thr_empirical` with `thr_model_precision`, which answer the
+same question; `flag` does this, and `thr_p_tp` stays out of it, since
+it is higher for the same target. A `"disagree"` points to the model
+(its form, a missing covariate) or to the sample (few clips, missing
+weights). Trust the model columns only for a calibration compared by
+cross-validation and with
+[`calibration_quality()`](https://provetelab.org/sheepdog/reference/calibration_quality.md)
+status `"ok"` for the species, which the `quality` argument carries into
+the table, and read with care a model threshold above the highest
+reviewed score of the cell (`above_reviewed`). Clips used here to set
+the threshold should not be reused as confirmation data in the occupancy
+model without saying so.
 
 ### Choosing a confidence threshold
 

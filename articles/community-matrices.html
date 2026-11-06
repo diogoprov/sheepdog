@@ -364,7 +364,7 @@ matrices and the effort table as CSV files:</p>
 <span>                                 k_min <span class="op">=</span> <span class="fl">2</span>, min_nights_month <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Matrix: 23 rows (site x month) x 5 species | rule k &gt;= 2</span></span>
 <span><span class="co">#&gt; Effort: 23 site x month cells included; 1 dropped for having &lt; 5 recorded nights (see effort_site_month.csv)</span></span>
-<span><span class="co">#&gt; Files in: /tmp/Rtmp0DFdHm/community_matrices</span></span>
+<span><span class="co">#&gt; Files in: /tmp/RtmpPyaneu/community_matrices</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "count_matrix_site_month_k2.csv"     "effort_site_month.csv"             </span></span>
 <span><span class="co">#&gt; [3] "frequency_matrix_site_month_k2.csv"</span></span></code></pre></div>
@@ -552,8 +552,6 @@ model without season (<code><a href="https://rdrr.io/r/stats/anova.html" class="
 <span>                           row.eff <span class="op">=</span> <span class="op">~</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">site</span><span class="op">)</span>, studyDesign <span class="op">=</span> <span class="va">design</span>,</span>
 <span>                           starting.val <span class="op">=</span> <span class="st">"zero"</span>, seed <span class="op">=</span> <span class="fl">2026</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in gllvm::gllvm(y = Y, X = X, formula = ~season, family = "binomial", : There are responses full of zeros.</span></span>
-<span><span class="co">#&gt; Warning in se.gllvm(out): 2 parameter(s) have negative variance estimates (b</span></span>
-<span><span class="co">#&gt; x2). The model likely has not converged - consider re-fitting.</span></span>
 <span><span class="va">fit_null</span>   <span class="op">&lt;-</span> <span class="fu">gllvm</span><span class="fu">::</span><span class="fu"><a href="https://jenniniku.github.io/gllvm/reference/gllvm.html" class="external-link">gllvm</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">Y</span>, family <span class="op">=</span> <span class="st">"binomial"</span>, Ntrials <span class="op">=</span> <span class="va">Nt</span>,</span>
 <span>                           num.lv <span class="op">=</span> <span class="fl">1</span>, row.eff <span class="op">=</span> <span class="op">~</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">site</span><span class="op">)</span>,</span>
 <span>                           studyDesign <span class="op">=</span> <span class="va">design</span>,</span>

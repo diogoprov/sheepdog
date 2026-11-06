@@ -88,7 +88,8 @@ observed confidences rounded to two decimals.</p>
 <span>  target_precision <span class="op">=</span> <span class="fl">0.9</span>,</span>
 <span>  min_n <span class="op">=</span> <span class="fl">15</span>,</span>
 <span>  by <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  weighted <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  weighted <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sustained <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -124,6 +125,11 @@ clips without <code>inclusion_prob</code> get no threshold, with a warning, and
 it is an error if no clip has it. <code>FALSE</code>: always the unweighted one,
 and <code>n_support</code> for <code>min_n</code>.</p></dd>
 
+
+<dt id="arg-sustained">sustained<a class="anchor" aria-label="anchor" href="#arg-sustained"></a></dt>
+<dd><p>Must the target also hold at every higher cut with at
+least <code>min_n</code> clips? See Sustained target.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -137,7 +143,16 @@ reviewed clip with a confidence, the tibble has no rows.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The precision is computed from the reviewed clips of each cell alone, so
+    <p><strong>Sustained target.</strong> With <code>sustained = TRUE</code>, the target must also hold
+at every higher cut with at least <code>min_n</code> clips, the rule of
+<code><a href="calibrated_thresholds.html">calibrated_thresholds()</a></code>. This is not the default: the curve of the model
+is smooth, while the empirical precision of a high cut rests on few clips,
+so a cut can fail by chance, and the failure of the highest supported cut
+leaves the cell without a threshold. In a simulation with 300 clips per
+cell, the share of cells without a threshold rose from 0.09 to 0.24, and
+the true precision of the cuts from 0.888 to 0.896
+(<code>dev/sustained-threshold-rule.R</code>).</p>
+<p>The precision is computed from the reviewed clips of each cell alone, so
 it is reliable only when the clips were drawn at random within the cell
 and are numerous. <code><a href="calibrated_thresholds.html">calibrated_thresholds()</a></code> derives the thresholds from
 the calibration model of stage 2 instead.</p>

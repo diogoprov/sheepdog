@@ -14,7 +14,8 @@ suggest_thresholds(
   target_precision = 0.9,
   min_n = 15,
   by = NULL,
-  weighted = NULL
+  weighted = NULL,
+  sustained = FALSE
 )
 ```
 
@@ -51,6 +52,11 @@ suggest_thresholds(
   if no clip has it. `FALSE`: always the unweighted one, and `n_support`
   for `min_n`.
 
+- sustained:
+
+  Must the target also hold at every higher cut with at least `min_n`
+  clips? See Sustained target.
+
 ## Value
 
 A tibble with `site`, `species_folder`, the `by` columns, `threshold`,
@@ -62,6 +68,17 @@ the precision that chose the cut). Without any reviewed clip with a
 confidence, the tibble has no rows.
 
 ## Details
+
+**Sustained target.** With `sustained = TRUE`, the target must also hold
+at every higher cut with at least `min_n` clips, the rule of
+[`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md).
+This is not the default: the curve of the model is smooth, while the
+empirical precision of a high cut rests on few clips, so a cut can fail
+by chance, and the failure of the highest supported cut leaves the cell
+without a threshold. In a simulation with 300 clips per cell, the share
+of cells without a threshold rose from 0.09 to 0.24, and the true
+precision of the cuts from 0.888 to 0.896
+(`dev/sustained-threshold-rule.R`).
 
 The precision is computed from the reviewed clips of each cell alone, so
 it is reliable only when the clips were drawn at random within the cell

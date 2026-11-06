@@ -2,6 +2,28 @@
 
 ## sheepdog (development version)
 
+- New
+  [`compare_thresholds()`](https://provetelab.org/sheepdog/reference/compare_thresholds.md):
+  the thresholds of
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
+  and
+  [`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md)
+  side by side for each site x species, with a `flag` that compares the
+  empirical and the model-precision thresholds, the
+  [`calibration_quality()`](https://provetelab.org/sheepdog/reference/calibration_quality.md)
+  status and a mark for model thresholds above the highest reviewed
+  score. `post_validation(fit = )` writes it to
+  `thresholds_compared.csv`
+  ([\#104](https://github.com/diogoprov/sheepdog/issues/104)).
+
+- [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
+  gains `sustained`: with `TRUE`, the target precision must also hold at
+  every higher cut with at least `min_n` clips, the rule of
+  [`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md).
+  The default, `FALSE`, keeps the thresholds as they were, because the
+  empirical precision of high cuts is noisy; the documentation gives the
+  cost ([\#104](https://github.com/diogoprov/sheepdog/issues/104)).
+
 - Review rounds:
   [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
   and

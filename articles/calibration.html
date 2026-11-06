@@ -238,7 +238,7 @@ recordings or nights.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> m3_plus_site            0.928 0.006<span style="text-decoration: underline;">40</span>        0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> m2_species_slope        0.916 0.005<span style="text-decoration: underline;">56</span>        0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> m1_species_intercept    0.902 0.005<span style="text-decoration: underline;">44</span>        0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> m0_global               0.862 0.012<span style="text-decoration: underline;">1</span>         0</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> m0_global               0.862 0.012<span style="text-decoration: underline;">0</span>         0</span></span></code></pre></div>
 <p>The table is ordered by mean AUC. Read the differences between models
 together with the spread among folds (<code>auc_sd</code>), and check
 <code>n_failed</code> (folds whose fit failed and were left out of the
@@ -595,6 +595,26 @@ thresholds with <code>target = p_min</code> to
 <code>thresholds.csv</code>. They are the score equivalent of the cut on
 P(TP) used for the detection histories below, and serve to filter
 detections in software that only accepts a score threshold.</p>
+<div class="section level3">
+<h3 id="comparing-the-thresholds">Comparing the thresholds<a class="anchor" aria-label="anchor" href="#comparing-the-thresholds"></a>
+</h3>
+<p><code><a href="../reference/compare_thresholds.html">compare_thresholds()</a></code> puts the empirical threshold of
+<code><a href="../reference/suggest_thresholds.html">suggest_thresholds()</a></code> and the model thresholds side by side
+for each site x species, and <code>post_validation(fit = )</code> writes
+the table to <code>thresholds_compared.csv</code>. Compare
+<code>thr_empirical</code> with <code>thr_model_precision</code>, which
+answer the same question; <code>flag</code> does this, and
+<code>thr_p_tp</code> stays out of it, since it is higher for the same
+target. A <code>"disagree"</code> points to the model (its form, a
+missing covariate) or to the sample (few clips, missing weights). Trust
+the model columns only for a calibration compared by cross-validation
+and with <code><a href="../reference/calibration_quality.html">calibration_quality()</a></code> status <code>"ok"</code> for
+the species, which the <code>quality</code> argument carries into the
+table, and read with care a model threshold above the highest reviewed
+score of the cell (<code>above_reviewed</code>). Clips used here to set
+the threshold should not be reused as confirmation data in the occupancy
+model without saying so.</p>
+</div>
 <div class="section level3">
 <h3 id="choosing-a-confidence-threshold">Choosing a confidence threshold<a class="anchor" aria-label="anchor" href="#choosing-a-confidence-threshold"></a>
 </h3>

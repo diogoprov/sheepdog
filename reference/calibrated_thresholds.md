@@ -153,6 +153,8 @@ on both. It is not a measure of the classifier alone.
 
 [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
 for thresholds from the reviewed clips of each cell;
+[`compare_thresholds()`](https://provetelab.org/sheepdog/reference/compare_thresholds.md)
+to put both side by side;
 [`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md),
 which writes these thresholds to `thresholds.csv`.
 
