@@ -2,6 +2,13 @@
 
 ## sheepdog (development version)
 
+- New
+  [`threshold_history()`](https://provetelab.org/sheepdog/reference/threshold_history.md):
+  the nightly history of the empirical route, from the thresholds of
+  [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md),
+  with no calibration model. Nights of cells without a threshold stay in
+  the history as effort, with `NA` in the detection columns.
+
 - `previous` in
   [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
   and

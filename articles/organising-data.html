@@ -53,6 +53,7 @@
     <li><a class="dropdown-item" href="../articles/validation-effort.html">How many clips should I validate?</a></li>
     <li><a class="dropdown-item" href="../articles/calibration.html">Calibrating confidence scores</a></li>
     <li><a class="dropdown-item" href="../articles/bayesian-calibration.html">Bayesian calibration with brms</a></li>
+    <li><a class="dropdown-item" href="../articles/choosing-a-route.html">Choosing a route: from reviewed clips to histories and occupancy</a></li>
     <li><a class="dropdown-item" href="../articles/community-matrices.html">From detections to community analyses</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Beyond the three stages</h6></li>
@@ -210,9 +211,9 @@ audio folders instead. Here on a small simulated tree:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 2</span></span></span>
 <span><span class="co">#&gt;   site  source_audio                                             </span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ARA   /tmp/RtmpNMsIti/audio/ARA/ARA01_20211001_190000.wav      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ARA   /tmp/RtmpNMsIti/audio/ARA/ARA01_20211001_200000.wav      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> BAI   /tmp/RtmpNMsIti/audio/BAI/card1/BAI01_20211001_190000.wav</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ARA   /tmp/RtmpxR36M5/audio/ARA/ARA01_20211001_190000.wav      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ARA   /tmp/RtmpxR36M5/audio/ARA/ARA01_20211001_200000.wav      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> BAI   /tmp/RtmpxR36M5/audio/BAI/card1/BAI01_20211001_190000.wav</span></span></code></pre></div>
 <p>The paths must match <code>Begin Path</code>. When the list is built
 on a computer other than the one that ran BirdNET, rewrite the prefix
 with <code>remap_from</code> and <code>remap_to</code>, and give the

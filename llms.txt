@@ -302,7 +302,20 @@ The hex sticker uses a dog silhouette by Mozillian from
 ## Stage 1 - Validation data
 
 Read BirdNET selection tables, select clips for manual review, and cut
-and pack them.
+and pack them. Each sampling design sends a different part of the night
+to review; later rounds leave out what was reviewed.
+
+![The same night of twelve recordings under the three sampling designs
+of select_clips().](../figures/schematic_selection.png)
+
+The same night of twelve recordings under the three sampling designs of
+select_clips().
+
+![Review rounds: what was reviewed leaves the pool, and combine_rounds()
+gives one simple random sample.](../figures/schematic_rounds.png)
+
+Review rounds: what was reviewed leaves the pool, and combine_rounds()
+gives one simple random sample.
 
 - [`extract_validation_clips()`](https://provetelab.org/sheepdog/reference/extract_validation_clips.md)
   : Build the validation clip set
@@ -319,10 +332,61 @@ and pack them.
 - [`pack_clips()`](https://provetelab.org/sheepdog/reference/pack_clips.md)
   : Pack the clips into one zip per species
 
+## Stage 1 - Review app
+
+Review the clips in a local app and read its verdicts.
+
+![Review: each clip is heard and gets one
+verdict.](../figures/schematic_review.png)
+
+Review: each clip is heard and gets one verdict.
+
+- [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md) :
+  Sample, review and export clips in a local app
+- [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md)
+  : Verdicts of the review app
+
+## Stage 1 - Several reviewers
+
+Split the clips among reviewers, measure their agreement and combine
+their verdicts.
+
+![Several reviewers: a share of the clips goes to both, which gives
+their agreement.](../figures/schematic_reviewers.png)
+
+Several reviewers: a share of the clips goes to both, which gives their
+agreement.
+
+- [`assign_reviewers()`](https://provetelab.org/sheepdog/reference/assign_reviewers.md)
+  : Assign the clips to several reviewers
+- [`split_by_reviewer()`](https://provetelab.org/sheepdog/reference/split_by_reviewer.md)
+  : Copy each reviewer's clips to their own folder
+- [`reviewer_agreement()`](https://provetelab.org/sheepdog/reference/reviewer_agreement.md)
+  : Agreement between reviewers
+- [`consensus_verdicts()`](https://provetelab.org/sheepdog/reference/consensus_verdicts.md)
+  : Consensus verdicts of several reviewers
+
 ## Stage 1 - After the review
 
 Classify the reviewed clips and summarise precision, thresholds,
-presence and retraining clips.
+presence and retraining clips. The [diagnostic
+diagram](https://provetelab.org/sheepdog/figures/stage1_diagnostic.png)
+shows what to do with each label of
+[`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md),
+and how to compare the empirical and model-based thresholds.
+
+![The two thresholds on simulated data: the precision above each cut,
+where each curve reaches p_min, the choice of model and the
+comparison.](../figures/thresholds.png)
+
+The two thresholds on simulated data: the precision above each cut,
+where each curve reaches p_min, the choice of model and the comparison.
+
+![The retraining loop, for when the classifier and not the review limits
+precision.](../figures/schematic_retraining.png)
+
+The retraining loop, for when the classifier and not the review limits
+precision.
 
 - [`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md)
   : Summarise the manual validation
@@ -351,33 +415,22 @@ presence and retraining clips.
 - [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md)
   : Nights and recordings of clips used to train a classifier
 
-## Stage 1 - Review app
-
-Review the clips in a local app and read its verdicts.
-
-- [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md) :
-  Sample, review and export clips in a local app
-- [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md)
-  : Verdicts of the review app
-
-## Stage 1 - Several reviewers
-
-Split the clips among reviewers, measure their agreement and combine
-their verdicts.
-
-- [`assign_reviewers()`](https://provetelab.org/sheepdog/reference/assign_reviewers.md)
-  : Assign the clips to several reviewers
-- [`split_by_reviewer()`](https://provetelab.org/sheepdog/reference/split_by_reviewer.md)
-  : Copy each reviewer's clips to their own folder
-- [`reviewer_agreement()`](https://provetelab.org/sheepdog/reference/reviewer_agreement.md)
-  : Agreement between reviewers
-- [`consensus_verdicts()`](https://provetelab.org/sheepdog/reference/consensus_verdicts.md)
-  : Consensus verdicts of several reviewers
-
 ## Stage 2 - Calibration
 
 Calibrate confidence scores into probabilities of true detection and
-build nightly detection histories.
+build nightly detection histories. The [calibration
+diagram](https://provetelab.org/sheepdog/figures/stage2_calibration.png)
+has the steps and checks in order.
+
+![The reviewed clips give the curve, and every detection gets its
+P(tp).](../figures/schematic_curve.png)
+
+The reviewed clips give the curve, and every detection gets its P(tp).
+
+![The detections of a night become one cell of the nightly
+history.](../figures/schematic_nights.png)
+
+The detections of a night become one cell of the nightly history.
 
 - [`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md)
   : Calibrate confidence scores and build detection histories
@@ -405,6 +458,8 @@ build nightly detection histories.
   : Compare the empirical and the model-based thresholds
 - [`detection_history()`](https://provetelab.org/sheepdog/reference/detection_history.md)
   : Nightly detection history
+- [`threshold_history()`](https://provetelab.org/sheepdog/reference/threshold_history.md)
+  : Nightly detection history from empirical thresholds
 - [`summarise_history()`](https://provetelab.org/sheepdog/reference/summarise_history.md)
   : Summarise the detection history by site and species
 - [`plot_calibration()`](https://provetelab.org/sheepdog/reference/plot_calibration.md)
@@ -414,6 +469,12 @@ build nightly detection histories.
 
 Fit the calibration with brms, check the prior and the fit, and
 propagate the uncertainty to the histories and the matrices.
+
+![The posterior of P(tp) gives one history per draw, and a mean and an
+interval per cell of the matrices.](../figures/schematic_draws.png)
+
+The posterior of P(tp) gives one history per draw, and a mean and an
+interval per cell of the matrices.
 
 - [`calibration_prior()`](https://provetelab.org/sheepdog/reference/calibration_prior.md)
   : Example prior for a Bayesian calibration model
@@ -438,7 +499,14 @@ propagate the uncertainty to the histories and the matrices.
 
 ## Stage 3 - Community matrices
 
-Effort-standardised site x month matrices from calibrated histories.
+Effort-standardised site x month matrices from calibrated histories. The
+[diagram](https://provetelab.org/sheepdog/figures/stage3_community.png)
+also shows the occupancy export.
+
+![From the nightly history to the matrices and their
+analysis.](../figures/schematic_matrix.png)
+
+From the nightly history to the matrices and their analysis.
 
 - [`build_community_matrices()`](https://provetelab.org/sheepdog/reference/build_community_matrices.md)
   : Write the community matrices
@@ -481,6 +549,8 @@ occupancy models with false positives, such as those of crywolf.
   scores](https://provetelab.org/sheepdog/articles/calibration.md):
 - [Bayesian calibration with
   brms](https://provetelab.org/sheepdog/articles/bayesian-calibration.md):
+- [Choosing a route: from reviewed clips to histories and
+  occupancy](https://provetelab.org/sheepdog/articles/choosing-a-route.md):
 - [From detections to community
   analyses](https://provetelab.org/sheepdog/articles/community-matrices.md):
 

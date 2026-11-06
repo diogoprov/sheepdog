@@ -588,6 +588,11 @@ The columns that occupancy models with false positives read
 and how clips of each design must be used, are defined in
 [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md).
 
+Which detection rule the occupancy analysis can use, and which design
+each needs, is summarised in the [choosing a
+route](https://provetelab.org/sheepdog/articles/choosing-a-route.html)
+article.
+
 ## References
 
 Chambert, T., Miller, D. A. W., & Nichols, J. D. (2015). Modeling false

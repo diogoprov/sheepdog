@@ -304,6 +304,11 @@ inner_join(count(h_mean, species, wt = detection_k1, name = "mean"),
 #> 8 sci_nas    12           6
 ```
 
+The [choosing a
+route](https://provetelab.org/sheepdog/articles/choosing-a-route.html)
+article compares the two rules with the empirical threshold and with one
+history per draw.
+
 ## Propagating the uncertainty to the community matrices
 
 Both rules still produce a single history.

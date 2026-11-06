@@ -57,6 +57,11 @@ calibrated probability of being a true positive reached `p_min` in
 `detection_k1` to `detection_k3` flag nights with at least one, two or
 three such detections.
 
+Other routes lead to a history too (a stricter rule, or one history per
+posterior draw); the [choosing a
+route](https://provetelab.org/sheepdog/articles/choosing-a-route.html)
+article compares them.
+
 ## Why the entry rule must be strict
 
 Occupancy models with false positives include an observation layer that
@@ -293,7 +298,7 @@ mats <- build_community_matrices(history_file, out, core_species = core,
                                  k_min = 2, min_nights_month = 5)
 #> Matrix: 23 rows (site x month) x 5 species | rule k >= 2
 #> Effort: 23 site x month cells included; 1 dropped for having < 5 recorded nights (see effort_site_month.csv)
-#> Files in: /tmp/RtmpXjcz48/community_matrices
+#> Files in: /tmp/RtmpTEXnFT/community_matrices
 list.files(out)
 #> [1] "count_matrix_site_month_k2.csv"     "effort_site_month.csv"             
 #> [3] "frequency_matrix_site_month_k2.csv"

@@ -669,6 +669,10 @@ above `min_confidence`) would have counted as detections. Species whose
 curves never reach `p_min` have no night with a detection, whatever
 their scores.
 
+This is one of four routes to a detection history; the [choosing a
+route](https://provetelab.org/sheepdog/articles/choosing-a-route.html)
+article compares them with the empirical threshold of stage 1.
+
 ## Choosing p_min and k
 
 `p_min` and k trade false-positive nights against missed nights. A high

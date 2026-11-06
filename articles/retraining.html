@@ -53,6 +53,7 @@
     <li><a class="dropdown-item" href="../articles/validation-effort.html">How many clips should I validate?</a></li>
     <li><a class="dropdown-item" href="../articles/calibration.html">Calibrating confidence scores</a></li>
     <li><a class="dropdown-item" href="../articles/bayesian-calibration.html">Bayesian calibration with brms</a></li>
+    <li><a class="dropdown-item" href="../articles/choosing-a-route.html">Choosing a route: from reviewed clips to histories and occupancy</a></li>
     <li><a class="dropdown-item" href="../articles/community-matrices.html">From detections to community analyses</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Beyond the three stages</h6></li>
@@ -106,6 +107,12 @@ shows how to turn the reviewed clips into a training data set in the
 layout that BirdNET-Analyzer expects, how to keep an independent set for
 testing the new classifier, and what has to be redone after
 retraining.</p>
+<div class="float">
+<img src="figures/retraining-loop.png" alt="The retraining loop: listen to the false positives, collect the confirmed positives, build the training folders, train and re-run the classifier, and leave the training clips out of the next draw. A new random draw, review and diagnostic follow."><div class="figcaption">The retraining loop: listen to the false
+positives, collect the confirmed positives, build the training folders,
+train and re-run the classifier, and leave the training clips out of the
+next draw. A new random draw, review and diagnostic follow.</div>
+</div>
 <p>Training itself runs in BirdNET-Analyzer (Python), not in R. The
 requirements quoted below come from the BirdNET-Analyzer documentation
 (version 2.4.0, section <code>birdnet_analyzer.train</code> of the <a href="https://birdnet-team.github.io/BirdNET-Analyzer/stable/usage/cli.html" class="external-link">command

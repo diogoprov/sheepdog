@@ -9,6 +9,16 @@ turn the reviewed clips into a training data set in the layout that
 BirdNET-Analyzer expects, how to keep an independent set for testing the
 new classifier, and what has to be redone after retraining.
 
+![The retraining loop: listen to the false positives, collect the
+confirmed positives, build the training folders, train and re-run the
+classifier, and leave the training clips out of the next draw. A new
+random draw, review and diagnostic follow.](figures/retraining-loop.png)
+
+The retraining loop: listen to the false positives, collect the
+confirmed positives, build the training folders, train and re-run the
+classifier, and leave the training clips out of the next draw. A new
+random draw, review and diagnostic follow.
+
 Training itself runs in BirdNET-Analyzer (Python), not in R. The
 requirements quoted below come from the BirdNET-Analyzer documentation
 (version 2.4.0, section `birdnet_analyzer.train` of the [command line

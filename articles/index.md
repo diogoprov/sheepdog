@@ -16,6 +16,8 @@
   scores](https://provetelab.org/sheepdog/articles/calibration.md):
 - [Bayesian calibration with
   brms](https://provetelab.org/sheepdog/articles/bayesian-calibration.md):
+- [Choosing a route: from reviewed clips to histories and
+  occupancy](https://provetelab.org/sheepdog/articles/choosing-a-route.md):
 - [From detections to community
   analyses](https://provetelab.org/sheepdog/articles/community-matrices.md):
 

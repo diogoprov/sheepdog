@@ -53,6 +53,7 @@
     <li><a class="dropdown-item" href="../articles/validation-effort.html">How many clips should I validate?</a></li>
     <li><a class="dropdown-item" href="../articles/calibration.html">Calibrating confidence scores</a></li>
     <li><a class="dropdown-item" href="../articles/bayesian-calibration.html">Bayesian calibration with brms</a></li>
+    <li><a class="dropdown-item" href="../articles/choosing-a-route.html">Choosing a route: from reviewed clips to histories and occupancy</a></li>
     <li><a class="dropdown-item" href="../articles/community-matrices.html">From detections to community analyses</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Beyond the three stages</h6></li>
@@ -145,6 +146,9 @@ counts the detections whose calibrated probability of being a true
 positive reached <code>p_min</code> in <code><a href="../reference/calibrate.html">calibrate()</a></code>;
 <code>detection_k1</code> to <code>detection_k3</code> flag nights with
 at least one, two or three such detections.</p>
+<p>Other routes lead to a history too (a stricter rule, or one history
+per posterior draw); the <a href="https://provetelab.org/sheepdog/articles/choosing-a-route.html">choosing
+a route</a> article compares them.</p>
 </div>
 <div class="section level2">
 <h2 id="why-the-entry-rule-must-be-strict">Why the entry rule must be strict<a class="anchor" aria-label="anchor" href="#why-the-entry-rule-must-be-strict"></a>
@@ -364,7 +368,7 @@ matrices and the effort table as CSV files:</p>
 <span>                                 k_min <span class="op">=</span> <span class="fl">2</span>, min_nights_month <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Matrix: 23 rows (site x month) x 5 species | rule k &gt;= 2</span></span>
 <span><span class="co">#&gt; Effort: 23 site x month cells included; 1 dropped for having &lt; 5 recorded nights (see effort_site_month.csv)</span></span>
-<span><span class="co">#&gt; Files in: /tmp/RtmpXjcz48/community_matrices</span></span>
+<span><span class="co">#&gt; Files in: /tmp/RtmpTEXnFT/community_matrices</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "count_matrix_site_month_k2.csv"     "effort_site_month.csv"             </span></span>
 <span><span class="co">#&gt; [3] "frequency_matrix_site_month_k2.csv"</span></span></code></pre></div>

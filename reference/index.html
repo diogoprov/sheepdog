@@ -34,6 +34,7 @@
     <li><a class="dropdown-item" href="../articles/validation-effort.html">How many clips should I validate?</a></li>
     <li><a class="dropdown-item" href="../articles/calibration.html">Calibrating confidence scores</a></li>
     <li><a class="dropdown-item" href="../articles/bayesian-calibration.html">Bayesian calibration with brms</a></li>
+    <li><a class="dropdown-item" href="../articles/choosing-a-route.html">Choosing a route: from reviewed clips to histories and occupancy</a></li>
     <li><a class="dropdown-item" href="../articles/community-matrices.html">From detections to community analyses</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Beyond the three stages</h6></li>
@@ -66,7 +67,11 @@
     <div class="section level2">
       <h2 id="stage-validation-data">Stage 1 - Validation data<a class="anchor" aria-label="anchor" href="#stage-validation-data"></a></h2>
 
-      <div class="section-desc"><p>Read BirdNET selection tables, select clips for manual review, and cut and pack them.</p></div>
+      <div class="section-desc"><p>Read BirdNET selection tables, select clips for manual review, and cut and pack them. Each sampling design sends a different part of the night to review; later rounds leave out what was reviewed.</p><div class="float">
+<img src="../figures/schematic_selection.png" alt="The same night of twelve recordings under the three sampling designs of select_clips()."><div class="figcaption">The same night of twelve recordings under the three sampling designs of select_clips().</div>
+</div><div class="float">
+<img src="../figures/schematic_rounds.png" alt="Review rounds: what was reviewed leaves the pool, and combine_rounds() gives one simple random sample."><div class="figcaption">Review rounds: what was reviewed leaves the pool, and combine_rounds() gives one simple random sample.</div>
+</div></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -122,9 +127,77 @@
         </dt>
         <dd>Pack the clips into one zip per species</dd>
       </dl></div><div class="section level2">
+      <h2 id="stage-review-app">Stage 1 - Review app<a class="anchor" aria-label="anchor" href="#stage-review-app"></a></h2>
+
+      <div class="section-desc"><p>Review the clips in a local app and read its verdicts.</p><div class="float">
+<img src="../figures/schematic_review.png" alt="Review: each clip is heard and gets one verdict."><div class="figcaption">Review: each clip is heard and gets one verdict.</div>
+</div></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="run_app.html">run_app()</a></code>
+
+        </dt>
+        <dd>Sample, review and export clips in a local app</dd>
+
+        <dt>
+
+          <code><a href="app_verdicts.html">app_verdicts()</a></code>
+
+        </dt>
+        <dd>Verdicts of the review app</dd>
+      </dl></div><div class="section level2">
+      <h2 id="stage-several-reviewers">Stage 1 - Several reviewers<a class="anchor" aria-label="anchor" href="#stage-several-reviewers"></a></h2>
+
+      <div class="section-desc"><p>Split the clips among reviewers, measure their agreement and combine their verdicts.</p><div class="float">
+<img src="../figures/schematic_reviewers.png" alt="Several reviewers: a share of the clips goes to both, which gives their agreement."><div class="figcaption">Several reviewers: a share of the clips goes to both, which gives their agreement.</div>
+</div></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="assign_reviewers.html">assign_reviewers()</a></code>
+
+        </dt>
+        <dd>Assign the clips to several reviewers</dd>
+
+        <dt>
+
+          <code><a href="split_by_reviewer.html">split_by_reviewer()</a></code>
+
+        </dt>
+        <dd>Copy each reviewer's clips to their own folder</dd>
+
+        <dt>
+
+          <code><a href="reviewer_agreement.html">reviewer_agreement()</a></code>
+
+        </dt>
+        <dd>Agreement between reviewers</dd>
+
+        <dt>
+
+          <code><a href="consensus_verdicts.html">consensus_verdicts()</a></code>
+
+        </dt>
+        <dd>Consensus verdicts of several reviewers</dd>
+      </dl></div><div class="section level2">
       <h2 id="stage-after-the-review">Stage 1 - After the review<a class="anchor" aria-label="anchor" href="#stage-after-the-review"></a></h2>
 
-      <div class="section-desc"><p>Classify the reviewed clips and summarise precision, thresholds, presence and retraining clips.</p></div>
+      <div class="section-desc"><p>Classify the reviewed clips and summarise precision, thresholds, presence and retraining clips. The <a href="../figures/stage1_diagnostic.png">diagnostic diagram</a> shows what to do with each label of <code><a href="../reference/review_support.html">review_support()</a></code>, and how to compare the empirical and model-based thresholds.</p><div class="float">
+<img src="../figures/thresholds.png" alt="The two thresholds on simulated data: the precision above each cut, where each curve reaches p_min, the choice of model and the comparison."><div class="figcaption">The two thresholds on simulated data: the precision above each cut, where each curve reaches p_min, the choice of model and the comparison.</div>
+</div><div class="float">
+<img src="../figures/schematic_retraining.png" alt="The retraining loop, for when the classifier and not the review limits precision."><div class="figcaption">The retraining loop, for when the classifier and not the review limits precision.</div>
+</div></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -222,69 +295,13 @@
         </dt>
         <dd>Nights and recordings of clips used to train a classifier</dd>
       </dl></div><div class="section level2">
-      <h2 id="stage-review-app">Stage 1 - Review app<a class="anchor" aria-label="anchor" href="#stage-review-app"></a></h2>
-
-      <div class="section-desc"><p>Review the clips in a local app and read its verdicts.</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="run_app.html">run_app()</a></code>
-
-        </dt>
-        <dd>Sample, review and export clips in a local app</dd>
-
-        <dt>
-
-          <code><a href="app_verdicts.html">app_verdicts()</a></code>
-
-        </dt>
-        <dd>Verdicts of the review app</dd>
-      </dl></div><div class="section level2">
-      <h2 id="stage-several-reviewers">Stage 1 - Several reviewers<a class="anchor" aria-label="anchor" href="#stage-several-reviewers"></a></h2>
-
-      <div class="section-desc"><p>Split the clips among reviewers, measure their agreement and combine their verdicts.</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="assign_reviewers.html">assign_reviewers()</a></code>
-
-        </dt>
-        <dd>Assign the clips to several reviewers</dd>
-
-        <dt>
-
-          <code><a href="split_by_reviewer.html">split_by_reviewer()</a></code>
-
-        </dt>
-        <dd>Copy each reviewer's clips to their own folder</dd>
-
-        <dt>
-
-          <code><a href="reviewer_agreement.html">reviewer_agreement()</a></code>
-
-        </dt>
-        <dd>Agreement between reviewers</dd>
-
-        <dt>
-
-          <code><a href="consensus_verdicts.html">consensus_verdicts()</a></code>
-
-        </dt>
-        <dd>Consensus verdicts of several reviewers</dd>
-      </dl></div><div class="section level2">
       <h2 id="stage-calibration">Stage 2 - Calibration<a class="anchor" aria-label="anchor" href="#stage-calibration"></a></h2>
 
-      <div class="section-desc"><p>Calibrate confidence scores into probabilities of true detection and build nightly detection histories.</p></div>
+      <div class="section-desc"><p>Calibrate confidence scores into probabilities of true detection and build nightly detection histories. The <a href="../figures/stage2_calibration.png">calibration diagram</a> has the steps and checks in order.</p><div class="float">
+<img src="../figures/schematic_curve.png" alt="The reviewed clips give the curve, and every detection gets its P(tp)."><div class="figcaption">The reviewed clips give the curve, and every detection gets its P(tp).</div>
+</div><div class="float">
+<img src="../figures/schematic_nights.png" alt="The detections of a night become one cell of the nightly history."><div class="figcaption">The detections of a night become one cell of the nightly history.</div>
+</div></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -384,6 +401,13 @@
 
         <dt>
 
+          <code><a href="threshold_history.html">threshold_history()</a></code>
+
+        </dt>
+        <dd>Nightly detection history from empirical thresholds</dd>
+
+        <dt>
+
           <code><a href="summarise_history.html">summarise_history()</a></code>
 
         </dt>
@@ -398,7 +422,9 @@
       </dl></div><div class="section level2">
       <h2 id="stage-bayesian-calibration">Stage 2 - Bayesian calibration<a class="anchor" aria-label="anchor" href="#stage-bayesian-calibration"></a></h2>
 
-      <div class="section-desc"><p>Fit the calibration with brms, check the prior and the fit, and propagate the uncertainty to the histories and the matrices.</p></div>
+      <div class="section-desc"><p>Fit the calibration with brms, check the prior and the fit, and propagate the uncertainty to the histories and the matrices.</p><div class="float">
+<img src="../figures/schematic_draws.png" alt="The posterior of P(tp) gives one history per draw, and a mean and an interval per cell of the matrices."><div class="figcaption">The posterior of P(tp) gives one history per draw, and a mean and an interval per cell of the matrices.</div>
+</div></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -477,7 +503,9 @@
       </dl></div><div class="section level2">
       <h2 id="stage-community-matrices">Stage 3 - Community matrices<a class="anchor" aria-label="anchor" href="#stage-community-matrices"></a></h2>
 
-      <div class="section-desc"><p>Effort-standardised site x month matrices from calibrated histories.</p></div>
+      <div class="section-desc"><p>Effort-standardised site x month matrices from calibrated histories. The <a href="../figures/stage3_community.png">diagram</a> also shows the occupancy export.</p><div class="float">
+<img src="../figures/schematic_matrix.png" alt="From the nightly history to the matrices and their analysis."><div class="figcaption">From the nightly history to the matrices and their analysis.</div>
+</div></div>
 
       <dl></dl></div><div class="section level2">
 
