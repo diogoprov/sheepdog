@@ -302,9 +302,10 @@ the lowest log-loss, leaving out models singular in most folds
 selection by highest mean AUC. When the refit is singular,
 <code><a href="fit_calibration.html">fit_calibration()</a></code> warns; read <code>calibration_model.txt</code> and the
 comparison before using the probabilities.</p>
-<p>Converting BirdNET confidence scores into probabilities is recommended
-by the BirdNET authors (Wood &amp; Kahl 2024, <a href="https://doi.org/10.1007/s10336-024-02144-5" class="external-link">doi:10.1007/s10336-024-02144-5</a>
-);
+<p>Wood &amp; Kahl (2024, <a href="https://doi.org/10.1007/s10336-024-02144-5" class="external-link">doi:10.1007/s10336-024-02144-5</a>
+) describe the
+conversion of BirdNET confidence scores into probabilities for studies in
+which the predictions cannot all be reviewed;
 calibration by logistic regression on logit(score) is applied, for
 instance, by Owens et al. (2026, <a href="https://doi.org/10.64898/2026.06.01.729442" class="external-link">doi:10.64898/2026.06.01.729442</a>
 ).

@@ -197,8 +197,9 @@ returns <code>threshold_lower</code>: the lowest score at which the lower quanti
 (<code>lower_prob</code>) of the posterior of P(TP) reaches <code>target</code>, a conservative
 threshold that accounts for the uncertainty of the calibration.</p>
 <p><strong>Which clips to review.</strong> The calibration models the verdict given the
-score. Choosing the clips to review by their score only (for instance, a
-sample stratified by score bins, as Wood &amp; Kahl 2024 suggest) does not
+score. Choosing the clips to review by their score only (for instance,
+adding a second random sample from the higher scores, as Wood &amp; Kahl 2024
+suggest for species with few true detections) does not
 bias P(TP | score), as long as the model form is right; it does bias the
 precision computed directly from the reviewed clips, which
 <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code> uses. The site-confirmation design of

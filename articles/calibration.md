@@ -16,11 +16,13 @@ ex <- system.file("extdata", "example", package = "sheepdog")
 ## Why calibrate
 
 A BirdNET confidence score is a classifier output in \[0, 1\], not a
-probability that the detection is correct. The BirdNET authors recommend
-converting the scores into probabilities of a true detection (Wood &
-Kahl 2024). One way to do so, with a sample of manually validated
-detections, is a logistic regression of the verdict on logit(score),
-applied, for instance, by Owens et al. (2026).
+probability that the detection is correct. Wood & Kahl (2024) describe
+two ways to use the scores: reviewing the detections down to a chosen
+score, or converting the scores into probabilities of a true detection,
+for studies in which the detections cannot all be reviewed. The
+conversion is a logistic regression of the verdict on a sample of
+manually validated detections; on logit(score), it is applied, for
+instance, by Owens et al. (2026).
 
 One curve for all species is rarely enough. The same score can mean
 different things for different species, because the score distributions
@@ -145,7 +147,7 @@ cv |> select(model, auc_mean, auc_sd, n_failed)
 #> 2 m3_plus_site            0.928 0.00640        0
 #> 3 m2_species_slope        0.916 0.00556        0
 #> 4 m1_species_intercept    0.902 0.00544        0
-#> 5 m0_global               0.862 0.0121         0
+#> 5 m0_global               0.862 0.0120         0
 ```
 
 The table is ordered by mean AUC. Read the differences between models
@@ -276,7 +278,7 @@ coef(fit_global)
 #>  -0.5310926   1.5993695
 lme4::fixef(fit_full)
 #> (Intercept)  logit_conf 
-#>  -0.2818954   2.8003920
+#>   -0.281896    2.800392
 lme4::VarCorr(fit_full)
 #>  Groups       Name        Std.Dev. Corr  
 #>  site:species (Intercept) 1.19511        

@@ -9,7 +9,7 @@ Miller et al. (2011)
 [doi:10.1890/10-1396.1](https://doi.org/10.1890/10-1396.1) and Chambert
 et al. (2015) [doi:10.1890/14-1507.1](https://doi.org/10.1890/14-1507.1)
 , summarises the reviewed clips, converts confidence scores into
-probabilities of true detection, as recommended by Wood and Kahl (2024)
+probabilities of true detection, as described by Wood and Kahl (2024)
 [doi:10.1007/s10336-024-02144-5](https://doi.org/10.1007/s10336-024-02144-5)
 , with hierarchical logistic models, and turns calibrated detections
 into nightly detection histories and effort-standardised community
