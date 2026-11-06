@@ -11,7 +11,7 @@ which keeps only what the calibration needs. Tables written by v1.2.0
 ## Usage
 
 ``` r
-read_validation_tables(files)
+read_validation_tables(files, candidates = NULL)
 ```
 
 ## Arguments
@@ -20,6 +20,14 @@ read_validation_tables(files)
 
   Paths to the `validation_by_clip.csv` files. Missing files are skipped
   with a warning.
+
+- candidates:
+
+  For the rounds of one design: the `candidates.csv` of the first round,
+  passed to
+  [`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md),
+  which gives the clips their cumulative `inclusion_prob`. `NULL` only
+  stacks the tables.
 
 ## Value
 

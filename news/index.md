@@ -2,6 +2,47 @@
 
 ## sheepdog (development version)
 
+- Review rounds:
+  [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
+  and
+  [`extract_validation_clips()`](https://provetelab.org/sheepdog/reference/extract_validation_clips.md)
+  gain `previous`, `candidates` and `cells`, to draw another round of a
+  design without repeating what was reviewed. In `"random_detections"`,
+  the occasions drawn earlier leave the pool and the rounds together are
+  a simple random sample of each stratum. The first round writes
+  `candidates.csv`, later rounds draw from it, and a different
+  `threshold`, `occasion_unit` or `strata`, or a cap, is refused.
+  Manifests gain `round`, `n_candidates`, `n_drawn` and
+  `inclusion_prob_round`. The new
+  [`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md),
+  also through `read_validation_tables(candidates = )` and
+  `post_validation(previous = )`, gives every clip the cumulative
+  `inclusion_prob`;
+  [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md)
+  then adds `n_rounds` and `reached_last_round`.
+  [`vignette("validation-effort")`](https://provetelab.org/sheepdog/articles/validation-effort.md)
+  measures the bias of stopping when a cell reaches the target
+  ([\#107](https://github.com/diogoprov/sheepdog/issues/107)).
+
+- [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md):
+  weighted cells no longer fail when the highest score rounds up past
+  itself (0.996 gives the cut 1).
+
+- [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
+  now chooses the cut with the precision weighted by
+  `1 / inclusion_prob` in the cells whose clips all have it, as
+  `"random_detections"` draws strata with unequal probabilities. `min_n`
+  applies there to Kish’s effective sample size, given in `n_eff`, and
+  `precision_used` says which precision chose each cut. **Thresholds of
+  such cells can change**; `weighted = FALSE`, also in
+  [`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md)
+  and
+  [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md),
+  restores the previous choice. Cells that mix clips with and without
+  `inclusion_prob` use the unweighted precision, with a warning. Tables
+  without `inclusion_prob` are unchanged
+  ([\#103](https://github.com/diogoprov/sheepdog/issues/103)).
+
 - New
   [`calibration_quality()`](https://provetelab.org/sheepdog/reference/calibration_quality.md):
   checks the calibrated probabilities by species (or by cell) on

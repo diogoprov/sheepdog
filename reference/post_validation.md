@@ -40,7 +40,10 @@ post_validation(
   target_precision = 0.9,
   min_n = 15,
   verdicts_file = NULL,
-  reviewer = NULL
+  reviewer = NULL,
+  weighted = NULL,
+  previous = NULL,
+  candidates = NULL
 )
 ```
 
@@ -95,6 +98,24 @@ post_validation(
   in
   [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md).
 
+- weighted:
+
+  Passed to
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md).
+
+- previous:
+
+  For a later round of a design: the `validation_by_clip.csv` of the
+  earlier rounds. `validation_by_clip.csv` keeps the clips of this round
+  only; the summaries and `validation_combined.csv` cover all rounds,
+  from
+  [`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md).
+
+- candidates:
+
+  With `previous`, the `candidates.csv` of the first round. `NULL` looks
+  for it beside `manifest_path` and `previous`.
+
 ## Value
 
 A list with the tables `validation`, `precision`, `thresholds`,
@@ -114,7 +135,10 @@ are left out of the precision and the thresholds.
 
 With `inclusion_prob` in the manifest (clips of `"random_detections"`),
 the precision tables also give the precision weighted by
-`1 / inclusion_prob`; see
-[`precision_by_bin()`](https://provetelab.org/sheepdog/reference/precision_by_bin.md).
+`1 / inclusion_prob` (see
+[`precision_by_bin()`](https://provetelab.org/sheepdog/reference/precision_by_bin.md)),
+and that precision chooses the thresholds, unless `weighted = FALSE`;
+see
+[`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md).
 
 This is the function form of the v1.2.0 script `pos_validacao.R`.

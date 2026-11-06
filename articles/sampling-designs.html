@@ -393,7 +393,12 @@ all the predictions. <code><a href="../reference/precision_by_bin.html">precisio
 <code><a href="../reference/suggest_thresholds.html">suggest_thresholds()</a></code> and <code><a href="../reference/post_validation.html">post_validation()</a></code> add
 the precision weighted by <code>1 / inclusion_prob</code>
 (<code>precision_weighted</code>) whenever the validation table carries
-<code>inclusion_prob</code>.</p>
+<code>inclusion_prob</code>. <code><a href="../reference/suggest_thresholds.html">suggest_thresholds()</a></code> also uses
+it to choose the cut in the cells whose clips all have
+<code>inclusion_prob</code>, with <code>min_n</code> applied to Kish’s
+effective sample size; <code>precision_used</code> says which precision
+chose each cut, and <code>weighted = FALSE</code> restores the
+unweighted choice.</p>
 </div>
 <div class="section level2">
 <h2 id="random_recordings-multiple-method-design">

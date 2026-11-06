@@ -105,7 +105,7 @@ select(cv, model, auc_mean, auc_sd)
 #> 2 m3_plus_site            0.928 0.00640
 #> 3 m2_species_slope        0.916 0.00556
 #> 4 m1_species_intercept    0.902 0.00544
-#> 5 m0_global               0.862 0.0120
+#> 5 m0_global               0.862 0.0121
 ```
 
 The effort curve below is drawn for the global model (`m0_global`, a
@@ -705,6 +705,68 @@ candidates of
 [`compare_calibration_models()`](https://provetelab.org/sheepdog/reference/compare_calibration_models.md)
 with a site intercept) unless the allocation is proportional to the
 number of candidate occasions.
+
+## Further rounds of review
+
+When
+[`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md)
+labels a cell `"review more"`, draw another round with `previous`. The
+occasions drawn earlier leave the pool, so nothing is reviewed twice,
+and `n_top` occasions are drawn per stratum among the rest:
+
+``` r
+
+extract_validation_clips(data_dir, "round1",
+                         sampling_mode = "random_detections", threshold = 0.5)
+# ... review, then post_validation(), then:
+rs <- review_support(validation, detections)
+extract_validation_clips(data_dir, "round2",
+                         sampling_mode = "random_detections", threshold = 0.5,
+                         previous = "round1/clip_manifest.csv",
+                         cells = rs[rs$diagnosis == "review more", ])
+post_validation(verdicts_file = "round2/verdicts.csv",
+                manifest_path = "round2/clip_manifest.csv",
+                output_dir = "round2/results",
+                previous = "round1/results/validation_by_clip.csv",
+                candidates = "round1/candidates.csv")
+```
+
+Drawing `n1` of `N` occasions and then `n2` of the `N - n1` left gives a
+simple random sample of `n1 + n2`, so every clip of a stratum has the
+inclusion probability `n_drawn / n_candidates`, whatever its round. This
+holds only with the same candidates, strata, threshold and occasion unit
+in every round: the first round writes `candidates.csv`, later rounds
+draw from it, and
+[`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
+refuses a different design or a cap (`target_total`, `max_per_species`).
+Each table keeps the probability of its own round, so stack the rounds
+with
+[`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md),
+or with `read_validation_tables(candidates = )`;
+`post_validation(previous = )` does it for you and writes
+`validation_combined.csv`. For the calibration, the clips of a night
+should stay in the same fold across rounds: `fold_group = "night"` does
+this, since it groups by the column and not by the round. Apply
+[`exclude_training_clips()`](https://provetelab.org/sheepdog/reference/exclude_training_clips.md)
+the same way in every round.
+
+**Stopping at the target biases the precision.** The probabilities are
+exact for a number of rounds fixed in advance. A cell that goes on until
+it reaches the target stops right after a lucky round, and a cell chosen
+by `"review more"` is chosen by its verdicts. In a simulation of one
+cell (500 candidate clips, up to 60 reviewed, a target of 0.90 with at
+least 15 clips; `dev/review-rounds-stopping.R`), a fixed number of
+rounds had no bias. With stopping at the target, the precision was too
+high by about 0.03 on average when the true precision was 0.85, and by
+about 0.08 among the cells that reached the target, about half of them;
+at a true precision of 0.90 the bias among those cells was about 0.04.
+These values depend on the sizes used. So decide the number of rounds or
+clips per cell in advance when you can, and report the rounds of each
+cell: with a table of
+[`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md),
+[`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md)
+adds `n_rounds` and `reached_last_round`, which marks the cells to read
+with most care.
 
 ## The practical decision
 

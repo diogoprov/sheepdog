@@ -36,7 +36,10 @@ select_clips(
   max_per_species = NULL,
   remap_from = NULL,
   remap_to = NULL,
-  seed = 2026
+  seed = 2026,
+  previous = NULL,
+  candidates = NULL,
+  cells = NULL
 )
 ```
 
@@ -220,13 +223,35 @@ select_clips(
   Seed of every random draw. The global random number generator is left
   as it was.
 
+- previous:
+
+  Earlier rounds of the same design, to draw another round (see Review
+  rounds): paths to their `clip_manifest.csv` or
+  `validation_by_clip.csv`, a data frame, or a list of these.
+
+- candidates:
+
+  With `previous`, the `candidates.csv` of the first round, as a path or
+  a data frame. `NULL` looks for it in the folders of `previous`.
+
+- cells:
+
+  With `previous`, restrict the round to these cells: a data frame with
+  `site` and `species_folder` or `species_code`, such as the rows of
+  [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md)
+  with `diagnosis == "review more"`.
+
 ## Value
 
 A tibble, the clip manifest without `status`, with the columns `site`,
 `species_code`, `species_folder`, `recording_date`, `night`,
 `recording_hour`, `rank`, `confidence`, `clip_file`, `clip_start`,
 `clip_end`, `duration`, `source_audio`, `begin_path`, `sampling_mode`,
-`occasion_id`, `n_detections_occasion` and `inclusion_prob`. See
+`occasion_id`, `n_detections_occasion`, `inclusion_prob` (cumulative
+over the rounds), `round`, `n_candidates` (`N` of the stratum),
+`n_drawn` (occasions drawn in the stratum, all rounds so far; both `NA`
+outside `"random_detections"` and under a cap) and
+`inclusion_prob_round` (the draw of that round alone). See
 [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md)
 for their definitions.
 
@@ -257,3 +282,33 @@ for their definitions.
 
 In both random modes, use the same `threshold` as the occupancy
 analysis.
+
+## Review rounds
+
+`previous` draws one more round of a design without repeating what was
+reviewed. In `"random_detections"`, the occasions drawn earlier leave
+the pool and `n_top` occasions are drawn per stratum among the rest.
+Drawing `n1` occasions of `N` and then `n2` of the `N - n1` left gives a
+simple random sample of `n1 + n2`, so after each round every clip has
+the inclusion probability `n_drawn / n_candidates`, whatever its round.
+This needs the same candidates, strata, threshold and occasion unit in
+every round. The first round therefore keeps a list of its candidates,
+in the attribute `"candidates"` of the manifest, written to
+`candidates.csv` by
+[`extract_validation_clips()`](https://provetelab.org/sheepdog/reference/extract_validation_clips.md);
+later rounds draw from that list, and a warning says when the
+predictions have changed. A different `threshold`, `occasion_unit` or
+`strata` is refused, and so are `target_total` and `max_per_species`,
+whose second stage depends on the counts of each round. Round `k` uses
+the seed `seed + k - 1`.
+
+The tables of earlier rounds keep the probability of their own round:
+use
+[`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md)
+to stack them. In `"top"`, there is no inclusion probability, and
+`previous` only leaves out the clips already reviewed. `previous` is not
+available for `"random_recordings"`.
+
+Choosing the cells of a round from their verdicts, and stopping when a
+cell reaches a target, makes the stopping depend on the results; see
+[`vignette("validation-effort")`](https://provetelab.org/sheepdog/articles/validation-effort.md).

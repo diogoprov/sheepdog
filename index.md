@@ -204,9 +204,10 @@ The manifest records `occasion_id`, `n_detections_occasion` and
 `inclusion_prob` (the probability that the occasion was drawn), with
 which
 [`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md)
-also reports the precision weighted by `1 / inclusion_prob`. Every draw
-uses a fixed seed, so a rerun selects the same clips, and the cut is
-idempotent: an interrupted run resumes where it stopped.
+also reports the precision weighted by `1 / inclusion_prob` and uses it
+to suggest the thresholds. Every draw uses a fixed seed, so a rerun
+selects the same clips, and the cut is idempotent: an interrupted run
+resumes where it stopped.
 
 ## Calibration
 

@@ -314,6 +314,11 @@ and
 add the precision weighted by `1 / inclusion_prob`
 (`precision_weighted`) whenever the validation table carries
 `inclusion_prob`.
+[`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
+also uses it to choose the cut in the cells whose clips all have
+`inclusion_prob`, with `min_n` applied to Kish’s effective sample size;
+`precision_used` says which precision chose each cut, and
+`weighted = FALSE` restores the unweighted choice.
 
 ## `"random_recordings"`: multiple-method design
 

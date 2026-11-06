@@ -189,7 +189,7 @@ cross-validation on all the clips (formulas with random effects need the
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> m3_plus_site            0.928 0.006<span style="text-decoration: underline;">40</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> m2_species_slope        0.916 0.005<span style="text-decoration: underline;">56</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> m1_species_intercept    0.902 0.005<span style="text-decoration: underline;">44</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> m0_global               0.862 0.012<span style="text-decoration: underline;">0</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> m0_global               0.862 0.012<span style="text-decoration: underline;">1</span></span></span></code></pre></div>
 <p>The effort curve below is drawn for the global model
 (<code>m0_global</code>, a single logistic regression on the logit of
 the score) and for the hierarchical <code>m4_species_x_site</code>
@@ -745,6 +745,64 @@ the allocation is proportional to the number of candidate occasions.</p>
 </div>
 </div>
 <div class="section level2">
+<h2 id="further-rounds-of-review">Further rounds of review<a class="anchor" aria-label="anchor" href="#further-rounds-of-review"></a>
+</h2>
+<p>When <code><a href="../reference/review_support.html">review_support()</a></code> labels a cell
+<code>"review more"</code>, draw another round with
+<code>previous</code>. The occasions drawn earlier leave the pool, so
+nothing is reviewed twice, and <code>n_top</code> occasions are drawn
+per stratum among the rest:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/extract_validation_clips.html">extract_validation_clips</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">"round1"</span>,</span>
+<span>                         sampling_mode <span class="op">=</span> <span class="st">"random_detections"</span>, threshold <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
+<span><span class="co"># ... review, then post_validation(), then:</span></span>
+<span><span class="va">rs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/review_support.html">review_support</a></span><span class="op">(</span><span class="va">validation</span>, <span class="va">detections</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/extract_validation_clips.html">extract_validation_clips</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">"round2"</span>,</span>
+<span>                         sampling_mode <span class="op">=</span> <span class="st">"random_detections"</span>, threshold <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>                         previous <span class="op">=</span> <span class="st">"round1/clip_manifest.csv"</span>,</span>
+<span>                         cells <span class="op">=</span> <span class="va">rs</span><span class="op">[</span><span class="va">rs</span><span class="op">$</span><span class="va">diagnosis</span> <span class="op">==</span> <span class="st">"review more"</span>, <span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/post_validation.html">post_validation</a></span><span class="op">(</span>verdicts_file <span class="op">=</span> <span class="st">"round2/verdicts.csv"</span>,</span>
+<span>                manifest_path <span class="op">=</span> <span class="st">"round2/clip_manifest.csv"</span>,</span>
+<span>                output_dir <span class="op">=</span> <span class="st">"round2/results"</span>,</span>
+<span>                previous <span class="op">=</span> <span class="st">"round1/results/validation_by_clip.csv"</span>,</span>
+<span>                candidates <span class="op">=</span> <span class="st">"round1/candidates.csv"</span><span class="op">)</span></span></code></pre></div>
+<p>Drawing <code>n1</code> of <code>N</code> occasions and then
+<code>n2</code> of the <code>N - n1</code> left gives a simple random
+sample of <code>n1 + n2</code>, so every clip of a stratum has the
+inclusion probability <code>n_drawn / n_candidates</code>, whatever its
+round. This holds only with the same candidates, strata, threshold and
+occasion unit in every round: the first round writes
+<code>candidates.csv</code>, later rounds draw from it, and
+<code><a href="../reference/select_clips.html">select_clips()</a></code> refuses a different design or a cap
+(<code>target_total</code>, <code>max_per_species</code>). Each table
+keeps the probability of its own round, so stack the rounds with
+<code><a href="../reference/combine_rounds.html">combine_rounds()</a></code>, or with
+<code>read_validation_tables(candidates = )</code>;
+<code>post_validation(previous = )</code> does it for you and writes
+<code>validation_combined.csv</code>. For the calibration, the clips of
+a night should stay in the same fold across rounds:
+<code>fold_group = "night"</code> does this, since it groups by the
+column and not by the round. Apply <code><a href="../reference/exclude_training_clips.html">exclude_training_clips()</a></code>
+the same way in every round.</p>
+<p><strong>Stopping at the target biases the precision.</strong> The
+probabilities are exact for a number of rounds fixed in advance. A cell
+that goes on until it reaches the target stops right after a lucky
+round, and a cell chosen by <code>"review more"</code> is chosen by its
+verdicts. In a simulation of one cell (500 candidate clips, up to 60
+reviewed, a target of 0.90 with at least 15 clips;
+<code>dev/review-rounds-stopping.R</code>), a fixed number of rounds had
+no bias. With stopping at the target, the precision was too high by
+about 0.03 on average when the true precision was 0.85, and by about
+0.08 among the cells that reached the target, about half of them; at a
+true precision of 0.90 the bias among those cells was about 0.04. These
+values depend on the sizes used. So decide the number of rounds or clips
+per cell in advance when you can, and report the rounds of each cell:
+with a table of <code><a href="../reference/combine_rounds.html">combine_rounds()</a></code>,
+<code><a href="../reference/review_support.html">review_support()</a></code> adds <code>n_rounds</code> and
+<code>reached_last_round</code>, which marks the cells to read with most
+care.</p>
+</div>
+<div class="section level2">
 <h2 id="the-practical-decision">The practical decision<a class="anchor" aria-label="anchor" href="#the-practical-decision"></a>
 </h2>
 <p>Read the two views together:</p>
@@ -781,7 +839,7 @@ computed for the best model of the cross-validation and written to
 <code>effort_curve.csv</code>. The arguments <code>effort_n</code> and
 <code>effort_reps</code> set the training sizes and the number of
 repetitions.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ARA"</span>, <span class="st">"BAI"</span>, <span class="st">"NHE"</span>, <span class="st">"XAR"</span><span class="op">)</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibrate.html">calibrate</a></span><span class="op">(</span></span>
 <span>  validation_files  <span class="op">=</span> <span class="va">val_files</span>,</span>

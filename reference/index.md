@@ -43,6 +43,8 @@ presence and retraining clips.
   : Plot the precision curves
 - [`read_validation_tables()`](https://provetelab.org/sheepdog/reference/read_validation_tables.md)
   : Read and stack the validation tables
+- [`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md)
+  : Combine the review rounds of a design
 - [`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md)
   : Build the training folders for BirdNET-Analyzer
 - [`exclude_training_clips()`](https://provetelab.org/sheepdog/reference/exclude_training_clips.md)

@@ -108,7 +108,7 @@ species. This is the function form of the v1.2.0 script
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Sampling design, passed to <code><a href="select_clips.html">select_clips()</a></code> (e.g.
 <code>sampling_mode</code>, <code>n_top</code>, <code>threshold</code>, <code>target_total</code>, <code>remap_from</code>,
-<code>remap_to</code>).</p></dd>
+<code>remap_to</code>, and <code>previous</code> for a further round, in a new <code>output_dir</code>).</p></dd>
 
 
 <dt id="arg-table-pattern">table_pattern<a class="anchor" aria-label="anchor" href="#arg-table-pattern"></a></dt>
@@ -157,13 +157,17 @@ tables (e.g. <code>"FrogNet v2, BirdNET-Analyzer 2.4.0"</code>), recorded in
 <p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="sc">&lt;</span>output_dir<span class="sc">&gt;</span><span class="er">/</span>clips<span class="sc">/</span><span class="er">&lt;</span>species_folder<span class="sc">&gt;</span><span class="er">/*</span>.wav</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="sc">&lt;</span>output_dir<span class="sc">&gt;</span><span class="er">/</span>packages<span class="sc">/</span><span class="er">&lt;</span>species_folder<span class="sc">&gt;</span>.zip</span>
 <span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="sc">&lt;</span>output_dir<span class="sc">&gt;</span><span class="er">/</span>clip_manifest.csv</span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="sc">&lt;</span>output_dir<span class="sc">&gt;</span><span class="er">/</span>extraction_info.csv</span></code></pre><p></p></div>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="sc">&lt;</span>output_dir<span class="sc">&gt;</span><span class="er">/</span>extraction_info.csv</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="sc">&lt;</span>output_dir<span class="sc">&gt;</span><span class="er">/</span>candidates.csv</span></code></pre><p></p></div>
 <p><code>extraction_info.csv</code> records the provenance of the run (one <code>key</code>,
 <code>value</code> row per item): the date, the versions of sheepdog and R, the
 folder of the selection tables, the <code>classifier</code> label and every
 argument passed to <code><a href="select_clips.html">select_clips()</a></code>. Keep it with the manifest: it tells
 later rounds which classifier produced the clips (for instance, to leave
 out of a validation round the clips used to retrain that classifier).</p>
+<p><code>candidates.csv</code> (<code>"random_detections"</code>) lists the candidate occasions
+with their stratum: later rounds draw from it and <code><a href="combine_rounds.html">combine_rounds()</a></code>
+reads it, so keep it with the manifest.</p>
     </div>
 
     <div class="section level2">

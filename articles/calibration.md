@@ -145,7 +145,7 @@ cv |> select(model, auc_mean, auc_sd, n_failed)
 #> 2 m3_plus_site            0.928 0.00640        0
 #> 3 m2_species_slope        0.916 0.00556        0
 #> 4 m1_species_intercept    0.902 0.00544        0
-#> 5 m0_global               0.862 0.0120         0
+#> 5 m0_global               0.862 0.0121         0
 ```
 
 The table is ordered by mean AUC. Read the differences between models
@@ -276,7 +276,7 @@ coef(fit_global)
 #>  -0.5310926   1.5993695
 lme4::fixef(fit_full)
 #> (Intercept)  logit_conf 
-#>   -0.281896    2.800392
+#>  -0.2818954   2.8003920
 lme4::VarCorr(fit_full)
 #>  Groups       Name        Std.Dev. Corr  
 #>  site:species (Intercept) 1.19511        

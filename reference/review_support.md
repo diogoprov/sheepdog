@@ -20,7 +20,8 @@ review_support(
   covariates = NULL,
   occasion_unit = c("file", "minute"),
   remap_from = NULL,
-  remap_to = NULL
+  remap_to = NULL,
+  weighted = NULL
 )
 ```
 
@@ -81,13 +82,23 @@ review_support(
   `remap_to`, e.g. `"N:/"` and `"/Volumes/Arara/"`. Backslashes are
   turned into forward slashes first.
 
+- weighted:
+
+  Passed to
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md),
+  so that `"reached"` follows the same rule. `prec_high` stays
+  unweighted.
+
 ## Value
 
 A tibble with `site`, `species_folder`, the `by` columns, `n_reviewed`,
 `n_fp` (false positives among them), `n_high` (reviewed clips with score
 \>= `conf_high`), `prec_high` (their precision), `n_high_all`
 (predictions with score \>= `conf_high`), `unreviewed_high`, `threshold`
-and `diagnosis`, ordered by diagnosis.
+and `diagnosis`, ordered by diagnosis. With a table of
+[`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md),
+also `n_rounds` and `reached_last_round`: the cell has a threshold now
+but had none before its last round.
 
 ## Details
 

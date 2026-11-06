@@ -254,7 +254,7 @@
 <div class="float">
 <img src="reference/figures/extraction_flow.png" alt="The first stage, extract_validation_clips()"><div class="figcaption">The first stage, extract_validation_clips()</div>
 </div>
-<p>The manifest records <code>occasion_id</code>, <code>n_detections_occasion</code> and <code>inclusion_prob</code> (the probability that the occasion was drawn), with which <code><a href="reference/post_validation.html">post_validation()</a></code> also reports the precision weighted by <code>1 / inclusion_prob</code>. Every draw uses a fixed seed, so a rerun selects the same clips, and the cut is idempotent: an interrupted run resumes where it stopped.</p>
+<p>The manifest records <code>occasion_id</code>, <code>n_detections_occasion</code> and <code>inclusion_prob</code> (the probability that the occasion was drawn), with which <code><a href="reference/post_validation.html">post_validation()</a></code> also reports the precision weighted by <code>1 / inclusion_prob</code> and uses it to suggest the thresholds. Every draw uses a fixed seed, so a rerun selects the same clips, and the cut is idempotent: an interrupted run resumes where it stopped.</p>
 </div>
 <div class="section level2">
 <h2 id="calibration">Calibration<a class="anchor" aria-label="anchor" href="#calibration"></a>

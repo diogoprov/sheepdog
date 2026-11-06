@@ -36,7 +36,8 @@ extract_validation_clips(
   Sampling design, passed to
   [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
   (e.g. `sampling_mode`, `n_top`, `threshold`, `target_total`,
-  `remap_from`, `remap_to`).
+  `remap_from`, `remap_to`, and `previous` for a further round, in a new
+  `output_dir`).
 
 - table_pattern:
 
@@ -83,6 +84,7 @@ Output structure:
     <output_dir>/packages/<species_folder>.zip
     <output_dir>/clip_manifest.csv
     <output_dir>/extraction_info.csv
+    <output_dir>/candidates.csv
 
 `extraction_info.csv` records the provenance of the run (one `key`,
 `value` row per item): the date, the versions of sheepdog and R, the
@@ -92,6 +94,11 @@ argument passed to
 Keep it with the manifest: it tells later rounds which classifier
 produced the clips (for instance, to leave out of a validation round the
 clips used to retrain that classifier).
+
+`candidates.csv` (`"random_detections"`) lists the candidate occasions
+with their stratum: later rounds draw from it and
+[`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md)
+reads it, so keep it with the manifest.
 
 ## Examples
 

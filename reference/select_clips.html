@@ -106,7 +106,10 @@ audio is read or written; cut the clips with <code><a href="cut_clips.html">cut_
 <span>  max_per_species <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  remap_from <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  remap_to <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  seed <span class="op">=</span> <span class="fl">2026</span></span>
+<span>  seed <span class="op">=</span> <span class="fl">2026</span>,</span>
+<span>  previous <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  candidates <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  cells <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -282,6 +285,24 @@ Backslashes are turned into forward slashes first.</p></dd>
 <dd><p>Seed of every random draw. The global random number
 generator is left as it was.</p></dd>
 
+
+<dt id="arg-previous">previous<a class="anchor" aria-label="anchor" href="#arg-previous"></a></dt>
+<dd><p>Earlier rounds of the same design, to draw another round
+(see Review rounds): paths to their <code>clip_manifest.csv</code> or
+<code>validation_by_clip.csv</code>, a data frame, or a list of these.</p></dd>
+
+
+<dt id="arg-candidates">candidates<a class="anchor" aria-label="anchor" href="#arg-candidates"></a></dt>
+<dd><p>With <code>previous</code>, the <code>candidates.csv</code> of the first
+round, as a path or a data frame. <code>NULL</code> looks for it in the folders of
+<code>previous</code>.</p></dd>
+
+
+<dt id="arg-cells">cells<a class="anchor" aria-label="anchor" href="#arg-cells"></a></dt>
+<dd><p>With <code>previous</code>, restrict the round to these cells: a data
+frame with <code>site</code> and <code>species_folder</code> or <code>species_code</code>, such as the
+rows of <code><a href="review_support.html">review_support()</a></code> with <code>diagnosis == "review more"</code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -289,7 +310,11 @@ generator is left as it was.</p></dd>
 <code>site</code>, <code>species_code</code>, <code>species_folder</code>, <code>recording_date</code>, <code>night</code>,
 <code>recording_hour</code>, <code>rank</code>, <code>confidence</code>, <code>clip_file</code>, <code>clip_start</code>,
 <code>clip_end</code>, <code>duration</code>, <code>source_audio</code>, <code>begin_path</code>, <code>sampling_mode</code>,
-<code>occasion_id</code>, <code>n_detections_occasion</code> and <code>inclusion_prob</code>. See
+<code>occasion_id</code>, <code>n_detections_occasion</code>, <code>inclusion_prob</code> (cumulative
+over the rounds), <code>round</code>, <code>n_candidates</code> (<code>N</code> of the stratum), <code>n_drawn</code>
+(occasions drawn in the stratum, all rounds so far; both <code>NA</code> outside
+<code>"random_detections"</code> and under a cap) and <code>inclusion_prob_round</code> (the
+draw of that round alone). See
 <code><a href="../articles/crywolf-integration.html">vignette("crywolf-integration")</a></code> for their definitions.</p>
     </div>
     <div class="section level2">
@@ -317,6 +342,32 @@ Miller et al. (2011, <a href="https://doi.org/10.1890/10-1396.1" class="external
 recording (or minute), copied once per species to annotate, and
 <code>confidence</code> is <code>NA</code>.</p></li>
 </ul><p>In both random modes, use the same <code>threshold</code> as the occupancy analysis.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="review-rounds">Review rounds<a class="anchor" aria-label="anchor" href="#review-rounds"></a></h2>
+
+
+<p><code>previous</code> draws one more round of a design without repeating what was
+reviewed. In <code>"random_detections"</code>, the occasions drawn earlier leave the
+pool and <code>n_top</code> occasions are drawn per stratum among the rest. Drawing
+<code>n1</code> occasions of <code>N</code> and then <code>n2</code> of the <code>N - n1</code> left gives a simple
+random sample of <code>n1 + n2</code>, so after each round every clip has the
+inclusion probability <code>n_drawn / n_candidates</code>, whatever its round. This
+needs the same candidates, strata, threshold and occasion unit in every
+round. The first round therefore keeps a list of its candidates, in the
+attribute <code>"candidates"</code> of the manifest, written to <code>candidates.csv</code> by
+<code><a href="extract_validation_clips.html">extract_validation_clips()</a></code>; later rounds draw from that list, and a
+warning says when the predictions have changed. A different <code>threshold</code>,
+<code>occasion_unit</code> or <code>strata</code> is refused, and so are <code>target_total</code> and
+<code>max_per_species</code>, whose second stage depends on the counts of each
+round. Round <code>k</code> uses the seed <code>seed + k - 1</code>.</p>
+<p>The tables of earlier rounds keep the probability of their own round:
+use <code><a href="combine_rounds.html">combine_rounds()</a></code> to stack them. In <code>"top"</code>, there is no inclusion
+probability, and <code>previous</code> only leaves out the clips already reviewed.
+<code>previous</code> is not available for <code>"random_recordings"</code>.</p>
+<p>Choosing the cells of a round from their verdicts, and stopping when a
+cell reaches a target, makes the stopping depend on the results; see
+<code><a href="../articles/validation-effort.html">vignette("validation-effort")</a></code>.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
