@@ -39,7 +39,8 @@ select_clips(
   seed = 2026,
   previous = NULL,
   candidates = NULL,
-  cells = NULL
+  cells = NULL,
+  inherit = FALSE
 )
 ```
 
@@ -225,9 +226,11 @@ select_clips(
 
 - previous:
 
-  Earlier rounds of the same design, to draw another round (see Review
-  rounds): paths to their `clip_manifest.csv` or
-  `validation_by_clip.csv`, a data frame, or a list of these.
+  Earlier reviews: paths to their `clip_manifest.csv` or
+  `validation_by_clip.csv`, a data frame, or a list of these. Rounds of
+  the same design give another round (see Review rounds); reviews of the
+  other random design, which need `validation_by_clip.csv`, give their
+  verdicts (see Reusing the other design).
 
 - candidates:
 
@@ -241,6 +244,12 @@ select_clips(
   [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md)
   with `diagnosis == "review more"`.
 
+- inherit:
+
+  With `previous` of the other design, give the clips the verdict that
+  the earlier review implies, so that they need no review? See Reusing
+  the other design.
+
 ## Value
 
 A tibble, the clip manifest without `status`, with the columns `site`,
@@ -251,7 +260,9 @@ A tibble, the clip manifest without `status`, with the columns `site`,
 over the rounds), `round`, `n_candidates` (`N` of the stratum),
 `n_drawn` (occasions drawn in the stratum, all rounds so far; both `NA`
 outside `"random_detections"` and under a cap) and
-`inclusion_prob_round` (the draw of that round alone). See
+`inclusion_prob_round` (the draw of that round alone),
+`previously_reviewed`, `inherited_verdict` and `source_design` (see
+Reusing the other design). See
 [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md)
 for their definitions.
 
@@ -312,3 +323,40 @@ available for `"random_recordings"`.
 Choosing the cells of a round from their verdicts, and stopping when a
 cell reaches a target, makes the stopping depend on the results; see
 [`vignette("validation-effort")`](https://provetelab.org/sheepdog/articles/validation-effort.md).
+
+## Reusing the other design
+
+A study can draw both `"random_detections"` and `"random_recordings"`.
+With `previous` of the other design, the occasions reviewed there stay
+in the pool, so that this draw remains independent and its inclusion
+probabilities do not change, and `previously_reviewed` marks the clips
+that overlap an earlier review, matching site, species, recording and
+time, so that minutes and files can be mixed. With `inherit = TRUE`,
+what the earlier review already tells is reused:
+
+|  |  |  |  |
+|----|----|----|----|
+| Earlier review | This draw | Inherited | Still to review |
+| recording absent | `"random_detections"` | every prediction is negative | nothing |
+| recording present | `"random_detections"` | nothing | the clips |
+| a positive prediction | `"random_recordings"` | the recording is present | nothing |
+| only negative predictions | `"random_recordings"` | nothing | the recording |
+
+The species may have called below the threshold, so negative predictions
+say nothing about the recording.
+[`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md)
+skips the clips with an `inherited_verdict`, the review app leaves them
+out, and
+[`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md)
+fills them in, so that the table of each design is complete for its
+precision and thresholds.
+[`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+leaves them out: an inherited verdict is the same judgement as the
+earlier one, and exporting it would give a model two observations of it.
+
+`inherit` is `FALSE` by default because of that last step. The occasions
+left out are chosen by their verdict (present recordings, negative
+clips), which can bias what an occupancy model estimates from those
+tables. The overlap between two random draws is usually small, so
+reviewing it costs little; use `inherit = TRUE` when the tables will not
+go to an occupancy model.

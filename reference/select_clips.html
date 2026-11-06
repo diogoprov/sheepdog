@@ -109,7 +109,8 @@ audio is read or written; cut the clips with <code><a href="cut_clips.html">cut_
 <span>  seed <span class="op">=</span> <span class="fl">2026</span>,</span>
 <span>  previous <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  candidates <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  cells <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  cells <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  inherit <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -287,9 +288,11 @@ generator is left as it was.</p></dd>
 
 
 <dt id="arg-previous">previous<a class="anchor" aria-label="anchor" href="#arg-previous"></a></dt>
-<dd><p>Earlier rounds of the same design, to draw another round
-(see Review rounds): paths to their <code>clip_manifest.csv</code> or
-<code>validation_by_clip.csv</code>, a data frame, or a list of these.</p></dd>
+<dd><p>Earlier reviews: paths to their <code>clip_manifest.csv</code> or
+<code>validation_by_clip.csv</code>, a data frame, or a list of these. Rounds of the
+same design give another round (see Review rounds); reviews of the other
+random design, which need <code>validation_by_clip.csv</code>, give their verdicts
+(see Reusing the other design).</p></dd>
 
 
 <dt id="arg-candidates">candidates<a class="anchor" aria-label="anchor" href="#arg-candidates"></a></dt>
@@ -303,6 +306,12 @@ round, as a path or a data frame. <code>NULL</code> looks for it in the folders 
 frame with <code>site</code> and <code>species_folder</code> or <code>species_code</code>, such as the
 rows of <code><a href="review_support.html">review_support()</a></code> with <code>diagnosis == "review more"</code>.</p></dd>
 
+
+<dt id="arg-inherit">inherit<a class="anchor" aria-label="anchor" href="#arg-inherit"></a></dt>
+<dd><p>With <code>previous</code> of the other design, give the clips the
+verdict that the earlier review implies, so that they need no review?
+See Reusing the other design.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -314,7 +323,8 @@ rows of <code><a href="review_support.html">review_support()</a></code> with <co
 over the rounds), <code>round</code>, <code>n_candidates</code> (<code>N</code> of the stratum), <code>n_drawn</code>
 (occasions drawn in the stratum, all rounds so far; both <code>NA</code> outside
 <code>"random_detections"</code> and under a cap) and <code>inclusion_prob_round</code> (the
-draw of that round alone). See
+draw of that round alone), <code>previously_reviewed</code>, <code>inherited_verdict</code>
+and <code>source_design</code> (see Reusing the other design). See
 <code><a href="../articles/crywolf-integration.html">vignette("crywolf-integration")</a></code> for their definitions.</p>
     </div>
     <div class="section level2">
@@ -368,6 +378,31 @@ probability, and <code>previous</code> only leaves out the clips already reviewe
 <p>Choosing the cells of a round from their verdicts, and stopping when a
 cell reaches a target, makes the stopping depend on the results; see
 <code><a href="../articles/validation-effort.html">vignette("validation-effort")</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="reusing-the-other-design">Reusing the other design<a class="anchor" aria-label="anchor" href="#reusing-the-other-design"></a></h2>
+
+
+<p>A study can draw both <code>"random_detections"</code> and <code>"random_recordings"</code>.
+With <code>previous</code> of the other design, the occasions reviewed there stay in
+the pool, so that this draw remains independent and its inclusion
+probabilities do not change, and <code>previously_reviewed</code> marks the clips
+that overlap an earlier review, matching site, species, recording and
+time, so that minutes and files can be mixed. With <code>inherit = TRUE</code>, what
+the earlier review already tells is reused:</p><table class="table table"><tr><td>Earlier review</td><td>This draw</td><td>Inherited</td><td>Still to review</td></tr><tr><td>recording absent</td><td><code>"random_detections"</code></td><td>every prediction is negative</td><td>nothing</td></tr><tr><td>recording present</td><td><code>"random_detections"</code></td><td>nothing</td><td>the clips</td></tr><tr><td>a positive prediction</td><td><code>"random_recordings"</code></td><td>the recording is present</td><td>nothing</td></tr><tr><td>only negative predictions</td><td><code>"random_recordings"</code></td><td>nothing</td><td>the recording</td></tr></table><p>The species may have called below the threshold, so negative predictions
+say nothing about the recording. <code><a href="cut_clips.html">cut_clips()</a></code> skips the clips with an
+<code>inherited_verdict</code>, the review app leaves them out, and
+<code><a href="post_validation.html">post_validation()</a></code> fills them in, so that the table of each design is
+complete for its precision and thresholds.
+<code><a href="export_occupancy_data.html">export_occupancy_data()</a></code> leaves them out: an inherited verdict is the
+same judgement as the earlier one, and exporting it would give a model two
+observations of it.</p>
+<p><code>inherit</code> is <code>FALSE</code> by default because of that last step. The occasions
+left out are chosen by their verdict (present recordings, negative clips),
+which can bias what an occupancy model estimates from those tables. The
+overlap between two random draws is usually small, so reviewing it costs
+little; use <code>inherit = TRUE</code> when the tables will not go to an occupancy
+model.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

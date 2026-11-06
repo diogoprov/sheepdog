@@ -669,7 +669,13 @@ classifiers scored them: a custom one and BirdNET. About 1% of the
 recordings, drawn in proportion to the effort of each recorder without
 looking at the scores, were annotated by ear; each annotated minute with
 a score is a reviewed clip of the observation-confirmation design, and
-the calibration is fitted to these clips.</p>
+the calibration is fitted to these clips. The flow below does not put
+these verdicts twice in a likelihood: <code>fp_draws_data()</code> does
+not use the reviewed clips. Fitting the same export through
+<code>validation.csv</code> and <code>recordings_verified.csv</code>
+together would, since one label would then enter as two independent
+reviews, and <code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code> warns about such
+occasions.</p>
 <div class="section level3">
 <h3 id="export">1. Export<a class="anchor" aria-label="anchor" href="#export"></a>
 </h3>

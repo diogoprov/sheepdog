@@ -65,7 +65,9 @@ export_occupancy_data(
 
 - validation:
 
-  Reviewed clips: paths to `validation_by_clip.csv` files (output of
+  Reviewed clips, without those with an inherited verdict (see
+  [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)):
+  paths to `validation_by_clip.csv` files (output of
   [`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md))
   or a data frame with their columns, e.g. from
   [`read_validation_tables()`](https://provetelab.org/sheepdog/reference/read_validation_tables.md)

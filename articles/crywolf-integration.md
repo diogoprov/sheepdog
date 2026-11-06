@@ -296,7 +296,13 @@ a custom one and BirdNET. About 1% of the recordings, drawn in
 proportion to the effort of each recorder without looking at the scores,
 were annotated by ear; each annotated minute with a score is a reviewed
 clip of the observation-confirmation design, and the calibration is
-fitted to these clips.
+fitted to these clips. The flow below does not put these verdicts twice
+in a likelihood: `fp_draws_data()` does not use the reviewed clips.
+Fitting the same export through `validation.csv` and
+`recordings_verified.csv` together would, since one label would then
+enter as two independent reviews, and
+[`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+warns about such occasions.
 
 ### 1. Export
 

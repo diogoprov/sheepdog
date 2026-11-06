@@ -149,7 +149,8 @@ recordings that have predictions, which then must be reachable (see
 
 
 <dt id="arg-validation">validation<a class="anchor" aria-label="anchor" href="#arg-validation"></a></dt>
-<dd><p>Reviewed clips: paths to <code>validation_by_clip.csv</code>
+<dd><p>Reviewed clips, without those with an inherited verdict
+(see <code><a href="select_clips.html">select_clips()</a></code>): paths to <code>validation_by_clip.csv</code>
 files (output of <code><a href="post_validation.html">post_validation()</a></code>) or a data frame with their
 columns, e.g. from <code><a href="read_validation_tables.html">read_validation_tables()</a></code> or
 <code><a href="consensus_verdicts.html">consensus_verdicts()</a></code>. <code>NULL</code> writes no validation tables.</p></dd>

@@ -2,6 +2,28 @@
 
 ## sheepdog (development version)
 
+- `previous` in
+  [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
+  and
+  [`extract_validation_clips()`](https://provetelab.org/sheepdog/reference/extract_validation_clips.md)
+  also takes the reviews of the other random design
+  (`"random_detections"` and `"random_recordings"`). The draw stays
+  independent, and `previously_reviewed` marks the clips that overlap an
+  earlier review. With the new `inherit = TRUE`, clips whose verdict
+  follows from that review get `inherited_verdict`: an absent recording
+  makes its predictions negative, a positive prediction makes its
+  recording present.
+  [`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md)
+  and the review app skip them,
+  [`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md)
+  fills them in, and
+  [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+  leaves them out with a warning, as they repeat a judgement and are
+  chosen by their verdict. It also warns about occasions in both
+  `validation` and `recordings_verified`, which a model takes as two
+  independent reviews
+  ([\#102](https://github.com/diogoprov/sheepdog/issues/102)).
+
 - New
   [`compare_thresholds()`](https://provetelab.org/sheepdog/reference/compare_thresholds.md):
   the thresholds of
