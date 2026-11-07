@@ -351,6 +351,18 @@ mínimo 1.428, máxima verossimilhança convergiu em todos.
 Continua valendo o limite acima: as outras 15 combinações não foram refeitas com o
 prior C. A verossimilhança teve viés de +0,005 e cobertura de 0,956 nestes 160.
 
+## Terceira validação, com o prior C (desenho fixado antes de rodar)
+
+Mesma grade e mesmos critérios da segunda validação (`run_val2_v0.R`: 360
+conjuntos, 720 ajustes), agora com o prior C, em `results/val3_v0`. Os dados são
+os mesmos, porque a semente é o id do conjunto e o prior não entra na simulação.
+Roda na AWS com `aws/launch.sh`: uma instância c7a.16xlarge spot, 64 workers,
+limite de 2 h por instância e preço máximo de US$ 1,30/h.
+
+Como os 60 conjuntos da célula θ = 0,6, 5%, Δ = 3 são os mesmos, ela deve repetir
+perto de 0,87 em logit(0,1). O número da grade será relatado, mas a decisão do
+critério 2 nessa célula fica com os 160 conjuntos da seção anterior.
+
 ## Para o passo do Curiango (sugestões da sessão do crywolf, a decidir)
 
 - Espere que o v0 falhe no PPC: no crywolf, o Markov foi o maior ganho nesses
