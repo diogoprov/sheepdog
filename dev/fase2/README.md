@@ -316,6 +316,41 @@ sem divergências, R-hat máximo 1,003, ESS mínimo 1.566.
 - **Limite:** mudar o prior invalida, em rigor, os resultados da segunda
   validação. Passar nesta célula não aprova as outras 15 combinações.
 
+### Resultado (07/11/2026)
+
+`summarise_cell_v0.R`, 160 conjuntos: sem divergências, R-hat máximo 1,006, ESS
+mínimo 1.428, máxima verossimilhança convergiu em todos.
+
+**O critério 2 passa nesta célula.** Viés e cobertura de θ e ψ com intervalos de 95%:
+
+| Conjuntos | θ: viés (EP) | θ: cobertura | ψ: viés | ψ: cobertura |
+|---|---|---|---|---|
+| 1 a 160 | +0,011 (0,003) | 0,931 | +0,001 | 0,950 |
+| 1 a 60 (os da grade) | +0,017 (0,005) | 0,867 | +0,001 | 0,950 |
+| 61 a 160 (novos) | +0,007 (0,003) | 0,970 | +0,001 | 0,950 |
+
+- A cobertura de 0,931 tem EP de 0,020 e fica no valor que a seção anterior
+  extrapolou. Dos 11 intervalos que erram θ, 9 ficam acima e 2 abaixo: a assimetria
+  continua.
+- **A falha veio sobretudo da amostra.** Com os mesmos 60 conjuntos, a cobertura
+  mal muda com o prior (0,85 no A, 0,867 no C; 2 ganhos, 1 perda). Os 100 conjuntos
+  novos dão 0,970. Os conjuntos 1 a 60 entraram aqui porque reprovaram, então os
+  160 ainda carregam essa seleção; o número sem seleção é o dos novos.
+- **O prior explica só parte do deslocamento.** Nos 60 conjuntos, `plogis` da
+  média de α menos a verossimilhança foi de +0,0078 (prior A) para +0,0060
+  (prior C), diferença pareada de −0,0017 (EP 0,0001). Nos 160, +0,0059 (EP 0,0001).
+- **A assimetria da posterior também explica só parte.** Na escala de θ, nos 160:
+  média +0,0053 (EP 0,0001), mediana +0,0040 (EP 0,0001).
+- A regra fixada antes de rodar previa uma causa ou a outra, e o resultado não
+  cabe nela: o deslocamento caiu cerca de 22%, a diferença entre média e mediana é
+  de 0,0013, e sobram +0,004 na mediana. Uma leitura possível, não testada, é que a
+  posterior marginal integra as emissões e a verossimilhança as maximiza junto com
+  θ. O deslocamento é pequeno diante do limite de 0,05 e do desvio-padrão de θ̂
+  (0,037), então não bloqueia o protótipo.
+
+Continua valendo o limite acima: as outras 15 combinações não foram refeitas com o
+prior C. A verossimilhança teve viés de +0,005 e cobertura de 0,956 nestes 160.
+
 ## Para o passo do Curiango (sugestões da sessão do crywolf, a decidir)
 
 - Espere que o v0 falhe no PPC: no crywolf, o Markov foi o maior ganho nesses
