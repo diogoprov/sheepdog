@@ -1,0 +1,37 @@
+// Emissions with a two-component normal mixture in each class. The log density
+// of every score under each class is computed once, then the sites are summed.
+  vector emission_mix(vector s, array[] int cens, real p, real mu_a, real sd_a,
+                      real mu_b, real sd_b, real c_lo, real c_hi) {
+    int n = num_elements(s);
+    vector[n] e;
+    real below = log_mix(p, normal_lcdf(c_lo | mu_a, sd_a), normal_lcdf(c_lo | mu_b, sd_b));
+    real above = log_mix(p, normal_lccdf(c_hi | mu_a, sd_a), normal_lccdf(c_hi | mu_b, sd_b));
+    for (i in 1:n) {
+      if (cens[i] == 0) {
+        e[i] = log_mix(p, normal_lpdf(s[i] | mu_a, sd_a), normal_lpdf(s[i] | mu_b, sd_b));
+      } else {
+        e[i] = cens[i] == 1 ? below : above;
+      }
+    }
+    return e;
+  }
+  real site_lik_e(int first, int last, real eta_psi, vector eta_theta,
+                  vector e0, vector e1, array[] int v) {
+    real lp1 = log_inv_logit(eta_psi);   // z = 1
+    real lp0 = log1m_inv_logit(eta_psi); // z = 0
+    for (n in first:last) {
+      real lt = log_inv_logit(eta_theta[n]);
+      real l1t = log1m_inv_logit(eta_theta[n]);
+      if (v[n] == 1) {          // verified call: w = 1, so z = 1
+        lp1 += lt + e1[n];
+        lp0 = negative_infinity();
+      } else if (v[n] == 0) {   // verified absence of a call: w = 0
+        lp1 += l1t + e0[n];
+        lp0 += e0[n];
+      } else {                  // not verified
+        lp1 += log_sum_exp(lt + e1[n], l1t + e0[n]);
+        lp0 += e0[n];
+      }
+    }
+    return log_sum_exp(lp1, lp0);
+  }
