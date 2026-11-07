@@ -60,10 +60,21 @@ proporcional por sítio. É o equivalente ao `sampling_mode =
 "random_recordings"` do sheepdog e identifica as distribuições de scores dos
 verdadeiros e dos falsos positivos sem depender do classificador.
 
-## Estado (06/11/2026)
+## Estado (07/11/2026)
 
+- 07/11/2026: **esquema 1.4 do export**, só com acréscimos, para o modelo de
+  score: `n_windows` em `occasions.csv` (e não em `scores.csv`, como previa a
+  fase 0, porque é propriedade da ocasião), `round`, `stratum`, `n_candidates`,
+  `n_drawn` e `review_scope` em `validation.csv`, e `window_step` e
+  `validation_design` no `schema.json`. O `export_occupancy_data()` passa a
+  escrever sempre 1.4, em vez de a versão depender das tabelas. Os scores já
+  saíam no export e o `fp_read_sheepdog()` já os lê: o que falta é o crywolf
+  usá-los, sem agregar para (y, n). A calibração fica fora do contrato do
+  modelo de score. Sobre pesos: não entram na verossimilhança conjunta, porque
+  a seleção depende de dados observados (inferência, falta simular), mas são
+  necessários na precisão, no PPC do critério 6 e em calibração avulsa.
 - 06/11/2026: **onde estamos.** A `main` do sheepdog está em 3.3.3.9000
-  (`f4a200e`), sem issues nem PRs abertos. A 3.3.3 espera a revisão manual
+  (`f4a200e`). A 3.3.3 espera a revisão manual
   do CRAN (fila desde 02/11, prazo de cerca de 16/11), e a 3.4.0 espera
   essa resposta, inclusive no GitHub. Depois da resposta: testar o Export
   e o corte com áudio real antes da tag e criar a release da v3.3.3, que
@@ -76,8 +87,8 @@ verdadeiros e dos falsos positivos sem depender do classificador.
   `simulate_fp_dyn()` deixaram de ser experimentais (crywolf#25), e o
   `fp_data()` passou a avisar sobre ocasiões que estão em `verified` e nas
   linhas confirmadas de `auto` (crywolf#26), o par do aviso do
-  `export_occupancy_data()` (sheepdog#110). Aberto: crywolf#27, artigo
-  ilustrado sobre o pacote.
+  `export_occupancy_data()` (sheepdog#110). O crywolf#27, artigo ilustrado
+  sobre o pacote, já teve merge.
 - 05 e 06/11/2026: **fase 2 começou**, antes do fim do multiespécies, por
   decisão do Diogo. O protótipo v0 passou nas conferências e em dois dos
   três critérios da segunda validação (ver "Protótipo v0" na fase 2).

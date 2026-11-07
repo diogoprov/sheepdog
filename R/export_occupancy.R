@@ -5,16 +5,17 @@
 #' classifier scores, the reviewed clips with their sampling design and,
 #' optionally, covariates of the occasions and posterior draws of a
 #' Bayesian calibration. The folder follows the `sheepdog-occupancy`
-#' schema (version 1.1, 1.2 with versions of the detections, 1.3 with a
-#' calibration on continuous covariates), described in
+#' schema (version 1.4), described in
 #' `vignette("crywolf-integration")`; the crywolf package reads it, but any
 #' software can, since every table is a plain CSV file (the calibration
 #' draws are a Parquet file).
 #'
 #' @section Tables:
 #' * `occasions.csv`: one row per occasion (a recording, or a minute of a
-#'   recording), with or without predictions, followed by the columns of
-#'   `occasion_covariates` and of the calibration keys.
+#'   recording), with or without predictions, with its number of windows
+#'   of the classifier (`n_windows`, `NA` when the length of the occasion
+#'   is unknown), followed by the columns of `occasion_covariates` and of
+#'   the calibration keys.
 #' * `detections.csv`: one row per prediction with confidence >=
 #'   `min_confidence`.
 #' * `scores.csv`: one row per occasion x species with at least one
@@ -22,8 +23,9 @@
 #'   x species pairs absent from this table had no prediction >=
 #'   `min_confidence` (a censored score).
 #' * `validation.csv`: the reviewed clips of the `"top"` and
-#'   `"random_detections"` designs, with their verdict and inclusion
-#'   probability (only when `validation` is given).
+#'   `"random_detections"` designs, with their verdict, inclusion
+#'   probability, round and stratum, and what a negative verdict covers
+#'   (`review_scope`; only when `validation` is given).
 #' * `recordings_verified.csv`: the occasions annotated by ear in the
 #'   `"random_recordings"` design, with the state of each occasion (only
 #'   when `validation` holds such clips).
@@ -121,7 +123,7 @@
 #' @param n_versions Optional number of versions of the detections to
 #'   write to `occasion_draws.parquet`, from the first calibration draws.
 #'   Without continuous covariates, `occasion_draws()` is called on the
-#'   folder (schema 1.2). With them, the versions are always written, and
+#'   folder. With them, the versions are always written, and
 #'   `NULL` means one per calibration draw (`n_draws`).
 #' @param rule,p_min Rule of the versions, as in [occasion_draws()].
 #' @param covariate_scaling Optional named list recording how each
@@ -136,6 +138,14 @@
 #'   false-positive rate will rest on the other species (a community
 #'   model) or on the prior. The default is a floor, not a sample size
 #'   calculation. Only used with `validation`.
+#' @param candidates The `candidates.csv` of the first round of a
+#'   `"random_detections"` design, as a path or a data frame. It gives the
+#'   stratum of each occasion and, in `schema.json`, the threshold and the
+#'   strata of the draw. `NULL` looks for it in the folders of `validation`;
+#'   without it, `stratum` is empty unless `validation` has that column, as
+#'   after [combine_rounds()]. Only used with `validation`.
+#' @param window_step Time between the starts of consecutive windows of the
+#'   classifier (s), for `n_windows`: 3 for BirdNET without overlap.
 #' @param classifier Optional label of the classifier, recorded in
 #'   `schema.json`.
 #' @param overwrite Replace an existing export in `output_dir`?
@@ -160,7 +170,8 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
                                   p_min = 0.95, covariate_scaling = NULL,
                                   audio_pattern = "\\.(wav|flac|mp3)$",
                                   remap_from = NULL, remap_to = NULL,
-                                  min_verified = 10,
+                                  min_verified = 10, candidates = NULL,
+                                  window_step = 3,
                                   classifier = NULL, overwrite = FALSE) {
   unidade <- match.arg(occasion_unit)
   rule <- match.arg(rule)
@@ -182,6 +193,10 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
   if (!is.null(n_versions) &&
       (!is.numeric(n_versions) || length(n_versions) != 1 || n_versions < 1)) {
     stop("`n_versions` must be a positive number.", call. = FALSE)
+  }
+  if (!is.numeric(window_step) || length(window_step) != 1 ||
+      is.na(window_step) || window_step <= 0) {
+    stop("`window_step` must be a positive number.", call. = FALSE)
   }
   if (file.exists(file.path(output_dir, "schema.json")) && !overwrite) {
     stop("`output_dir` already holds an export; use overwrite = TRUE to ",
@@ -208,7 +223,8 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
   det <- check_duplicate_predictions(det)
 
   ocasioes <- export_occasions(det, recordings, unidade, recording_duration,
-                               dawn_hour, audio_pattern, remap_from, remap_to)
+                               dawn_hour, audio_pattern, remap_from, remap_to,
+                               window_step)
   # predicoes em gravacoes fora da lista: a lista esta incompleta
   sem_ocasiao <- anti_join(distinct(det, site, occasion_id), ocasioes,
                            by = c("site", "occasion_id"))
@@ -246,8 +262,10 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
       summarise(max_score = max(confidence), n_above_min = n(),
                 .groups = "drop")
   )
+  candidatas <- NULL
   if (!is.null(validation)) {
-    tabelas <- c(tabelas, export_validation(validation, ocasioes))
+    candidatas <- read_candidates(candidates, validation)
+    tabelas <- c(tabelas, export_validation(validation, ocasioes, candidatas))
     check_verification_by_species(tabelas$validation, unique(det$species),
                                   min_verified)
   }
@@ -314,13 +332,14 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
 
   schema <- list(
     schema = "sheepdog-occupancy",
-    schema_version = if (length(covs_cal) > 0) 1.3 else 1.1,
+    schema_version = 1.4,
     created = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     sheepdog_version = as.character(utils::packageVersion("sheepdog")),
     classifier = classifier,
     occasion_unit = unidade,
     min_confidence = min_confidence,
     dawn_hour = dawn_hour,
+    window_step = window_step,
     # I(): listas mesmo com um elemento (auto_unbox desfaria o vetor)
     sites = I(sort(unique(ocasioes$site))),
     species = I(sort(unique(det$species_code))),
@@ -330,6 +349,7 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
         paste0(nome, ".parquet")
       } else paste0(nome, ".csv"),
       rows = n)),
+    validation_design = validation_design(candidatas),
     calibration = calibracao,
     occasion_draws = versoes
   )
@@ -552,7 +572,8 @@ occupancy_tables <- c("occasions", "detections", "scores", "validation",
 
 # Todas as ocasioes: gravacoes (ou minutos) com ou sem predicao
 export_occasions <- function(det, recordings, unidade, recording_duration,
-                             dawn_hour, audio_pattern, remap_from, remap_to) {
+                             dawn_hour, audio_pattern, remap_from, remap_to,
+                             window_step) {
   gravacoes <- suppressMessages(
     get_recordings(det, recordings, audio_pattern, remap_from, remap_to))
   if (unidade == "minute") {
@@ -575,10 +596,12 @@ export_occasions <- function(det, recordings, unidade, recording_duration,
   gravacoes |>
     mutate(site = as.character(site),
            occasion_id = make_occasion_id(source_audio, start, unidade),
-           night = night_of(recording_date, recording_hour, dawn_hour)) |>
+           night = night_of(recording_date, recording_hour, dawn_hour),
+           # round(): 0.3 / 0.1 nao pode virar 4 janelas
+           n_windows = as.integer(ceiling(round(duration / window_step, 6)))) |>
     distinct(site, occasion_id, .keep_all = TRUE) |>
     select(site, occasion_id, source_audio, recording_date, recording_hour,
-           night, start, duration) |>
+           night, start, duration, n_windows) |>
     arrange(site, occasion_id)
 }
 
@@ -592,7 +615,7 @@ night_of <- function(recording_date, recording_hour, dawn_hour) {
 
 # Clipes revisados: os de deteccoes (validation) e as gravacoes anotadas
 # de ouvido (recordings_verified), que dao o estado da ocasiao
-export_validation <- function(validation, ocasioes) {
+export_validation <- function(validation, ocasioes, candidatas = NULL) {
   if (is.character(validation)) {
     validation <- read_validation_tables(validation)
   }
@@ -615,16 +638,23 @@ export_validation <- function(validation, ocasioes) {
     validation <- validation[!herdados, ]
   }
   for (col in c("confidence", "clip_start", "clip_end", "inclusion_prob",
-                "n_detections_occasion")) {
+                "n_detections_occasion", "round", "n_candidates", "n_drawn")) {
     if (!col %in% names(validation)) validation[[col]] <- NA_real_
   }
+  if (!"stratum" %in% names(validation)) validation$stratum <- NA_character_
+  validation <- join_candidates(validation, candidatas)
   v <- validation |>
     mutate(site = as.character(site),
            species = folder_name(species_code),
            confidence = as.numeric(confidence),
            tp = case_when(verdict == "positive" ~ 1L,
                           verdict == "negative" ~ 0L,
-                          .default = NA_integer_))
+                          .default = NA_integer_),
+           across(c(round, n_candidates, n_drawn), as.integer),
+           stratum = as.character(stratum)) |>
+    mutate(review_scope = review_scope(sampling_mode, tp,
+                                       n_detections_occasion),
+           .by = c(site, occasion_id, species_code, sampling_mode))
   fora <- anti_join(distinct(v, site, occasion_id), ocasioes,
                     by = c("site", "occasion_id"))
   if (nrow(fora) > 0) {
@@ -638,9 +668,11 @@ export_validation <- function(validation, ocasioes) {
       filter(sampling_mode != "random_recordings") |>
       select(site, occasion_id, species_code, species, clip_start, clip_end,
              confidence, sampling_mode, inclusion_prob,
-             n_detections_occasion, verdict, tp, all_of(extras)) |>
+             n_detections_occasion, verdict, tp, round, stratum,
+             n_candidates, n_drawn, review_scope, all_of(extras)) |>
       arrange(site, occasion_id, species_code, clip_start)
   )
+  check_clips_in_both_designs(out$validation)
   gravacoes <- filter(v, sampling_mode == "random_recordings")
   nas_duas <- semi_join(
     distinct(filter(out$validation, sampling_mode == "random_detections"),
@@ -664,6 +696,59 @@ export_validation <- function(validation, ocasioes) {
 
 # Clipes revisados por especie: com poucos, ou sem positivo ou sem
 # negativo, a taxa de falso positivo da especie nao vem dos dados dela
+# Estrato e N das ocasioes sorteadas, quando a tabela nao os traz; os outros
+# desenhos ficam sem eles, mesmo numa ocasiao que tambem foi candidata
+join_candidates <- function(validation, candidatas) {
+  if (is.null(candidatas)) return(validation)
+  validation |>
+    mutate(across(all_of(ocasiao_chave), as.character)) |>
+    left_join(candidatas |>
+                mutate(across(all_of(ocasiao_chave), as.character)) |>
+                select(all_of(ocasiao_chave), .estrato = stratum,
+                       .n = n_candidates),
+              by = ocasiao_chave) |>
+    mutate(.sorteada = sampling_mode == "random_detections",
+           stratum = if_else(.sorteada,
+                             coalesce(as.character(stratum), .estrato),
+                             as.character(stratum)),
+           n_candidates = if_else(.sorteada,
+                                  coalesce(as.integer(n_candidates), .n),
+                                  as.integer(n_candidates))) |>
+    select(-.estrato, -.n, -.sorteada)
+}
+
+# Um mesmo clipe nos dois desenhos e um julgamento so, ou dois que um modelo
+# leria como independentes
+check_clips_in_both_designs <- function(validation) {
+  nos_dois <- semi_join(
+    filter(validation, sampling_mode == "random_detections"),
+    filter(validation, sampling_mode == "top"),
+    by = c("site", "occasion_id", "species_code", "clip_start"))
+  if (nrow(nos_dois) > 0) {
+    warning(nrow(nos_dois), " clip(s) are in both the \"top\" and the ",
+            "\"random_detections\" designs. A model that reads both designs ",
+            "takes them as two reviews; keep one of each.", call. = FALSE)
+  }
+}
+
+# O que um negativo cobre, dentro de uma ocasiao x especie: "occasion" quando
+# todas as predicoes acima do limiar do sorteio tem veredito; senao, so o clipe
+review_scope <- function(sampling_mode, tp, n_detections_occasion) {
+  completa <- sampling_mode == "random_detections" &
+    sum(!is.na(tp)) == n_detections_occasion
+  if_else(coalesce(completa, FALSE), "occasion", "clip")
+}
+
+# Desenho do sorteio, de candidates.csv
+validation_design <- function(candidatas) {
+  if (is.null(candidatas)) return(NULL)
+  campos <- list(threshold = candidatas$threshold[1],
+                 strata = candidatas$strata[1],
+                 occasion_unit = candidatas$occasion_unit[1],
+                 capped = candidatas$capped[1])
+  discard(campos, \(x) is.null(x) || is.na(x))
+}
+
 check_verification_by_species <- function(validation, especies, min_verified) {
   por_sp <- tibble(species = especies) |>
     left_join(validation |> filter(!is.na(tp)) |>

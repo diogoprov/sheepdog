@@ -32,7 +32,7 @@ ones, in increasing order of their identifiers. All by default.}
 \item{seed}{Seed of \code{rule = "sample"}.}
 
 \item{write}{Write \code{occasion_draws.parquet} in \code{export_dir} and record it
-in \code{schema.json} (schema version 1.2)? An existing table is replaced.}
+in \code{schema.json} (schema version 1.2 or later)? An existing table is replaced.}
 }
 \value{
 A tibble with \code{draw}, \code{site}, \code{occasion_id}, \code{species} and \code{y}
