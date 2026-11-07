@@ -32,6 +32,8 @@ um limiar.
 | `summarise_cell_v0.R` | resumo da repetição; `Rscript dev/fase2/summarise_cell_v0.R OUT_DIR [VAL2_DIR]` |
 | `results/cell_v0/task_all.rds` | os 160 ajustes da repetição, com a máxima verossimilhança |
 | `results/val3_v0/task_all.rds` | os 720 ajustes da terceira validação (prior C); serve de `OUT_DIR` para `summarise_val_v0.R` |
+| `curiango_v0.R` | dados do Curiango no formato do v0 |
+| `emissions_curiango_v0.R`, `emissions_family_curiango.R` | etapa 0: normal censurada por classe nos minutos verificados e comparação com mistura, por noite |
 | `aws/` | execução em spot; `dev/fase2/aws/launch.sh BUCKET RUN [TIPO] [WORKERS] [HORAS] [PREÇO]` |
 
 ## Modelo v0
@@ -406,17 +408,38 @@ escala logit, nos verificados:
 Consequências:
 
 - **A grade validada não cobre estes dados.** Ela usou σ₀ = σ₁ = 1,5, 150 sítios
-  × 20 ocasiões e ao menos 5% verificado. No classificador próprio, uma conta de
-  mão dá σ₀ perto de 0,45 e σ₁ perto de 1,7, razão perto de 3,8. Há mais
-  verificações em número (1.199 contra 150), mas em fração bem menor.
-- **O prior C fica apertado em σ₀.** 0,45 cai perto do percentil 2,5 de
+  × 20 ocasiões e ao menos 5% verificado. No classificador próprio, a máxima
+  verossimilhança dá σ₀ = 0,54 e σ₁ = 1,70. Há mais verificações em número (1.199
+  contra 150), mas em fração bem menor.
+- **O prior C fica apertado em σ₀.** 0,54 cai perto do percentil 5 de
   lognormal(log 1,2; 0,5). Com esse volume de dados deve pesar pouco, mas é preciso
   conferir (posterior contra prior).
-- **f₀ do BirdNET é vista só pela cauda.** Só 42 dos 942 falsos passam de 0,1, e essa
-  cauda é longa (q90 = 0,21), talvez por sons parecidos. É o caso em que a normal tem
-  mais chance de falhar e a identificação é mais fraca.
-- **f₀ do classificador próprio parece compatível com a normal censurada.** Os
-  quantis batem com meia-normal de σ perto de 0,45, em conta de mão; o PPC decide.
+- **f₀ do BirdNET é vista só pela cauda.** Só 42 dos 942 falsos passam de 0,1, e a
+  normal ajustada fica em μ₀ = −7,4 e σ₀ = 3,05, longe do prior.
+
+### Resultado da etapa 0 (07/11/2026): a normal censurada reprova
+
+`emissions_curiango_v0.R` e `emissions_family_curiango.R`, sem Stan, só nos 1.199
+minutos verificados, com 30% das noites retidas. **A etapa 1 não rodou**, porque a
+condição para seguir era a normal descrever o classificador próprio.
+
+| Ganho de log score retido, mistura de 2 normais menos normal (50 partições por noite) | Média | Intervalo de 95% das partições | Partições com ganho |
+|---|---|---|---|
+| próprio, falsos | +27,0 | 7,1 a 62,4 | 98% |
+| próprio, verdadeiros | +6,7 | −1,7 a 14,0 | 92% |
+| BirdNET, falsos | −0,2 | −4,3 a 0,0 | 66% |
+| BirdNET, verdadeiros | +7,7 | 0,1 a 15,8 | 98% |
+
+- **f₁ do classificador próprio tem dois grupos:** cerca de 25% perto de −1,5
+  (σ 0,41) e o resto perto de 1,2 (σ 1,42). A normal prevê 1% a 12% de verdadeiros
+  abaixo de 0,1, e nenhum dos 257 ficou lá. Chamadas distantes ou fracas explicariam
+  o grupo baixo, mas isso é interpretação; não foi testado.
+- **f₀ do classificador próprio tem cauda pesada:** mesma média (−2,17), com σ de
+  0,33 em 87% e 1,22 em 13%. A cauda importa, porque são os falsos de score alto.
+- **O grupo baixo de f₁ se sobrepõe a f₀.** Fora dos minutos verificados, um score
+  perto de −1,5 pode ser qualquer um dos dois. Separar isso depende dos 1.199
+  minutos, e é a questão de identificação da família nova.
+- No BirdNET, os 42 falsos acima do corte não permitem preferir uma forma de f₀.
 
 ### Etapas
 
