@@ -353,11 +353,9 @@ an occupancy model with false positives needs: every occasion, the
 classifier scores, the reviewed clips with their design and, optionally,
 covariates of the occasions and posterior draws of a Bayesian
 calibration. The folder follows the schema
-<code>sheepdog-occupancy</code>, version 1.1 (1.2 with
-<code>occasion_draws.parquet</code>, 1.3 with a calibration on
-continuous covariates), described below. The tables are plain CSV files
-(missing values are empty cells); the calibration draws are a Parquet
-file.</p>
+<code>sheepdog-occupancy</code>, version 1.4, described below. The
+tables are plain CSV files (missing values are empty cells); the
+calibration draws are a Parquet file.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example"</span>, package <span class="op">=</span> <span class="st">"sheepdog"</span><span class="op">)</span></span>
 <span><span class="va">det</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_selection_tables.html">read_selection_tables</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"birdnet"</span><span class="op">)</span><span class="op">)</span></span>
@@ -391,7 +389,7 @@ false-positive rate of an occupancy model (see
 <code>schema</code>, <code>schema_version</code>
 </td>
 <td>
-<code>"sheepdog-occupancy"</code> and <code>1.1</code>. Minor
+<code>"sheepdog-occupancy"</code> and <code>1.4</code>. Minor
 versions only add tables, columns or fields, so a reader of version 1
 can read any 1.x by ignoring what it does not know; it should refuse
 other names and major versions. Version 1.1 added the occasion
@@ -399,7 +397,24 @@ covariates and the calibration keys; version 1.2,
 <code>occasion_draws.parquet</code>; version 1.3, the continuous
 covariates of the calibration (<code>calibration$covariates</code>),
 with which <code>occasion_draws.parquet</code> is required and
-<code>calibration_draws.parquet</code> is not written.</td>
+<code>calibration_draws.parquet</code> is not written; version 1.4,
+<code>n_windows</code> in <code>occasions.csv</code>,
+<code>round</code>, <code>stratum</code>, <code>n_candidates</code>,
+<code>n_drawn</code> and <code>review_scope</code> in
+<code>validation.csv</code>, and <code>window_step</code> and
+<code>validation_design</code> here.</td>
+</tr>
+<tr class="even">
+<td><code>window_step</code></td>
+<td>Time between the starts of consecutive windows of the classifier
+(s), used for <code>n_windows</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>validation_design</code></td>
+<td>With the <code>candidates.csv</code> of a
+<code>"random_detections"</code> design: <code>threshold</code> and
+<code>strata</code> of the draw, <code>occasion_unit</code> and
+<code>capped</code>. Absent otherwise.</td>
 </tr>
 <tr class="even">
 <td>
@@ -443,11 +458,11 @@ any.</td>
 </tr>
 <tr class="odd">
 <td><code>occasion_draws</code></td>
-<td>Written by <code><a href="../reference/occasion_draws.html">occasion_draws()</a></code> (version 1.2), or by
+<td>Written by <code><a href="../reference/occasion_draws.html">occasion_draws()</a></code>, or by
 <code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code> with <code>n_versions</code> or
-with continuous covariates (version 1.3): <code>file</code>,
-<code>rule</code>, <code>p_min</code> (with <code>"threshold"</code>),
-<code>seed</code> (with <code>"sample"</code>), <code>n_draws</code> and
+with continuous covariates: <code>file</code>, <code>rule</code>,
+<code>p_min</code> (with <code>"threshold"</code>), <code>seed</code>
+(with <code>"sample"</code>), <code>n_draws</code> and
 <code>species</code>.</td>
 </tr>
 <tr class="even">
@@ -524,6 +539,14 @@ name.</td>
 (<code>NA</code> when unknown).</td>
 </tr>
 <tr class="even">
+<td><code>n_windows</code></td>
+<td>integer</td>
+<td>Windows of the classifier in the occasion,
+<code>ceiling(duration / window_step)</code> (<code>NA</code> when
+<code>duration</code> is). The highest score of an occasion is a maximum
+over these windows.</td>
+</tr>
+<tr class="odd">
 <td>further columns</td>
 <td>any</td>
 <td>Covariates of the occasion from <code>occasion_covariates</code>,
@@ -559,10 +582,24 @@ and <code>"random_detections"</code> designs: <code>site</code>,
 <code>verdict</code> (as in <code>validation_by_clip.csv</code>, or
 <code>disagreement</code> after <code><a href="../reference/consensus_verdicts.html">consensus_verdicts()</a></code>) and
 <code>tp</code> (1 for <code>positive</code>, 0 for
-<code>negative</code>, empty otherwise), plus <code>reviewer</code> and
+<code>negative</code>, empty otherwise), <code>round</code>,
+<code>stratum</code>, <code>n_candidates</code> (<code>N</code> of the
+stratum), <code>n_drawn</code> (occasions drawn in the stratum) and
+<code>review_scope</code>, plus <code>reviewer</code> and
 <code>n_reviewers</code> when present. Only clips of
 <code>"random_detections"</code> estimate a false-positive rate;
-<code>"top"</code> clips serve the calibration.</p>
+<code>"top"</code> clips serve the calibration. <code>stratum</code>
+comes from <code>candidates.csv</code> or from
+<code><a href="../reference/combine_rounds.html">combine_rounds()</a></code>, and is empty without them. Under a cap on
+the occasions (<code>capped</code> in <code>validation_design</code>),
+<code>inclusion_prob</code> is not <code>n_drawn / n_candidates</code>;
+use <code>inclusion_prob</code>.</p>
+<p><code>review_scope</code> says what a negative verdict covers. It is
+<code>"occasion"</code> when the occasion x species was drawn in
+<code>"random_detections"</code> and every prediction above the
+threshold of the draw has a verdict, so that all negatives mean no true
+call at those scores; a call with a lower score remains possible. It is
+<code>"clip"</code> otherwise: only that prediction was judged.</p>
 <p><code>recordings_verified.csv</code> holds the occasions annotated by
 ear (<code>"random_recordings"</code>), with <code>present</code> (1, 0
 or empty) in place of <code>tp</code>. The two tables are kept apart

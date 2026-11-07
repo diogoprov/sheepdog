@@ -10,8 +10,7 @@ positives needs from a passive acoustic survey: the occasions, the
 classifier scores, the reviewed clips with their sampling design and,
 optionally, covariates of the occasions and posterior draws of a
 Bayesian calibration. The folder follows the sheepdog-occupancy
-schema (version 1.1, 1.2 with versions of the detections, 1.3 with a
-calibration on continuous covariates), described in
+schema (version 1.4), described in
 vignette(&quot;crywolf-integration&quot;); the crywolf package reads it, but any
 software can, since every table is a plain CSV file (the calibration
 draws are a Parquet file)."><meta property="og:description" content="Writes, in one folder, everything an occupancy model with false
@@ -19,8 +18,7 @@ positives needs from a passive acoustic survey: the occasions, the
 classifier scores, the reviewed clips with their sampling design and,
 optionally, covariates of the occasions and posterior draws of a
 Bayesian calibration. The folder follows the sheepdog-occupancy
-schema (version 1.1, 1.2 with versions of the detections, 1.3 with a
-calibration on continuous covariates), described in
+schema (version 1.4), described in
 vignette(&quot;crywolf-integration&quot;); the crywolf package reads it, but any
 software can, since every table is a plain CSV file (the calibration
 draws are a Parquet file)."><meta property="og:image" content="https://provetelab.org/sheepdog/logo.svg"></head><body>
@@ -93,8 +91,7 @@ positives needs from a passive acoustic survey: the occasions, the
 classifier scores, the reviewed clips with their sampling design and,
 optionally, covariates of the occasions and posterior draws of a
 Bayesian calibration. The folder follows the <code>sheepdog-occupancy</code>
-schema (version 1.1, 1.2 with versions of the detections, 1.3 with a
-calibration on continuous covariates), described in
+schema (version 1.4), described in
 <code><a href="../articles/crywolf-integration.html">vignette("crywolf-integration")</a></code>; the crywolf package reads it, but any
 software can, since every table is a plain CSV file (the calibration
 draws are a Parquet file).</p>
@@ -127,6 +124,8 @@ draws are a Parquet file).</p>
 <span>  remap_from <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  remap_to <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  min_verified <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  candidates <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  window_step <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  classifier <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -229,7 +228,7 @@ number generator is left as it was.</p></dd>
 <dd><p>Optional number of versions of the detections to
 write to <code>occasion_draws.parquet</code>, from the first calibration draws.
 Without continuous covariates, <code><a href="occasion_draws.html">occasion_draws()</a></code> is called on the
-folder (schema 1.2). With them, the versions are always written, and
+folder. With them, the versions are always written, and
 <code>NULL</code> means one per calibration draw (<code>n_draws</code>).</p></dd>
 
 
@@ -266,6 +265,20 @@ model) or on the prior. The default is a floor, not a sample size
 calculation. Only used with <code>validation</code>.</p></dd>
 
 
+<dt id="arg-candidates">candidates<a class="anchor" aria-label="anchor" href="#arg-candidates"></a></dt>
+<dd><p>The <code>candidates.csv</code> of the first round of a
+<code>"random_detections"</code> design, as a path or a data frame. It gives the
+stratum of each occasion and, in <code>schema.json</code>, the threshold and the
+strata of the draw. <code>NULL</code> looks for it in the folders of <code>validation</code>;
+without it, <code>stratum</code> is empty unless <code>validation</code> has that column, as
+after <code><a href="combine_rounds.html">combine_rounds()</a></code>. Only used with <code>validation</code>.</p></dd>
+
+
+<dt id="arg-window-step">window_step<a class="anchor" aria-label="anchor" href="#arg-window-step"></a></dt>
+<dd><p>Time between the starts of consecutive windows of the
+classifier (s), for <code>n_windows</code>: 3 for BirdNET without overlap.</p></dd>
+
+
 <dt id="arg-classifier">classifier<a class="anchor" aria-label="anchor" href="#arg-classifier"></a></dt>
 <dd><p>Optional label of the classifier, recorded in
 <code>schema.json</code>.</p></dd>
@@ -285,8 +298,10 @@ schema (a list).</p>
 
 
 <ul><li><p><code>occasions.csv</code>: one row per occasion (a recording, or a minute of a
-recording), with or without predictions, followed by the columns of
-<code>occasion_covariates</code> and of the calibration keys.</p></li>
+recording), with or without predictions, with its number of windows
+of the classifier (<code>n_windows</code>, <code>NA</code> when the length of the occasion
+is unknown), followed by the columns of <code>occasion_covariates</code> and of
+the calibration keys.</p></li>
 <li><p><code>detections.csv</code>: one row per prediction with confidence &gt;=
 <code>min_confidence</code>.</p></li>
 <li><p><code>scores.csv</code>: one row per occasion x species with at least one
@@ -294,8 +309,9 @@ prediction: the highest score and the number of predictions. Occasion
 x species pairs absent from this table had no prediction &gt;=
 <code>min_confidence</code> (a censored score).</p></li>
 <li><p><code>validation.csv</code>: the reviewed clips of the <code>"top"</code> and
-<code>"random_detections"</code> designs, with their verdict and inclusion
-probability (only when <code>validation</code> is given).</p></li>
+<code>"random_detections"</code> designs, with their verdict, inclusion
+probability, round and stratum, and what a negative verdict covers
+(<code>review_scope</code>; only when <code>validation</code> is given).</p></li>
 <li><p><code>recordings_verified.csv</code>: the occasions annotated by ear in the
 <code>"random_recordings"</code> design, with the state of each occasion (only
 when <code>validation</code> holds such clips).</p></li>

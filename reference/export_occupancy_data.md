@@ -5,8 +5,7 @@ positives needs from a passive acoustic survey: the occasions, the
 classifier scores, the reviewed clips with their sampling design and,
 optionally, covariates of the occasions and posterior draws of a
 Bayesian calibration. The folder follows the `sheepdog-occupancy` schema
-(version 1.1, 1.2 with versions of the detections, 1.3 with a
-calibration on continuous covariates), described in
+(version 1.4), described in
 [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md);
 the crywolf package reads it, but any software can, since every table is
 a plain CSV file (the calibration draws are a Parquet file).
@@ -39,6 +38,8 @@ export_occupancy_data(
   remap_from = NULL,
   remap_to = NULL,
   min_verified = 10,
+  candidates = NULL,
+  window_step = 3,
   classifier = NULL,
   overwrite = FALSE
 )
@@ -145,8 +146,8 @@ export_occupancy_data(
   `occasion_draws.parquet`, from the first calibration draws. Without
   continuous covariates,
   [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md)
-  is called on the folder (schema 1.2). With them, the versions are
-  always written, and `NULL` means one per calibration draw (`n_draws`).
+  is called on the folder. With them, the versions are always written,
+  and `NULL` means one per calibration draw (`n_draws`).
 
 - rule, p_min:
 
@@ -182,6 +183,21 @@ export_occupancy_data(
   default is a floor, not a sample size calculation. Only used with
   `validation`.
 
+- candidates:
+
+  The `candidates.csv` of the first round of a `"random_detections"`
+  design, as a path or a data frame. It gives the stratum of each
+  occasion and, in `schema.json`, the threshold and the strata of the
+  draw. `NULL` looks for it in the folders of `validation`; without it,
+  `stratum` is empty unless `validation` has that column, as after
+  [`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md).
+  Only used with `validation`.
+
+- window_step:
+
+  Time between the starts of consecutive windows of the classifier (s),
+  for `n_windows`: 3 for BirdNET without overlap.
+
 - classifier:
 
   Optional label of the classifier, recorded in `schema.json`.
@@ -198,8 +214,10 @@ list).
 ## Tables
 
 - `occasions.csv`: one row per occasion (a recording, or a minute of a
-  recording), with or without predictions, followed by the columns of
-  `occasion_covariates` and of the calibration keys.
+  recording), with or without predictions, with its number of windows of
+  the classifier (`n_windows`, `NA` when the length of the occasion is
+  unknown), followed by the columns of `occasion_covariates` and of the
+  calibration keys.
 
 - `detections.csv`: one row per prediction with confidence \>=
   `min_confidence`.
@@ -210,8 +228,9 @@ list).
   `min_confidence` (a censored score).
 
 - `validation.csv`: the reviewed clips of the `"top"` and
-  `"random_detections"` designs, with their verdict and inclusion
-  probability (only when `validation` is given).
+  `"random_detections"` designs, with their verdict, inclusion
+  probability, round and stratum, and what a negative verdict covers
+  (`review_scope`; only when `validation` is given).
 
 - `recordings_verified.csv`: the occasions annotated by ear in the
   `"random_recordings"` design, with the state of each occasion (only

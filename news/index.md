@@ -2,6 +2,13 @@
 
 ## sheepdog (development version)
 
+- [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+  writes schema 1.4, which only adds to 1.3: `n_windows` in
+  `occasions.csv` (new argument `window_step`), `round`, `stratum`,
+  `n_candidates`, `n_drawn` and `review_scope` in `validation.csv`, and
+  the design of the draw in `schema.json` (new argument `candidates`).
+  The version no longer depends on the tables written.
+
 - The stage figures now also appear in the vignettes and articles, with
   new figures on where false positives come from and on occupancy with
   false positives. The site has a new Cheat sheets tab, with a cheat

@@ -112,10 +112,9 @@ writes in one folder everything an occupancy model with false positives
 needs: every occasion, the classifier scores, the reviewed clips with
 their design and, optionally, covariates of the occasions and posterior
 draws of a Bayesian calibration. The folder follows the schema
-`sheepdog-occupancy`, version 1.1 (1.2 with `occasion_draws.parquet`,
-1.3 with a calibration on continuous covariates), described below. The
-tables are plain CSV files (missing values are empty cells); the
-calibration draws are a Parquet file.
+`sheepdog-occupancy`, version 1.4, described below. The tables are plain
+CSV files (missing values are empty cells); the calibration draws are a
+Parquet file.
 
 ``` r
 
@@ -139,7 +138,9 @@ the calibration but not the false-positive rate of an occupancy model
 
 | field | definition |
 |----|----|
-| `schema`, `schema_version` | `"sheepdog-occupancy"` and `1.1`. Minor versions only add tables, columns or fields, so a reader of version 1 can read any 1.x by ignoring what it does not know; it should refuse other names and major versions. Version 1.1 added the occasion covariates and the calibration keys; version 1.2, `occasion_draws.parquet`; version 1.3, the continuous covariates of the calibration (`calibration$covariates`), with which `occasion_draws.parquet` is required and `calibration_draws.parquet` is not written. |
+| `schema`, `schema_version` | `"sheepdog-occupancy"` and `1.4`. Minor versions only add tables, columns or fields, so a reader of version 1 can read any 1.x by ignoring what it does not know; it should refuse other names and major versions. Version 1.1 added the occasion covariates and the calibration keys; version 1.2, `occasion_draws.parquet`; version 1.3, the continuous covariates of the calibration (`calibration$covariates`), with which `occasion_draws.parquet` is required and `calibration_draws.parquet` is not written; version 1.4, `n_windows` in `occasions.csv`, `round`, `stratum`, `n_candidates`, `n_drawn` and `review_scope` in `validation.csv`, and `window_step` and `validation_design` here. |
+| `window_step` | Time between the starts of consecutive windows of the classifier (s), used for `n_windows`. |
+| `validation_design` | With the `candidates.csv` of a `"random_detections"` design: `threshold` and `strata` of the draw, `occasion_unit` and `capped`. Absent otherwise. |
 | `created`, `sheepdog_version`, `classifier` | Provenance of the export. |
 | `occasion_unit` | `"file"` or `"minute"` (see Occasion above). |
 | `min_confidence` | Scores below this value were not written: an occasion x species pair absent from `scores.csv` had no prediction at or above it. |
@@ -147,7 +148,7 @@ the calibration but not the false-positive rate of an occupancy model
 | `sites`, `species` | Every site and every classifier label (`species_code`) of the export. |
 | `tables` | For each table, its file and number of rows. |
 | `occasion_covariates` | The columns of `occasions.csv` after the fixed ones (from `occasion_covariates` and the calibration keys), when any. |
-| `occasion_draws` | Written by [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md) (version 1.2), or by [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md) with `n_versions` or with continuous covariates (version 1.3): `file`, `rule`, `p_min` (with `"threshold"`), `seed` (with `"sample"`), `n_draws` and `species`. |
+| `occasion_draws` | Written by [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md), or by [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md) with `n_versions` or with continuous covariates: `file`, `rule`, `p_min` (with `"threshold"`), `seed` (with `"sample"`), `n_draws` and `species`. |
 | `calibration` | With `fit`: `engine`, `formula`, `n_draws`, `grid_step`, `grid_min`, `keys` (the columns that identify a row of `calibration_draws.parquet` within a draw: `site`, `species`, the `calibration_keys` and `grid_index`) and `new_levels` (`"uncertainty"`: levels of a key absent from the calibration data are drawn from the distribution of the group). With continuous covariates (version 1.3), `grid_step`, `grid_min` and `grid_index` are absent, and three fields are added: `covariates` (columns of `occasions.csv`, on the scale of the model), `covariate_range` (their minimum and maximum in the calibration data) and, when given, `covariate_scaling` (the `center` and `scale` used to standardise each covariate). |
 
 ### occasions.csv
@@ -162,6 +163,7 @@ recordings (`recordings`).
 | `recording_date`, `recording_hour` | character | Date (`YYYYMMDD`) and hour (`HH`) in the file name. |
 | `night` | character `YYYYMMDD` | Night of the occasion: the day before for recordings before `dawn_hour`. |
 | `start`, `duration` | double (s) | Start of the occasion in the recording (0 for files) and its length (`NA` when unknown). |
+| `n_windows` | integer | Windows of the classifier in the occasion, `ceiling(duration / window_step)` (`NA` when `duration` is). The highest score of an occasion is a maximum over these windows. |
 | further columns | any | Covariates of the occasion from `occasion_covariates`, and the calibration keys, always written as text (e.g. `month`, `YYYYMM`, derived from `recording_date` when not given). |
 
 ### detections.csv and scores.csv
@@ -182,10 +184,23 @@ occasion x species: `max_score` (the highest confidence) and
 `inclusion_prob`, `n_detections_occasion`, `verdict` (as in
 `validation_by_clip.csv`, or `disagreement` after
 [`consensus_verdicts()`](https://provetelab.org/sheepdog/reference/consensus_verdicts.md))
-and `tp` (1 for `positive`, 0 for `negative`, empty otherwise), plus
-`reviewer` and `n_reviewers` when present. Only clips of
-`"random_detections"` estimate a false-positive rate; `"top"` clips
-serve the calibration.
+and `tp` (1 for `positive`, 0 for `negative`, empty otherwise), `round`,
+`stratum`, `n_candidates` (`N` of the stratum), `n_drawn` (occasions
+drawn in the stratum) and `review_scope`, plus `reviewer` and
+`n_reviewers` when present. Only clips of `"random_detections"` estimate
+a false-positive rate; `"top"` clips serve the calibration. `stratum`
+comes from `candidates.csv` or from
+[`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md),
+and is empty without them. Under a cap on the occasions (`capped` in
+`validation_design`), `inclusion_prob` is not `n_drawn / n_candidates`;
+use `inclusion_prob`.
+
+`review_scope` says what a negative verdict covers. It is `"occasion"`
+when the occasion x species was drawn in `"random_detections"` and every
+prediction above the threshold of the draw has a verdict, so that all
+negatives mean no true call at those scores; a call with a lower score
+remains possible. It is `"clip"` otherwise: only that prediction was
+judged.
 
 `recordings_verified.csv` holds the occasions annotated by ear
 (`"random_recordings"`), with `present` (1, 0 or empty) in place of

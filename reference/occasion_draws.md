@@ -59,7 +59,8 @@ occasion_draws(
 - write:
 
   Write `occasion_draws.parquet` in `export_dir` and record it in
-  `schema.json` (schema version 1.2)? An existing table is replaced.
+  `schema.json` (schema version 1.2 or later)? An existing table is
+  replaced.
 
 ## Value
 
