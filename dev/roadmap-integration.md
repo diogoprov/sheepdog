@@ -231,6 +231,7 @@ verdadeiros e dos falsos positivos sem depender do classificador.
 | 4 | 2. Modelo conjunto score–ocupação (protótipo v0 em `dev/fase2`, desde 05/11/2026) | sheepdog `dev/` até validar; depois crywolf | G | fase 0 |
 | 5 | 3. Validação em duas camadas | sheepdog (+ crywolf) | M | fase 2 |
 | 6 | 4. Atividade vocal (densidade de chamadas) | crywolf | M–G | fase 2 |
+| — | Estudo de simulação do desenho da revisão (futuro) | compêndio próprio (sheepdog + crywolf) | G | Curiango da fase 2; a fase 1 do estudo pode andar em paralelo |
 | — | App local (Shiny) | sheepdog | M | nada; em paralelo |
 
 Em paralelo a tudo: o benchmark (seção própria), que decide se cada fase
@@ -743,6 +744,42 @@ exige uma matriz de classificação e um desenho de verificação próprio.
 **[decidir]** Se ela vira um projeto de pesquisa separado (por exemplo, com
 os anuros do FrogNet, que têm cantos parecidos entre espécies).
 
+## Estudo de simulação: desenho da revisão
+
+Proposta da Larissa de 07/11/2026; registrada como etapa futura pelo Diogo no
+mesmo dia. A pergunta: com o mesmo tempo de escuta, que forma de sortear e
+inspecionar clipes serve ao limiar e às estimativas de p10, p11 e da inclinação
+da ocupação, para diferentes formas das distribuições de score?
+
+- **Forma:** um estudo e um artigo próprios, num compêndio separado (modelo: o
+  fpcalib), usando sheepdog e crywolf. O pacote só muda no fim, com os padrões
+  de desenho e, talvez, uma função que lê a rodada 1 e recomenda a próxima.
+- **Ordem proposta:** Curiango da fase 2, simulador por detecção, fase 1 do
+  estudo (sem Stan), fase 2 do estudo (ponta a ponta). A fase 1 não depende do
+  modelo de score e pode andar em paralelo. **[decidir]** quem lidera.
+- **Ligação com a fase 2 do roadmap:** se o modelo de score aguentar dados reais,
+  ele entra como mais um método. O desenho estratificado por score, que a proposta
+  dá como inválido para o crywolf, talvez valha num modelo conjunto, porque a
+  seleção depende de dados observados (inferência, falta simular).
+- **Uso imediato do simulador:** gerar scores por detecção testa o v0 fora do
+  próprio modelo, já que `simulate_v0()` gera um score por ocasião.
+
+A corrigir antes de implementar:
+
+1. A precisão global precisa de ψ: `ψ λ_TP S_TP / (ψ λ_TP S_TP + λ_FP S_FP)`,
+   porque os falsos alarmes ocorrem em todos os sítios e as chamadas verdadeiras só
+   nos ocupados. A fórmula da proposta vale só nos sítios ocupados e desloca t*.
+2. Com ψ variando em x e λ_FP em w, a verdade exige integrar sobre os sítios.
+3. Com 50 réplicas por célula, o erro de ±0,03 não separa 0,93 de 0,90. O
+   orçamento mínimo precisa de mais réplicas nas células decisivas ou do
+   meta-modelo.
+4. O número de ajustes da fase 2 do estudo é de 36 a 49 mil, de 73 a 97 mil com
+   as duas inclinações, e chega a cerca de 290 mil se a pergunta sobre o limiar
+   comparar 3 limiares. Com 30 s por ajuste (suposição), são 600 a 2.400 h de
+   núcleo, perto de US$ 12 a 46 em spot.
+5. Os parâmetros calibrados com o FrogNet ficam privados até o depósito no Zenodo.
+6. Confirmar se existe um conjunto com revisão exaustiva para o passo final.
+
 ## App local (Shiny)
 
 Fora das fases da integração e sem depender delas. Pedido do Diogo em
@@ -837,6 +874,8 @@ direção (o classificador local deixou os caminhos mais parecidos).
 2. **Métodos** (fases 2 e 3): modelo conjunto score–ocupação com validação
    em duas camadas; o Curiango como estudo de caso, mostrando o que muda em
    relação aos quatro caminhos do artigo do JAV.
+3. **Simulação** (estudo do desenho da revisão): como sortear e inspecionar
+   clipes para servir ao limiar e às estimativas do crywolf.
 
 ## Referências verificadas
 
