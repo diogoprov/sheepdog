@@ -11,19 +11,20 @@ how to build the list of all recordings that some designs need.
 A project has three kinds of files, and each lives best in its own
 folder:
 
-    audio/                       recordings, never modified
+    audio/                            recordings, never modified
       ARA/
         ARA01_20211001_190000.wav
         ...
       BAI/
         card1/BAI01_20211001_190000.wav
         card2/...
-    birdnet/                     BirdNET output, one run per site
-      ARA/BirdNET_SelectionTable.txt                      combined table, or
-      BAI/BAI01_20211001_190000.BirdNET.selection.table.txt  one per audio file
-    validation/                  what sheepdog writes
+    birdnet/                          BirdNET output, one run per site
+      ARA/BirdNET_SelectionTable.txt  a combined table per site, or
+      BAI/BAI01_20211001_190000.BirdNET.selection.table.txt
+                                      one table per audio file
+    validation/                       what sheepdog writes
       clip_manifest.csv
-      clips/<species>/...        clips to review
+      clips/<species>/...             clips to review
       ...
 
 - **Audio.** One folder per site, with any subfolders below it (memory
@@ -117,9 +118,9 @@ rec
 #> # A tibble: 3 × 2
 #>   site  source_audio                                             
 #>   <chr> <chr>                                                    
-#> 1 ARA   /tmp/Rtmp2RrCQb/audio/ARA/ARA01_20211001_190000.wav      
-#> 2 ARA   /tmp/Rtmp2RrCQb/audio/ARA/ARA01_20211001_200000.wav      
-#> 3 BAI   /tmp/Rtmp2RrCQb/audio/BAI/card1/BAI01_20211001_190000.wav
+#> 1 ARA   /tmp/RtmpootSvO/audio/ARA/ARA01_20211001_190000.wav      
+#> 2 ARA   /tmp/RtmpootSvO/audio/ARA/ARA01_20211001_200000.wav      
+#> 3 BAI   /tmp/RtmpootSvO/audio/BAI/card1/BAI01_20211001_190000.wav
 ```
 
 The paths must match `Begin Path`. When the list is built on a computer

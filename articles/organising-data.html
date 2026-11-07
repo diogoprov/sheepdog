@@ -112,19 +112,20 @@ need.</p>
 </h2>
 <p>A project has three kinds of files, and each lives best in its own
 folder:</p>
-<pre><code>audio/                       recordings, never modified
+<pre><code>audio/                            recordings, never modified
   ARA/
     ARA01_20211001_190000.wav
     ...
   BAI/
     card1/BAI01_20211001_190000.wav
     card2/...
-birdnet/                     BirdNET output, one run per site
-  ARA/BirdNET_SelectionTable.txt                      combined table, or
-  BAI/BAI01_20211001_190000.BirdNET.selection.table.txt  one per audio file
-validation/                  what sheepdog writes
+birdnet/                          BirdNET output, one run per site
+  ARA/BirdNET_SelectionTable.txt  a combined table per site, or
+  BAI/BAI01_20211001_190000.BirdNET.selection.table.txt
+                                  one table per audio file
+validation/                       what sheepdog writes
   clip_manifest.csv
-  clips/&lt;species&gt;/...        clips to review
+  clips/&lt;species&gt;/...             clips to review
   ...</code></pre>
 <ul>
 <li>
@@ -214,9 +215,9 @@ audio folders instead. Here on a small simulated tree:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 2</span></span></span>
 <span><span class="co">#&gt;   site  source_audio                                             </span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ARA   /tmp/Rtmp2RrCQb/audio/ARA/ARA01_20211001_190000.wav      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ARA   /tmp/Rtmp2RrCQb/audio/ARA/ARA01_20211001_200000.wav      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> BAI   /tmp/Rtmp2RrCQb/audio/BAI/card1/BAI01_20211001_190000.wav</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ARA   /tmp/RtmpootSvO/audio/ARA/ARA01_20211001_190000.wav      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ARA   /tmp/RtmpootSvO/audio/ARA/ARA01_20211001_200000.wav      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> BAI   /tmp/RtmpootSvO/audio/BAI/card1/BAI01_20211001_190000.wav</span></span></code></pre></div>
 <p>The paths must match <code>Begin Path</code>. When the list is built
 on a computer other than the one that ran BirdNET, rewrite the prefix
 with <code>remap_from</code> and <code>remap_to</code>, and give the
