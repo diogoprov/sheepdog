@@ -33,8 +33,9 @@
 #' threshold that accounts for the uncertainty of the calibration.
 #'
 #' **Which clips to review.** The calibration models the verdict given the
-#' score. Choosing the clips to review by their score only (for instance, a
-#' sample stratified by score bins, as Wood & Kahl 2024 suggest) does not
+#' score. Choosing the clips to review by their score only (for instance,
+#' adding a second random sample from the higher scores, as Wood & Kahl 2024
+#' suggest for species with few true detections) does not
 #' bias P(TP | score), as long as the model form is right; it does bias the
 #' precision computed directly from the reviewed clips, which
 #' [suggest_thresholds()] uses. The site-confirmation design of
@@ -78,7 +79,7 @@
 #'   threshold may lie above every detection of the cell, and then no set of
 #'   detections reaches the target.
 #' @seealso [suggest_thresholds()] for thresholds from the reviewed clips of
-#'   each cell; [calibrate()], which writes these thresholds to
+#'   each cell; [compare_thresholds()] to put both side by side; [calibrate()], which writes these thresholds to
 #'   `thresholds.csv`.
 #' @export
 #' @examples

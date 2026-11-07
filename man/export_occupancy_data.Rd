@@ -29,6 +29,8 @@ export_occupancy_data(
   remap_from = NULL,
   remap_to = NULL,
   min_verified = 10,
+  candidates = NULL,
+  window_step = 3,
   classifier = NULL,
   overwrite = FALSE
 )
@@ -44,7 +46,8 @@ path to a CSV file with the columns \code{site} and \code{source_audio}, as in
 recordings that have predictions, which then must be reachable (see
 \code{remap_from}).}
 
-\item{validation}{Reviewed clips: paths to \code{validation_by_clip.csv}
+\item{validation}{Reviewed clips, without those with an inherited verdict
+(see \code{\link[=select_clips]{select_clips()}}): paths to \code{validation_by_clip.csv}
 files (output of \code{\link[=post_validation]{post_validation()}}) or a data frame with their
 columns, e.g. from \code{\link[=read_validation_tables]{read_validation_tables()}} or
 \code{\link[=consensus_verdicts]{consensus_verdicts()}}. \code{NULL} writes no validation tables.}
@@ -93,7 +96,7 @@ number generator is left as it was.}
 \item{n_versions}{Optional number of versions of the detections to
 write to \code{occasion_draws.parquet}, from the first calibration draws.
 Without continuous covariates, \code{occasion_draws()} is called on the
-folder (schema 1.2). With them, the versions are always written, and
+folder. With them, the versions are always written, and
 \code{NULL} means one per calibration draw (\code{n_draws}).}
 
 \item{rule, p_min}{Rule of the versions, as in \code{\link[=occasion_draws]{occasion_draws()}}.}
@@ -119,6 +122,16 @@ false-positive rate will rest on the other species (a community
 model) or on the prior. The default is a floor, not a sample size
 calculation. Only used with \code{validation}.}
 
+\item{candidates}{The \code{candidates.csv} of the first round of a
+\code{"random_detections"} design, as a path or a data frame. It gives the
+stratum of each occasion and, in \code{schema.json}, the threshold and the
+strata of the draw. \code{NULL} looks for it in the folders of \code{validation};
+without it, \code{stratum} is empty unless \code{validation} has that column, as
+after \code{\link[=combine_rounds]{combine_rounds()}}. Only used with \code{validation}.}
+
+\item{window_step}{Time between the starts of consecutive windows of the
+classifier (s), for \code{n_windows}: 3 for BirdNET without overlap.}
+
 \item{classifier}{Optional label of the classifier, recorded in
 \code{schema.json}.}
 
@@ -134,8 +147,7 @@ positives needs from a passive acoustic survey: the occasions, the
 classifier scores, the reviewed clips with their sampling design and,
 optionally, covariates of the occasions and posterior draws of a
 Bayesian calibration. The folder follows the \code{sheepdog-occupancy}
-schema (version 1.1, 1.2 with versions of the detections, 1.3 with a
-calibration on continuous covariates), described in
+schema (version 1.4), described in
 \code{vignette("crywolf-integration")}; the crywolf package reads it, but any
 software can, since every table is a plain CSV file (the calibration
 draws are a Parquet file).
@@ -144,8 +156,10 @@ draws are a Parquet file).
 
 \itemize{
 \item \code{occasions.csv}: one row per occasion (a recording, or a minute of a
-recording), with or without predictions, followed by the columns of
-\code{occasion_covariates} and of the calibration keys.
+recording), with or without predictions, with its number of windows
+of the classifier (\code{n_windows}, \code{NA} when the length of the occasion
+is unknown), followed by the columns of \code{occasion_covariates} and of
+the calibration keys.
 \item \code{detections.csv}: one row per prediction with confidence >=
 \code{min_confidence}.
 \item \code{scores.csv}: one row per occasion x species with at least one
@@ -153,8 +167,9 @@ prediction: the highest score and the number of predictions. Occasion
 x species pairs absent from this table had no prediction >=
 \code{min_confidence} (a censored score).
 \item \code{validation.csv}: the reviewed clips of the \code{"top"} and
-\code{"random_detections"} designs, with their verdict and inclusion
-probability (only when \code{validation} is given).
+\code{"random_detections"} designs, with their verdict, inclusion
+probability, round and stratum, and what a negative verdict covers
+(\code{review_scope}; only when \code{validation} is given).
 \item \code{recordings_verified.csv}: the occasions annotated by ear in the
 \code{"random_recordings"} design, with the state of each occasion (only
 when \code{validation} holds such clips).

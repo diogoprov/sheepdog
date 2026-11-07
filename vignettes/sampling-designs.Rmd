@@ -228,7 +228,10 @@ positive verdicts among the reviewed clips is not the precision among all
 the predictions. `precision_by_bin()`, `suggest_thresholds()` and
 `post_validation()` add the precision weighted by `1 / inclusion_prob`
 (`precision_weighted`) whenever the validation table carries
-`inclusion_prob`.
+`inclusion_prob`. `suggest_thresholds()` also uses it to choose the cut in
+the cells whose clips all have `inclusion_prob`, with `min_n` applied to
+Kish's effective sample size; `precision_used` says which precision chose
+each cut, and `weighted = FALSE` restores the unweighted choice.
 
 ## `"random_recordings"`: multiple-method design
 
@@ -435,6 +438,9 @@ verdicts with `post_validation()`. The columns that occupancy models with
 false positives read (`occasion_id`, `n_detections_occasion`,
 `inclusion_prob`, `verdict`), and how clips of each design must be used, are
 defined in `vignette("crywolf-integration")`.
+
+Which detection rule the occupancy analysis can use, and which design each
+needs, is summarised in the [choosing a route](https://provetelab.org/sheepdog/articles/choosing-a-route.html) article.
 
 ## References
 

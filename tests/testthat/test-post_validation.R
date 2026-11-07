@@ -117,8 +117,10 @@ test_that("precision is also weighted by 1 / inclusion_prob", {
   expect_equal(b5$precision, 0.25)
   expect_equal(b5$precision_weighted, 10 / 13)
   expect_equal(p$precision_weighted[p$bin == "[0.9,1]"], 1)
-  th <- suggest_thresholds(val, target_precision = 0.5, min_n = 1)
+  th <- suggest_thresholds(val, target_precision = 0.5, min_n = 1,
+                           weighted = FALSE)
   expect_equal(th$threshold, 0.55)
+  expect_identical(th$precision_used, "unweighted")
   expect_equal(th$precision_at_threshold, 0.5)
   expect_equal(th$precision_weighted_at_threshold, (10 + 4) / (10 + 3 + 4))
   # um clipe sem inclusion_prob (de "top") deixa a faixa sem a ponderada
@@ -133,4 +135,126 @@ test_that("precision is also weighted by 1 / inclusion_prob", {
   vazio <- suggest_thresholds(val[0, ] |>
                                 dplyr::mutate(inclusion_prob = numeric()))
   expect_identical(nrow(vazio), 0L)
+})
+
+# Dois estratos de uma celula, como no exemplo da issue #103: a hora quieta
+# foi revista por inteiro (precisao 0,6) e o coro em 1/10 (precisao 0,95)
+two_strata <- function(n_q = 20, n_c = 20, prob_c = 0.1) {
+  tibble::tibble(
+    site = "A", species_folder = "sp",
+    confidence = rep(0.5, n_q + n_c),
+    verdict = c(rep(c("positive", "negative"), c(0.6 * n_q, 0.4 * n_q)),
+                rep(c("positive", "negative"), c(0.95 * n_c, 0.05 * n_c))),
+    inclusion_prob = rep(c(1, prob_c), c(n_q, n_c)))
+}
+
+test_that("suggest_thresholds() chooses the cut with the design weights", {
+  val <- two_strata()
+  # sem peso, 0,775 < 0,9; com peso, (12 + 190) / 220 = 0,918
+  sem <- suggest_thresholds(val, min_n = 5, weighted = FALSE)
+  expect_true(is.na(sem$threshold))
+  com <- suggest_thresholds(val, min_n = 5)
+  expect_equal(com$threshold, 0.5)
+  expect_equal(com$precision_at_threshold, 0.775)
+  expect_equal(com$precision_weighted_at_threshold, 202 / 220)
+  expect_identical(com$precision_used, "weighted")
+  expect_equal(com$n_eff, 220^2 / (20 + 20 * 100))
+  expect_identical(com$n_support, 40L)
+  expect_equal(com, suggest_thresholds(val, min_n = 5, weighted = TRUE))
+  # o padrao oposto: a precisao sem peso aceita um corte que nao atinge
+  inv <- val
+  inv$inclusion_prob <- rep(c(0.1, 1), each = 20)
+  expect_equal(suggest_thresholds(inv, target_precision = 0.75,
+                                  min_n = 5, weighted = FALSE)$threshold, 0.5)
+  expect_true(is.na(suggest_thresholds(inv, target_precision = 0.75,
+                                       min_n = 5)$threshold))
+})
+
+test_that("min_n applies to the effective sample size when weighted", {
+  val <- two_strata()
+  n_eff <- 220^2 / (20 + 20 * 100)
+  expect_lt(n_eff, 40)
+  expect_true(is.na(suggest_thresholds(val, min_n = 30)$threshold))
+  expect_equal(suggest_thresholds(val, target_precision = 0.7, min_n = 30,
+                                  weighted = FALSE)$threshold, 0.5)
+})
+
+test_that("equal inclusion probabilities give the unweighted threshold", {
+  set.seed(1)
+  val <- tibble::tibble(site = "A", species_folder = "sp",
+                        confidence = round(runif(200), 2))
+  val$verdict <- ifelse(runif(200) < val$confidence, "positive", "negative")
+  for (p in c(1, 0.3)) {
+    val$inclusion_prob <- p
+    a <- suggest_thresholds(val, min_n = 10)
+    b <- suggest_thresholds(val, min_n = 10, weighted = FALSE)
+    expect_false(is.na(a$threshold))
+    expect_equal(a$threshold, b$threshold)
+    expect_equal(a$n_support, b$n_support)
+    expect_equal(a$n_eff, a$n_support)
+  }
+})
+
+test_that("cells mixing clips with and without inclusion_prob warn", {
+  val <- two_strata()
+  val$inclusion_prob[1] <- NA
+  expect_warning(m <- suggest_thresholds(val, target_precision = 0.7,
+                                         min_n = 5),
+                 "unweighted precision")
+  expect_equal(m$threshold, 0.5)
+  expect_identical(m$precision_used, "unweighted")
+  expect_true(is.na(m$precision_weighted_at_threshold))
+  expect_true(is.na(m$n_eff))
+  expect_warning(t <- suggest_thresholds(val, target_precision = 0.7,
+                                         min_n = 5, weighted = TRUE),
+                 "no threshold")
+  expect_true(is.na(t$threshold))
+  expect_no_warning(suggest_thresholds(val, target_precision = 0.7, min_n = 5,
+                                       weighted = FALSE))
+  # uma celula so com clipes de "top" nao e mista: fica sem peso, sem aviso
+  top <- two_strata()
+  top$site <- "B"
+  top$inclusion_prob <- NA_real_
+  ambas <- dplyr::bind_rows(two_strata(), top)
+  expect_no_warning(r <- suggest_thresholds(ambas, target_precision = 0.7,
+                                            min_n = 5))
+  expect_identical(r$precision_used, c("weighted", "unweighted"))
+})
+
+test_that("suggest_thresholds() checks `weighted`", {
+  val <- two_strata()
+  expect_error(suggest_thresholds(val, weighted = "yes"), "NULL, TRUE or FALSE")
+  val$inclusion_prob <- NULL
+  expect_error(suggest_thresholds(val, weighted = TRUE), "no reviewed clip")
+  expect_named(suggest_thresholds(val, min_n = 5),
+               c("site", "species_folder", "threshold", "n_support",
+                 "precision_at_threshold"))
+})
+
+test_that("suggest_thresholds() copes with a top score that rounds up", {
+  v <- tibble::tibble(site = "A", species_folder = "Sp",
+                      confidence = c(rep(0.8, 20), 0.996),
+                      verdict = "positive", inclusion_prob = 0.5)
+  thr <- suggest_thresholds(v, min_n = 5)
+  expect_equal(thr$threshold, 0.8)
+})
+
+test_that("`sustained` needs the target at every supported higher cut", {
+  # acima de 0,5 a precisao acumulada cai abaixo do alvo em 0,6 e volta em 0,7
+  v <- tibble::tibble(
+    site = "A", species_folder = "Sp",
+    confidence = rep(c(0.5, 0.6, 0.7), c(30, 10, 20)),
+    verdict = c(rep("positive", 30), rep("negative", 10), rep("positive", 20)))
+  # cortes: 0,5 -> 50/60 = 0,83; 0,6 -> 20/30 = 0,67; 0,7 -> 1
+  expect_equal(suggest_thresholds(v, target_precision = 0.8, min_n = 5,
+                                  sustained = TRUE)$threshold, 0.7)
+  expect_equal(suggest_thresholds(v, target_precision = 0.8,
+                                  min_n = 5)$threshold, 0.5)
+  # um falso positivo no topo, sem apoio, nao tira o limiar
+  topo <- tibble::tibble(
+    site = "A", species_folder = "Sp",
+    confidence = c(rep(0.5, 30), 0.9),
+    verdict = c(rep("positive", 30), "negative"))
+  expect_equal(suggest_thresholds(topo, target_precision = 0.9, min_n = 5,
+                                  sustained = TRUE)$threshold, 0.5)
 })

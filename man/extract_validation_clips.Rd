@@ -23,7 +23,7 @@ extract_validation_clips(
 
 \item{...}{Sampling design, passed to \code{\link[=select_clips]{select_clips()}} (e.g.
 \code{sampling_mode}, \code{n_top}, \code{threshold}, \code{target_total}, \code{remap_from},
-\code{remap_to}).}
+\code{remap_to}, and \code{previous} for a further round, in a new \code{output_dir}).}
 
 \item{table_pattern}{Regular expression for the file names of combined
 tables.}
@@ -65,6 +65,7 @@ Output structure:
 <output_dir>/packages/<species_folder>.zip
 <output_dir>/clip_manifest.csv
 <output_dir>/extraction_info.csv
+<output_dir>/candidates.csv
 }\if{html}{\out{</div>}}
 
 \code{extraction_info.csv} records the provenance of the run (one \code{key},
@@ -73,6 +74,10 @@ folder of the selection tables, the \code{classifier} label and every
 argument passed to \code{\link[=select_clips]{select_clips()}}. Keep it with the manifest: it tells
 later rounds which classifier produced the clips (for instance, to leave
 out of a validation round the clips used to retrain that classifier).
+
+\code{candidates.csv} (\code{"random_detections"}) lists the candidate occasions
+with their stratum: later rounds draw from it and \code{\link[=combine_rounds]{combine_rounds()}}
+reads it, so keep it with the manifest.
 }
 \examples{
 \dontrun{

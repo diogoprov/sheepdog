@@ -1,0 +1,18 @@
+digraph routes {
+  graph [rankdir=LR, fontname="Helvetica", bgcolor=white, nodesep=0.3, ranksep=0.5, pad=0.1]
+  node  [shape=box, style="rounded,filled", fillcolor="#efe2f8", fontname="Helvetica", fontsize=10,
+         color="#b393c9", fontcolor="#2c3e50", margin="0.12,0.08", penwidth=0.9]
+  edge  [color="#7f8c99", arrowsize=0.7, penwidth=0.9]
+
+  review [label=<reviewed clips and recordings<BR/><FONT POINT-SIZE="9">a random design</FONT>>, fillcolor="#d9e9f8", color="#8aa5b8"]
+  export [label=<export<BR/><FONT FACE="Menlo" POINT-SIZE="9">export_occupancy_data()</FONT>>]
+  threshold [label=<one score threshold<BR/><FONT FACE="Menlo" POINT-SIZE="9">fp_aggregate()<BR/>fp_data(), fp_occu()</FONT>>]
+  draws [label=<calibration draws (brms)<BR/><FONT FACE="Menlo" POINT-SIZE="9">fp_draws_data()<BR/>fp_occu_mc()</FONT>>]
+  results [label=<occupancy results<BR/><FONT POINT-SIZE="9">ψ, p11, p10</FONT>>, penwidth=1.8]
+
+  review -> export
+  export -> threshold
+  export -> draws
+  threshold -> results
+  draws -> results
+}

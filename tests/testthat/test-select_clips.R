@@ -13,9 +13,11 @@ manifesto_cenario <- function(nome) {
 
 for (nm in cenarios) {
   test_that(paste("select_clips() reproduces v1.2.0:", nm), {
-    novo <- as_written(manifesto_cenario(nm))
     ref  <- ref_table(nm, "manifesto_clipes.csv") |> dplyr::select(-status)
-    expect_identical(names(novo), names(ref))
+    # colunas novas das rodadas de revisao ficam depois das da v1.2.0
+    novo <- as_written(manifesto_cenario(nm))
+    expect_identical(names(novo)[seq_along(ref)], names(ref))
+    novo <- novo[names(ref)]
     expect_same_table(novo, ref)
   })
 }

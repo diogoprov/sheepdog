@@ -1,0 +1,41 @@
+---
+title: "Cheat sheets"
+---
+
+Printable summaries of sheepdog, with the main functions and figures of each
+stage. The figures are based on drawings by Larissa S. M. Sugai.
+
+## The three stages
+
+[Download the PDF](../cheatsheets/sheepdog-cheatsheet.pdf) (A4 landscape, three
+pages).
+
+[![Stage 1: validation data](figures/cheatsheet-page-1.png)](../cheatsheets/sheepdog-cheatsheet.pdf)
+
+[![Stage 2: calibration and histories](figures/cheatsheet-page-2.png)](../cheatsheets/sheepdog-cheatsheet.pdf)
+
+[![Stage 3 and beyond](figures/cheatsheet-page-3.png)](../cheatsheets/sheepdog-cheatsheet.pdf)
+
+## Illustrated guide
+
+Five posters drawn by Larissa S. M. Sugai, which go through the stages in
+detail: validation, the diagnostic, retraining, calibration, and the community
+matrices with occupancy. They refer to each other as Figures 1 to 5, the order
+of the pages.
+
+[Download the PDF](../cheatsheets/sheepdog-illustrated-guide.pdf) (five pages).
+
+The posters predate the review rounds. For another round, use
+`select_clips(previous = )` and `combine_rounds()` rather than a new seed
+(`vignette("validation-effort")`). "Routes to detection histories and
+occupancy" is now the article [Choosing a route](choosing-a-route.html).
+
+```{=html}
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; align-items: start;">
+<a href="../cheatsheets/sheepdog-illustrated-guide.pdf"><img src="figures/illustrated-guide-page-1.png" alt="Figure 1. Stage 1: validation" style="width: 100%;"></a>
+<a href="../cheatsheets/sheepdog-illustrated-guide.pdf"><img src="figures/illustrated-guide-page-2.png" alt="Figure 2. Stage 1: diagnostic" style="width: 100%;"></a>
+<a href="../cheatsheets/sheepdog-illustrated-guide.pdf"><img src="figures/illustrated-guide-page-3.png" alt="Figure 3. Stage 1: retraining" style="width: 100%;"></a>
+<a href="../cheatsheets/sheepdog-illustrated-guide.pdf"><img src="figures/illustrated-guide-page-4.png" alt="Figure 4. Stage 2: calibration" style="width: 100%;"></a>
+<a href="../cheatsheets/sheepdog-illustrated-guide.pdf"><img src="figures/illustrated-guide-page-5.png" alt="Figure 5. Stage 3: community matrices" style="width: 100%;"></a>
+</div>
+```

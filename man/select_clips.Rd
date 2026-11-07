@@ -30,7 +30,11 @@ select_clips(
   max_per_species = NULL,
   remap_from = NULL,
   remap_to = NULL,
-  seed = 2026
+  seed = 2026,
+  previous = NULL,
+  candidates = NULL,
+  cells = NULL,
+  inherit = FALSE
 )
 }
 \arguments{
@@ -161,13 +165,36 @@ Backslashes are turned into forward slashes first.}
 
 \item{seed}{Seed of every random draw. The global random number
 generator is left as it was.}
+
+\item{previous}{Earlier reviews: paths to their \code{clip_manifest.csv} or
+\code{validation_by_clip.csv}, a data frame, or a list of these. Rounds of the
+same design give another round (see Review rounds); reviews of the other
+random design, which need \code{validation_by_clip.csv}, give their verdicts
+(see Reusing the other design).}
+
+\item{candidates}{With \code{previous}, the \code{candidates.csv} of the first
+round, as a path or a data frame. \code{NULL} looks for it in the folders of
+\code{previous}.}
+
+\item{cells}{With \code{previous}, restrict the round to these cells: a data
+frame with \code{site} and \code{species_folder} or \code{species_code}, such as the
+rows of \code{\link[=review_support]{review_support()}} with \code{diagnosis == "review more"}.}
+
+\item{inherit}{With \code{previous} of the other design, give the clips the
+verdict that the earlier review implies, so that they need no review?
+See Reusing the other design.}
 }
 \value{
 A tibble, the clip manifest without \code{status}, with the columns
 \code{site}, \code{species_code}, \code{species_folder}, \code{recording_date}, \code{night},
 \code{recording_hour}, \code{rank}, \code{confidence}, \code{clip_file}, \code{clip_start},
 \code{clip_end}, \code{duration}, \code{source_audio}, \code{begin_path}, \code{sampling_mode},
-\code{occasion_id}, \code{n_detections_occasion} and \code{inclusion_prob}. See
+\code{occasion_id}, \code{n_detections_occasion}, \code{inclusion_prob} (cumulative
+over the rounds), \code{round}, \code{n_candidates} (\code{N} of the stratum), \code{n_drawn}
+(occasions drawn in the stratum, all rounds so far; both \code{NA} outside
+\code{"random_detections"} and under a cap) and \code{inclusion_prob_round} (the
+draw of that round alone), \code{previously_reviewed}, \code{inherited_verdict}
+and \code{source_design} (see Reusing the other design). See
 \code{vignette("crywolf-integration")} for their definitions.
 }
 \description{
@@ -200,5 +227,66 @@ recording (or minute), copied once per species to annotate, and
 }
 
 In both random modes, use the same \code{threshold} as the occupancy analysis.
+}
+
+\section{Review rounds}{
+
+\code{previous} draws one more round of a design without repeating what was
+reviewed. In \code{"random_detections"}, the occasions drawn earlier leave the
+pool and \code{n_top} occasions are drawn per stratum among the rest. Drawing
+\code{n1} occasions of \code{N} and then \code{n2} of the \code{N - n1} left gives a simple
+random sample of \code{n1 + n2}, so after each round every clip has the
+inclusion probability \code{n_drawn / n_candidates}, whatever its round. This
+needs the same candidates, strata, threshold and occasion unit in every
+round. The first round therefore keeps a list of its candidates, in the
+attribute \code{"candidates"} of the manifest, written to \code{candidates.csv} by
+\code{\link[=extract_validation_clips]{extract_validation_clips()}}; later rounds draw from that list, and a
+warning says when the predictions have changed. A different \code{threshold},
+\code{occasion_unit} or \code{strata} is refused, and so are \code{target_total} and
+\code{max_per_species}, whose second stage depends on the counts of each
+round. Round \code{k} uses the seed \code{seed + k - 1}.
+
+The tables of earlier rounds keep the probability of their own round:
+use \code{\link[=combine_rounds]{combine_rounds()}} to stack them. In \code{"top"}, there is no inclusion
+probability, and \code{previous} only leaves out the clips already reviewed.
+\code{previous} is not available for \code{"random_recordings"}.
+
+Choosing the cells of a round from their verdicts, and stopping when a
+cell reaches a target, makes the stopping depend on the results; see
+\code{vignette("validation-effort")}.
+}
+
+\section{Reusing the other design}{
+
+A study can draw both \code{"random_detections"} and \code{"random_recordings"}.
+With \code{previous} of the other design, the occasions reviewed there stay in
+the pool, so that this draw remains independent and its inclusion
+probabilities do not change, and \code{previously_reviewed} marks the clips
+that overlap an earlier review, matching site, species, recording and
+time, so that minutes and files can be mixed. With \code{inherit = TRUE}, what
+the earlier review already tells is reused:\tabular{llll}{
+   Earlier review \tab This draw \tab Inherited \tab Still to review \cr
+   recording absent \tab \code{"random_detections"} \tab every prediction is negative \tab nothing \cr
+   recording present \tab \code{"random_detections"} \tab nothing \tab the clips \cr
+   a positive prediction \tab \code{"random_recordings"} \tab the recording is present \tab nothing \cr
+   only negative predictions \tab \code{"random_recordings"} \tab nothing \tab the recording \cr
+}
+
+
+The species may have called below the threshold, so negative predictions
+say nothing about the recording. \code{\link[=cut_clips]{cut_clips()}} skips the clips with an
+\code{inherited_verdict}, the review app leaves them out, and
+\code{\link[=post_validation]{post_validation()}} fills them in, so that the table of each design is
+complete for its precision and thresholds.
+\code{\link[=export_occupancy_data]{export_occupancy_data()}} leaves them out: an inherited verdict is the
+same judgement as the earlier one, and exporting it would give a model two
+observations of it.
+
+\code{inherit} is \code{FALSE} by default because of that last step. The occasions
+left out are chosen by their verdict (present recordings, negative clips),
+which can bias what an occupancy model estimates from those tables. The
+overlap between two random draws is usually small, so reviewing it costs
+little; use \code{inherit = TRUE} when the tables will not go to an occupancy
+model.
 }
 

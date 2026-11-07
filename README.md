@@ -178,14 +178,15 @@ several sites share a folder, `site_pattern` reads it from the file name.
 The manifest records `occasion_id`, `n_detections_occasion` and
 `inclusion_prob` (the probability that the occasion was drawn), with which
 `post_validation()` also reports the precision weighted by
-`1 / inclusion_prob`. Every draw
+`1 / inclusion_prob` and uses it to suggest the thresholds. Every draw
 uses a fixed seed, so a rerun selects the same clips, and the cut is
 idempotent: an interrupted run resumes where it stopped.
 
 ## Calibration
 
-Converting BirdNET confidence scores into probabilities is recommended by the
-BirdNET authors ([Wood & Kahl 2024](https://doi.org/10.1007/s10336-024-02144-5));
+[Wood & Kahl (2024)](https://doi.org/10.1007/s10336-024-02144-5) describe the
+conversion of BirdNET confidence scores into probabilities for studies in which
+the predictions cannot all be reviewed;
 calibration by logistic regression on logit(score) is applied, for instance,
 by [Owens et al. (2026)](https://doi.org/10.64898/2026.06.01.729442).
 `calibrate()` extends that approach with a hierarchical multi-species

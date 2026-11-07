@@ -24,7 +24,7 @@ covs_temp <- function() {
                    temp = ifelse(seq_len(nrow(base)) %% 2 == 0, 1, -1))
 }
 
-test_that("a calibration on a continuous covariate writes schema 1.3", {
+test_that("a calibration on a continuous covariate writes its versions", {
   skip_if_not_installed("arrow")
   mock_predicoes()
   especies <- unique(sheepdog:::folder_name(sim_pred()$species_code))
@@ -35,7 +35,7 @@ test_that("a calibration on a continuous covariate writes schema 1.3", {
                    covariate_scaling = list(temp = c(center = 22, scale = 3)))
   sc <- jsonlite::read_json(file.path(ex$dir, "schema.json"),
                             simplifyVector = TRUE)
-  expect_identical(sc$schema_version, 1.3)
+  expect_identical(sc$schema_version, 1.4)
   expect_identical(sc$calibration$covariates, "temp")
   expect_identical(sc$calibration$keys, c("site", "species"))
   expect_null(sc$calibration$grid_step)
@@ -163,7 +163,7 @@ test_that("n_versions without covariates writes schema 1.2 from the grid", {
                                     n_versions = 3))
   sc <- jsonlite::read_json(file.path(ex$dir, "schema.json"),
                             simplifyVector = TRUE)
-  expect_identical(sc$schema_version, 1.2)
+  expect_identical(sc$schema_version, 1.4)
   expect_identical(sc$occasion_draws$n_draws, 3L)
   expect_true(file.exists(file.path(ex$dir, "calibration_draws.parquet")))
   # as mesmas versoes de occasion_draws() sobre a pasta

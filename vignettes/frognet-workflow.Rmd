@@ -125,7 +125,8 @@ how many were marked again. For a `"random_detections"` round, give the
 manifest that still has `inclusion_prob`, not a blind copy without it: the
 precision tables then also give the precision weighted by
 `1 / inclusion_prob`, which estimates the precision among all the
-detections above the threshold rather than among the reviewed clips.
+detections above the threshold rather than among the reviewed clips, and
+that precision chooses the suggested thresholds.
 
 ## Stage 2: calibration
 

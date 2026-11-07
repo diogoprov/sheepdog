@@ -178,6 +178,7 @@ app_verdicts <- function(manifest, verdicts_file, clips_dir = NULL,
     mutate(verdict = replace_na(verdict, "not_reviewed"),
            reviewed_path = if (is.null(clips_dir)) NA_character_ else
              file.path(clips_dir, species_folder, clip_file))
+  out <- fill_inherited(out)
   if (!is.null(reviewer)) out$reviewer <- reviewer
   contagem <- count(out, verdict)
   message("Clips in the manifest: ", nrow(manifesto), "\n",
@@ -204,6 +205,7 @@ report_remarked <- function(log) {
 # caminho de cada um
 review_queue <- function(manifest, clips_dir, reviewer = NULL) {
   fila <- read_manifest(manifest)
+  fila <- fila[!is_inherited(fila), ]
   faltam <- setdiff(c("clip_file", "species_folder"), names(fila))
   if (length(faltam) > 0) {
     stop("`manifest` lacks the column(s): ", paste(faltam, collapse = ", "),

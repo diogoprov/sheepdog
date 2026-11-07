@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>sheepdog cheat sheet</title>
+<style>
+@page { size: A4 landscape; margin: 0; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 9.8pt/1.34 Helvetica, Arial, sans-serif; color: #2c3e50; }
+.page { width: 297mm; height: 210mm; padding: 8mm 10mm 7mm; page-break-after: always;
+        display: flex; flex-direction: column; overflow: hidden; }
+.page:last-child { page-break-after: auto; }
+header { display: flex; align-items: center; gap: 4mm; border-bottom: 1.2pt solid var(--c);
+         padding-bottom: 2mm; margin-bottom: 3mm; }
+header img { height: 12mm; }
+header h1 { font-size: 15pt; font-weight: 500; margin: 0; color: var(--c); }
+header p { margin: 0 0 0 auto; color: #7f8c99; text-align: right; }
+.cols { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; min-height: 0; }
+h2 { font-size: 10pt; font-weight: 600; color: var(--c); margin: 0 0 1mm; }
+section { margin-bottom: 3mm; }
+p { margin: 0 0 1.2mm; }
+figure { margin: 1mm 0 1.5mm; }
+figure img { width: 100%; display: block; }
+pre, code { font-family: Menlo, Consolas, monospace; font-size: 7.9pt; }
+pre { margin: 1mm 0 1.5mm; line-height: 1.32; white-space: pre-wrap; }
+pre .c { color: #7f8c99; }
+table { border-collapse: collapse; width: 100%; margin: 1mm 0 1.5mm; }
+th { text-align: left; font-weight: 600; color: #5d6b78; border-bottom: .6pt solid #bcc6cf; }
+td { vertical-align: top; border-bottom: .3pt solid #e3e7eb; }
+th, td { padding: .5mm 1.5mm .5mm 0; }
+footer { color: #7f8c99; font-size: 7pt; border-top: .4pt solid #e3e7eb; padding-top: 1mm;
+         display: flex; justify-content: space-between; }
+.s1 { --c: #1f5c8b; } .s2 { --c: #8a5a00; } .s3 { --c: #1e6b3a; }
+figure.half img { width: 72%; margin: 0 auto; }
+.occ { color: #5e3a7a; } .ret { color: #1f5c8b; }
+</style>
+</head>
+<body>
+
+<div class="page s1">
+<header><img src="../../man/figures/logo.png" alt="">
+<h1>Stage 1: validation data</h1>
+<p>sheepdog cheat sheet<br>provetelab.org/sheepdog</p></header>
+<div class="cols">
+<div>
+<section><h2>Choose a design</h2>
+<p>Each design answers a different question, so a sample drawn for one is not valid for another.</p>
+<figure><img src="../../pkgdown/assets/figures/schematic_selection.png" alt=""></figure>
+<table>
+<tr><th>sampling_mode</th><th>use</th></tr>
+<tr><td><code>"top"</code></td><td>retraining; score-to-probability calibration</td></tr>
+<tr><td><code>"random_detections"</code></td><td>false-positive rates; needs <code>threshold</code></td></tr>
+<tr><td><code>"random_recordings"</code></td><td>false-positive and false-negative rates</td></tr>
+</table></section>
+<section><h2>Draw and cut the clips</h2>
+<pre><span class="c"># check the selection first, then cut</span>
+extract_validation_clips(data_dir, "validation",
+  sampling_mode = "random_detections",
+  threshold = 0.5, simulate = TRUE)
+extract_validation_clips(data_dir, "validation",
+  sampling_mode = "random_detections",
+  threshold = 0.5)</pre>
+<p>The clips and <code>clip_manifest.csv</code> go to the output folder. To work step by step: <code>read_selection_tables()</code>, <code>select_clips()</code>, <code>cut_clips()</code>.</p></section>
+</div>
+<div>
+<section><h2>Review</h2>
+<figure><img src="../../pkgdown/assets/figures/schematic_review.png" alt=""></figure>
+<pre>run_app("validation/clip_manifest.csv",
+  clips_dir = "validation/clips",
+  verdicts_file = "validation/verdicts.csv",
+  reviewer = "liliana")</pre>
+<p>Or sort the clips in the BirdNET GUI and use <code>review_dir</code> below.</p></section>
+<section><h2>Several reviewers</h2>
+<figure><img src="../../pkgdown/assets/figures/schematic_reviewers.png" alt=""></figure>
+<p><code>assign_reviewers()</code> splits the clips, with a share for both. <code>reviewer_agreement()</code> measures their agreement, and <code>consensus_verdicts()</code> combines the verdicts.</p></section>
+</div>
+<div>
+<section><h2>After the review</h2>
+<pre>post_validation(
+  manifest_path = "validation/clip_manifest.csv",
+  output_dir = "validation/results",
+  verdicts_file = "validation/verdicts.csv")</pre>
+<p>Writes <code>validation_by_clip.csv</code>, the precision by bin, the thresholds, the nightly presence and the clips for retraining.</p></section>
+<section><h2>What each label of <code>review_support()</code> asks for</h2>
+<table>
+<tr><th>label</th><th>next step</th></tr>
+<tr><td>"reached"</td><td>the cell has a threshold</td></tr>
+<tr><td>"review more"</td><td>another round, below</td></tr>
+<tr><td>"not reviewed"</td><td>draw clips for the cell</td></tr>
+<tr><td>"exhausted"</td><td>keep the clips; the model may still give a threshold</td></tr>
+<tr><td>"unreliable"</td><td>the classifier is the limit: retraining</td></tr>
+</table></section>
+<section><h2>Another round</h2>
+<figure><img src="../../pkgdown/assets/figures/schematic_rounds.png" alt=""></figure>
+<p><code>select_clips(previous = )</code> leaves out what was reviewed, and <code>combine_rounds()</code> gives every clip its cumulative <code>inclusion_prob</code>.</p></section>
+</div>
+</div>
+<footer><span>Figures based on drawings by Larissa S. M. Sugai.</span><span>1 of 3</span></footer>
+</div>
+
+<div class="page s2">
+<header><img src="../../man/figures/logo.png" alt="">
+<h1>Stage 2: calibration and histories</h1>
+<p>sheepdog cheat sheet<br>provetelab.org/sheepdog</p></header>
+<div class="cols">
+<div>
+<section><h2>Why calibrate</h2>
+<figure><img src="../../pkgdown/assets/figures/score_overlap.png" alt=""></figure>
+<p>A score is not a probability. The scores of true and false detections overlap, and no cut on the score separates them. The curves are illustrative.</p></section>
+<section><h2>From clips to P(tp)</h2>
+<figure><img src="../../pkgdown/assets/figures/schematic_curve.png" alt=""></figure>
+<pre>res &lt;- calibrate(
+  validation_files = val_files,
+  prediction_tables = tables,
+  output_dir = "calibration", p_min = 0.95)</pre>
+<p>Writes <code>nightly_detection_history.csv</code> and <code>calibration_quality.csv</code>. Look at <code>status</code> before using a species.</p></section>
+</div>
+<div>
+<section><h2>Choose a route</h2>
+<table>
+<tr><th>route</th><th>a detection counts when</th><th>uncertainty</th></tr>
+<tr><td><b>A</b></td><td>score ≥ the threshold of the cell</td><td>none</td></tr>
+<tr><td><b>B · 1</b></td><td>P(tp) ≥ <code>p_min</code></td><td>ignored</td></tr>
+<tr><td><b>B · 2</b></td><td><code>pr_reliable</code> ≥ <code>prob_min</code></td><td>used in the cut</td></tr>
+<tr><td><b>B · 3</b></td><td>P(tp) ≥ <code>p_min</code> in each draw</td><td>propagated</td></tr>
+</table>
+<p>A guarantees the precision of the set kept; B, of each detection, if the curve is right. Ways 2 and 3 need a brms calibration.</p></section>
+<section><h2>From detections to nights</h2>
+<figure><img src="../../pkgdown/assets/figures/schematic_nights.png" alt=""></figure>
+<p>A night counts as detected with at least k detections that count (<code>min_detections_night</code>; columns for k = 1, 2 and 3).</p></section>
+</div>
+<div>
+<section><h2>Code per route</h2>
+<pre><span class="c"># A: empirical threshold</span>
+val_clips &lt;- read_validation_tables(val_files)
+thr_A &lt;- review_support(val_clips, pred,
+                        target_precision = 0.90)
+history_A &lt;- threshold_history(pred, thr_A)
+
+<span class="c"># B, way 1</span>
+history_1 &lt;- res$history
+
+<span class="c"># B, ways 2 and 3, after calibrate(engine = "brms")</span>
+history_2 &lt;- detection_history(res_b$scored,
+  p_min = 0.95, rule = "probability",
+  prob_min = 0.9)
+history_3 &lt;- history_draws(res_b$fit, res_b$scored,
+  p_min = 0.95, n_draws = 200)</pre></section>
+<section><h2>One history per draw</h2>
+<figure><img src="../../pkgdown/assets/figures/schematic_draws.png" alt=""></figure></section>
+<section><h2>Check one route against the other</h2>
+<pre>compare_thresholds(val_clips, res$fit,
+  scored = res$scored, target_precision = 0.90,
+  quality = res$quality)</pre></section>
+</div>
+</div>
+<footer><span>Figures based on drawings by Larissa S. M. Sugai.</span><span>2 of 3</span></footer>
+</div>
+
+<div class="page s3">
+<header><img src="../../man/figures/logo.png" alt="">
+<h1>Stage 3 and beyond</h1>
+<p>sheepdog cheat sheet<br>provetelab.org/sheepdog</p></header>
+<div class="cols">
+<div>
+<section><h2>Community matrices</h2>
+<figure><img src="../../pkgdown/assets/figures/schematic_matrix.png" alt=""></figure>
+<pre>status &lt;- cell_status(res$fit,
+  read_validations(val_files), p_min = 0.95)
+core &lt;- suggest_core_species(status)
+mats &lt;- community_matrices(history_1,
+                           core_species = core)
+mats_3 &lt;- community_matrices_draws(history_3,
+                           core_species = core)</pre>
+<p>The final choice of core species is yours. In route A it is manual, as <code>cell_status()</code> needs a calibration. <code>build_community_matrices()</code> does the same from the history file.</p></section>
+</div>
+<div>
+<section><h2 class="occ">Occupancy with false positives</h2>
+<figure><img src="../../pkgdown/assets/figures/occupancy_routes.png" alt=""></figure>
+<pre>export_occupancy_data("occupancy", det,
+  recordings = "recordings.csv",
+  validation = val_files)</pre>
+<p>Writes every occasion, the scores and the reviewed clips, with their design, for models such as those of crywolf. <code>fit</code> adds the posterior draws of a Bayesian calibration.</p>
+<p>The review must come from <code>"random_detections"</code>, which anchors the false-positive rate, and/or <code>"random_recordings"</code>, which anchors the state of sites and shows what the classifier misses.</p>
+<p>Use a calibration without a site effect: P(tp | score, site) partly reflects how often the species calls at the site, which is what occupancy estimates, so it would be counted twice.</p></section>
+<section><h2 class="occ">An occasion, from the scores</h2>
+<figure class="half"><img src="../../pkgdown/assets/figures/occupancy_threshold.png" alt=""></figure></section>
+</div>
+<div>
+<section><h2 class="ret">Retraining</h2>
+<figure><img src="../../pkgdown/assets/figures/schematic_retraining.png" alt=""></figure>
+<p>For when the classifier, and not the review, limits precision. <code>retraining_clips()</code> lists the positive clips; training itself runs in BirdNET-Analyzer.</p>
+<pre>build_training_set(reviewed, "birdnet_training",
+  split = "night", test_prop = 0.2)</pre>
+<p>After retraining, the scores change, so validate and calibrate again.</p></section>
+<section><h2 class="occ">Two stories for every site</h2>
+<figure class="half"><img src="../../pkgdown/assets/figures/occupancy_model.png" alt=""></figure>
+<figure class="half"><img src="../../pkgdown/assets/figures/occupancy_mixture.png" alt=""></figure>
+<p>Where the groups overlap, the data alone cannot say how many detections are false: known truth settles that.</p></section>
+</div>
+</div>
+<footer><span>Figures based on drawings by Larissa S. M. Sugai.</span><span>3 of 3</span></footer>
+</div>
+
+</body>
+</html>

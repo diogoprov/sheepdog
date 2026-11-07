@@ -8,11 +8,21 @@
 #'
 #' @param files Paths to the `validation_by_clip.csv` files. Missing files
 #'   are skipped with a warning.
+#' @param candidates For the rounds of one design: the `candidates.csv` of
+#'   the first round, passed to [combine_rounds()], which gives the clips
+#'   their cumulative `inclusion_prob`. `NULL` only stacks the tables.
 #'
 #' @return A tibble with the columns of the validation tables; `night` and
 #'   `recording_date` are character.
 #' @export
-read_validation_tables <- function(files) {
+read_validation_tables <- function(files, candidates = NULL) {
+  if (!is.null(candidates)) {
+    existem <- file.exists(files)
+    if (any(!existem)) {
+      warning("Not found: ", paste(files[!existem], collapse = ", "))
+    }
+    return(combine_rounds(files[existem], candidates))
+  }
   tabs <- map(files, function(f) {
     if (!file.exists(f)) { warning("Not found: ", f); return(NULL) }
     read_manifest(f) |>

@@ -1,5 +1,65 @@
 # sheepdog (development version)
 
+- `export_occupancy_data()` writes schema 1.4, which only adds to 1.3:
+  `n_windows` in `occasions.csv` (new argument `window_step`), `round`,
+  `stratum`, `n_candidates`, `n_drawn` and `review_scope` in `validation.csv`,
+  and the design of the draw in `schema.json` (new argument `candidates`).
+  The version no longer depends on the tables written.
+- The stage figures now also appear in the vignettes and articles, with new
+  figures on where false positives come from and on occupancy with false
+  positives. The site has a new Cheat sheets tab, with a cheat sheet and an
+  illustrated guide by Larissa S. M. Sugai to download.
+- New `threshold_history()`: the nightly history of the empirical route, from
+  the thresholds of `review_support()`, with no calibration model. Nights of
+  cells without a threshold stay in the history as effort, with `NA` in the
+  detection columns.
+- `previous` in `select_clips()` and `extract_validation_clips()` also takes
+  the reviews of the other random design (`"random_detections"` and
+  `"random_recordings"`). The draw stays independent, and
+  `previously_reviewed` marks the clips that overlap an earlier review. With
+  the new `inherit = TRUE`, clips whose verdict follows from that review get
+  `inherited_verdict`: an absent recording makes its predictions negative, a
+  positive prediction makes its recording present. `cut_clips()` and the
+  review app skip them, `post_validation()` fills them in, and
+  `export_occupancy_data()` leaves them out with a warning, as they repeat a
+  judgement and are chosen by their verdict. It also warns about
+  occasions in both `validation` and `recordings_verified`, which a model
+  takes as two independent reviews (#102).
+- New `compare_thresholds()`: the thresholds of `suggest_thresholds()` and
+  `calibrated_thresholds()` side by side for each site x species, with a
+  `flag` that compares the empirical and the model-precision thresholds, the
+  `calibration_quality()` status and a mark for model thresholds above the
+  highest reviewed score. `post_validation(fit = )` writes it to
+  `thresholds_compared.csv` (#104).
+- `suggest_thresholds()` gains `sustained`: with `TRUE`, the target precision
+  must also hold at every higher cut with at least `min_n` clips, the rule of
+  `calibrated_thresholds()`. The default, `FALSE`, keeps the thresholds as
+  they were, because the empirical precision of high cuts is noisy; the
+  documentation gives the cost (#104).
+- Review rounds: `select_clips()` and `extract_validation_clips()` gain
+  `previous`, `candidates` and `cells`, to draw another round of a design
+  without repeating what was reviewed. In `"random_detections"`, the
+  occasions drawn earlier leave the pool and the rounds together are a
+  simple random sample of each stratum. The first round writes
+  `candidates.csv`, later rounds draw from it, and a different `threshold`,
+  `occasion_unit` or `strata`, or a cap, is refused. Manifests gain `round`,
+  `n_candidates`, `n_drawn` and `inclusion_prob_round`. The new
+  `combine_rounds()`, also through `read_validation_tables(candidates = )`
+  and `post_validation(previous = )`, gives every clip the cumulative
+  `inclusion_prob`; `review_support()` then adds `n_rounds` and
+  `reached_last_round`. `vignette("validation-effort")` measures the bias of
+  stopping when a cell reaches the target (#107).
+- `suggest_thresholds()`: weighted cells no longer fail when the highest
+  score rounds up past itself (0.996 gives the cut 1).
+- `suggest_thresholds()` now chooses the cut with the precision weighted by
+  `1 / inclusion_prob` in the cells whose clips all have it, as
+  `"random_detections"` draws strata with unequal probabilities. `min_n`
+  applies there to Kish's effective sample size, given in `n_eff`, and
+  `precision_used` says which precision chose each cut. **Thresholds of
+  such cells can change**; `weighted = FALSE`, also in `post_validation()`
+  and `review_support()`, restores the previous choice. Cells that mix
+  clips with and without `inclusion_prob` use the unweighted precision,
+  with a warning. Tables without `inclusion_prob` are unchanged (#103).
 - New `calibration_quality()`: checks the calibrated probabilities by
   species (or by cell) on held-out clips, with the gain in log-loss over a
   null model, the AUC of the probabilities and of the raw score within the

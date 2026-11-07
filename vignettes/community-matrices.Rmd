@@ -23,6 +23,10 @@ runs that stage on the example data shipped with the package, and then uses
 the matrices in a distance-based ordination (PCoA) and in a model-based
 ordination and test with generalised linear latent variable models (GLLVM).
 
+![From the nightly history to the matrices and their analysis.](figures/schematic_matrix.png){width=100%}
+
+![Stage 3 in order, with the occupancy export as the other way out of the histories.](figures/stage3_community.png){width=100%}
+
 ```{r}
 library(sheepdog)
 ```
@@ -56,6 +60,9 @@ The history covers `r length(sites)` sites (`r sites`) and
 night. `n_reliable` counts the detections whose calibrated probability of
 being a true positive reached `p_min` in `calibrate()`; `detection_k1` to
 `detection_k3` flag nights with at least one, two or three such detections.
+
+Other routes lead to a history too (a stricter rule, or one history per
+posterior draw); the [choosing a route](https://provetelab.org/sheepdog/articles/choosing-a-route.html) article compares them.
 
 ## Why the entry rule must be strict
 

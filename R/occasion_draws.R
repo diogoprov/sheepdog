@@ -47,7 +47,7 @@
 #'   ones, in increasing order of their identifiers. All by default.
 #' @param seed Seed of `rule = "sample"`.
 #' @param write Write `occasion_draws.parquet` in `export_dir` and record it
-#'   in `schema.json` (schema version 1.2)? An existing table is replaced.
+#'   in `schema.json` (schema version 1.2 or later)? An existing table is replaced.
 #'
 #' @return A tibble with `draw`, `site`, `occasion_id`, `species` and `y`
 #'   (1 detection, 0 none, `NA` not scored), with one row per draw and
@@ -127,7 +127,7 @@ occasion_draws <- function(export_dir, species = NULL,
 
   if (!write) return(out)
   arrow::write_parquet(out, file.path(export_dir, "occasion_draws.parquet"))
-  schema$schema_version <- 1.2
+  schema$schema_version <- max(schema$schema_version, 1.2)
   schema$tables$occasion_draws <- list(file = "occasion_draws.parquet",
                                        rows = nrow(out))
   schema$occasion_draws <- compact(list(

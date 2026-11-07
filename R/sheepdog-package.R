@@ -13,9 +13,20 @@ NULL
 
 # Colunas usadas via tidy evaluation (evita NOTEs do R CMD check)
 utils::globalVariables(c(
-  ".cell", ".env", "n_high", "n_fp", "n_high_all", "prec_high", "unreviewed_high",
+  ".sorteada", "arquivo", "hours_with_detections", "n_det", "n_detections",
+  "n_windows", "neg", "pos", "threshold_lower",
+  "n_reliable", "confidence_max", "species_folder",
+  ".a", ".b", ".ini", ".fim", ".linha", ".rec", ".negativo", ".desenho",
+  ".todos_neg", ".algum_pos", "inherited_verdict",
+  "thr_empirical", "prec_empirical", "n_support", "thr_model_precision",
+  "thr_p_tp", "p_tp_at_threshold", "model_precision_at_empirical",
+  "max_reviewed", "above_reviewed", "flag", "precision_used",
+  "precision_weighted_at_threshold", "precision_at_threshold", "threshold",
+  ".cell", ".env", ".entrada", ".estrato", ".pr", ".inicio", ".esperado", ".n_antes", ".n_agora", ".antes",
+  "stratum", "n_candidates", "n_drawn", "n_rounds", "sampling_mode",
+ "n_high", "n_fp", "n_high_all", "prec_high", "unreviewed_high",
   "diagnosis", ".sp", ".rodada", ".desempate", "recording", "time",
-  ".g", ".p", ".confiavel", "pr_reliable", "p_tp_lower", "draw", "max_rhat",
+  ".g", ".p", "mista", ".confiavel", "pr_reliable", "p_tp_lower", "draw", "max_rhat",
   "min_ess_bulk", "min_ess_tail", "n_divergent", "n", 
   ".N", ".dur", ".dia", ".n", ".ordem", ".p1", ".p2", "begin_path",
   "begin_time", "clip_end", "clip_start", "confidence", "duration",

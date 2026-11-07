@@ -10,9 +10,13 @@ exemplo <- function(f) {
 test_that("example files follow the documented columns", {
   man <- exemplo("clip_manifest.csv")
   val <- exemplo("validation_by_clip.csv")
-  expect_identical(names(man), sheepdog:::manifest_columns)
-  expect_identical(names(val), c(sheepdog:::manifest_columns, "verdict",
-                                 "reviewed_path"))
+  # os exemplos sao de uma rodada so, sem as colunas das rodadas de revisao
+  colunas <- setdiff(sheepdog:::manifest_columns,
+                     c("round", "n_candidates", "n_drawn",
+                       "inclusion_prob_round", "previously_reviewed",
+                       "inherited_verdict", "source_design"))
+  expect_identical(names(man), colunas)
+  expect_identical(names(val), c(colunas, "verdict", "reviewed_path"))
   expect_true(all(val$verdict %in% c("positive", "negative", "not_reviewed",
                                      "clip_missing")))
   expect_true(all(man$sampling_mode %in% c("top", "random_detections",

@@ -14,7 +14,14 @@ post_validation(
   target_precision = 0.9,
   min_n = 15,
   verdicts_file = NULL,
-  reviewer = NULL
+  reviewer = NULL,
+  weighted = NULL,
+  previous = NULL,
+  candidates = NULL,
+  fit = NULL,
+  scored = NULL,
+  quality = NULL,
+  sustained = FALSE
 )
 }
 \arguments{
@@ -46,10 +53,25 @@ instead of the subfolders of \code{review_dir}.}
 
 \item{reviewer}{With \code{verdicts_file}, optional reviewer(s) whose
 verdicts are used, as in \code{\link[=app_verdicts]{app_verdicts()}}.}
+
+\item{weighted, sustained}{Passed to \code{\link[=suggest_thresholds]{suggest_thresholds()}}.}
+
+\item{previous}{For a later round of a design: the
+\code{validation_by_clip.csv} of the earlier rounds. \code{validation_by_clip.csv}
+keeps the clips of this round only; the summaries and
+\code{validation_combined.csv} cover all rounds, from \code{\link[=combine_rounds]{combine_rounds()}}.}
+
+\item{candidates}{With \code{previous}, the \code{candidates.csv} of the first
+round. \code{NULL} looks for it beside \code{manifest_path} and \code{previous}.}
+
+\item{fit}{Optional model of \code{\link[=fit_calibration]{fit_calibration()}}. With it,
+\code{\link[=compare_thresholds]{compare_thresholds()}} writes \code{thresholds_compared.csv}.}
+
+\item{scored, quality}{With \code{fit}, passed to \code{\link[=compare_thresholds]{compare_thresholds()}}.}
 }
 \value{
 A list with the tables \code{validation}, \code{precision}, \code{thresholds},
-\code{presence} and \code{retraining}, invisibly.
+\code{presence} and \code{retraining} (and \code{compared}, with \code{fit}), invisibly.
 }
 \description{
 Runs the whole post-validation step: reads the verdicts of the reviewed
@@ -66,6 +88,8 @@ precision, by species (\code{\link[=suggest_thresholds]{suggest_thresholds()}});
 (\code{\link[=nightly_presence]{nightly_presence()}});
 \item \code{retraining_clips.csv}: positive clips for retraining
 (\code{\link[=retraining_clips]{retraining_clips()}});
+\item \code{thresholds_compared.csv}: empirical and model thresholds, with \code{fit}
+(\code{\link[=compare_thresholds]{compare_thresholds()}});
 \item \code{precision_by_bin.png}: precision curves (\code{\link[=plot_precision]{plot_precision()}}), when
 'ggplot2' is installed.
 }
@@ -81,7 +105,9 @@ the precision and the thresholds.
 
 With \code{inclusion_prob} in the manifest (clips of \code{"random_detections"}),
 the precision tables also give the precision weighted by
-\code{1 / inclusion_prob}; see \code{\link[=precision_by_bin]{precision_by_bin()}}.
+\code{1 / inclusion_prob} (see \code{\link[=precision_by_bin]{precision_by_bin()}}), and that precision
+chooses the thresholds, unless \code{weighted = FALSE}; see
+\code{\link[=suggest_thresholds]{suggest_thresholds()}}.
 
 This is the function form of the v1.2.0 script \code{pos_validacao.R}.
 }

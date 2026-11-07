@@ -4,11 +4,15 @@
 \alias{read_validation_tables}
 \title{Read and stack the validation tables}
 \usage{
-read_validation_tables(files)
+read_validation_tables(files, candidates = NULL)
 }
 \arguments{
 \item{files}{Paths to the \code{validation_by_clip.csv} files. Missing files
 are skipped with a warning.}
+
+\item{candidates}{For the rounds of one design: the \code{candidates.csv} of
+the first round, passed to \code{\link[=combine_rounds]{combine_rounds()}}, which gives the clips
+their cumulative \code{inclusion_prob}. \code{NULL} only stacks the tables.}
 }
 \value{
 A tibble with the columns of the validation tables; \code{night} and

@@ -148,8 +148,9 @@ selection by highest mean AUC. When the refit is singular,
 \code{\link[=fit_calibration]{fit_calibration()}} warns; read \code{calibration_model.txt} and the
 comparison before using the probabilities.
 
-Converting BirdNET confidence scores into probabilities is recommended
-by the BirdNET authors (Wood & Kahl 2024, \doi{10.1007/s10336-024-02144-5});
+Wood & Kahl (2024, \doi{10.1007/s10336-024-02144-5}) describe the
+conversion of BirdNET confidence scores into probabilities for studies in
+which the predictions cannot all be reviewed;
 calibration by logistic regression on logit(score) is applied, for
 instance, by Owens et al. (2026, \doi{10.64898/2026.06.01.729442}).
 This function extends that approach with a hierarchical multi-species

@@ -18,6 +18,8 @@ BirdNET confidence scores into probabilities that a detection is a true
 positive, scoring every detection, and building nightly detection
 histories. Each step is run on the example data shipped with the package.
 
+![The calibration in order: the steps and the checks between the reviewed clips and the nightly histories.](figures/stage2_calibration.png){width=100%}
+
 ```{r, message = FALSE}
 library(sheepdog)
 library(dplyr)
@@ -27,11 +29,15 @@ ex <- system.file("extdata", "example", package = "sheepdog")
 ## Why calibrate
 
 A BirdNET confidence score is a classifier output in [0, 1], not a
-probability that the detection is correct. The BirdNET authors recommend
-converting the scores into probabilities of a true detection (Wood & Kahl
-2024). One way to do so, with a sample of manually validated detections,
-is a logistic regression of the verdict on logit(score), applied, for
-instance, by Owens et al. (2026).
+probability that the detection is correct. Wood & Kahl (2024) describe
+two ways to use the scores: reviewing the detections down to a chosen
+score, or converting the scores into probabilities of a true detection,
+for studies in which the detections cannot all be reviewed. The conversion
+is a logistic regression of the verdict on a sample of manually validated
+detections; on logit(score), it is applied, for instance, by Owens et al.
+(2026).
+
+![Where false positives come from. The scores of true and false detections overlap, so a detection in the middle of the scale can be either, and no cut on the score separates them. The curves are illustrative, not data.](figures/score_overlap.png){width=100%}
 
 One curve for all species is rarely enough. The same score can mean
 different things for different species, because the score distributions
@@ -245,6 +251,8 @@ but it is not one of the built-in candidates.
 
 ## Calibration curves
 
+![The reviewed clips give the curve, and every detection gets its P(tp).](figures/schematic_curve.png){width=100%}
+
 `plot_calibration()` draws the calibrated probability against the score,
 one panel per species and one line per site. The points give the observed
 precision of the reviewed clips in 0.1-wide score bins, sized by the
@@ -393,6 +401,22 @@ to `thresholds.csv`. They are the score equivalent of the cut on P(TP)
 used for the detection histories below, and serve to filter detections in
 software that only accepts a score threshold.
 
+### Comparing the thresholds
+
+`compare_thresholds()` puts the empirical threshold of `suggest_thresholds()`
+and the model thresholds side by side for each site x species, and
+`post_validation(fit = )` writes the table to `thresholds_compared.csv`.
+Compare `thr_empirical` with `thr_model_precision`, which answer the same
+question; `flag` does this, and `thr_p_tp` stays out of it, since it is higher
+for the same target. A `"disagree"` points to the model (its form, a missing
+covariate) or to the sample (few clips, missing weights). Trust the model
+columns only for a calibration compared by cross-validation and with
+`calibration_quality()` status `"ok"` for the species, which the `quality`
+argument carries into the table, and read with care a model threshold above
+the highest reviewed score of the cell (`above_reviewed`). Clips used here to
+set the threshold should not be reused as confirmation data in the occupancy
+model without saying so.
+
 ### Choosing a confidence threshold
 
 The routes to a threshold answer different questions and need different
@@ -424,6 +448,8 @@ keeps the meaning of a detection the same in every cell.
 
 ## Nightly detection histories
 
+![The detections of a night become one cell of the nightly history.](figures/schematic_nights.png){width=100%}
+
 `detection_history()` aggregates the scored detections by site x species
 x night. A detection is reliable when its calibrated probability is at
 least `p_min`; the threshold applies to P(TP), not to the score. A night
@@ -445,6 +471,9 @@ all below `p_min`: nights that a rule on the raw output (any detection
 above `min_confidence`) would have counted as detections. Species whose
 curves never reach `p_min` have no night with a detection, whatever their
 scores.
+
+This is one of four routes to a detection history; the [choosing a route](https://provetelab.org/sheepdog/articles/choosing-a-route.html)
+article compares them with the empirical threshold of stage 1.
 
 ## Choosing p_min and k
 

@@ -145,6 +145,8 @@ ticked, since the verdicts already given refer to its clips.
 
 ## Reviewing
 
+![Review: each clip is heard and gets one verdict.](figures/schematic_review.png)
+
 On the left, the species filter and the option *Only clips not yet
 reviewed* choose the clips in the queue, and a counter shows how many have
 been reviewed. On the right, above the spectrogram, the position in the
@@ -224,6 +226,8 @@ suggest_thresholds(validation)
 ```
 
 ## Several reviewers
+
+![Several reviewers: a share of the clips goes to both, which gives their agreement.](figures/schematic_reviewers.png)
 
 With `assign_reviewers()`, each reviewer opens the app with their own
 name, and the queue shows only their clips, including those shared with a

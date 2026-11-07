@@ -4,7 +4,14 @@
 \alias{suggest_thresholds}
 \title{Suggest a confidence threshold per species}
 \usage{
-suggest_thresholds(validation, target_precision = 0.9, min_n = 15, by = NULL)
+suggest_thresholds(
+  validation,
+  target_precision = 0.9,
+  min_n = 15,
+  by = NULL,
+  weighted = NULL,
+  sustained = FALSE
+)
 }
 \arguments{
 \item{validation}{Table returned by \code{\link[=classify_review]{classify_review()}}.}
@@ -18,13 +25,25 @@ bins with fewer are flagged in \code{low_support}.}
 species cell further, e.g. the bin of an environmental gradient or of
 an acoustic index joined from \code{\link[=covariate_bins]{covariate_bins()}}. They show which
 parts of the gradient lack reviewed clips.}
+
+\item{weighted}{Which precision chooses the cut. \code{NULL} (default): the
+weighted one in the cells whose clips all have \code{inclusion_prob}, the
+unweighted one elsewhere. \code{TRUE}: always the weighted one; cells with
+clips without \code{inclusion_prob} get no threshold, with a warning, and
+it is an error if no clip has it. \code{FALSE}: always the unweighted one,
+and \code{n_support} for \code{min_n}.}
+
+\item{sustained}{Must the target also hold at every higher cut with at
+least \code{min_n} clips? See Sustained target.}
 }
 \value{
 A tibble with \code{site}, \code{species_folder}, the \code{by} columns,
-\code{threshold}, \code{n_support}, \code{precision_at_threshold} (\code{NA} when no
-cut reaches the target) and \code{precision_weighted_at_threshold} (only
-with \code{inclusion_prob}). Without any reviewed clip with a confidence,
-the tibble has no rows.
+\code{threshold}, \code{n_support}, \code{precision_at_threshold} (unweighted; \code{NA}
+when no cut reaches the target). With \code{inclusion_prob}, also
+\code{precision_weighted_at_threshold}, \code{n_eff} (Kish's effective sample
+size at the threshold) and \code{precision_used} (\code{"weighted"} or
+\code{"unweighted"}, the precision that chose the cut). Without any
+reviewed clip with a confidence, the tibble has no rows.
 }
 \description{
 For each site and species (and each level of the \code{by} columns), the
@@ -34,15 +53,38 @@ precision among the reviewed clips with confidence >= \code{c} reaches
 observed confidences rounded to two decimals.
 }
 \details{
+\strong{Sustained target.} With \code{sustained = TRUE}, the target must also hold
+at every higher cut with at least \code{min_n} clips, the rule of
+\code{\link[=calibrated_thresholds]{calibrated_thresholds()}}. This is not the default: the curve of the model
+is smooth, while the empirical precision of a high cut rests on few clips,
+so a cut can fail by chance, and the failure of the highest supported cut
+leaves the cell without a threshold. In a simulation with 300 clips per
+cell, the share of cells without a threshold rose from 0.09 to 0.24, and
+the true precision of the cuts from 0.888 to 0.896
+(\code{dev/sustained-threshold-rule.R}).
+
 The precision is computed from the reviewed clips of each cell alone, so
 it is reliable only when the clips were drawn at random within the cell
 and are numerous. \code{\link[=calibrated_thresholds]{calibrated_thresholds()}} derives the thresholds from
 the calibration model of stage 2 instead.
 
-The threshold is chosen from the unweighted precision. With
-\code{inclusion_prob} in \code{validation}, the table also gives
-\code{precision_weighted_at_threshold}, the precision at the threshold
-weighted by \code{1 / inclusion_prob}, as in \code{\link[=precision_by_bin]{precision_by_bin()}}.
+\strong{Design weights.} Clips of \code{"random_detections"} have unequal
+\code{inclusion_prob}: quiet strata are reviewed almost in full and choruses
+lightly. The plain share of positive clips then estimates the precision
+of the reviewed sample, not that of the predictions kept by the cut. So,
+by default, a cell whose clips all have \code{inclusion_prob} is judged by the
+precision weighted by \code{1 / inclusion_prob}, as in \code{\link[=precision_by_bin]{precision_by_bin()}},
+and \code{min_n} applies to Kish's effective sample size,
+\eqn{(\sum w)^2 / \sum w^2}, so that a cut resting on a few heavily
+weighted clips is not accepted. With equal inclusion probabilities, both
+choices give the same threshold. The weights cost variance: when
+precision does not vary between strata, the unweighted estimate is also
+unbiased and less variable (\code{weighted = FALSE}).
+
+A cell that mixes clips with and without \code{inclusion_prob} (\code{"top"} and
+\code{"random_detections"}, say) cannot be weighted: it gets the unweighted
+precision, with a warning, since \code{"top"} clips are not a probability
+sample and should not set thresholds.
 }
 \seealso{
 \code{\link[=calibrated_thresholds]{calibrated_thresholds()}} for thresholds from the calibration

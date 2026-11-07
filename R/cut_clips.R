@@ -27,7 +27,8 @@ cut_clips <- function(manifest, output_dir, simulate = FALSE) {
   walk(unique(dirname(destino)),
        dir.create, recursive = TRUE, showWarnings = FALSE)
 
-  processar_linha <- function(origem, destino, inicio, duracao) {
+  processar_linha <- function(origem, destino, inicio, duracao, herdado) {
+    if (herdado)                    return("inherited")
     if (file.exists(destino))       return("already_exists")
     if (!file.exists(origem))       return("audio_not_found")
     if (simulate)                   return("simulated")
@@ -42,7 +43,7 @@ cut_clips <- function(manifest, output_dir, simulate = FALSE) {
 
   manifest$status <- pmap_chr(
     list(manifest$source_audio, destino,
-         manifest$clip_start, manifest$duration),
+         manifest$clip_start, manifest$duration, is_inherited(manifest)),
     processar_linha,
     .progress = "clips"
   )
@@ -107,6 +108,7 @@ pack_clips <- function(manifest, output_dir) {
 #' <output_dir>/packages/<species_folder>.zip
 #' <output_dir>/clip_manifest.csv
 #' <output_dir>/extraction_info.csv
+#' <output_dir>/candidates.csv
 #' ```
 #'
 #' `extraction_info.csv` records the provenance of the run (one `key`,
@@ -116,11 +118,15 @@ pack_clips <- function(manifest, output_dir) {
 #' later rounds which classifier produced the clips (for instance, to leave
 #' out of a validation round the clips used to retrain that classifier).
 #'
+#' `candidates.csv` (`"random_detections"`) lists the candidate occasions
+#' with their stratum: later rounds draw from it and [combine_rounds()]
+#' reads it, so keep it with the manifest.
+#'
 #' @inheritParams read_selection_tables
 #' @inheritParams cut_clips
 #' @param ... Sampling design, passed to [select_clips()] (e.g.
 #'   `sampling_mode`, `n_top`, `threshold`, `target_total`, `remap_from`,
-#'   `remap_to`).
+#'   `remap_to`, and `previous` for a further round, in a new `output_dir`).
 #' @param make_zip Zip one package per species (skipped when `simulate` is
 #'   `TRUE`).
 #' @param classifier Label of the classifier that produced the selection
@@ -142,14 +148,24 @@ extract_validation_clips <- function(data_dir, output_dir, ...,
                                      site_pattern = NULL,
                                      make_zip = TRUE, simulate = FALSE,
                                      classifier = NULL) {
-  manifesto <- read_selection_tables(data_dir, table_pattern,
-                                     per_audio_pattern, site_pattern) |>
-    select_clips(...) |>
-    cut_clips(output_dir, simulate = simulate)
-
   caminho <- file.path(output_dir, "clip_manifest.csv")
+  anteriores <- list(...)$previous
+  if (is.character(anteriores) && file.exists(caminho) &&
+      normalizePath(caminho) %in% normalizePath(anteriores, mustWork = FALSE)) {
+    stop("`output_dir` holds the manifest of an earlier round: use another ",
+         "folder for this round.", call. = FALSE)
+  }
+  selecao <- read_selection_tables(data_dir, table_pattern,
+                                   per_audio_pattern, site_pattern) |>
+    select_clips(...)
+  candidatas <- attr(selecao, "candidates")
+  manifesto <- cut_clips(selecao, output_dir, simulate = simulate)
+
   write_csv(manifesto, caminho)
   message("Manifest written to ", caminho)
+  if (!is.null(candidatas)) {
+    write_csv(candidatas, file.path(output_dir, "candidates.csv"))
+  }
   write_csv(extraction_info(data_dir, classifier, simulate, list(...)),
             file.path(output_dir, "extraction_info.csv"))
 

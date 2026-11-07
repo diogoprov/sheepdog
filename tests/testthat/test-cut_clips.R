@@ -35,7 +35,10 @@ for (nm in c("top_default", "det_minute_meta", "rec_table")) {
       do.call(extract_validation_clips, args)))
     novo <- read_as_text(file.path(saida, "clip_manifest.csv"))
     novo[] <- lapply(novo, \(x) gsub(sim_root(), "<ROOT>", x, fixed = TRUE))
-    expect_same_table(novo, ref_table(nm, "manifesto_clipes.csv"))
+    ref <- ref_table(nm, "manifesto_clipes.csv")
+    # colunas novas das rodadas de revisao ficam depois das da v1.2.0
+    expect_identical(names(novo)[seq_along(ref)], names(ref))
+    expect_same_table(novo[names(ref)], ref)
   })
 }
 
