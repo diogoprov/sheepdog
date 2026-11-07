@@ -4,6 +4,7 @@ pkgdown_sha: ~
 articles:
   bayesian-calibration: bayesian-calibration.html
   calibration: calibration.html
+  articles/cheatsheets: cheatsheets.html
   articles/choosing-a-route: choosing-a-route.html
   community-matrices: community-matrices.html
   crywolf-integration: crywolf-integration.html
@@ -21,7 +22,7 @@ articles:
   articles/pt/sheepdog: pt/sheepdog.html
   sheepdog: sheepdog.html
   validation-effort: validation-effort.html
-last_built: 2026-11-06T22:02Z
+last_built: 2026-11-07T00:30Z
 urls:
   reference: https://provetelab.org/sheepdog/reference
   article: https://provetelab.org/sheepdog/articles

@@ -68,8 +68,11 @@
     <li><a class="dropdown-item" href="../articles/pt/reviewing-in-the-gui.html">Revisão dos clipes na GUI do BirdNET</a></li>
     <li><a class="dropdown-item" href="../articles/pt/sampling-designs.html">Escolha do desenho amostral</a></li>
     <li><a class="dropdown-item" href="../articles/pt/frognet-workflow.html">O fluxo de trabalho do FrogNet</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="nav-link" href="../articles/cheatsheets.html">Cheat sheets</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
@@ -103,6 +106,10 @@ BirdNET confidence scores into probabilities that a detection is a true
 positive, scoring every detection, and building nightly detection
 histories. Each step is run on the example data shipped with the
 package.</p>
+<div class="float">
+<img src="figures/stage2_calibration.png" style="width:100.0%" alt="The calibration in order: the steps and the checks between the reviewed clips and the nightly histories."><div class="figcaption">The calibration in order: the steps and the
+checks between the reviewed clips and the nightly histories.</div>
+</div>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/diogoprov/sheepdog" class="external-link">sheepdog</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
@@ -118,6 +125,12 @@ detection, for studies in which the detections cannot all be reviewed.
 The conversion is a logistic regression of the verdict on a sample of
 manually validated detections; on logit(score), it is applied, for
 instance, by Owens et al. (2026).</p>
+<div class="float">
+<img src="figures/score_overlap.png" style="width:100.0%" alt="Where false positives come from. The scores of true and false detections overlap, so a detection in the middle of the scale can be either, and no cut on the score separates them. The curves are illustrative, not data."><div class="figcaption">Where false positives come from. The scores of
+true and false detections overlap, so a detection in the middle of the
+scale can be either, and no cut on the score separates them. The curves
+are illustrative, not data.</div>
+</div>
 <p>One curve for all species is rarely enough. The same score can mean
 different things for different species, because the score distributions
 of true and false detections differ among species, and for the same
@@ -381,6 +394,10 @@ further option, but it is not one of the built-in candidates.</p>
 <div class="section level2">
 <h2 id="calibration-curves">Calibration curves<a class="anchor" aria-label="anchor" href="#calibration-curves"></a>
 </h2>
+<div class="float">
+<img src="figures/schematic_curve.png" style="width:100.0%" alt="The reviewed clips give the curve, and every detection gets its P(tp)."><div class="figcaption">The reviewed clips give the curve, and every
+detection gets its P(tp).</div>
+</div>
 <p><code><a href="../reference/plot_calibration.html">plot_calibration()</a></code> draws the calibrated probability
 against the score, one panel per species and one line per site. The
 points give the observed precision of the reviewed clips in 0.1-wide
@@ -699,6 +716,10 @@ every cell.</p>
 <div class="section level2">
 <h2 id="nightly-detection-histories">Nightly detection histories<a class="anchor" aria-label="anchor" href="#nightly-detection-histories"></a>
 </h2>
+<div class="float">
+<img src="figures/schematic_nights.png" style="width:100.0%" alt="The detections of a night become one cell of the nightly history."><div class="figcaption">The detections of a night become one cell of the
+nightly history.</div>
+</div>
 <p><code><a href="../reference/detection_history.html">detection_history()</a></code> aggregates the scored detections by
 site x species x night. A detection is reliable when its calibrated
 probability is at least <code>p_min</code>; the threshold applies to

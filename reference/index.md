@@ -70,11 +70,16 @@ agreement.
 ## Stage 1 - After the review
 
 Classify the reviewed clips and summarise precision, thresholds,
-presence and retraining clips. The [diagnostic
-diagram](https://provetelab.org/sheepdog/figures/stage1_diagnostic.png)
-shows what to do with each label of
+presence and retraining clips. The diagram shows what to do with each
+label of
 [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md),
 and how to compare the empirical and model-based thresholds.
+
+![What to do with each label of review_support(), and how to compare the
+thresholds.](../figures/stage1_diagnostic.png)
+
+What to do with each label of review_support(), and how to compare the
+thresholds.
 
 ![The two thresholds on simulated data: the precision above each cut,
 where each curve reaches p_min, the choice of model and the
@@ -119,9 +124,19 @@ precision.
 ## Stage 2 - Calibration
 
 Calibrate confidence scores into probabilities of true detection and
-build nightly detection histories. The [calibration
-diagram](https://provetelab.org/sheepdog/figures/stage2_calibration.png)
-has the steps and checks in order.
+build nightly detection histories. The diagram has the steps and checks
+in order.
+
+![Where false positives come from: the scores of true and false
+detections overlap.](../figures/score_overlap.png)
+
+Where false positives come from: the scores of true and false detections
+overlap.
+
+![The steps and checks of the calibration, in
+order.](../figures/stage2_calibration.png)
+
+The steps and checks of the calibration, in order.
 
 ![The reviewed clips give the curve, and every detection gets its
 P(tp).](../figures/schematic_curve.png)
@@ -201,8 +216,12 @@ interval per cell of the matrices.
 ## Stage 3 - Community matrices
 
 Effort-standardised site x month matrices from calibrated histories. The
-[diagram](https://provetelab.org/sheepdog/figures/stage3_community.png)
-also shows the occupancy export.
+diagram also shows the occupancy export.
+
+![Stage 3 in order, with the occupancy
+export.](../figures/stage3_community.png)
+
+Stage 3 in order, with the occupancy export.
 
 ![From the nightly history to the matrices and their
 analysis.](../figures/schematic_matrix.png)
@@ -221,7 +240,32 @@ From the nightly history to the matrices and their analysis.
 ## Occupancy models
 
 Export the occasions, scores, reviewed clips and calibration draws for
-occupancy models with false positives, such as those of crywolf.
+occupancy models with false positives, such as those of crywolf. See
+[How crywolf
+works](https://provetelab.org/crywolf/articles/how-crywolf-works.html).
+
+![From the reviewed clips to occupancy, by one score threshold or by the
+calibration draws.](../figures/occupancy_routes.png)
+
+From the reviewed clips to occupancy, by one score threshold or by the
+calibration draws.
+
+![An occupied site gives a detection on each night with probability p11,
+and an empty site with probability p10.](../figures/occupancy_model.png)
+
+An occupied site gives a detection on each night with probability p11,
+and an empty site with probability p10.
+
+![Sites with a few detections could be either occupied or
+empty.](../figures/occupancy_mixture.png)
+
+Sites with a few detections could be either occupied or empty.
+
+![An occasion is a detection when any of its predictions reaches the
+threshold.](../figures/occupancy_threshold.png)
+
+An occasion is a detection when any of its predictions reaches the
+threshold.
 
 - [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
   : Export the data of an occupancy model with false positives

@@ -68,8 +68,11 @@
     <li><a class="dropdown-item" href="../articles/pt/reviewing-in-the-gui.html">Revisão dos clipes na GUI do BirdNET</a></li>
     <li><a class="dropdown-item" href="../articles/pt/sampling-designs.html">Escolha do desenho amostral</a></li>
     <li><a class="dropdown-item" href="../articles/pt/frognet-workflow.html">O fluxo de trabalho do FrogNet</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="nav-link" href="../articles/cheatsheets.html">Cheat sheets</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
@@ -104,6 +107,14 @@ vignette runs that stage on the example data shipped with the package,
 and then uses the matrices in a distance-based ordination (PCoA) and in
 a model-based ordination and test with generalised linear latent
 variable models (GLLVM).</p>
+<div class="float">
+<img src="figures/schematic_matrix.png" style="width:100.0%" alt="From the nightly history to the matrices and their analysis."><div class="figcaption">From the nightly history to the matrices and
+their analysis.</div>
+</div>
+<div class="float">
+<img src="figures/stage3_community.png" style="width:100.0%" alt="Stage 3 in order, with the occupancy export as the other way out of the histories."><div class="figcaption">Stage 3 in order, with the occupancy export as
+the other way out of the histories.</div>
+</div>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/diogoprov/sheepdog" class="external-link">sheepdog</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
@@ -368,7 +379,7 @@ matrices and the effort table as CSV files:</p>
 <span>                                 k_min <span class="op">=</span> <span class="fl">2</span>, min_nights_month <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Matrix: 23 rows (site x month) x 5 species | rule k &gt;= 2</span></span>
 <span><span class="co">#&gt; Effort: 23 site x month cells included; 1 dropped for having &lt; 5 recorded nights (see effort_site_month.csv)</span></span>
-<span><span class="co">#&gt; Files in: /tmp/Rtmpc8Vphf/community_matrices</span></span>
+<span><span class="co">#&gt; Files in: /tmp/RtmpUmCq6z/community_matrices</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "count_matrix_site_month_k2.csv"     "effort_site_month.csv"             </span></span>
 <span><span class="co">#&gt; [3] "frequency_matrix_site_month_k2.csv"</span></span></code></pre></div>

@@ -68,8 +68,11 @@
     <li><a class="dropdown-item" href="../articles/pt/reviewing-in-the-gui.html">Revisão dos clipes na GUI do BirdNET</a></li>
     <li><a class="dropdown-item" href="../articles/pt/sampling-designs.html">Escolha do desenho amostral</a></li>
     <li><a class="dropdown-item" href="../articles/pt/frognet-workflow.html">O fluxo de trabalho do FrogNet</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="nav-link" href="../articles/cheatsheets.html">Cheat sheets</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
@@ -748,6 +751,11 @@ the allocation is proportional to the number of candidate occasions.</p>
 <div class="section level2">
 <h2 id="further-rounds-of-review">Further rounds of review<a class="anchor" aria-label="anchor" href="#further-rounds-of-review"></a>
 </h2>
+<div class="float">
+<img src="figures/schematic_rounds.png" style="width:100.0%" alt="Review rounds: what was reviewed leaves the pool, and combine_rounds() gives one simple random sample."><div class="figcaption">Review rounds: what was reviewed leaves the
+pool, and <code><a href="../reference/combine_rounds.html">combine_rounds()</a></code> gives one simple random
+sample.</div>
+</div>
 <p>When <code><a href="../reference/review_support.html">review_support()</a></code> labels a cell
 <code>"review more"</code>, draw another round with
 <code>previous</code>. The occasions drawn earlier leave the pool, so

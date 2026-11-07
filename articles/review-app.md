@@ -164,6 +164,11 @@ verdicts already given refer to its clips.
 
 ## Reviewing
 
+![Review: each clip is heard and gets one
+verdict.](figures/schematic_review.png)
+
+Review: each clip is heard and gets one verdict.
+
 On the left, the species filter and the option *Only clips not yet
 reviewed* choose the clips in the queue, and a counter shows how many
 have been reviewed. On the right, above the spectrogram, the position in
@@ -254,6 +259,12 @@ suggest_thresholds(validation)
 ```
 
 ## Several reviewers
+
+![Several reviewers: a share of the clips goes to both, which gives
+their agreement.](figures/schematic_reviewers.png)
+
+Several reviewers: a share of the clips goes to both, which gives their
+agreement.
 
 With
 [`assign_reviewers()`](https://provetelab.org/sheepdog/reference/assign_reviewers.md),

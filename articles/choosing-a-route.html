@@ -68,8 +68,11 @@
     <li><a class="dropdown-item" href="../articles/pt/reviewing-in-the-gui.html">Revisão dos clipes na GUI do BirdNET</a></li>
     <li><a class="dropdown-item" href="../articles/pt/sampling-designs.html">Escolha do desenho amostral</a></li>
     <li><a class="dropdown-item" href="../articles/pt/frognet-workflow.html">O fluxo de trabalho do FrogNet</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="nav-link" href="../articles/cheatsheets.html">Cheat sheets</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
@@ -109,6 +112,10 @@ side; the details of each are in <code><a href="../articles/calibration.html">vi
 <code><a href="../articles/crywolf-integration.html">vignette("crywolf-integration")</a></code>.</p>
 <p>In every route a night counts as detected when at least k of its
 detections count (k = 1, 2 or 3).</p>
+<div class="float">
+<img src="figures/schematic_nights.png" alt="The detections of a night become one cell of the nightly history."><div class="figcaption">The detections of a night become one cell of the
+nightly history.</div>
+</div>
 <div class="section level2">
 <h2 id="start-here">Start here<a class="anchor" aria-label="anchor" href="#start-here"></a>
 </h2>
@@ -222,12 +229,16 @@ curves</td>
 <code><a href="../reference/review_support.html">review_support()</a></code> runs <code><a href="../reference/suggest_thresholds.html">suggest_thresholds()</a></code> on
 the reviewed clips of each site x species cell and returns the lowest
 score at which the clips above it reach the target precision (0.90),
-weighted by the sampling design, with its diagnosis (see the diagram on
-the <a href="../reference/index.html">reference index</a>). There is no
-model: the threshold is read off the clips, and
+weighted by the sampling design, with its diagnosis (diagram below).
+There is no model: the threshold is read off the clips, and
 <code><a href="../reference/threshold_history.html">threshold_history()</a></code> turns the thresholds into a nightly
 history. The guarantee is for the <strong>set</strong> of detections
 kept, not for each one.</p>
+<div class="float">
+<img src="figures/stage1_diagnostic.png" alt="What to do with each label of review_support(), and how to compare the empirical and model-based thresholds."><div class="figcaption">What to do with each label of
+<code><a href="../reference/review_support.html">review_support()</a></code>, and how to compare the empirical and
+model-based thresholds.</div>
+</div>
 <p><strong>B · way 1 · probability cut.</strong> The Stage 2 calibration
 gives every detection a probability of being true, P(tp); a detection
 counts when P(tp) ≥ <code>p_min</code> (0.95). This is
@@ -235,6 +246,10 @@ counts when P(tp) ≥ <code>p_min</code> (0.95). This is
 <code><a href="../reference/calibrate.html">calibrate()</a></code> writes. The guarantee is per detection, and
 cells with few reviewed clips borrow strength from the others, but the
 curve is treated as exact.</p>
+<div class="float">
+<img src="figures/schematic_curve.png" alt="The reviewed clips give the curve, and every detection gets its P(tp)."><div class="figcaption">The reviewed clips give the curve, and every
+detection gets its P(tp).</div>
+</div>
 <p><strong>B · way 2 · probability cut with certainty.</strong> With a
 brms calibration, each detection has a posterior for P(tp).
 <code>pr_reliable</code> is the posterior probability that P(tp) ≥
@@ -249,6 +264,10 @@ draw of the curve and returns one history per draw. Detections near the
 cut are kept in some draws and not in others, and
 <code><a href="../reference/community_matrices_draws.html">community_matrices_draws()</a></code> turns that into a mean and an
 interval for each cell of the matrices.</p>
+<div class="float">
+<img src="figures/schematic_draws.png" alt="The posterior of P(tp) gives one history per draw, and a mean and an interval per cell of the matrices."><div class="figcaption">The posterior of P(tp) gives one history per
+draw, and a mean and an interval per cell of the matrices.</div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="points-of-caution">Points of caution<a class="anchor" aria-label="anchor" href="#points-of-caution"></a>
@@ -310,6 +329,11 @@ of nights.</li>
 <div class="section level2">
 <h2 id="checking-one-route-against-the-other">Checking one route against the other<a class="anchor" aria-label="anchor" href="#checking-one-route-against-the-other"></a>
 </h2>
+<div class="float">
+<img src="figures/thresholds.png" alt="The two thresholds on simulated data: the precision above each cut, where each curve reaches p_min, the choice of model and the comparison."><div class="figcaption">The two thresholds on simulated data: the
+precision above each cut, where each curve reaches <code>p_min</code>,
+the choice of model and the comparison.</div>
+</div>
 <p>A and B can be compared on the same cells.
 <code><a href="../reference/compare_thresholds.html">compare_thresholds()</a></code> puts them side by side for each site x
 species. Its <code>flag</code> compares the empirical threshold with the
@@ -336,29 +360,54 @@ thresholds are usually higher than those of A at 0.90.</p>
 <h2 id="occupancy-with-false-positives">Occupancy with false positives<a class="anchor" aria-label="anchor" href="#occupancy-with-false-positives"></a>
 </h2>
 <p>Occupancy models with false positives, such as those of <a href="https://github.com/diogoprov/crywolf" class="external-link">crywolf</a>, estimate the
-false-positive rate themselves from a subset of known truth. Any route
-can feed them:</p>
+false-positive rate themselves from a subset of known truth. Whether a
+site is occupied is never observed, so the model considers two stories
+for every site:</p>
+<div class="float">
+<img src="figures/occupancy_model.png" style="width:60.0%" alt="An occupied site gives a detection on each night with probability p11, and an empty site with probability p10."><div class="figcaption">An occupied site gives a detection on each night
+with probability p11, and an empty site with probability p10.</div>
+</div>
+<p>With repeated nights, occupied sites are detected often and empty
+sites only now and then. Where the two groups overlap, a site could be a
+rare caller or a false alarm, and the data alone cannot say how many
+detections are false. The known truth settles that.</p>
+<div class="float">
+<img src="figures/occupancy_mixture.png" style="width:70.0%" alt="Expected sites by nights with a detection, out of 20, for 100 empty sites (p10 = 0.05) and 100 occupied sites (p11 = 0.25). The values are illustrative."><div class="figcaption">Expected sites by nights with a detection, out
+of 20, for 100 empty sites (p10 = 0.05) and 100 occupied sites (p11 =
+0.25). The values are illustrative.</div>
+</div>
+<p>Any route can feed these models:</p>
+<div class="float">
+<img src="figures/occupancy_routes.png" alt="From the reviewed clips to occupancy, by one score threshold or by the calibration draws."><div class="figcaption">From the reviewed clips to occupancy, by one
+score threshold or by the calibration draws.</div>
+</div>
 <ul>
 <li>
-<strong>Threshold route</strong> (A, or B with lme4 or brms): the
+<p><strong>Threshold route</strong> (A, or B with lme4 or brms): the
 score threshold becomes the detection rule. Export with
 <code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code> without <code>fit</code>; in
 crywolf, <code>fp_aggregate(threshold = )</code> builds the occasions
 and one model is fitted. <code>fp_aggregate()</code> takes one
 threshold, whereas A gives one per site x species, so a single value has
 to be chosen for the analysis, and the validation drawn at that same
-value.</li>
-<li>
-<strong>Draws route</strong> (B with brms only):
+value. An occasion is a detection when any of its predictions reaches
+the threshold:</p>
+<div class="float">
+<img src="figures/occupancy_threshold.png" style="width:70.0%" alt="The scores of the predictions of five occasions, with a threshold of 0.5. The values are illustrative."><div class="figcaption">The scores of the predictions of five occasions,
+with a threshold of 0.5. The values are illustrative.</div>
+</div>
+</li>
+<li><p><strong>Draws route</strong> (B with brms only):
 <code>export_occupancy_data(fit = )</code> writes the calibration draws,
 and <code><a href="../reference/occasion_draws.html">occasion_draws()</a></code> (or
 <code><a href="https://provetelab.org/crywolf/reference/fp_draws_data.html" class="external-link">crywolf::fp_draws_data()</a></code>) builds one detection matrix per
 draw. The model is fitted to each and the posteriors pooled
 (<code><a href="https://provetelab.org/crywolf/reference/fp_occu_mc.html" class="external-link">crywolf::fp_occu_mc()</a></code>), so the uncertainty of the
-calibration reaches occupancy.</li>
+calibration reaches occupancy.</p></li>
 </ul>
-<p>Both need known truth drawn at random
-(<code><a href="../articles/sampling-designs.html">vignette("sampling-designs")</a></code>):</p>
+<p>The article <a href="https://provetelab.org/crywolf/articles/how-crywolf-works.html" class="external-link">How
+crywolf works</a> explains the model in pictures. Both routes need known
+truth drawn at random (<code><a href="../articles/sampling-designs.html">vignette("sampling-designs")</a></code>):</p>
 <ul>
 <li>
 <code>random_detections</code> at <strong>the same

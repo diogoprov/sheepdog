@@ -6,6 +6,13 @@ positive, scoring every detection, and building nightly detection
 histories. Each step is run on the example data shipped with the
 package.
 
+![The calibration in order: the steps and the checks between the
+reviewed clips and the nightly
+histories.](figures/stage2_calibration.png)
+
+The calibration in order: the steps and the checks between the reviewed
+clips and the nightly histories.
+
 ``` r
 
 library(sheepdog)
@@ -23,6 +30,15 @@ for studies in which the detections cannot all be reviewed. The
 conversion is a logistic regression of the verdict on a sample of
 manually validated detections; on logit(score), it is applied, for
 instance, by Owens et al. (2026).
+
+![Where false positives come from. The scores of true and false
+detections overlap, so a detection in the middle of the scale can be
+either, and no cut on the score separates them. The curves are
+illustrative, not data.](figures/score_overlap.png)
+
+Where false positives come from. The scores of true and false detections
+overlap, so a detection in the middle of the scale can be either, and no
+cut on the score separates them. The curves are illustrative, not data.
 
 One curve for all species is rarely enough. The same score can mean
 different things for different species, because the score distributions
@@ -311,6 +327,11 @@ but it is not one of the built-in candidates.
 
 ## Calibration curves
 
+![The reviewed clips give the curve, and every detection gets its
+P(tp).](figures/schematic_curve.png)
+
+The reviewed clips give the curve, and every detection gets its P(tp).
+
 [`plot_calibration()`](https://provetelab.org/sheepdog/reference/plot_calibration.md)
 draws the calibrated probability against the score, one panel per
 species and one line per site. The points give the observed precision of
@@ -597,6 +618,11 @@ Thresholding P(TP) instead of the score keeps the meaning of a detection
 the same in every cell.
 
 ## Nightly detection histories
+
+![The detections of a night become one cell of the nightly
+history.](figures/schematic_nights.png)
+
+The detections of a night become one cell of the nightly history.
 
 [`detection_history()`](https://provetelab.org/sheepdog/reference/detection_history.md)
 aggregates the scored detections by site x species x night. A detection

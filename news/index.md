@@ -2,6 +2,11 @@
 
 ## sheepdog (development version)
 
+- The stage figures now also appear in the vignettes and articles, with
+  new figures on where false positives come from and on occupancy with
+  false positives. The site has a new Cheat sheets tab, with a PDF to
+  download.
+
 - New
   [`threshold_history()`](https://provetelab.org/sheepdog/reference/threshold_history.md):
   the nightly history of the empirical route, from the thresholds of

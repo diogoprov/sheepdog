@@ -311,6 +311,12 @@ history per draw.
 
 ## Propagating the uncertainty to the community matrices
 
+![The posterior of P(tp) gives one history per draw, and a mean and an
+interval per cell of the matrices.](figures/schematic_draws.png)
+
+The posterior of P(tp) gives one history per draw, and a mean and an
+interval per cell of the matrices.
+
 Both rules still produce a single history.
 [`history_draws()`](https://provetelab.org/sheepdog/reference/history_draws.md)
 rebuilds the history for each of `n_draws` posterior draws: in a draw, a

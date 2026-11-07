@@ -15,6 +15,11 @@ and
 In every route a night counts as detected when at least k of its
 detections count (k = 1, 2 or 3).
 
+![The detections of a night become one cell of the nightly
+history.](figures/schematic_nights.png)
+
+The detections of a night become one cell of the nightly history.
+
 ## Start here
 
 | if you want… | take | needs |
@@ -52,13 +57,18 @@ runs
 [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
 on the reviewed clips of each site x species cell and returns the lowest
 score at which the clips above it reach the target precision (0.90),
-weighted by the sampling design, with its diagnosis (see the diagram on
-the [reference
-index](https://provetelab.org/sheepdog/reference/index.md)). There is no
-model: the threshold is read off the clips, and
+weighted by the sampling design, with its diagnosis (diagram below).
+There is no model: the threshold is read off the clips, and
 [`threshold_history()`](https://provetelab.org/sheepdog/reference/threshold_history.md)
 turns the thresholds into a nightly history. The guarantee is for the
 **set** of detections kept, not for each one.
+
+![What to do with each label of review_support(), and how to compare the
+empirical and model-based thresholds.](figures/stage1_diagnostic.png)
+
+What to do with each label of
+[`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md),
+and how to compare the empirical and model-based thresholds.
 
 **B · way 1 · probability cut.** The Stage 2 calibration gives every
 detection a probability of being true, P(tp); a detection counts when
@@ -68,6 +78,11 @@ what
 writes. The guarantee is per detection, and cells with few reviewed
 clips borrow strength from the others, but the curve is treated as
 exact.
+
+![The reviewed clips give the curve, and every detection gets its
+P(tp).](figures/schematic_curve.png)
+
+The reviewed clips give the curve, and every detection gets its P(tp).
 
 **B · way 2 · probability cut with certainty.** With a brms calibration,
 each detection has a posterior for P(tp). `pr_reliable` is the posterior
@@ -84,6 +99,12 @@ one history per draw. Detections near the cut are kept in some draws and
 not in others, and
 [`community_matrices_draws()`](https://provetelab.org/sheepdog/reference/community_matrices_draws.md)
 turns that into a mean and an interval for each cell of the matrices.
+
+![The posterior of P(tp) gives one history per draw, and a mean and an
+interval per cell of the matrices.](figures/schematic_draws.png)
+
+The posterior of P(tp) gives one history per draw, and a mean and an
+interval per cell of the matrices.
 
 ## Points of caution
 
@@ -141,6 +162,14 @@ turns that into a mean and an interval for each cell of the matrices.
 
 ## Checking one route against the other
 
+![The two thresholds on simulated data: the precision above each cut,
+where each curve reaches p_min, the choice of model and the
+comparison.](figures/thresholds.png)
+
+The two thresholds on simulated data: the precision above each cut,
+where each curve reaches `p_min`, the choice of model and the
+comparison.
+
 A and B can be compared on the same cells.
 [`compare_thresholds()`](https://provetelab.org/sheepdog/reference/compare_thresholds.md)
 puts them side by side for each site x species. Its `flag` compares the
@@ -172,8 +201,36 @@ usually higher than those of A at 0.90.
 
 Occupancy models with false positives, such as those of
 [crywolf](https://github.com/diogoprov/crywolf), estimate the
-false-positive rate themselves from a subset of known truth. Any route
-can feed them:
+false-positive rate themselves from a subset of known truth. Whether a
+site is occupied is never observed, so the model considers two stories
+for every site:
+
+![An occupied site gives a detection on each night with probability p11,
+and an empty site with probability p10.](figures/occupancy_model.png)
+
+An occupied site gives a detection on each night with probability p11,
+and an empty site with probability p10.
+
+With repeated nights, occupied sites are detected often and empty sites
+only now and then. Where the two groups overlap, a site could be a rare
+caller or a false alarm, and the data alone cannot say how many
+detections are false. The known truth settles that.
+
+![Expected sites by nights with a detection, out of 20, for 100 empty
+sites (p10 = 0.05) and 100 occupied sites (p11 = 0.25). The values are
+illustrative.](figures/occupancy_mixture.png)
+
+Expected sites by nights with a detection, out of 20, for 100 empty
+sites (p10 = 0.05) and 100 occupied sites (p11 = 0.25). The values are
+illustrative.
+
+Any route can feed these models:
+
+![From the reviewed clips to occupancy, by one score threshold or by the
+calibration draws.](figures/occupancy_routes.png)
+
+From the reviewed clips to occupancy, by one score threshold or by the
+calibration draws.
 
 - **Threshold route** (A, or B with lme4 or brms): the score threshold
   becomes the detection rule. Export with
@@ -182,7 +239,14 @@ can feed them:
   occasions and one model is fitted. `fp_aggregate()` takes one
   threshold, whereas A gives one per site x species, so a single value
   has to be chosen for the analysis, and the validation drawn at that
-  same value.
+  same value. An occasion is a detection when any of its predictions
+  reaches the threshold:
+
+  ![The scores of the predictions of five occasions, with a threshold of
+  0.5. The values are illustrative.](figures/occupancy_threshold.png)
+  The scores of the predictions of five occasions, with a threshold of
+  0.5. The values are illustrative.
+
 - **Draws route** (B with brms only): `export_occupancy_data(fit = )`
   writes the calibration draws, and
   [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md)
@@ -193,7 +257,10 @@ can feed them:
   ([`crywolf::fp_occu_mc()`](https://provetelab.org/crywolf/reference/fp_occu_mc.html)),
   so the uncertainty of the calibration reaches occupancy.
 
-Both need known truth drawn at random
+The article [How crywolf
+works](https://provetelab.org/crywolf/articles/how-crywolf-works.html)
+explains the model in pictures. Both routes need known truth drawn at
+random
 ([`vignette("sampling-designs")`](https://provetelab.org/sheepdog/articles/sampling-designs.md)):
 
 - `random_detections` at **the same threshold** as the occupancy

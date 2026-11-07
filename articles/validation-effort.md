@@ -708,6 +708,13 @@ number of candidate occasions.
 
 ## Further rounds of review
 
+![Review rounds: what was reviewed leaves the pool, and combine_rounds()
+gives one simple random sample.](figures/schematic_rounds.png)
+
+Review rounds: what was reviewed leaves the pool, and
+[`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md)
+gives one simple random sample.
+
 When
 [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md)
 labels a cell `"review more"`, draw another round with `previous`. The

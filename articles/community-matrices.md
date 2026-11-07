@@ -7,6 +7,17 @@ uses the matrices in a distance-based ordination (PCoA) and in a
 model-based ordination and test with generalised linear latent variable
 models (GLLVM).
 
+![From the nightly history to the matrices and their
+analysis.](figures/schematic_matrix.png)
+
+From the nightly history to the matrices and their analysis.
+
+![Stage 3 in order, with the occupancy export as the other way out of
+the histories.](figures/stage3_community.png)
+
+Stage 3 in order, with the occupancy export as the other way out of the
+histories.
+
 ``` r
 
 library(sheepdog)
@@ -298,7 +309,7 @@ mats <- build_community_matrices(history_file, out, core_species = core,
                                  k_min = 2, min_nights_month = 5)
 #> Matrix: 23 rows (site x month) x 5 species | rule k >= 2
 #> Effort: 23 site x month cells included; 1 dropped for having < 5 recorded nights (see effort_site_month.csv)
-#> Files in: /tmp/Rtmpc8Vphf/community_matrices
+#> Files in: /tmp/RtmpUmCq6z/community_matrices
 list.files(out)
 #> [1] "count_matrix_site_month_k2.csv"     "effort_site_month.csv"             
 #> [3] "frequency_matrix_site_month_k2.csv"

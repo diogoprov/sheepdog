@@ -49,7 +49,10 @@
     <li><a class="dropdown-item" href="../articles/pt/reviewing-in-the-gui.html">Revisão dos clipes na GUI do BirdNET</a></li>
     <li><a class="dropdown-item" href="../articles/pt/sampling-designs.html">Escolha do desenho amostral</a></li>
     <li><a class="dropdown-item" href="../articles/pt/frognet-workflow.html">O fluxo de trabalho do FrogNet</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul></li>
+<li class="nav-item"><a class="nav-link" href="../articles/cheatsheets.html">Cheat sheets</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -193,7 +196,9 @@
       </dl></div><div class="section level2">
       <h2 id="stage-after-the-review">Stage 1 - After the review<a class="anchor" aria-label="anchor" href="#stage-after-the-review"></a></h2>
 
-      <div class="section-desc"><p>Classify the reviewed clips and summarise precision, thresholds, presence and retraining clips. The <a href="../figures/stage1_diagnostic.png">diagnostic diagram</a> shows what to do with each label of <code><a href="../reference/review_support.html">review_support()</a></code>, and how to compare the empirical and model-based thresholds.</p><div class="float">
+      <div class="section-desc"><p>Classify the reviewed clips and summarise precision, thresholds, presence and retraining clips. The diagram shows what to do with each label of <code><a href="../reference/review_support.html">review_support()</a></code>, and how to compare the empirical and model-based thresholds.</p><div class="float">
+<img src="../figures/stage1_diagnostic.png" alt="What to do with each label of review_support(), and how to compare the thresholds."><div class="figcaption">What to do with each label of review_support(), and how to compare the thresholds.</div>
+</div><div class="float">
 <img src="../figures/thresholds.png" alt="The two thresholds on simulated data: the precision above each cut, where each curve reaches p_min, the choice of model and the comparison."><div class="figcaption">The two thresholds on simulated data: the precision above each cut, where each curve reaches p_min, the choice of model and the comparison.</div>
 </div><div class="float">
 <img src="../figures/schematic_retraining.png" alt="The retraining loop, for when the classifier and not the review limits precision."><div class="figcaption">The retraining loop, for when the classifier and not the review limits precision.</div>
@@ -297,7 +302,11 @@
       </dl></div><div class="section level2">
       <h2 id="stage-calibration">Stage 2 - Calibration<a class="anchor" aria-label="anchor" href="#stage-calibration"></a></h2>
 
-      <div class="section-desc"><p>Calibrate confidence scores into probabilities of true detection and build nightly detection histories. The <a href="../figures/stage2_calibration.png">calibration diagram</a> has the steps and checks in order.</p><div class="float">
+      <div class="section-desc"><p>Calibrate confidence scores into probabilities of true detection and build nightly detection histories. The diagram has the steps and checks in order.</p><div class="float">
+<img src="../figures/score_overlap.png" alt="Where false positives come from: the scores of true and false detections overlap."><div class="figcaption">Where false positives come from: the scores of true and false detections overlap.</div>
+</div><div class="float">
+<img src="../figures/stage2_calibration.png" alt="The steps and checks of the calibration, in order."><div class="figcaption">The steps and checks of the calibration, in order.</div>
+</div><div class="float">
 <img src="../figures/schematic_curve.png" alt="The reviewed clips give the curve, and every detection gets its P(tp)."><div class="figcaption">The reviewed clips give the curve, and every detection gets its P(tp).</div>
 </div><div class="float">
 <img src="../figures/schematic_nights.png" alt="The detections of a night become one cell of the nightly history."><div class="figcaption">The detections of a night become one cell of the nightly history.</div>
@@ -503,7 +512,9 @@
       </dl></div><div class="section level2">
       <h2 id="stage-community-matrices">Stage 3 - Community matrices<a class="anchor" aria-label="anchor" href="#stage-community-matrices"></a></h2>
 
-      <div class="section-desc"><p>Effort-standardised site x month matrices from calibrated histories. The <a href="../figures/stage3_community.png">diagram</a> also shows the occupancy export.</p><div class="float">
+      <div class="section-desc"><p>Effort-standardised site x month matrices from calibrated histories. The diagram also shows the occupancy export.</p><div class="float">
+<img src="../figures/stage3_community.png" alt="Stage 3 in order, with the occupancy export."><div class="figcaption">Stage 3 in order, with the occupancy export.</div>
+</div><div class="float">
 <img src="../figures/schematic_matrix.png" alt="From the nightly history to the matrices and their analysis."><div class="figcaption">From the nightly history to the matrices and their analysis.</div>
 </div></div>
 
@@ -542,7 +553,15 @@
       </dl></div><div class="section level2">
       <h2 id="occupancy-models">Occupancy models<a class="anchor" aria-label="anchor" href="#occupancy-models"></a></h2>
 
-      <div class="section-desc"><p>Export the occasions, scores, reviewed clips and calibration draws for occupancy models with false positives, such as those of crywolf.</p></div>
+      <div class="section-desc"><p>Export the occasions, scores, reviewed clips and calibration draws for occupancy models with false positives, such as those of crywolf. See <a href="https://provetelab.org/crywolf/articles/how-crywolf-works.html" class="external-link">How crywolf works</a>.</p><div class="float">
+<img src="../figures/occupancy_routes.png" alt="From the reviewed clips to occupancy, by one score threshold or by the calibration draws."><div class="figcaption">From the reviewed clips to occupancy, by one score threshold or by the calibration draws.</div>
+</div><div class="float">
+<img src="../figures/occupancy_model.png" alt="An occupied site gives a detection on each night with probability p11, and an empty site with probability p10."><div class="figcaption">An occupied site gives a detection on each night with probability p11, and an empty site with probability p10.</div>
+</div><div class="float">
+<img src="../figures/occupancy_mixture.png" alt="Sites with a few detections could be either occupied or empty."><div class="figcaption">Sites with a few detections could be either occupied or empty.</div>
+</div><div class="float">
+<img src="../figures/occupancy_threshold.png" alt="An occasion is a detection when any of its predictions reaches the threshold."><div class="figcaption">An occasion is a detection when any of its predictions reaches the threshold.</div>
+</div></div>
 
       <dl></dl></div><div class="section level2">
 
