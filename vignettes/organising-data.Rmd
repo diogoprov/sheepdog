@@ -22,19 +22,20 @@ of all recordings that some designs need.
 A project has three kinds of files, and each lives best in its own folder:
 
 ```
-audio/                       recordings, never modified
+audio/                            recordings, never modified
   ARA/
     ARA01_20211001_190000.wav
     ...
   BAI/
     card1/BAI01_20211001_190000.wav
     card2/...
-birdnet/                     BirdNET output, one run per site
-  ARA/BirdNET_SelectionTable.txt                      combined table, or
-  BAI/BAI01_20211001_190000.BirdNET.selection.table.txt  one per audio file
-validation/                  what sheepdog writes
+birdnet/                          BirdNET output, one run per site
+  ARA/BirdNET_SelectionTable.txt  a combined table per site, or
+  BAI/BAI01_20211001_190000.BirdNET.selection.table.txt
+                                  one table per audio file
+validation/                       what sheepdog writes
   clip_manifest.csv
-  clips/<species>/...        clips to review
+  clips/<species>/...             clips to review
   ...
 ```
 
