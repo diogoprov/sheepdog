@@ -494,6 +494,11 @@ com clipes do mesmo conjunto de gravações, mas o enriquecimento aparece també
 scores do BirdNET, que não usa esse treino. Se a seleção dependeu do estado real (por
 exemplo, de ouvir o minuto antes de incluir) e não só do score, a verossimilhança
 conjunta também é afetada. **Quem sabe o procedimento é a Liliana; falta perguntar.**
+As sessões do crywolf e do FrogNet não têm informação sobre o mecanismo. Pela
+avaliação do crywolf, não testada: positivos verificados seguem válidos; negativos
+verificados pesam demais e podem baixar ψ um pouco; p10 e p11 vêm sobretudo dos
+dados automáticos; o `raw_fp` da vinheta do Curiango fica superestimado. Checagem
+sugerida: refazer o ajuste só com os verificados de score abaixo de 0,3.
 
 Com pesos em três estratos de score, sem corrigir a hora, e por isso provisório, a
 normal ainda perde para a mistura nas 50 partições por noite:
