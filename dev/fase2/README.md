@@ -34,6 +34,9 @@ um limiar.
 | `results/val3_v0/task_all.rds` | os 720 ajustes da terceira validação (prior C); serve de `OUT_DIR` para `summarise_val_v0.R` |
 | `curiango_v0.R` | dados do Curiango no formato do v0 |
 | `emissions_curiango_v0.R`, `emissions_family_curiango.R` | etapa 0: normal censurada por classe nos minutos verificados e comparação com mistura, por noite |
+| `selection_curiango.R` | inclusão dos minutos verificados por score e estimativas ponderadas |
+| `run_curiango_v0.R`, `ppc_curiango_v0.R` | piloto base do v0 no Curiango e seus PPC |
+| `model_mix.stan`, `score_emissions_mix.stanfunctions`, `mix.R`, `check_mix.R`, `probe_mix.R` | modelo com mistura em f₀ e f₁, ainda sem justificativa firme (ver a correção) |
 | `aws/` | execução em spot; `dev/fase2/aws/launch.sh BUCKET RUN [TIPO] [WORKERS] [HORAS] [PREÇO]` |
 
 ## Modelo v0
@@ -397,8 +400,8 @@ escolher um limiar, nos dados reais? Os dados são públicos (`crywolf::curiango
 ### O que os dados mostram antes de ajustar
 
 97.806 minutos, 1.753 sítio-noites, 7 sítios, 98% dos intervalos de 15 min. São
-1.199 minutos verificados (1,2%), 257 positivos, sorteados sem olhar o score. Na
-escala logit, nos verificados:
+1.199 minutos verificados (1,2%), 257 positivos. **Eles não são uma amostra
+aleatória em relação ao score: ver a correção abaixo.** Na escala logit, sem pesos:
 
 | Classificador | AUC | Falsos abaixo de 0,1 | Falsos acima: q10, q50, q90 | Verdadeiros abaixo de 0,1 | Verdadeiros acima: q10, q50, q90 |
 |---|---|---|---|---|---|
@@ -440,6 +443,53 @@ condição para seguir era a normal descrever o classificador próprio.
   perto de −1,5 pode ser qualquer um dos dois. Separar isso depende dos 1.199
   minutos, e é a questão de identificação da família nova.
 - No BirdNET, os 42 falsos acima do corte não permitem preferir uma forma de f₀.
+
+### Correção: a verificação depende do score (07/11/2026)
+
+Os resultados da etapa 0 acima estão sob suspeita. A inclusão nos minutos verificados
+é de 1,1% abaixo de 0,5 no classificador próprio e de 11,5% a partir daí: 162
+minutos verificados contra 15 esperados. O efeito não vem do número de linhas por
+minuto (abaixo de 0,4, a taxa fica em 1% com qualquer número de linhas) nem só do
+BirdNET (`selection_curiango.R`). O mecanismo não está documentado no depósito; a
+descrição de "cerca de 1% ao acaso", em `dev/benchmarks/curiango-export.R` e em
+`data-raw/curiango.R` do crywolf, não bate com os dados.
+
+Pesando pelo inverso da inclusão em dois estratos, o que é aproximado porque o
+mecanismo é desconhecido:
+
+| Quantidade | Sem pesos | Com pesos |
+|---|---|---|
+| Minutos com chamada | 0,214 | 0,107 |
+| Precisão no limiar 0,4 | 0,977 | 0,949 |
+| Recall no limiar 0,4 | 0,654 | 0,211 |
+| Mediana dos verdadeiros (logit) | 0,58 | −1,20 |
+
+- **Os dois grupos de f₁ parecem ser em boa parte efeito da seleção.** Com pesos,
+  78% dos verdadeiros ficam entre −2 e 0, e a cauda direita é longa. A vantagem da
+  mistura precisa ser refeita com pesos, então **a simulação de identificação da
+  mistura fica suspensa**.
+- **Continua valendo:** nenhum dos 439 minutos verificados abaixo de 0,1 tem chamada, e
+  esse estrato é o de inclusão de 1%.
+- **O modelo conjunto:** se a seleção depende só do score observado, a verossimilhança
+  não precisa de pesos (inferência, falta simular). Os PPC por classe, sim, porque
+  replicam sem a seleção.
+- **Fora daqui:** o que tratou esses minutos como amostra aleatória pode estar
+  afetado: `inclusion_prob` do export, recall e os verificados do crywolf. Precisão
+  condicional ao score é bem menos sensível. Falta avaliar.
+
+### Piloto base do v0 (07/11/2026)
+
+Classificador próprio, c = logit(0,1), 4 cadeias, 17,6 min, sem divergências, R-hat
+1,00, ESS mínimo 2.881. ψ no centro 0,43 (0,40 a 0,46), θ no centro 0,136 (0,13 a
+0,14), λ₀ = −2,16, Δ = 1,29, σ₀ = 0,35, σ₁ = 1,49. Isso implica 0,069 de minutos com
+chamada, contra 0,107 pela estimativa ponderada.
+
+O PPC global reprova: P(y = 1 | minuto anterior com y = 1) é 0,39 contra 0,07 a 0,09
+replicado; a variância de detecções por noite é 10,3 contra 4,5 a 5,7; as noites com
+detecção são 25% contra 36% a 42%. É a dependência entre minutos esperada sem Markov.
+
+Um teste de recuperação da mistura, com um único conjunto simulado, convergiu em 11
+min e alargou o componente baixo de f₁ (σ 0,57 contra 0,41). Um conjunto não mede viés.
 
 ### Etapas
 
