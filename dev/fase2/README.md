@@ -363,6 +363,26 @@ Como os 60 conjuntos da célula θ = 0,6, 5%, Δ = 3 são os mesmos, ela deve re
 perto de 0,87 em logit(0,1). O número da grade será relatado, mas a decisão do
 critério 2 nessa célula fica com os 160 conjuntos da seção anterior.
 
+### Resultado da terceira validação (07/11/2026)
+
+360 conjuntos, 720 ajustes, 0 erros, 37,4 h de CPU. A instância rodou 42 min, sem
+interrupção, a cerca de US$ 0,97/h: perto de US$ 0,70, estimado pelo preço spot
+do lançamento. Resultados em `results/val3_v0/task_all.rds`, lidos por
+`summarise_val_v0.R`.
+
+- **Critério 1: passa.** 100% em todas as células e cortes, sem divergências,
+  R-hat máximo 1,008, ESS mínimo 1.042. Na segunda validação, 2 dos 720 reprovavam.
+- **Critério 2: 15 de 16 na grade.** O viés passa (máximo 0,017). A exceção é a
+  esperada: θ com θ = 0,6, 5%, Δ = 3 ficou em 0,892 (0,867 em logit(0,1) e 0,917 em
+  logit(0,3)). Pela regra fixada antes de rodar, essa célula se decide nos 160
+  conjuntos da repetição (0,931), que só cobrem logit(0,1). Três combinações
+  passam por pouco, com n = 30 ou 60 conjuntos: ψ com θ = 0,6, 5%, Δ = 5 (0,900),
+  θ com θ = 0,3, 20%, Δ = 3 (0,900) e ψ com θ = 0,3, 5%, Δ = 3 (0,908).
+- **Critério 4: passa.** Máximo de 0,032 (θ) e 0,021 (ψ); p95 até 0,071.
+
+Isso resolve o limite das seções anteriores: o prior C agora está validado na grade
+inteira. A validação vale para dados simulados pelo próprio modelo v0, sem Markov.
+
 ## Para o passo do Curiango (sugestões da sessão do crywolf, a decidir)
 
 - Espere que o v0 falhe no PPC: no crywolf, o Markov foi o maior ganho nesses
