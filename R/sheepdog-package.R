@@ -13,6 +13,8 @@ NULL
 
 # Colunas usadas via tidy evaluation (evita NOTEs do R CMD check)
 utils::globalVariables(c(
+  ".sorteada", "arquivo", "hours_with_detections", "n_det", "n_detections",
+  "n_windows", "neg", "pos", "threshold_lower",
   "n_reliable", "confidence_max", "species_folder",
   ".a", ".b", ".ini", ".fim", ".linha", ".rec", ".negativo", ".desenho",
   ".todos_neg", ".algum_pos", "inherited_verdict",

@@ -48,6 +48,7 @@ expect_contract <- function(dir) {
   # occasions.csv: colunas fixas, depois as covariaveis declaradas
   oc <- ler_tabela(dir, "occasions")
   fixas <- colunas$occasions
+  if (sc$schema_version >= 1.4) fixas <- c(fixas, "n_windows")
   expect_identical(names(oc)[seq_along(fixas)], fixas)
   extras <- setdiff(names(oc), fixas)
   expect_identical(extras, as.character(sc$occasion_covariates))
@@ -82,8 +83,10 @@ expect_contract <- function(dir) {
   if ("validation" %in% names(sc$tables)) {
     val <- ler_tabela(dir, "validation")
     expect_identical(names(val)[seq_along(colunas$validation)], colunas$validation)
+    novas <- c("round", "stratum", "n_candidates", "n_drawn", "review_scope")
+    if (sc$schema_version >= 1.4) expect_true(all(novas %in% names(val)))
     expect_true(all(setdiff(names(val), colunas$validation) %in%
-                      c("reviewer", "n_reviewers")))
+                      c(novas, "reviewer", "n_reviewers")))
     expect_true(all(val$sampling_mode %in% c("top", "random_detections")))
     expect_true(all(val$verdict %in% c(names(veredito), "not_reviewed",
                                        "clip_missing", "disagreement")))

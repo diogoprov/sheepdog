@@ -14,7 +14,7 @@ test_that("export_occupancy_data() writes the tables and the schema", {
                               "validation.csv", "sites.csv", "schema.json"))
   sc <- jsonlite::read_json(file.path(ex$dir, "schema.json"))
   expect_identical(sc$schema, "sheepdog-occupancy")
-  expect_identical(sc$schema_version, 1.1)
+  expect_identical(sc$schema_version, 1.4)
   expect_null(sc$occasion_covariates)
   expect_identical(sc$occasion_unit, "file")
   expect_identical(sc$classifier, "sim v1")
@@ -380,4 +380,65 @@ test_that("the shared 1.1 fixture keeps its contract", {
                             by = c("site", "month"))
   expect_equal(nrow(falta), 0L)
   expect_equal(nrow(dr), sc$tables$calibration_draws$rows)
+})
+
+# Esquema 1.4: janelas por ocasiao e desenho da revisao, para a fase 2
+test_that("n_windows comes from the length of the occasion", {
+  ex <- export_sim(recording_duration = 180)
+  oc <- read_export(ex$dir, "occasions")
+  expect_true(all(oc$n_windows == "60"))
+  ex <- export_sim(recording_duration = 180, window_step = 1.5)
+  expect_true(all(read_export(ex$dir, "occasions")$n_windows == "120"))
+  ex <- export_sim()
+  expect_true(all(is.na(read_export(ex$dir, "occasions")$n_windows)))
+  expect_error(export_sim(window_step = 0), "positive number")
+})
+
+test_that("validation.csv keeps the round and the scope of a verdict", {
+  val <- sim_validation(sim_pred())
+  ex <- export_sim(validation = val)
+  v <- read_export(ex$dir, "validation")
+  expect_true(all(v$round == "1"))
+  expect_false(anyNA(v$n_candidates))
+  # o primeiro clipe ficou sem veredito: sua ocasiao nao esta completa
+  chave <- paste(val$site, val$occasion_id, val$species_code)[1]
+  mesma <- paste(v$site, v$occasion_id, v$species_code) == chave
+  expect_true(all(v$review_scope[mesma] == "clip"))
+  expect_true(all(v$review_scope[!mesma] == "occasion"))
+  top <- sim_validation(sim_pred(), "top")
+  v <- read_export(export_sim(validation = top)$dir, "validation")
+  expect_true(all(v$review_scope == "clip"))
+  expect_true(all(is.na(v$stratum)))
+})
+
+test_that("candidates give the stratum and the design of the draw", {
+  val <- sim_validation(sim_pred())
+  cand <- attr(val, "candidates")
+  ex <- export_sim(validation = val, candidates = cand)
+  v <- read_export(ex$dir, "validation")
+  expect_false(anyNA(v$stratum))
+  sc <- jsonlite::read_json(file.path(ex$dir, "schema.json"))
+  expect_identical(sc$validation_design$threshold, 0.5)
+  expect_identical(sc$validation_design$strata, cand$strata[1])
+  expect_null(jsonlite::read_json(file.path(export_sim(validation = val)$dir,
+                                            "schema.json"))$validation_design)
+})
+
+test_that("candidates only reach the clips of the draw", {
+  pred <- sim_pred()
+  aleat <- sim_validation(pred)
+  cand <- attr(aleat, "candidates")
+  top <- sim_validation(pred, "top")
+  val <- dplyr::bind_rows(aleat, top)
+  ex <- suppressWarnings(export_sim(validation = val, candidates = cand))
+  v <- read_export(ex$dir, "validation")
+  expect_true(all(is.na(v$stratum[v$sampling_mode == "top"])))
+  expect_true(all(is.na(v$n_candidates[v$sampling_mode == "top"])))
+  expect_false(anyNA(v$stratum[v$sampling_mode == "random_detections"]))
+  repetido <- dplyr::mutate(aleat[2, ], sampling_mode = "top",
+                            inclusion_prob = NA_real_)
+  expect_warning(export_sim(validation = dplyr::bind_rows(aleat, repetido)),
+                 "both the \"top\"")
+  cand$site <- factor(cand$site)
+  expect_no_error(export_sim(validation = aleat, candidates = cand))
 })
