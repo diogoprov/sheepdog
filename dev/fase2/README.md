@@ -29,6 +29,10 @@ um limiar.
 | `results/val2_v0/task_all.rds` | os 720 ajustes da segunda validação; serve de `OUT_DIR` para os dois scripts |
 | `prior_check_v0.R` | prior predictive check das emissões |
 | `run_cell_v0.R` | repetição da célula que reprovou; `Rscript dev/fase2/run_cell_v0.R OUT_DIR [N_WORKERS] [N_SETS]` |
+| `summarise_cell_v0.R` | resumo da repetição; `Rscript dev/fase2/summarise_cell_v0.R OUT_DIR [VAL2_DIR]` |
+| `results/cell_v0/task_all.rds` | os 160 ajustes da repetição, com a máxima verossimilhança |
+| `results/val3_v0/task_all.rds` | os 720 ajustes da terceira validação (prior C); serve de `OUT_DIR` para `summarise_val_v0.R` |
+| `aws/` | execução em spot; `dev/fase2/aws/launch.sh BUCKET RUN [TIPO] [WORKERS] [HORAS] [PREÇO]` |
 
 ## Modelo v0
 
@@ -383,13 +387,65 @@ do lançamento. Resultados em `results/val3_v0/task_all.rds`, lidos por
 Isso resolve o limite das seções anteriores: o prior C agora está validado na grade
 inteira. A validação vale para dados simulados pelo próprio modelo v0, sem Markov.
 
-## Para o passo do Curiango (sugestões da sessão do crywolf, a decidir)
+## Plano do passo do Curiango (07/11/2026, a aprovar)
 
-- Espere que o v0 falhe no PPC: no crywolf, o Markov foi o maior ganho nesses
-  dados (elpd +481,3, EP 120,1, de `dyn_mk` sobre `dyn`; PPC sem Markov com
-  p = 0). Isso não seria defeito do modelo de score.
-- Comparar com os mesmos blocos de noites de `dev/dyn-kfold` do crywolf, com
-  `fp_occu_dyn(markov = "time")` como referência.
-- As noites têm dinâmica entre si (`dyn` 191,5 acima de `ind`): o modelo
-  final talvez precise se compor com a cadeia entre temporadas. ψ, γ e ε do
-  critério 5 pressupõem isso; o v0 só tem ψ estático.
+O que este passo responde: o modelo de score chega à mesma inferência sem ninguém
+escolher um limiar, nos dados reais? Os dados são públicos (`crywolf::curiango`).
+
+### O que os dados mostram antes de ajustar
+
+97.806 minutos, 1.753 sítio-noites, 7 sítios, 98% dos intervalos de 15 min. São
+1.199 minutos verificados (1,2%), 257 positivos, sorteados sem olhar o score. Na
+escala logit, nos verificados:
+
+| Classificador | AUC | Falsos abaixo de 0,1 | Falsos acima: q10, q50, q90 | Verdadeiros abaixo de 0,1 | Verdadeiros acima: q10, q50, q90 |
+|---|---|---|---|---|---|
+| próprio | 0,965 | 46,6% | −2,16, −1,96, −1,45 | 0% | −1,67, 0,58, 2,90 |
+| BirdNET | 0,947 | 95,5% | −2,06, −1,21, 0,21 | 7,8% | −1,80, −0,35, 3,33 |
+
+Consequências:
+
+- **A grade validada não cobre estes dados.** Ela usou σ₀ = σ₁ = 1,5, 150 sítios
+  × 20 ocasiões e ao menos 5% verificado. No classificador próprio, uma conta de
+  mão dá σ₀ perto de 0,45 e σ₁ perto de 1,7, razão perto de 3,8. Há mais
+  verificações em número (1.199 contra 150), mas em fração bem menor.
+- **O prior C fica apertado em σ₀.** 0,45 cai perto do percentil 2,5 de
+  lognormal(log 1,2; 0,5). Com esse volume de dados deve pesar pouco, mas é preciso
+  conferir (posterior contra prior).
+- **f₀ do BirdNET é vista só pela cauda.** Só 42 dos 942 falsos passam de 0,1, e essa
+  cauda é longa (q90 = 0,21), talvez por sons parecidos. É o caso em que a normal tem
+  mais chance de falhar e a identificação é mais fraca.
+- **f₀ do classificador próprio parece compatível com a normal censurada.** Os
+  quantis batem com meia-normal de σ perto de 0,45, em conta de mão; o PPC decide.
+
+### Etapas
+
+| # | Etapa | Onde | Duração estimada | Segue se |
+|---|---|---|---|---|
+| 0 | Preparar os dados (`curiango_v0.R`) e ajustar f₀ e f₁ só nos 1.199 minutos, sem Stan: critério 6 preliminar, com partição por noite | Mac | minutos | a normal censurada descreve o classificador próprio |
+| 1 | Piloto do v0: um ajuste do classificador próprio em logit(0,1). Medir tempo, diagnósticos e PPC por classe e de autocorrelação entre minutos | Mac, 4 núcleos | ~15 a 40 min por cadeia (extrapolado de 113 s × 33) | R-hat e ESS adequados; falha esperada só na autocorrelação |
+| 2 | v1 com Markov em w, dentro da noite, só quando o minuto anterior está a 15 min. Conferir log-verossimilhança R × Stan e redução ao v0; simulação com σ₀, σ₁, tamanho e verificação do Curiango | Mac e AWS | a medir | passa nos critérios 1 e 2 nessa simulação |
+| 3 | Covariáveis: θ ~ bio + aci, ψ ~ temp_d + rh_d, e temperatura em f₀ e f₁ (**g**_ik), pelo achado de sheepdog#67 | Mac | a medir | o efeito de temperatura reaparece |
+| 4 | Ajustes finais: dois classificadores × c = logit(0,1) e logit(0,3); os quatro caminhos com limiar na mesma especificação; k-fold | AWS | ~100 h de CPU, ~US$ 2 a 4 (a refazer depois do piloto) | critérios abaixo |
+
+### Critérios nesta etapa
+
+- **4:** ψ e θ mudam ≤ 0,05 entre logit(0,1) e logit(0,3).
+- **5:** o v1 tem ψ estático por sítio-noite, então a comparação é com `ind_mk`
+  (`fp_occu()` com Markov) numa varredura de limiares. γ e ε ficam de fora: exigem
+  compor com a cadeia entre noites, que é outro modelo.
+- **6:** PPC do score por classe nos minutos verificados. Se reprovar no classificador
+  próprio, troca-se a família de f₀ e f₁ antes de qualquer outra etapa.
+- **7:** a diferença entre classificadores nos coeficientes de ocupação fica menor que
+  entre MaxF1 e MaxPrecision. É o critério que decide se a fase vale um artigo.
+- **k-fold:** mesmos blocos de 7 noites de `dev/dyn-kfold`. O elpd do crywolf é de y
+  binário e o do modelo de score é de s contínuo, logo não se comparam direto. A
+  comparação usa a probabilidade que o modelo de score dá a y = 1 no limiar 0,40.
+
+### Referências e limites
+
+No crywolf, o Markov foi o maior ganho nesses dados (elpd +481,3, EP 120,1, de `dyn_mk`
+sobre `dyn`; PPC sem Markov com p = 0), então a falha do v0 no PPC de autocorrelação
+não seria defeito do modelo de score. `dyn` fica 191,5 acima de `ind`: as noites têm
+dinâmica entre si, e o modelo estático deixa isso de fora; `ind_mk` fica 206,9 abaixo
+de `dyn_mk`. Se o modelo de score valer, o passo seguinte é compor com o `fp_occu_dyn()`.

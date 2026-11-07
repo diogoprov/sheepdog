@@ -555,10 +555,10 @@ Também é inferência minha; precisa de simulação (abaixo).
 
 ### Protótipo v0 (05 e 06/11/2026)
 
-Na branch `claude/fase2-prototype` (sem PR; `dev/fase2/README.md` tem o
-desenho, os critérios e os resultados). O v0 usa um score por ocasião, com z
-e w marginalizados, sem Markov e sem covariáveis no score, e com priors
-provisórios em λ_0, Δ, σ_0 e σ_1. Os critérios foram fixados antes das
+Em `dev/fase2` (`README.md` tem o desenho, os critérios, os resultados e o
+plano do Curiango). O v0 usa um score por ocasião, com z
+e w marginalizados, sem Markov e sem covariáveis no score, e com os priors
+de λ_0, Δ, σ_0 e σ_1 vindos de um prior predictive check (prior C). Os critérios foram fixados antes das
 simulações. As simulações usam a forma verdadeira de f₀ e f₁, então não dizem
 nada sobre a adequação a dados reais.
 
@@ -580,11 +580,16 @@ nada sobre a adequação a dados reais.
   posterior. A célula continua reprovada como o critério foi fixado; que a
   cobertura volte a cerca de 0,93 é extrapolação, não medida.
 
-**Passo 3, a seguir:** acrescentar o Markov e **g**_ik, definir os priors por
-prior predictive check, repetir a célula medindo o deslocamento em relação à
-verossimilhança e corrigir a DAG. A branch está 20 commits atrás da `main`.
-Depois vem o Curiango, em que o v0 deve falhar no PPC sem o Markov (no
-crywolf, o Markov foi o maior ganho nesses dados).
+- **Repetição da célula com o prior C** (160 conjuntos, 07/11/2026): cobertura
+  de θ 0,931 e de ψ 0,950. O prior explicou só parte do deslocamento contra a
+  verossimilhança (+0,0078 para +0,0060).
+- **Terceira validação com o prior C** (360 conjuntos, 720 ajustes, AWS):
+  passam os critérios 1 e 4; o 2 passa em 15 de 16, e a exceção (0,892) é a
+  célula decidida pela repetição.
+
+**A seguir:** o passo do Curiango, com plano em `dev/fase2/README.md`. Os dados
+já mostram que a grade não os cobre (σ₀ bem menor que σ₁ e 1,2% de verificação).
+O v0 deve falhar no PPC sem o Markov, então o plano inclui o Markov e **g**_ik.
 
 ### Passos
 
