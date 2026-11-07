@@ -7,7 +7,7 @@ simulate_v0 <- function(nsite = 150, nocc = 20, beta = c(0, -0.8),
                         alpha = c(-0.5, 0.6), lambda0 = -4, delta = 5,
                         sigma0 = 1.5, sigma1 = 1.5, c_lo = qlogis(0.1),
                         c_hi = qlogis(0.9999), frac_verified = 0.05,
-                        seed = NULL) {
+                        prior_emissions = 1L, seed = NULL) {
   if (!is.null(seed)) set.seed(seed)
   x <- as.numeric(scale(rnorm(nsite)))
   d <- as.numeric(scale(rnorm(nsite * nocc)))
@@ -25,7 +25,8 @@ simulate_v0 <- function(nsite = 150, nocc = 20, beta = c(0, -0.8),
       last = seq_len(nsite) * nocc,
       P_psi = 2L, X = cbind(1, x), P_theta = 2L, D = cbind(1, d),
       s = ifelse(cens == 0L, s, 0), cens = cens,
-      v = ifelse(verified, w, -1L), c_lo = c_lo, c_hi = c_hi
+      v = ifelse(verified, w, -1L), c_lo = c_lo, c_hi = c_hi,
+      prior_emissions = prior_emissions
     ),
     truth = list(z = z, w = w, s = s, site = site)
   )

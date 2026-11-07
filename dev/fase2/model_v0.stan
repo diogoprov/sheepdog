@@ -19,6 +19,7 @@ data {
   array[N_occ] int<lower=-1, upper=1> v;    // -1 not verified
   real c_lo;
   real c_hi;
+  int<lower=0, upper=1> prior_emissions;    // 0 provisional, 1 from the check
 }
 parameters {
   vector[P_psi] beta;
@@ -42,11 +43,18 @@ model {
   alpha[1] ~ normal(0, 1.5);
   if (P_psi > 1) beta[2:P_psi] ~ normal(0, 2.5);
   if (P_theta > 1) alpha[2:P_theta] ~ normal(0, 2.5);
-  // provisional: logit scale, to be set by a prior predictive check
-  lambda0 ~ normal(-3, 3);
-  delta ~ normal(0, 5);
-  sigma0 ~ normal(0, 3);
-  sigma1 ~ normal(0, 3);
+  // logit scale; see the prior predictive check in dev/fase2/README.md
+  if (prior_emissions == 0) {
+    lambda0 ~ normal(-3, 3);
+    delta ~ normal(0, 5);
+    sigma0 ~ normal(0, 3);
+    sigma1 ~ normal(0, 3);
+  } else {
+    lambda0 ~ normal(-3, 2);
+    delta ~ lognormal(log(3), 0.6);
+    sigma0 ~ lognormal(log(1.2), 0.5);
+    sigma1 ~ lognormal(log(1.2), 0.5);
+  }
   for (i in 1:N_site) {
     target += site_lik(first[i], last[i], eta_psi[i], eta_theta, s, cens, v,
                        lambda0, mu1, sigma0, sigma1, lcens0, lcens1);

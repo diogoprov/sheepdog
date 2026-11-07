@@ -27,6 +27,8 @@ um limiar.
 | `probe_cell_v0.R`, `summarise_probe_v0.R`, `probe_same_sets_v0.R` | investigação da célula que reprovou, por máxima verossimilhança |
 | `results/probe_v0/ml_all.rds` | os 8.000 conjuntos da sonda, com as emissões livres e fixas |
 | `results/val2_v0/task_all.rds` | os 720 ajustes da segunda validação; serve de `OUT_DIR` para os dois scripts |
+| `prior_check_v0.R` | prior predictive check das emissões |
+| `run_cell_v0.R` | repetição da célula que reprovou; `Rscript dev/fase2/run_cell_v0.R OUT_DIR [N_WORKERS] [N_SETS]` |
 
 ## Modelo v0
 
@@ -35,7 +37,7 @@ no logit, com μ_1 = λ_0 + Δ, Δ > 0 e σ_0 ≠ σ_1. O score é censurado aba
 de c (registro do classificador) e acima de c_hi (scores colados em 1).
 Verificações por ocasião entram em v_ik, como em `recordings_verified` e nos
 clipes do Curiango, que são o minuto inteiro. Sem Markov e sem covariáveis
-no score. Os priors de λ_0, Δ, σ_0 e σ_1 são provisórios.
+no score. Os priors de λ_0, Δ, σ_0 e σ_1 vêm do prior predictive check abaixo.
 
 ## Conferências feitas (05/11/2026)
 
@@ -270,6 +272,49 @@ deslocamento de 0,008 a 0,009 daria cobertura perto de 0,93 nessa célula; isso 
 inferência, não foi medido com MCMC em muitos conjuntos. Para o passo 3: definir
 os priors por prior predictive check e repetir essa célula, medindo o
 deslocamento em relação à verossimilhança.
+
+## Prior predictive check das emissões (07/11/2026)
+
+`prior_check_v0.R`, sem dados: cada sorteio do prior dá as duas distribuições de
+score, e lemos o que elas implicam sobre um classificador. A região plausível
+foi escrita no script antes de ver a saída, sem usar os valores simulados nem
+dados reais: falsos acima de 0,5 em até 30%; verdadeiros acima de 0,5 em ao menos
+20%; AUC entre 0,6 e 0,999; verdadeiros saturados acima de 0,9999 em até 30%;
+falsos no piso abaixo de 0,0001 em até 50%. Não fixei antes uma fração mínima
+de sorteios dentro da região, então ela serve para comparar, não para aprovar.
+
+| Prior | Dentro da região | AUC (5%, 50%, 95%) | Saturados (p95) | Piso (p95) | P(Δ < 1) |
+|---|---|---|---|---|---|
+| A: provisório, λ_0 N(−3, 3), Δ N⁺(0, 5), σ N⁺(0, 3) | 0,33 | 0,53; 0,83; 1 | 0,38 | 0,33 | 0,16 |
+| B: λ_0 N(−3, 2), Δ N⁺(0, 4), σ N⁺(0, 1,5) | 0,31 | 0,55; 0,94; 1 | 0,02 | 0,05 | 0,20 |
+| **C: λ_0 N(−3, 2), Δ LN(log 3, 0,6), σ LN(log 1,2, 0,5)** | 0,43 | 0,69; 0,95; 1 | 0,03 | 0,05 | 0,03 |
+| D: λ_0 N(−3, 1,5), Δ LN(log 4, 0,5), σ LN(log 1,2, 0,4) | 0,52 | 0,80; 0,99; 1 | 0,04 | 0,01 | 0,003 |
+
+**Escolha: C.** Tira a massa de A em scores saturados e no piso, e afasta Δ e σ
+de zero, onde as componentes não se identificam. D fica mais dentro da região,
+mas quase exclui classificadores fracos (AUC de 5% em 0,80), o que seria
+pressupor o que queremos medir. A escolha é julgamento, não saída de uma regra.
+O `prior_emissions` do Stan seleciona o prior: 0 é A, 1 é C. `simulate_v0()` usa
+1 por padrão, então os scripts das validações anteriores precisam de
+`prior_emissions = 0L` para reproduzir aqueles resultados.
+
+## Repetição da célula (desenho fixado antes de rodar)
+
+`run_cell_v0.R`: θ = 0,6, 5% de verificação, Δ = 3, c = logit(0,1), prior C,
+`adapt_delta = 0,95` e 1000+1000 iterações. Conjuntos 1 a 60 são os dados da
+grade, e 61 a 160 são novos (EP da cobertura perto de 0,02). Cada conjunto também
+tem a máxima verossimilhança. Piloto de 5 conjuntos: cerca de 200 s por conjunto,
+sem divergências, R-hat máximo 1,003, ESS mínimo 1.566.
+
+- **Critério 2:** viés absoluto ≤ 0,05 e cobertura ≥ 0,90, em θ e ψ, nos 160
+  conjuntos. A cobertura dos conjuntos 1 a 60 também é relatada, para comparar
+  com os 0,85 do prior A.
+- **Deslocamento:** média de θ posterior menos θ de máxima verossimilhança, com
+  EP entre conjuntos, nos conjuntos 1 a 60 (prior A: +0,008) e nos 160. O mesmo
+  com a mediana posterior: se média e mediana diferirem pouco e o deslocamento
+  cair, o prior era a causa; se não cair, sobra a assimetria da posterior.
+- **Limite:** mudar o prior invalida, em rigor, os resultados da segunda
+  validação. Passar nesta célula não aprova as outras 15 combinações.
 
 ## Para o passo do Curiango (sugestões da sessão do crywolf, a decidir)
 
