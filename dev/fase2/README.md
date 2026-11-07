@@ -37,6 +37,7 @@ um limiar.
 | `selection_curiango.R` | inclusão dos minutos verificados por score e estimativas ponderadas |
 | `run_curiango_v0.R`, `ppc_curiango_v0.R` | piloto base do v0 no Curiango e seus PPC |
 | `model_mix.stan`, `score_emissions_mix.stanfunctions`, `mix.R`, `check_mix.R`, `probe_mix.R` | modelo com mistura em f₀ e f₁, ainda sem justificativa firme (ver a correção) |
+| `emissions_weighted_curiango.R` | etapa 0 com pesos de inclusão, provisória, e inclusão por hora e sítio |
 | `aws/` | execução em spot; `dev/fase2/aws/launch.sh BUCKET RUN [TIPO] [WORKERS] [HORAS] [PREÇO]` |
 
 ## Modelo v0
@@ -476,6 +477,36 @@ mecanismo é desconhecido:
 - **Fora daqui:** o que tratou esses minutos como amostra aleatória pode estar
   afetado: `inclusion_prob` do export, recall e os verificados do crywolf. Precisão
   condicional ao score é bem menos sensível. Falta avaliar.
+
+### O que o artigo diz e etapa 0 com pesos (07/11/2026)
+
+O artigo do Curiango descreve o conjunto de teste como cerca de 1% dos arquivos, com
+o número por sítio proporcional às gravações de cada sítio. Não menciona score nem
+hora. Os dados não batem com isso em três pontos:
+
+- **Score:** inclusão de 1,05% abaixo de 0,3, 2,85% entre 0,3 e 0,5 e 11,5% acima.
+- **Hora, mesmo abaixo de 0,3:** cerca de 1,6% entre 18 h e 22 h, 0,9% de 0 h a 5 h,
+  0,5% às 16 h, 17 h e 23 h, e 0,1% às 6 h (p ≈ 1e-36).
+- **Sítio, abaixo de 0,3:** de 0,79% a 1,42% (p = 0,0006).
+
+Vazamento do treino do classificador próprio não explica sozinho: ele foi treinado
+com clipes do mesmo conjunto de gravações, mas o enriquecimento aparece também nos
+scores do BirdNET, que não usa esse treino. Se a seleção dependeu do estado real (por
+exemplo, de ouvir o minuto antes de incluir) e não só do score, a verossimilhança
+conjunta também é afetada. **Quem sabe o procedimento é a Liliana; falta perguntar.**
+
+Com pesos em três estratos de score, sem corrigir a hora, e por isso provisório, a
+normal ainda perde para a mistura nas 50 partições por noite:
+
+| Classe | n efetivo | Ganho médio | Intervalo de 95% das partições | Partições com ganho |
+|---|---|---|---|---|
+| falsos | 936 | +7,4 | −2,9 a 15,0 | 94% |
+| verdadeiros | 120 | +15,3 | 4,7 a 26,2 | 100% |
+
+Muda a forma: em f₁, 78% ficam perto de −1,45 e 22% perto de 0,91, o inverso do que
+parecia sem pesos. Em f₀, a mistura é só uma cauda moderada (σ 0,26 e 0,61). A
+simulação de identificação continua suspensa até saber como o teste foi sorteado; os
+valores de `em_curiango` em `mix.R` vêm do ajuste sem pesos e precisam ser trocados.
 
 ### Piloto base do v0 (07/11/2026)
 
