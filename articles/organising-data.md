@@ -118,9 +118,9 @@ rec
 #> # A tibble: 3 × 2
 #>   site  source_audio                                             
 #>   <chr> <chr>                                                    
-#> 1 ARA   /tmp/Rtmp1xHPAO/audio/ARA/ARA01_20211001_190000.wav      
-#> 2 ARA   /tmp/Rtmp1xHPAO/audio/ARA/ARA01_20211001_200000.wav      
-#> 3 BAI   /tmp/Rtmp1xHPAO/audio/BAI/card1/BAI01_20211001_190000.wav
+#> 1 ARA   /tmp/RtmpK56HBM/audio/ARA/ARA01_20211001_190000.wav      
+#> 2 ARA   /tmp/RtmpK56HBM/audio/ARA/ARA01_20211001_200000.wav      
+#> 3 BAI   /tmp/RtmpK56HBM/audio/BAI/card1/BAI01_20211001_190000.wav
 ```
 
 The paths must match `Begin Path`. When the list is built on a computer

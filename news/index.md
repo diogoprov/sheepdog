@@ -2,6 +2,14 @@
 
 ## sheepdog (development version)
 
+- [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md),
+  `review_queue()` and
+  [`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md)
+  stop with a clear error when the manifest file is empty (0 bytes or
+  only the header) or missing, instead of reporting missing columns. An
+  empty (0-byte) `verdicts_file` also stops with a clear error, since
+  new verdicts would be written without the header.
+
 - [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
   writes schema 1.4, which only adds to 1.3: `n_windows` in
   `occasions.csv` (new argument `window_step`), `round`, `stratum`,
