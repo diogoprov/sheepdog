@@ -264,6 +264,12 @@ read_verdict_log <- function(file, last_only = TRUE) {
                   reviewer = character(), verdict = character(),
                   time = character())
   if (!file.exists(file)) return(vazio)
+  # 0 bytes: sem cabecalho, os vereditos novos seriam gravados sem ele
+  if (file.size(file) == 0) {
+    stop("`verdicts_file` is empty (0 bytes): ", file, ". Delete it to ",
+         "start a new log, or restore the copy with the verdicts.",
+         call. = FALSE)
+  }
   log <- read_csv(file, na = "", show_col_types = FALSE,
                   col_types = readr::cols(.default = readr::col_character()))
   faltam <- setdiff(verdict_columns, names(log))

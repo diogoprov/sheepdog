@@ -1,5 +1,10 @@
 # sheepdog (development version)
 
+- `run_app()`, `review_queue()` and `post_validation()` stop with a clear
+  error when the manifest file is empty (0 bytes or only the header) or
+  missing, instead of reporting missing columns. An empty (0-byte)
+  `verdicts_file` also stops with a clear error, since new verdicts would be
+  written without the header.
 - `export_occupancy_data()` writes schema 1.4, which only adds to 1.3:
   `n_windows` in `occasions.csv` (new argument `window_step`), `round`,
   `stratum`, `n_candidates`, `n_drawn` and `review_scope` in `validation.csv`,
