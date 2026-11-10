@@ -63,11 +63,25 @@ classify_review <- function(manifest, review_dir,
 # Le o manifesto (data frame ou csv), aceitando o formato da v1.2.0
 read_manifest <- function(manifest) {
   if (is.character(manifest)) {
-    manifest <- read_csv(manifest, show_col_types = FALSE)
+    caminho <- manifest
+    if (!file.exists(caminho)) {
+      stop("`manifest` not found: ", caminho, call. = FALSE)
+    }
+    # arquivo de 0 bytes ou so com cabecalho: copia incompleta
+    vazio <- file.size(caminho) == 0
+    if (!vazio) {
+      manifest <- read_csv(caminho, show_col_types = FALSE)
+      vazio <- nrow(manifest) == 0
+    }
+    if (vazio) {
+      stop("`manifest` is empty (0 rows): ", caminho,
+           ". Check that the file was copied correctly.", call. = FALSE)
+    }
   }
   manifesto <- from_legacy(manifest)
   # manifestos antigos nao tem a coluna 'night'
-  if (!"night" %in% names(manifesto)) {
+  if (!"night" %in% names(manifesto) &&
+      "recording_date" %in% names(manifesto)) {
     manifesto$night <- manifesto$recording_date
   }
   # no modo "random_recordings" a coluna vem toda NA (lida como logica)

@@ -76,6 +76,35 @@ test_that("the queue follows the reviewer of assign_reviewers()", {
                "lacks the column")
 })
 
+test_that("an empty manifest stops with a clear error", {
+  d <- withr::local_tempdir()
+  man <- app_dados(d)
+  f <- file.path(d, "manifest.csv")
+  # 0 bytes
+  file.create(f)
+  expect_error(review_queue(f, file.path(d, "clips")),
+               "`manifest` is empty \\(0 rows\\)")
+  # so o cabecalho
+  readr::write_csv(man[0, ], f)
+  expect_error(review_queue(f, file.path(d, "clips")),
+               "`manifest` is empty \\(0 rows\\)")
+  expect_error(review_queue(file.path(d, "nao_existe.csv"), d),
+               "`manifest` not found")
+  # sem colunas obrigatorias: erro direto, sem o aviso de recording_date
+  readr::write_csv(man["site"], f)
+  expect_no_warning(expect_error(review_queue(f, file.path(d, "clips")),
+                                 "lacks the column"))
+})
+
+test_that("an empty verdicts file stops with a clear error", {
+  f <- withr::local_tempfile(fileext = ".csv")
+  file.create(f)
+  expect_error(read_verdict_log(f), "`verdicts_file` is empty \\(0 bytes\\)")
+  # so o cabecalho: log valido, ainda sem vereditos
+  writeLines(paste(verdict_columns, collapse = ","), f)
+  expect_identical(nrow(read_verdict_log(f)), 0L)
+})
+
 test_that("the app writes each verdict and moves to the next clip", {
   skip_if_not_installed("shiny")
   d <- withr::local_tempdir()
