@@ -166,8 +166,9 @@ the calibration keys.
 prediction: the highest score and the number of predictions. Occasion
 x species pairs absent from this table had no prediction >=
 \code{min_confidence} (a censored score).
-\item \code{validation.csv}: the reviewed clips of the \code{"top"} and
-\code{"random_detections"} designs, with their verdict, inclusion
+\item \code{validation.csv}: the reviewed clips of the \code{"top"},
+\code{"random_detections"} and \code{"directed_pps"} designs (the last from
+\code{\link[=select_directed]{select_directed()}}), with their verdict, inclusion
 probability, round and stratum, and what a negative verdict covers
 (\code{review_scope}; only when \code{validation} is given).
 \item \code{recordings_verified.csv}: the occasions annotated by ear in the

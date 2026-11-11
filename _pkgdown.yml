@@ -32,6 +32,7 @@ reference:
       - read_selection_tables
       - list_recordings
       - select_clips
+      - select_directed
       - covariate_bins
       - cut_clips
       - pack_clips

@@ -22,8 +22,9 @@
 #'   prediction: the highest score and the number of predictions. Occasion
 #'   x species pairs absent from this table had no prediction >=
 #'   `min_confidence` (a censored score).
-#' * `validation.csv`: the reviewed clips of the `"top"` and
-#'   `"random_detections"` designs, with their verdict, inclusion
+#' * `validation.csv`: the reviewed clips of the `"top"`,
+#'   `"random_detections"` and `"directed_pps"` designs (the last from
+#'   [select_directed()]), with their verdict, inclusion
 #'   probability, round and stratum, and what a negative verdict covers
 #'   (`review_scope`; only when `validation` is given).
 #' * `recordings_verified.csv`: the occasions annotated by ear in the
@@ -675,7 +676,8 @@ export_validation <- function(validation, ocasioes, candidatas = NULL) {
   check_clips_in_both_designs(out$validation)
   gravacoes <- filter(v, sampling_mode == "random_recordings")
   nas_duas <- semi_join(
-    distinct(filter(out$validation, sampling_mode == "random_detections"),
+    distinct(filter(out$validation, sampling_mode %in%
+                      c("random_detections", "directed_pps")),
              site, species_code, occasion_id),
     gravacoes, by = c("site", "species_code", "occasion_id"))
   if (nrow(nas_duas) > 0) {
@@ -720,21 +722,28 @@ join_candidates <- function(validation, candidatas) {
 # Um mesmo clipe nos dois desenhos e um julgamento so, ou dois que um modelo
 # leria como independentes
 check_clips_in_both_designs <- function(validation) {
-  nos_dois <- semi_join(
-    filter(validation, sampling_mode == "random_detections"),
-    filter(validation, sampling_mode == "top"),
-    by = c("site", "occasion_id", "species_code", "clip_start"))
+  nos_dois <- validation |>
+    distinct(site, occasion_id, species_code, clip_start, sampling_mode) |>
+    count(site, occasion_id, species_code, clip_start) |>
+    filter(n > 1)
   if (nrow(nos_dois) > 0) {
-    warning(nrow(nos_dois), " clip(s) are in both the \"top\" and the ",
-            "\"random_detections\" designs. A model that reads both designs ",
-            "takes them as two reviews; keep one of each.", call. = FALSE)
+    desenhos <- validation |>
+      semi_join(nos_dois, by = c("site", "occasion_id", "species_code",
+                                 "clip_start")) |>
+      pull(sampling_mode) |>
+      unique() |>
+      sort()
+    warning(nrow(nos_dois), " clip(s) are in more than one design (",
+            paste0("\"", desenhos, "\"", collapse = ", "), "). A model that ",
+            "reads both designs takes them as two reviews; keep one of each.",
+            call. = FALSE)
   }
 }
 
 # O que um negativo cobre, dentro de uma ocasiao x especie: "occasion" quando
 # todas as predicoes acima do limiar do sorteio tem veredito; senao, so o clipe
 review_scope <- function(sampling_mode, tp, n_detections_occasion) {
-  completa <- sampling_mode == "random_detections" &
+  completa <- sampling_mode %in% c("random_detections", "directed_pps") &
     sum(!is.na(tp)) == n_detections_occasion
   if_else(coalesce(completa, FALSE), "occasion", "clip")
 }
