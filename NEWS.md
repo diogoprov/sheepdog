@@ -1,5 +1,17 @@
 # sheepdog (development version)
 
+- The Review tab of `run_app()` has an optional *Identity* field for what a
+  negative or uncertain clip is (free text or suggestions from the
+  manifest classes and the new `identity_categories()`), marked *sure* or
+  *probable*. The verdicts file gains the columns `identity` and
+  `identity_certainty`; files of earlier versions are still read, and are
+  rewritten once with the new columns at their next verdict.
+  `app_verdicts()` returns both columns.
+- New `join_identities()`: adds identities recorded outside the app (a
+  spreadsheet with one row per clip) to a table of verdicts, keeping those
+  of the app and warning about identities on clips that are not negative.
+- New `confuser_summary()`: for each target class, the identities of its
+  negative clips, flagging those that are classes of the classifier.
 - `run_app()`, `review_queue()` and `post_validation()` stop with a clear
   error when the manifest file is empty (0 bytes or only the header) or
   missing, instead of reporting missing columns. An empty (0-byte)

@@ -18,6 +18,11 @@
 #' * **Review**: the clips of a manifest one at a time, with the
 #'   spectrogram and a player for each clip, its site, night, hour, score
 #'   and design, and buttons to mark it positive, negative or uncertain.
+#'   An optional *Identity* field says what a negative or uncertain clip
+#'   is: free text, or one or more suggestions (the species of the
+#'   manifest and [identity_categories()]), marked *sure* or *probable*.
+#'   Fill it before clicking *Negative* or *Uncertain*; it is cleared at
+#'   each verdict and ignored for positives.
 #'   Each verdict is written at once to `verdicts_file`, so an interrupted
 #'   session loses nothing and can be resumed. The tab replaces moving the
 #'   clips into `Positive` and `Negative` folders in the BirdNET GUI;
@@ -40,9 +45,12 @@
 #' @section Verdicts file:
 #' A CSV with one line per click: `clip_file`, `species_folder`,
 #' `reviewer`, `verdict` (`"positive"`, `"negative"` or `"uncertain"`) and
-#' `time`. Lines are only appended; when a clip is marked again, the last
-#' verdict of the reviewer counts. Several reviewers can share one file or
-#' keep one each.
+#' `time`, then `identity` (several separated by `|`) and
+#' `identity_certainty` (`"sure"` or `"probable"`), empty when no identity
+#' was given. Lines are only appended; when a clip is marked again, the
+#' last verdict of the reviewer counts. Several reviewers can share one
+#' file or keep one each. A file of an earlier version, without the
+#' identity columns, is rewritten once with them empty at its next verdict.
 #'
 #' @param manifest Clip manifest: a data frame or the path to
 #'   `clip_manifest.csv` (from [select_clips()], [cut_clips()] or
@@ -152,7 +160,9 @@ run_app <- function(manifest = NULL, clips_dir = NULL, verdicts_file = NULL,
 #' them changed verdict.
 #'
 #' @return The manifest with `verdict` (`"positive"`, `"negative"`,
-#'   `"uncertain"` or `"not_reviewed"`), `reviewed_path` and `reviewer`.
+#'   `"uncertain"` or `"not_reviewed"`), `reviewed_path`, `reviewer`,
+#'   `identity` and `identity_certainty` (`NA` when the reviewer gave no
+#'   identity, or with a verdicts file of an earlier version).
 #'   With `reviewer = NULL`, a clip reviewed by two reviewers has two
 #'   rows, and a clip not yet reviewed has one row with `reviewer = NA`.
 #' @seealso [run_app()], [classify_review()].
@@ -169,11 +179,14 @@ app_verdicts <- function(manifest, verdicts_file, clips_dir = NULL,
     warning(length(fora), " clip(s) of `verdicts_file` are not in the ",
             "manifest and were left out.", call. = FALSE)
   }
-  log <- select(log, clip_file, species_folder, reviewer, verdict)
+  log <- select(log, clip_file, species_folder, reviewer, verdict,
+                all_of(identity_columns))
   chave <- intersect(c("clip_file", "species_folder"), names(manifesto))
   base <- select(manifesto, -any_of(c("verdict", "reviewed_path",
-                                      "reviewer", "second_reviewer")))
-  out <- left_join(base, log[c(chave, "reviewer", "verdict")], by = chave,
+                                      "reviewer", "second_reviewer",
+                                      identity_columns)))
+  out <- left_join(base, log[c(chave, "reviewer", "verdict",
+                               identity_columns)], by = chave,
                    relationship = "one-to-many") |>
     mutate(verdict = replace_na(verdict, "not_reviewed"),
            reviewed_path = if (is.null(clips_dir)) NA_character_ else
@@ -242,19 +255,72 @@ review_queue <- function(manifest, clips_dir, reviewer = NULL) {
 
 verdict_columns <- c("clip_file", "species_folder", "reviewer", "verdict",
                      "time")
+# colunas opcionais (desde a 3.4.0): o que e o som de um clipe negativo ou
+# incerto, e a certeza do revisor
+identity_columns <- c("identity", "identity_certainty")
+identity_certainties <- c("sure", "probable")
+
+#' Categories offered for the identity of a negative clip
+#'
+#' The fixed categories that [run_app()] suggests, besides the classes of
+#' the manifest, for what a negative or uncertain clip is.
+#'
+#' @return A character vector.
+#' @seealso [run_app()], [join_identities()], [confuser_summary()].
+#' @export
+identity_categories <- function() {
+  c("bird", "insect", "rain", "other_anuran", "noise", "unknown")
+}
 
 # Acrescenta um veredito ao arquivo (cria com cabecalho se nao existe)
 append_verdict <- function(file, clip_file, species_folder, reviewer,
-                           verdict) {
+                           verdict, identity = NULL,
+                           identity_certainty = NULL) {
+  id <- clean_identity(identity)
+  certeza <- if (is.na(id) || is.null(identity_certainty)) NA_character_
+             else match.arg(identity_certainty, identity_certainties)
+  if (verdict == "positive") {
+    id <- NA_character_
+    certeza <- NA_character_
+  }
   linha <- tibble(clip_file = clip_file, species_folder = species_folder,
                   reviewer = if (is.null(reviewer)) NA_character_ else
                     reviewer,
                   verdict = verdict,
-                  time = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
+                  time = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+                  identity = id, identity_certainty = certeza)
   novo <- !file.exists(file)
-  if (novo) dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
+  if (novo) {
+    dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
+  } else {
+    upgrade_verdict_log(file)
+  }
   write_csv(linha, file, append = !novo, col_names = novo, na = "")
   invisible(linha)
+}
+
+# Arquivo de uma versao anterior, sem as colunas de identidade: reescrito
+# uma vez com elas vazias, para as linhas novas caberem no cabecalho
+upgrade_verdict_log <- function(file) {
+  cabecalho <- names(read_csv(file, n_max = 0, show_col_types = FALSE))
+  if (all(identity_columns %in% cabecalho)) return(invisible(FALSE))
+  log <- read_csv(file, na = "", show_col_types = FALSE,
+                  col_types = readr::cols(.default = readr::col_character()))
+  for (col in setdiff(identity_columns, names(log))) {
+    log[[col]] <- NA_character_
+  }
+  write_csv(log[c(verdict_columns, identity_columns,
+                  setdiff(names(log), c(verdict_columns, identity_columns)))],
+            file, na = "")
+  invisible(TRUE)
+}
+
+# Identidade digitada ou escolhida: varias viram "a|b"; vazia vira NA
+clean_identity <- function(identity) {
+  if (is.null(identity)) return(NA_character_)
+  id <- trimws(as.character(identity))
+  id <- unique(id[!is.na(id) & nzchar(id)])
+  if (length(id) == 0) NA_character_ else paste(id, collapse = "|")
 }
 
 # Ultimo veredito de cada clipe e revisor (com last_only = FALSE, todas as
@@ -262,7 +328,8 @@ append_verdict <- function(file, clip_file, species_folder, reviewer,
 read_verdict_log <- function(file, last_only = TRUE) {
   vazio <- tibble(clip_file = character(), species_folder = character(),
                   reviewer = character(), verdict = character(),
-                  time = character())
+                  time = character(), identity = character(),
+                  identity_certainty = character())
   if (!file.exists(file)) return(vazio)
   # 0 bytes: sem cabecalho, os vereditos novos seriam gravados sem ele
   if (file.size(file) == 0) {
@@ -281,6 +348,9 @@ read_verdict_log <- function(file, last_only = TRUE) {
   if (length(invalidos) > 0) {
     stop("Unknown verdict(s) in `verdicts_file`: ",
          paste(invalidos, collapse = ", "), call. = FALSE)
+  }
+  for (col in setdiff(identity_columns, names(log))) {
+    log[[col]] <- NA_character_
   }
   if (!last_only) return(log)
   last_verdicts(log)
@@ -520,6 +590,18 @@ review_ui <- function(id, max_freq = 12) {
         shiny::actionButton(ns("previous"), "< Previous"),
         shiny::actionButton(ns("next_clip"), "Next >"),
         shiny::br(), shiny::br(),
+        shiny::fluidRow(
+          shiny::column(8, shiny::selectizeInput(
+            ns("identity"), "Identity of a negative or uncertain clip",
+            choices = NULL, multiple = TRUE,
+            options = list(create = TRUE, persist = FALSE,
+                           placeholder = "Optional: species or category"))),
+          shiny::column(4, shiny::radioButtons(
+            ns("identity_certainty"), "Certainty", identity_certainties,
+            inline = TRUE))),
+        shiny::fluidRow(shiny::column(12, hint(
+          "Type or choose what the sound is, then click Negative or",
+          "Uncertain. Two or more choices mean either of them."))),
         shiny::textOutput(ns("current_verdict"))
       )
     )
@@ -549,9 +631,22 @@ review_server <- function(id, fila, verdicts_file, reviewer, recurso = "",
     }
     vereditos <- shiny::reactiveVal(lidos())
     atual <- shiny::reactiveVal(NA_integer_)
+    sugestoes <- shiny::reactive({
+      f <- tab()
+      classes <- if ("species_code" %in% names(f)) f$species_code else NULL
+      unique(c(sort(unique(stats::na.omit(as.character(classes)))),
+               identity_categories()))
+    })
+    limpar_identidade <- function() {
+      shiny::updateSelectizeInput(session, "identity", choices = sugestoes(),
+                                  selected = character(), server = FALSE)
+      shiny::updateRadioButtons(session, "identity_certainty",
+                                selected = "sure")
+    }
     shiny::observeEvent(tab(), {
       shiny::updateSelectInput(session, "species", choices = c(
         "All" = "", sort(unique(tab()$species_folder))))
+      limpar_identidade()
     })
 
     # clipes visiveis com os filtros; o clipe atual continua visivel ate
@@ -587,7 +682,11 @@ review_server <- function(id, fila, verdicts_file, reviewer, recurso = "",
       if (is.na(i)) return(invisible())
       f <- tab()
       append_verdict(verdicts_file, f$clip_file[i], f$species_folder[i],
-                     reviewer, veredito)
+                     reviewer, veredito, identity = input$identity,
+                     identity_certainty = if (is.null(
+                       input$identity_certainty)) "sure" else
+                       input$identity_certainty)
+      if (length(input$identity) > 0) limpar_identidade()
       vv <- vereditos()
       vv[chave()[i]] <- veredito
       vereditos(vv)

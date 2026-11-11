@@ -28,7 +28,9 @@ them changed verdict.}
 }
 \value{
 The manifest with \code{verdict} (\code{"positive"}, \code{"negative"},
-\code{"uncertain"} or \code{"not_reviewed"}), \code{reviewed_path} and \code{reviewer}.
+\code{"uncertain"} or \code{"not_reviewed"}), \code{reviewed_path}, \code{reviewer},
+\code{identity} and \code{identity_certainty} (\code{NA} when the reviewer gave no
+identity, or with a verdicts file of an earlier version).
 With \code{reviewer = NULL}, a clip reviewed by two reviewers has two
 rows, and a clip not yet reviewed has one row with \code{reviewer = NA}.
 }
