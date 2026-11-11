@@ -613,3 +613,23 @@ test_that("the app writes the identity given before a negative verdict", {
   expect_identical(log$identity, c("Sp b|insect", NA))
   expect_identical(log$identity_certainty, c("probable", NA))
 })
+
+test_that("join_identities() and confuser_summary() check their inputs", {
+  val <- tibble::tibble(clip_file = paste0("c", 1:7, ".wav"),
+                        species_code = "Sp a", verdict = "positive")
+  ids <- tibble::tibble(clip = c("c1.wav", "c1.wav"), identity = "bird")
+  expect_error(join_identities(val, ids), "more than one row")
+  expect_error(join_identities(val["clip_file"], ids[1, ]),
+               "`validation` lacks")
+  # listas longas sao cortadas em 5
+  ids <- tibble::tibble(clip = c(val$clip_file, paste0("x", 1:6, ".wav")),
+                        identity = "bird")
+  expect_warning(expect_warning(suppressMessages(join_identities(val, ids)),
+                                "x5.wav, \\.\\.\\."), "c5.wav \\(positive\\), \\.\\.\\.")
+  # sem identity_certainty e com classes dadas
+  val$verdict <- "negative"
+  val$identity <- "Sp b"
+  s <- confuser_summary(val, classes = "Sp b")
+  expect_true(s$is_class)
+  expect_identical(s$n_sure, 0L)
+})
