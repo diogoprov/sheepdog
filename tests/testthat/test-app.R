@@ -45,7 +45,7 @@ test_that("the verdicts log keeps the last verdict of each reviewer", {
   append_verdict(f, "c1.wav", "sp_a", "bia", "positive")
   log <- read_verdict_log(f)
   expect_named(log, c("clip_file", "species_folder", "reviewer", "verdict",
-                      "time"))
+                      "time", "identity", "identity_certainty"))
   expect_identical(nrow(log), 3L)
   expect_identical(log$verdict[log$clip_file == "c1.wav" &
                                  log$reviewer == "ana"], "uncertain")
@@ -482,4 +482,134 @@ test_that("the spectrogram takes the palette, the FFT window and the band", {
   expect_match(ui, "Contrast")
   expect_match(ui, "FFT window")
   expect_match(ui, 'value="8"')
+})
+
+test_that("the verdicts log keeps the identity of negative clips", {
+  f <- withr::local_tempfile(fileext = ".csv")
+  append_verdict(f, "c1.wav", "sp_a", "ana", "negative",
+                 identity = c(" Sp b ", "insect"),
+                 identity_certainty = "probable")
+  append_verdict(f, "c2.wav", "sp_a", "ana", "positive",
+                 identity = "rain", identity_certainty = "sure")
+  append_verdict(f, "c3.wav", "sp_a", "ana", "uncertain", identity = "")
+  log <- read_verdict_log(f)
+  expect_identical(log$identity, c("Sp b|insect", NA, NA))
+  expect_identical(log$identity_certainty, c("probable", NA, NA))
+  expect_error(append_verdict(f, "c4.wav", "sp_a", "ana", "negative",
+                              identity = "x", identity_certainty = "maybe"))
+})
+
+test_that("a verdicts file of an earlier version gains the identity columns", {
+  f <- withr::local_tempfile(fileext = ".csv")
+  readr::write_csv(tibble::tibble(clip_file = "c1.wav", species_folder = "sp_a",
+                                  reviewer = "ana", verdict = "negative",
+                                  time = "t"), f, na = "")
+  log <- read_verdict_log(f)
+  expect_true(all(c("identity", "identity_certainty") %in% names(log)))
+  expect_true(is.na(log$identity))
+  append_verdict(f, "c2.wav", "sp_a", "ana", "negative", identity = "bird",
+                 identity_certainty = "sure")
+  log <- read_verdict_log(f)
+  expect_identical(nrow(log), 2L)
+  expect_identical(log$identity, c(NA, "bird"))
+  expect_identical(names(readr::read_csv(f, n_max = 0,
+                                         show_col_types = FALSE))[6:7],
+                   c("identity", "identity_certainty"))
+})
+
+test_that("app_verdicts() carries the identities", {
+  d <- withr::local_tempdir()
+  man <- app_dados(d)
+  f <- file.path(d, "verdicts.csv")
+  append_verdict(f, "clip1.wav", "sp_a", "ana", "negative",
+                 identity = "Sp b", identity_certainty = "sure")
+  append_verdict(f, "clip2.wav", "sp_a", "ana", "positive")
+  v <- suppressMessages(app_verdicts(man, f, reviewer = "ana"))
+  expect_identical(v$identity[v$clip_file == "clip1.wav"], "Sp b")
+  expect_true(is.na(v$identity[v$clip_file == "clip2.wav"]))
+})
+
+test_that("join_identities() fills, keeps and checks the identities", {
+  val <- tibble::tibble(
+    clip_file = paste0("c", 1:5, ".wav"), species_code = "Sp a",
+    verdict = c("negative", "negative", "positive", "uncertain", "negative"),
+    identity = c("bird", NA, NA, NA, NA),
+    identity_certainty = c("sure", NA, NA, NA, NA))
+  ext <- tibble::tibble(
+    clip = c("pasta/c1.wav", "c2.wav", "c3.wav", "c4.wav", "c9.wav"),
+    id_correta = c("insect", "Sp b", "rain", "Sp b|bird", "noise"),
+    certeza = c("sure", "sure", "probable", "probable", "sure"))
+  expect_warning(expect_warning(expect_warning(
+    out <- suppressMessages(join_identities(
+      val, ext, identity_col = "id_correta", certainty_col = "certeza")),
+    "not in `validation`"), "different identity"), "not negative")
+  # a do app fica; as externas preenchem o resto
+  expect_identical(out$identity, c("bird", "Sp b", "rain", "Sp b|bird", NA))
+  expect_identical(out$identity_certainty,
+                   c("sure", "sure", "probable", "probable", NA))
+  expect_message(suppressWarnings(join_identities(
+    val, ext, identity_col = "id_correta")), "2 of 3 negative")
+  expect_error(join_identities(val, ext), "lacks the column")
+  ext$certeza[1] <- "talvez"
+  expect_error(join_identities(val, ext, identity_col = "id_correta",
+                               certainty_col = "certeza"), "Unknown certainty")
+  # tabela sem as colunas de identidade e caminho para csv
+  f <- withr::local_tempfile(fileext = ".csv")
+  readr::write_csv(ext[2, ], f)
+  out <- suppressMessages(join_identities(val[2, 1:3], f,
+                                          identity_col = "id_correta"))
+  expect_identical(out$identity, "Sp b")
+  expect_true(is.na(out$identity_certainty))
+})
+
+test_that("join_identities() can be limited to one reviewer", {
+  val <- tibble::tibble(clip_file = c("c1.wav", "c1.wav"),
+                        reviewer = c("ana", "bia"),
+                        verdict = "negative")
+  out <- suppressMessages(join_identities(
+    val, tibble::tibble(clip = "c1.wav", identity = "insect"),
+    reviewer = "bia"))
+  expect_identical(out$identity, c(NA, "insect"))
+})
+
+test_that("confuser_summary() counts the identities of each class", {
+  val <- tibble::tibble(
+    species_code = c(rep("Sp a", 5), "Sp b"),
+    verdict = c("negative", "negative", "negative", "uncertain", "positive",
+                "negative"),
+    identity = c("Sp b", "Sp b|insect", NA, "rain", NA, "bird"),
+    identity_certainty = c("sure", "probable", NA, "sure", NA, "sure"))
+  s <- confuser_summary(val)
+  a <- s[s$species_code == "Sp a", ]
+  expect_identical(a$identity, c("Sp b", "insect", NA))
+  expect_identical(a$n, c(2L, 1L, 1L))
+  expect_equal(a$n_weighted, c(1.5, 0.5, 1))
+  expect_equal(sum(a$share), 1)
+  expect_identical(a$n_sure, c(1L, 0L, 0L))
+  expect_identical(a$is_class, c(TRUE, FALSE, FALSE))
+  expect_false(s$is_class[s$species_code == "Sp b"])
+  s2 <- confuser_summary(val, verdicts = c("negative", "uncertain"))
+  expect_true("rain" %in% s2$identity)
+  expect_error(confuser_summary(val[1:2]), "lacks the column")
+})
+
+test_that("the app writes the identity given before a negative verdict", {
+  skip_if_not_installed("shiny")
+  d <- withr::local_tempdir()
+  man <- app_dados(d)
+  f <- file.path(d, "verdicts.csv")
+  fila <- review_queue(man, file.path(d, "clips"), "bia")
+  shiny::testServer(review_server, args = list(
+    fila = fila, verdicts_file = f, reviewer = "bia"), {
+    session$setInputs(species = "", pending = TRUE)
+    session$setInputs(identity = c("Sp b", "insect"),
+                      identity_certainty = "probable")
+    session$setInputs(negative = 1)
+    # sem identidade no clipe seguinte
+    session$setInputs(identity = NULL, identity_certainty = "sure")
+    session$setInputs(key = "n")
+  })
+  log <- read_verdict_log(f)
+  expect_identical(log$identity, c("Sp b|insect", NA))
+  expect_identical(log$identity_certainty, c("probable", NA))
 })

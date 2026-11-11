@@ -98,6 +98,11 @@ packages). The new clips go straight to the Review tab.
 \item \strong{Review}: the clips of a manifest one at a time, with the
 spectrogram and a player for each clip, its site, night, hour, score
 and design, and buttons to mark it positive, negative or uncertain.
+An optional \emph{Identity} field says what a negative or uncertain clip
+is: free text, or one or more suggestions (the species of the
+manifest and \code{\link[=identity_categories]{identity_categories()}}), marked \emph{sure} or \emph{probable}.
+Fill it before clicking \emph{Negative} or \emph{Uncertain}; it is cleared at
+each verdict and ignored for positives.
 Each verdict is written at once to \code{verdicts_file}, so an interrupted
 session loses nothing and can be resumed. The tab replaces moving the
 clips into \code{Positive} and \code{Negative} folders in the BirdNET GUI;
@@ -124,9 +129,12 @@ arrow next clip, left arrow previous clip, space play or pause.
 
 A CSV with one line per click: \code{clip_file}, \code{species_folder},
 \code{reviewer}, \code{verdict} (\code{"positive"}, \code{"negative"} or \code{"uncertain"}) and
-\code{time}. Lines are only appended; when a clip is marked again, the last
-verdict of the reviewer counts. Several reviewers can share one file or
-keep one each.
+\code{time}, then \code{identity} (several separated by \code{|}) and
+\code{identity_certainty} (\code{"sure"} or \code{"probable"}), empty when no identity
+was given. Lines are only appended; when a clip is marked again, the
+last verdict of the reviewer counts. Several reviewers can share one
+file or keep one each. A file of an earlier version, without the
+identity columns, is rewritten once with them empty at its next verdict.
 }
 
 \examples{

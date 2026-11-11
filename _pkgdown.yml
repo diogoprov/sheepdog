@@ -43,6 +43,9 @@ reference:
     contents:
       - run_app
       - app_verdicts
+      - identity_categories
+      - join_identities
+      - confuser_summary
   - title: Stage 1 - Several reviewers
     desc: |
       Split the clips among reviewers, measure their agreement and combine their verdicts.
