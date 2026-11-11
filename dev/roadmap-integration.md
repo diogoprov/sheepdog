@@ -89,8 +89,8 @@ verdadeiros e dos falsos positivos sem depender do classificador.
   det e fp e verificação por espécie (crywolf#30), e saídas por espécie,
   riqueza (`fp_richness()`) e simulador (crywolf#31). Falta o PR 5 (espécie
   rara e custo); depois vem o `fp_occu_score()`.
-- 11/11/2026: **resumo da fase 2** preparado para uma reunião em 13/11 com o lab
-  de outro laboratório, em revealjs, fora do repositório. Usa só os
+- 11/11/2026: **resumo da fase 2** preparado para uma reunião em 13/11 com outro
+  laboratório, em revealjs, fora do repositório. Usa só os
   resultados públicos de `dev/fase2/README.md` (simulação e Curiango).
 - Esperando resposta: a Liliana, sobre como o conjunto de teste do Curiango
   foi sorteado (perguntado em 07/11; a simulação da mistura segue suspensa),
