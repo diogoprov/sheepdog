@@ -208,6 +208,43 @@ again resumes where the review stopped.
 left out of precision, thresholds and calibration, which use only
 positive and negative verdicts. They mark clips worth a second listen.
 
+### What a negative clip is
+
+Below the buttons, the optional field *Identity of a negative or
+uncertain clip* records what the sound is: another species, often
+another class of the classifier, or a category such as an insect or
+rain. Type free text, or choose one or more suggestions: the species of
+the manifest and
+[`identity_categories()`](https://provetelab.org/sheepdog/reference/identity_categories.md)
+(`bird`, `insect`, `rain`, `other_anuran`, `noise`, `unknown`). Two or
+more choices mean either of them. Mark the identity *sure* or
+*probable*, then click *Negative* or *Uncertain*. The field is cleared
+at each verdict and ignored for positive clips, so an identity cannot
+end up on a positive.
+
+Identities written elsewhere, for example in a spreadsheet with one row
+per clip, are added to the validation table with
+[`join_identities()`](https://provetelab.org/sheepdog/reference/join_identities.md).
+It keeps the identities given in the app, and warns about clips that are
+not in the table and about identities given to clips that are not
+negative or uncertain:
+
+``` r
+
+ids <- readxl::read_excel("identities_liliana.xlsx")
+validation <- join_identities(validation, ids, clip_col = "clip",
+                              identity_col = "identity")
+confuser_summary(validation)
+```
+
+[`confuser_summary()`](https://provetelab.org/sheepdog/reference/confuser_summary.md)
+counts, for each target class, the identities of its negative clips. Its
+`is_class` column marks identities that are classes of the classifier
+themselves, where a false positive of one class is a true positive of
+another, and the most frequent identities are the hard negatives worth
+adding to the training set
+([`vignette("retraining")`](https://provetelab.org/sheepdog/articles/retraining.md)).
+
 ## From the verdicts to the validation table
 
 [`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md)
@@ -336,6 +373,9 @@ with `fit`
 ## The verdicts file
 
 `verdicts.csv` has one line per click: `clip_file`, `species_folder`,
-`reviewer`, `verdict` and `time`. Lines are only appended, so the file
-is also a record of the review: when it was done, and how often a
-verdict was changed. Keep it with the validation data.
+`reviewer`, `verdict`, `time`, `identity` and `identity_certainty` (the
+last two empty without an identity). A file written by an earlier
+version, without the identity columns, is read as before and rewritten
+once with them empty at its next verdict. Lines are only appended, so
+the file is also a record of the review: when it was done, and how often
+a verdict was changed. Keep it with the validation data.

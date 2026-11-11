@@ -140,7 +140,12 @@ Called for its side effect; returns when the app is closed.
 
 - **Review**: the clips of a manifest one at a time, with the
   spectrogram and a player for each clip, its site, night, hour, score
-  and design, and buttons to mark it positive, negative or uncertain.
+  and design, and buttons to mark it positive, negative or uncertain. An
+  optional *Identity* field says what a negative or uncertain clip is:
+  free text, or one or more suggestions (the species of the manifest and
+  [`identity_categories()`](https://provetelab.org/sheepdog/reference/identity_categories.md)),
+  marked *sure* or *probable*. Fill it before clicking *Negative* or
+  *Uncertain*; it is cleared at each verdict and ignored for positives.
   Each verdict is written at once to `verdicts_file`, so an interrupted
   session loses nothing and can be resumed. The tab replaces moving the
   clips into `Positive` and `Negative` folders in the BirdNET GUI;
@@ -172,9 +177,12 @@ arrow next clip, left arrow previous clip, space play or pause.
 
 A CSV with one line per click: `clip_file`, `species_folder`,
 `reviewer`, `verdict` (`"positive"`, `"negative"` or `"uncertain"`) and
-`time`. Lines are only appended; when a clip is marked again, the last
-verdict of the reviewer counts. Several reviewers can share one file or
-keep one each.
+`time`, then `identity` (several separated by `|`) and
+`identity_certainty` (`"sure"` or `"probable"`), empty when no identity
+was given. Lines are only appended; when a clip is marked again, the
+last verdict of the reviewer counts. Several reviewers can share one
+file or keep one each. A file of an earlier version, without the
+identity columns, is rewritten once with them empty at its next verdict.
 
 ## See also
 

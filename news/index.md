@@ -2,6 +2,29 @@
 
 ## sheepdog (development version)
 
+- The Review tab of
+  [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md)
+  has an optional *Identity* field for what a negative or uncertain clip
+  is (free text or suggestions from the manifest classes and the new
+  [`identity_categories()`](https://provetelab.org/sheepdog/reference/identity_categories.md)),
+  marked *sure* or *probable*. The verdicts file gains the columns
+  `identity` and `identity_certainty`; files of earlier versions are
+  still read, and are rewritten once with the new columns at their next
+  verdict.
+  [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md)
+  returns both columns.
+
+- New
+  [`join_identities()`](https://provetelab.org/sheepdog/reference/join_identities.md):
+  adds identities recorded outside the app (a spreadsheet with one row
+  per clip) to a table of verdicts, keeping those of the app and warning
+  about identities on clips that are not negative.
+
+- New
+  [`confuser_summary()`](https://provetelab.org/sheepdog/reference/confuser_summary.md):
+  for each target class, the identities of its negative clips, flagging
+  those that are classes of the classifier.
+
 - [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md),
   `review_queue()` and
   [`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md)

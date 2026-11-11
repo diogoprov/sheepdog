@@ -53,9 +53,11 @@ app_verdicts(manifest, verdicts_file, clips_dir = NULL, reviewer = NULL)
 ## Value
 
 The manifest with `verdict` (`"positive"`, `"negative"`, `"uncertain"`
-or `"not_reviewed"`), `reviewed_path` and `reviewer`. With
-`reviewer = NULL`, a clip reviewed by two reviewers has two rows, and a
-clip not yet reviewed has one row with `reviewer = NA`.
+or `"not_reviewed"`), `reviewed_path`, `reviewer`, `identity` and
+`identity_certainty` (`NA` when the reviewer gave no identity, or with a
+verdicts file of an earlier version). With `reviewer = NULL`, a clip
+reviewed by two reviewers has two rows, and a clip not yet reviewed has
+one row with `reviewer = NA`.
 
 ## See also
 

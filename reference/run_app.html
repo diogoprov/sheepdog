@@ -200,6 +200,11 @@ packages). The new clips go straight to the Review tab.</p></li>
 <li><p><strong>Review</strong>: the clips of a manifest one at a time, with the
 spectrogram and a player for each clip, its site, night, hour, score
 and design, and buttons to mark it positive, negative or uncertain.
+An optional <em>Identity</em> field says what a negative or uncertain clip
+is: free text, or one or more suggestions (the species of the
+manifest and <code><a href="identity_categories.html">identity_categories()</a></code>), marked <em>sure</em> or <em>probable</em>.
+Fill it before clicking <em>Negative</em> or <em>Uncertain</em>; it is cleared at
+each verdict and ignored for positives.
 Each verdict is written at once to <code>verdicts_file</code>, so an interrupted
 session loses nothing and can be resumed. The tab replaces moving the
 clips into <code>Positive</code> and <code>Negative</code> folders in the BirdNET GUI;
@@ -227,9 +232,12 @@ arrow next clip, left arrow previous clip, space play or pause.</p>
 
 <p>A CSV with one line per click: <code>clip_file</code>, <code>species_folder</code>,
 <code>reviewer</code>, <code>verdict</code> (<code>"positive"</code>, <code>"negative"</code> or <code>"uncertain"</code>) and
-<code>time</code>. Lines are only appended; when a clip is marked again, the last
-verdict of the reviewer counts. Several reviewers can share one file or
-keep one each.</p>
+<code>time</code>, then <code>identity</code> (several separated by <code>|</code>) and
+<code>identity_certainty</code> (<code>"sure"</code> or <code>"probable"</code>), empty when no identity
+was given. Lines are only appended; when a clip is marked again, the
+last verdict of the reviewer counts. Several reviewers can share one
+file or keep one each. A file of an earlier version, without the
+identity columns, is rewritten once with them empty at its next verdict.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

@@ -46,6 +46,12 @@ Review: each clip is heard and gets one verdict.
   Sample, review and export clips in a local app
 - [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md)
   : Verdicts of the review app
+- [`identity_categories()`](https://provetelab.org/sheepdog/reference/identity_categories.md)
+  : Categories offered for the identity of a negative clip
+- [`join_identities()`](https://provetelab.org/sheepdog/reference/join_identities.md)
+  : Join identities of negative clips recorded outside the app
+- [`confuser_summary()`](https://provetelab.org/sheepdog/reference/confuser_summary.md)
+  : What the false positives of each class are
 
 ## Stage 1 - Several reviewers
 

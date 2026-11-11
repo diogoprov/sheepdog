@@ -129,7 +129,9 @@ them changed verdict.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>The manifest with <code>verdict</code> (<code>"positive"</code>, <code>"negative"</code>,
-<code>"uncertain"</code> or <code>"not_reviewed"</code>), <code>reviewed_path</code> and <code>reviewer</code>.
+<code>"uncertain"</code> or <code>"not_reviewed"</code>), <code>reviewed_path</code>, <code>reviewer</code>,
+<code>identity</code> and <code>identity_certainty</code> (<code>NA</code> when the reviewer gave no
+identity, or with a verdicts file of an earlier version).
 With <code>reviewer = NULL</code>, a clip reviewed by two reviewers has two
 rows, and a clip not yet reviewed has one row with <code>reviewer = NA</code>.</p>
     </div>
