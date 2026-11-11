@@ -47,5 +47,5 @@ utils::globalVariables(c(
   "any_reliable", "reviewer", "second_reviewer", ".r1", ".r2", ".dupla",
   ".veredito", "n_reviewers", "to", "start", "sampling_mode", "grid_index", "group", "observed",
   "pred_mean", "pred_lower", "pred_upper", "p_value", "flagged",
-  ".n_scores"
+  ".n_scores", "n_occasions", "inclusion_prob_unit", "drawn", "size_used", ".arquivo"
 ))

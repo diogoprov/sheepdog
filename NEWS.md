@@ -1,5 +1,18 @@
 # sheepdog (development version)
 
+- New `select_directed()`: a review round aimed by a model. Units (such as
+  site x month x species) are drawn with probability proportional to a
+  size, typically the expected gain of a review, with a floor that keeps
+  every unit drawable; one candidate occasion is drawn in each unit and all
+  its predictions >= `threshold` become clips. The manifest has
+  `sampling_mode = "directed_pps"` and `inclusion_prob` = probability of the
+  unit / candidate occasions of the unit; the units and their inclusion
+  probabilities are returned in the attribute `"units"`. Clips of earlier
+  rounds (`previous`) are left out.
+- `export_occupancy_data()` writes clips of `"directed_pps"` to
+  `validation.csv`, with `review_scope = "occasion"` when every prediction of
+  the occasion has a verdict, as in `"random_detections"`. The warning about
+  clips in more than one design now covers every pair of designs.
 - The Review tab of `run_app()` has an optional *Identity* field for what a
   negative or uncertain clip is (free text or suggestions from the
   manifest classes and the new `identity_categories()`), marked *sure* or

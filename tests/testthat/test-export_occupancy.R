@@ -438,7 +438,7 @@ test_that("candidates only reach the clips of the draw", {
   repetido <- dplyr::mutate(aleat[2, ], sampling_mode = "top",
                             inclusion_prob = NA_real_)
   expect_warning(export_sim(validation = dplyr::bind_rows(aleat, repetido)),
-                 "both the \"top\"")
+                 "more than one design")
   cand$site <- factor(cand$site)
   expect_no_error(export_sim(validation = aleat, candidates = cand))
 })
