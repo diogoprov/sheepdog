@@ -2,8 +2,9 @@ digraph fase2_dag {
 
   // DAG of the joint score-occupancy model proposed for phase 2
   // (dev/roadmap-integration.md). Same style and notation as the DAG of
-  // the crywolf vignette (crywolf: dev/dag/crywolf_dag.dot). Priors marked
-  // "to be set" have no default yet.
+  // the crywolf vignette (crywolf: dev/dag/crywolf_dag.dot). The priors of
+  // the score distributions are prior C of the prototype, chosen by prior
+  // predictive check (dev/fase2/README.md); "to be set" has no default yet.
 
   graph [rankdir=TB, fontname="Arial", bgcolor=white,
          nodesep=0.45, ranksep=0.7, pad=0.35, newrank=true]
@@ -16,7 +17,7 @@ digraph fase2_dag {
   P_beta  [label=<<TABLE BORDER="0" CELLSPACING="2"><TR><TD>β<SUB>0</SUB> ~ Normal(0, 1.5)</TD></TR><TR><TD>slopes in <B>β</B> ~ Normal(0, 2.5)</TD></TR></TABLE>>]
   P_alpha [label=<<TABLE BORDER="0" CELLSPACING="2"><TR><TD>α<SUB>0</SUB> ~ Normal(0, 1.5)</TD></TR><TR><TD>slopes in <B>α</B>, α<SUB>w</SUB> ~ Normal(0, 2.5)</TD></TR></TABLE>>]
   P_sig   [label=<σ<SUB>u</SUB> ~ half-Normal(0, 2)>]
-  P_score [label=<<TABLE BORDER="0" CELLSPACING="2"><TR><TD>λ<SUB>0</SUB>, Δ<SUB>s</SUB> &gt; 0, <B>γ</B><SUB>0</SUB>, <B>γ</B><SUB>1</SUB>, σ<SUB>0</SUB>, σ<SUB>1</SUB></TD></TR><TR><TD><I>to be set</I></TD></TR></TABLE>>]
+  P_score [label=<<TABLE BORDER="0" CELLSPACING="2"><TR><TD>λ<SUB>0</SUB> ~ Normal(−3, 2)</TD></TR><TR><TD>Δ<SUB>s</SUB> ~ LogNormal(log 3, 0.6)</TD></TR><TR><TD>σ<SUB>0</SUB>, σ<SUB>1</SUB> ~ LogNormal(log 1.2, 0.5)</TD></TR><TR><TD><B>γ</B><SUB>0</SUB>, <B>γ</B><SUB>1</SUB>: <I>to be set</I></TD></TR></TABLE>>]
 
   // ---------------- Parameters ----------------
   node [shape=ellipse, style=filled, fillcolor="#FFF9C4",
