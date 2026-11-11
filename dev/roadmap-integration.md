@@ -60,8 +60,41 @@ proporcional por sítio. É o equivalente ao `sampling_mode =
 "random_recordings"` do sheepdog e identifica as distribuições de scores dos
 verdadeiros e dos falsos positivos sem depender do classificador.
 
-## Estado (07/11/2026)
+## Estado (11/11/2026)
 
+- 11/11/2026: **o que entrou na `main` desde 07/11** (todos para a 3.4.0,
+  lista completa no `NEWS.md`):
+  - o `run_app()` dá um erro claro quando o manifesto está vazio ou falta
+    (sheepdog#122);
+  - identidade dos falsos positivos: campo no app com a certeza *sure* ou
+    *probable*, `identity_categories()`, `join_identities()` e
+    `confuser_summary()` (sheepdog#123). Serve à descrição dos confusores;
+    a confusão entre espécies continua fora do modelo (ver "Fora do plano"
+    no roadmap do crywolf);
+  - rodada dirigida com probabilidade de inclusão conhecida:
+    `select_directed()`, `sampling_mode = "directed_pps"` (sheepdog#124).
+    Sorteia unidades (por exemplo sítio × espécie × mês) por PPS sistemático,
+    proporcional a um tamanho dado pelo usuário (o ganho esperado) mais um
+    piso, e uma ocasião candidata por unidade, ao acaso;
+    `inclusion_prob = π_unidade / N_ocasiões`. O esquema continua 1.4. O
+    pedido veio da lição do Curiango: o modelo de score precisa saber como
+    cada clipe revisado foi escolhido, em todas as rodadas;
+  - DAG da fase 2 com o prior C nas distribuições do score (sheepdog#125).
+- 11/11/2026: **o crywolf e o `directed_pps`.** O `fp_read_sheepdog()` só
+  descarta `"top"`, então os clipes `directed_pps` passam sem aviso, embora
+  os π variem entre unidades e o crywolf ainda não use `inclusion_prob`. A
+  sessão do crywolf foi avisada; aceitar, avisar ou ponderar é decisão do
+  crywolf.
+- 11/11/2026: **crywolf.** O `fp_occu_ms()` ganhou inclinações por espécie em
+  det e fp e verificação por espécie (crywolf#30), e saídas por espécie,
+  riqueza (`fp_richness()`) e simulador (crywolf#31). Falta o PR 5 (espécie
+  rara e custo); depois vem o `fp_occu_score()`.
+- 11/11/2026: **resumo da fase 2** preparado para uma reunião em 13/11 com outro
+  laboratório, em revealjs, fora do repositório. Usa só os
+  resultados públicos de `dev/fase2/README.md` (simulação e Curiango).
+- Esperando resposta: a Liliana, sobre como o conjunto de teste do Curiango
+  foi sorteado (perguntado em 07/11; a simulação da mistura segue suspensa),
+  e o CRAN, sobre a 3.3.3 (fila `newbies` desde 02/11).
 - 07/11/2026: **esquema 1.4 do export**, só com acréscimos, para o modelo de
   score: `n_windows` em `occasions.csv` (e não em `scores.csv`, como previa a
   fase 0, porque é propriedade da ocasião), `round`, `stratum`, `n_candidates`,
@@ -166,7 +199,10 @@ verdadeiros e dos falsos positivos sem depender do classificador.
   crywolf) e `test-read_sheepdog.R` no crywolf, sobre a mesma fixture
   `export-1.2`; `dev/check-sheepdog-fixture.R` do crywolf confere que a
   cópia dele continua idêntica à do sheepdog.
-- Próximos passos (06/11/2026): o passo 3 do protótipo da fase 2 (ver
+- Próximos passos (11/11/2026): no Curiango da fase 2, refazer os pesos e a
+  simulação da mistura quando a Liliana responder, e depois o v1 com Markov
+  (ver o plano em `dev/fase2/README.md`); quando o CRAN responder, a 3.4.0.
+  Antes (06/11/2026): o passo 3 do protótipo da fase 2 (ver
   "Protótipo v0") e, quando o CRAN responder, a 3.4.0. O multiespécies
   segue no crywolf (ver Fase 5). O merge do passo 8 (crywolf#14) saiu em
   02/11/2026, e o release com o dinâmico é a 2.2.0.
@@ -227,7 +263,7 @@ verdadeiros e dos falsos positivos sem depender do classificador.
 |---|---|---|---|---|
 | 1 | 0. Contrato de dados (feita) | os dois | P–M | — |
 | 2 | 1. Propagação Monte Carlo da calibração (feita) | os dois | P | fase 0 |
-| 3 | 5. Comunidade (`fp_occu_ms()` em desenvolvimento na 2.2.0) | crywolf (+ sheepdog: fixture e verificação por espécie, feitas) | G | fase 0; `fp_occu_dyn()` pronto (decidido em 02/11/2026) |
+| 3 | 5. Comunidade (`fp_occu_ms()` em desenvolvimento; PRs 3 e 4 com merge em 11/11/2026, falta o 5) | crywolf (+ sheepdog: fixture e verificação por espécie, feitas) | G | fase 0; `fp_occu_dyn()` pronto (decidido em 02/11/2026) |
 | 4 | 2. Modelo conjunto score–ocupação (protótipo v0 em `dev/fase2`, desde 05/11/2026) | sheepdog `dev/` até validar; depois crywolf | G | fase 0 |
 | 5 | 3. Validação em duas camadas | sheepdog (+ crywolf) | M | fase 2 |
 | 6 | 4. Atividade vocal (densidade de chamadas) | crywolf | M–G | fase 2 |
