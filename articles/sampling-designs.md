@@ -13,6 +13,11 @@ data shipped with the package and compares the clips they select.
 | `"random_detections"` | occasion with a detection | random, within score-independent strata | false-positive rates, observation-confirmation design |
 | `"random_recordings"` | recording or minute | random, among all recorded | false-positive and false-negative rates, multiple-method design |
 
+A fourth design, for later rounds aimed by a model, has its own
+function,
+[`select_directed()`](https://provetelab.org/sheepdog/reference/select_directed.md)
+(see [Directed rounds](#directed-rounds-select_directed)).
+
 ![The same night of twelve hourly recordings, shown three times. “top”
 keeps the highest-scoring prediction of each recording;
 “random_detections” draws recordings with a detection above the
@@ -401,6 +406,67 @@ Recordings of `"random_recordings"` are not confirmations of detections
 and are handled differently downstream (see
 [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md)).
 
+## Directed rounds: `select_directed()`
+
+After a first round, an occupancy model can say where one more review is
+worth most, for example the site x month x species units whose occupancy
+is most uncertain. Reviewing only those units would make the sample
+depend on the model, and the next fit could not tell how the reviewed
+clips were chosen.
+[`select_directed()`](https://provetelab.org/sheepdog/reference/select_directed.md)
+keeps the aim and a known design: each eligible unit gets a size (the
+expected gain of a review, say), `n_units` units are drawn with
+probability proportional to size, one candidate occasion is drawn at
+random within each drawn unit, and every prediction \\\geq\\ `threshold`
+of that occasion becomes a clip, as in `"random_detections"`. A floor
+(`floor`, 5% of the mean size by default) keeps every unit drawable, so
+the model can be corrected where it judged a review worthless.
+
+``` r
+
+units <- distinct(pred, site, species_code) |>
+  mutate(size = rep_len(c(5, 1, 1, 3, 0, 2, 1, 4, 1), n()))
+dir <- select_directed(pred, units, n_units = 3, threshold = threshold,
+                       previous = rd)
+#> 2288 prediction(s) >= 0.5 already reviewed in `previous` left out.
+#> 2 unit(s) without candidate occasions left out.
+#> 6 clips from 3 unit(s) drawn of 30 (round 1).
+dir |>
+  distinct(stratum, occasion_id, n_candidates, inclusion_prob)
+#> # A tibble: 3 × 4
+#>   stratum                            occasion_id     n_candidates inclusion_prob
+#>   <chr>                              <chr>                  <int>          <dbl>
+#> 1 ARA|Boana raniceps_boa-ran         ARA01_20220307…           74        0.00318
+#> 2 ARA|Elachistocleis bicolor_ela-bic ARA01_20220116…           40        0.00473
+#> 3 NHE|Boana raniceps_boa-ran         NHE01_20211117…           20        0.00715
+attr(dir, "units") |>
+  select(site, species_code, size, n_occasions, inclusion_prob_unit, drawn)
+#> # A tibble: 32 × 6
+#>    site  species_code                 size n_occasions inclusion_prob_unit drawn
+#>    <chr> <chr>                       <dbl>       <int>               <dbl> <lgl>
+#>  1 ARA   Boana raniceps_boa-ran          5          74               0.235 TRUE 
+#>  2 ARA   Elachistocleis bicolor_ela…     4          40               0.189 TRUE 
+#>  3 NHE   Boana raniceps_boa-ran          3          20               0.143 TRUE 
+#>  4 BAI   Scinax nasicus_sci-nas          5          28               0.235 FALSE
+#>  5 NHE   Scinax nasicus_sci-nas          5          48               0.235 FALSE
+#>  6 XAR   Pseudis platensis_pse-pla       5          37               0.235 FALSE
+#>  7 NHE   Dendropsophus nanus_den-nan     4          51               0.189 FALSE
+#>  8 XAR   Leptodactylus podicipinus_…     4          48               0.189 FALSE
+#>  9 ARA   Pseudis platensis_pse-pla       3          31               0.143 FALSE
+#> 10 BAI   Pseudis platensis_pse-pla       3          32               0.143 FALSE
+#> # ℹ 22 more rows
+```
+
+The clips of `previous` are left out, so a directed round adds new
+occasions to the earlier ones. The inclusion probability of a clip is
+that of its unit times \\1 / N_u\\, for the \\N_u\\ candidate occasions
+of the unit; its sampling mode is `"directed_pps"`, and
+[`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+writes it with the other designs. Weighted by `1 / inclusion_prob`, the
+clips estimate rates over the units listed for the draw, not over all
+predictions. Save `attr(dir, "units")` with the manifest, as the record
+of the draw.
+
 ## Comparing the selected scores
 
 The practical difference between `"top"` and `"random_detections"` is
@@ -463,7 +529,7 @@ ggplot(curves, aes(confidence, ecdf, colour = design)) +
 
 ![Empirical cumulative distribution of confidence for all detections,
 random_detections clips and top
-clips.](sampling-designs_files/figure-html/unnamed-chunk-17-1.png)
+clips.](sampling-designs_files/figure-html/unnamed-chunk-18-1.png)
 
 ## Limiting the effort
 

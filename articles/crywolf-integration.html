@@ -272,8 +272,9 @@ length.</td>
 <td><code>sampling_mode</code></td>
 <td>character</td>
 <td>
-<code>top</code>, <code>random_detections</code> or
-<code>random_recordings</code>.</td>
+<code>top</code>, <code>random_detections</code>,
+<code>random_recordings</code> or <code>directed_pps</code> (a directed
+round of <code><a href="../reference/select_directed.html">select_directed()</a></code>).</td>
 </tr>
 <tr class="even">
 <td><code>occasion_id</code></td>
@@ -292,7 +293,8 @@ length.</td>
 <td>double</td>
 <td>Probability that the occasion (or recording) was drawn.
 <code>NA</code> in <code>"top"</code>, which is not a probability
-sample.</td>
+sample. In <code>"directed_pps"</code>, the probability of the unit
+times the probability of the occasion within it.</td>
 </tr>
 </tbody>
 </table>
@@ -573,8 +575,9 @@ occasion x species: <code>max_score</code> (the highest confidence) and
 <div class="section level3">
 <h3 id="validation-csv-and-recordings_verified-csv">validation.csv and recordings_verified.csv<a class="anchor" aria-label="anchor" href="#validation-csv-and-recordings_verified-csv"></a>
 </h3>
-<p><code>validation.csv</code> holds the clips of the <code>"top"</code>
-and <code>"random_detections"</code> designs: <code>site</code>,
+<p><code>validation.csv</code> holds the clips of the
+<code>"top"</code>, <code>"random_detections"</code> and
+<code>"directed_pps"</code> designs: <code>site</code>,
 <code>occasion_id</code>, <code>species_code</code>,
 <code>species</code>, <code>clip_start</code>, <code>clip_end</code>,
 <code>confidence</code>, <code>sampling_mode</code>,
@@ -588,18 +591,25 @@ stratum), <code>n_drawn</code> (occasions drawn in the stratum) and
 <code>review_scope</code>, plus <code>reviewer</code> and
 <code>n_reviewers</code> when present. Only clips of
 <code>"random_detections"</code> estimate a false-positive rate;
-<code>"top"</code> clips serve the calibration. <code>stratum</code>
-comes from <code>candidates.csv</code> or from
-<code><a href="../reference/combine_rounds.html">combine_rounds()</a></code>, and is empty without them. Under a cap on
-the occasions (<code>capped</code> in <code>validation_design</code>),
-<code>inclusion_prob</code> is not <code>n_drawn / n_candidates</code>;
-use <code>inclusion_prob</code>.</p>
+<code>"top"</code> clips serve the calibration. Clips of
+<code>"directed_pps"</code> come from units chosen by a model, with a
+known <code>inclusion_prob</code>: weighted by
+<code>1 / inclusion_prob</code> they estimate rates over the units
+listed for the draw, not over all predictions; <code>stratum</code> is
+the unit and <code>n_candidates</code> its number of candidate
+occasions, of which one was drawn. <code>stratum</code> comes from
+<code>candidates.csv</code> or from <code><a href="../reference/combine_rounds.html">combine_rounds()</a></code>, and
+is empty without them. Under a cap on the occasions (<code>capped</code>
+in <code>validation_design</code>), <code>inclusion_prob</code> is not
+<code>n_drawn / n_candidates</code>; use
+<code>inclusion_prob</code>.</p>
 <p><code>review_scope</code> says what a negative verdict covers. It is
 <code>"occasion"</code> when the occasion x species was drawn in
-<code>"random_detections"</code> and every prediction above the
-threshold of the draw has a verdict, so that all negatives mean no true
-call at those scores; a call with a lower score remains possible. It is
-<code>"clip"</code> otherwise: only that prediction was judged.</p>
+<code>"random_detections"</code> or <code>"directed_pps"</code> and
+every prediction above the threshold of the draw has a verdict, so that
+all negatives mean no true call at those scores; a call with a lower
+score remains possible. It is <code>"clip"</code> otherwise: only that
+prediction was judged.</p>
 <p><code>recordings_verified.csv</code> holds the occasions annotated by
 ear (<code>"random_recordings"</code>), with <code>present</code> (1, 0
 or empty) in place of <code>tp</code>. The two tables are kept apart

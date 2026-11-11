@@ -227,10 +227,12 @@ list).
   x species pairs absent from this table had no prediction \>=
   `min_confidence` (a censored score).
 
-- `validation.csv`: the reviewed clips of the `"top"` and
-  `"random_detections"` designs, with their verdict, inclusion
-  probability, round and stratum, and what a negative verdict covers
-  (`review_scope`; only when `validation` is given).
+- `validation.csv`: the reviewed clips of the `"top"`,
+  `"random_detections"` and `"directed_pps"` designs (the last from
+  [`select_directed()`](https://provetelab.org/sheepdog/reference/select_directed.md)),
+  with their verdict, inclusion probability, round and stratum, and what
+  a negative verdict covers (`review_scope`; only when `validation` is
+  given).
 
 - `recordings_verified.csv`: the occasions annotated by ear in the
   `"random_recordings"` design, with the state of each occasion (only

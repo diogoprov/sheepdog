@@ -76,10 +76,10 @@ One row per clip. Columns, in this order:
 | `source_audio` | character | Path of the source recording, after remapping. |
 | `begin_path` | character | Path as written in the selection table (`Begin Path`). |
 | `status` | character | `ok`, `already_exists`, `audio_not_found`, `simulated` or `error: <message>`. |
-| `sampling_mode` | character | `top`, `random_detections` or `random_recordings`. |
+| `sampling_mode` | character | `top`, `random_detections`, `random_recordings` or `directed_pps` (a directed round of [`select_directed()`](https://provetelab.org/sheepdog/reference/select_directed.md)). |
 | `occasion_id` | character | Occasion (see above). |
 | `n_detections_occasion` | integer | Predictions of the species with confidence \>= `threshold` in the occasion. `NA` when no `threshold` was given. |
-| `inclusion_prob` | double | Probability that the occasion (or recording) was drawn. `NA` in `"top"`, which is not a probability sample. |
+| `inclusion_prob` | double | Probability that the occasion (or recording) was drawn. `NA` in `"top"`, which is not a probability sample. In `"directed_pps"`, the probability of the unit times the probability of the occasion within it. |
 
 In `"random_detections"`, every prediction \>= `threshold` of a drawn
 occasion is cut, so the number of clips of the occasion equals
@@ -178,8 +178,8 @@ occasion x species: `max_score` (the highest confidence) and
 
 ### validation.csv and recordings_verified.csv
 
-`validation.csv` holds the clips of the `"top"` and
-`"random_detections"` designs: `site`, `occasion_id`, `species_code`,
+`validation.csv` holds the clips of the `"top"`, `"random_detections"`
+and `"directed_pps"` designs: `site`, `occasion_id`, `species_code`,
 `species`, `clip_start`, `clip_end`, `confidence`, `sampling_mode`,
 `inclusion_prob`, `n_detections_occasion`, `verdict` (as in
 `validation_by_clip.csv`, or `disagreement` after
@@ -188,19 +188,23 @@ and `tp` (1 for `positive`, 0 for `negative`, empty otherwise), `round`,
 `stratum`, `n_candidates` (`N` of the stratum), `n_drawn` (occasions
 drawn in the stratum) and `review_scope`, plus `reviewer` and
 `n_reviewers` when present. Only clips of `"random_detections"` estimate
-a false-positive rate; `"top"` clips serve the calibration. `stratum`
-comes from `candidates.csv` or from
+a false-positive rate; `"top"` clips serve the calibration. Clips of
+`"directed_pps"` come from units chosen by a model, with a known
+`inclusion_prob`: weighted by `1 / inclusion_prob` they estimate rates
+over the units listed for the draw, not over all predictions; `stratum`
+is the unit and `n_candidates` its number of candidate occasions, of
+which one was drawn. `stratum` comes from `candidates.csv` or from
 [`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md),
 and is empty without them. Under a cap on the occasions (`capped` in
 `validation_design`), `inclusion_prob` is not `n_drawn / n_candidates`;
 use `inclusion_prob`.
 
 `review_scope` says what a negative verdict covers. It is `"occasion"`
-when the occasion x species was drawn in `"random_detections"` and every
-prediction above the threshold of the draw has a verdict, so that all
-negatives mean no true call at those scores; a call with a lower score
-remains possible. It is `"clip"` otherwise: only that prediction was
-judged.
+when the occasion x species was drawn in `"random_detections"` or
+`"directed_pps"` and every prediction above the threshold of the draw
+has a verdict, so that all negatives mean no true call at those scores;
+a call with a lower score remains possible. It is `"clip"` otherwise:
+only that prediction was judged.
 
 `recordings_verified.csv` holds the occasions annotated by ear
 (`"random_recordings"`), with `present` (1, 0 or empty) in place of

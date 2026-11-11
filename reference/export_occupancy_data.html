@@ -308,8 +308,9 @@ the calibration keys.</p></li>
 prediction: the highest score and the number of predictions. Occasion
 x species pairs absent from this table had no prediction &gt;=
 <code>min_confidence</code> (a censored score).</p></li>
-<li><p><code>validation.csv</code>: the reviewed clips of the <code>"top"</code> and
-<code>"random_detections"</code> designs, with their verdict, inclusion
+<li><p><code>validation.csv</code>: the reviewed clips of the <code>"top"</code>,
+<code>"random_detections"</code> and <code>"directed_pps"</code> designs (the last from
+<code><a href="select_directed.html">select_directed()</a></code>), with their verdict, inclusion
 probability, round and stratum, and what a negative verdict covers
 (<code>review_scope</code>; only when <code>validation</code> is given).</p></li>
 <li><p><code>recordings_verified.csv</code>: the occasions annotated by ear in the

@@ -325,6 +325,9 @@ gives one simple random sample.
   : List every recording made, from the audio folders
 - [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
   : Select the clips to validate
+- [`select_directed()`](https://provetelab.org/sheepdog/reference/select_directed.md)
+  : Directed review round: units drawn with probability proportional to
+  size
 - [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md)
   : Bins of an occasion covariate for stratified clip selection
 - [`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md)
