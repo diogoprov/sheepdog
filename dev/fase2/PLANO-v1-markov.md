@@ -245,3 +245,70 @@ canto.
 3. **Restringir f₁:** f₁ normal única (como no v0) com Markov, ou
    componente baixo de f₁ com média acima de um limite. Rápido de testar,
    mas é uma restrição ad hoc.
+
+## Curiango: emissões em dois estágios (13/11/2026)
+
+Decisão do Diogo depois da seção anterior: opção 1.
+
+- **Estágio 1** (`emissions_2stage_curiango.R`): f₀ e f₁ como misturas de
+  duas normais censuradas, ajustadas só nos 1.199 minutos verificados, com
+  pesos 1/(taxa de inclusão) em três estratos do score próprio (1,05%,
+  2,85% e 11,5%), como em `emissions_weighted_curiango.R`. Bootstrap de 200
+  réplicas por noite para a dispersão. n efetivo: 936 em f₀ e 120 em f₁.
+- **Estágio 2** (`model_v1_2stage.stan`, `run_curiango_2stage.R`): as
+  densidades log f₀(s) e log f₁(s) de cada minuto entram como dados; só β,
+  α e ρ são estimados. `markov = 0` tira o termo de Markov. 4 cadeias,
+  1.000 + 1.000, cerca de 30 min cada no Mac. Resumos em
+  `results/curiango_v1/` (`emissions_2stage.rds`, `fit_2stage_m1.rds`,
+  `fit_2stage_m0.rds`).
+
+**Estágio 1, estimativas pontuais (intervalo de 90% do bootstrap):**
+
+| Classe | peso do componente a | componente a | componente b |
+|---|---|---|---|
+| f₀ | 0,67 (0,49 a 0,89) | N(−2,18; 0,26) | N(−2,13; 0,61) |
+| f₁ | 0,78 (0,73 a 0,83) | N(−1,45; 0,42) | N(0,91; 1,48) |
+
+No ajuste conjunto, o componente baixo de f₁ ia para N(−1,91; 0,26–0,30);
+com os verificados ponderados ele fica em −1,45 (−1,53 a −1,37).
+
+**Estágio 2:** nos dois ajustes, sem divergências, sem treedepth máximo,
+E-BFMI ≥ 0,98, R-hat ≤ 1,003, ESS bulk ≥ 2.700.
+
+| Quantidade | 2 estágios, v1 | 2 estágios, sem Markov | v1 conjunto | mistura conjunta | v0 |
+|---|---|---|---|---|---|
+| ψ no centro | 0,48 (0,45 a 0,51) | 0,35 | 0,87 | 0,60 | 0,43 |
+| θ₀ | 0,048 | 0,20 | 0,114 | 0,60 | 0,136 |
+| θ̄ | 0,21 (0,20 a 0,23) | 0,20 | 0,63 | 0,60 | 0,136 |
+| ρ | 4,54 (4,42 a 4,65) | | 4,71 | | |
+| ψ θ̄ | **0,102 (0,095 a 0,109)** | 0,072 | 0,55 | 0,36 | ≈ 0,06 |
+
+Intervalos de 90%. Referência: 0,107 de minutos com canto pela estimativa
+ponderada dos verificados.
+
+**Leitura:**
+
+- Com as emissões fixadas pelos verificados, o v1 fica plausível: a fração
+  de minutos com canto (0,102) bate com a estimativa ponderada (0,107), e
+  ψ = 0,48 fica perto do v0.
+- O padrão sem Markov repete o V4 da simulação: ψ cai (0,35 contra 0,48) e
+  a fração de minutos com canto fica abaixo da referência.
+- ρ continua alto (4,5): num sítio ocupado, P(canto | canto no minuto
+  anterior) ≈ 0,82 e θ₀ ≈ 0,05. Os cantos vêm em sequências dentro da noite.
+
+**Limites (não resolvidos):**
+
+- A comparação com 0,107 não é independente: os dois usam os mesmos pesos
+  e os mesmos verificados.
+- Os pesos são provisórios: a inclusão também depende da hora e do sítio,
+  e o mecanismo do sorteio não é conhecido (falta perguntar à Liliana). Se
+  a seleção dependeu do estado real, as emissões do estágio 1 ficam
+  enviesadas.
+- A incerteza das emissões não entra no estágio 2: os intervalos acima são
+  estreitos demais. Saídas: refazer o estágio 2 com algumas réplicas do
+  bootstrap, ou usar o bootstrap como priors informativos no ajuste
+  conjunto.
+- O PPC de autocorrelação (P(y = 1 | minuto anterior com y = 1) e
+  detecções por noite) ainda não foi feito para o v1 de dois estágios.
+- O ψ θ̄ no centro das covariáveis é uma aproximação da fração média de
+  minutos com canto.
