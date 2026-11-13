@@ -107,3 +107,49 @@ Erro-padrão de Monte Carlo da cobertura perto de 0,03 com 50 réplicas.
   renomeados à mão antes do resumo. Não muda nenhum ajuste.
 - Na mistura sem Markov, o "θ₀" do resumo é o seu θ e só se compara a θ̄
   (V4); com ρ = 2 ele não estima θ₀.
+
+## Etapas 2 e 3: resultados (13/11/2026)
+
+Rodada completa em `results/v1val` (`task_all.rds` e `summary.txt`): 400
+ajustes, nenhum erro, mediana de 385 s por ajuste, 44,0 h de CPU, uma
+c7a.16xlarge spot sem interrupção. Mediana de positivos verificados: 20 a 22
+com 2% e 50 a 52 com 5%.
+
+| Critério | Resultado |
+|---|---|
+| V1 | passa: 100% dos ajustes do v1 convergidos em todas as células, sem divergências |
+| V2 | passa: 12 de 12 (ψ, θ₀ e θ̄ nas 4 células); \|viés\| ≤ 0,016 e cobertura de 0,94 a 1,00 |
+| V3 | ρ com viés de 0,006 a 0,028 e cobertura de 0,90 a 0,96; intervalo de 0,77 a 0,91 na escala logit |
+| V4 | a mistura sem Markov, com ρ = 2, superestima θ̄ (viés 0,032 e 0,042; cobertura 0,84 e 0,70) e subestima ψ (viés −0,025 e −0,033; cobertura 0,90 e 0,88) |
+| V5 | com ρ = 0, o Markov não custa nada em viés (diferença pareada ≤ 0,002); intervalo de θ₀ 15% mais largo, o de ψ e θ̄ igual |
+
+**Com ρ = 2, v1 contra a mistura sem Markov nos mesmos dados:**
+
+| Fração | Parâmetro | v1: viés | v1: cobertura | Mistura: viés | Mistura: cobertura |
+|---|---|---|---|---|---|
+| 5% | ψ | 0,014 | 0,94 | −0,025 | 0,90 |
+| 5% | θ̄ | −0,004 | 1,00 | 0,032 | 0,84 |
+| 2% | ψ | 0,010 | 0,94 | −0,033 | 0,88 |
+| 2% | θ̄ | −0,002 | 0,98 | 0,042 | 0,70 |
+
+**Leitura:**
+
+- O v1 recupera ψ, θ₀, θ̄ e ρ com dependência entre ocasiões e com 2% de
+  verificação. A mistura dos clipes também segue identificada com o termo
+  novo.
+- Ignorar a dependência custa: a mistura sem Markov põe mais canto por
+  ocasião e menos sítios ocupados, e a cobertura de θ̄ cai a 0,70 com 2%.
+  A comparação é contra θ̄, a taxa estacionária; em sequências de 20
+  ocasiões que começam em θ₀ a taxa média real fica um pouco abaixo de θ̄,
+  então o viés da mistura contra a taxa realizada seria um pouco maior.
+- Quando não há dependência, o termo de Markov não atrapalha: ρ fica perto
+  de 0 e ψ e θ não mudam.
+
+**Decisão pela regra fixada:** V1 e V2 passam; o v1 vai para o Curiango
+(etapa 2 do `README.md`): ajuste no classificador próprio em logit(0,1), PPC
+de autocorrelação e por classe, depois as etapas 3 e 4.
+
+**Limites que continuam:** 20 ocasiões por sítio contra 56 no Curiango; ρ
+constante; os dados vêm da forma que o modelo assume. O ajuste no Curiango
+tem 97.806 ocasiões e deve levar bem mais que os 6 min por ajuste daqui;
+o tempo precisa ser medido antes de planejar as etapas 3 e 4.

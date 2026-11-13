@@ -1,0 +1,47 @@
+fits: 400  errors: 0 
+seconds per fit: median 385, max 729; CPU hours: 44.02
+
+V1, share converged and share with divergences per cell:
+ rho frac model conv divergent
+   0 0.02   mix 1.00      0.00
+   2 0.02   mix 0.98      0.00
+   0 0.05   mix 0.98      0.02
+   2 0.05   mix 0.98      0.00
+   0 0.02    v1 1.00      0.00
+   2 0.02    v1 1.00      0.00
+   0 0.05    v1 1.00      0.00
+   2 0.05    v1 1.00      0.00
+
+psi, theta0, theta_bar and rho at the centre:
+ rho frac model  variable   bias cover width  n v1_minus_mix
+   0 0.05   mix       psi -0.006  0.98 0.173 50           NA
+   0 0.05    v1       psi -0.006  0.96 0.174 50        0.000
+   0 0.02   mix       psi -0.004  0.94 0.173 50           NA
+   0 0.02    v1       psi -0.004  0.94 0.175 50        0.000
+   2 0.05   mix       psi -0.025  0.90 0.180 50           NA
+   2 0.05    v1       psi  0.014  0.94 0.195 50        0.039
+   2 0.02   mix       psi -0.033  0.88 0.182 50           NA
+   2 0.02    v1       psi  0.010  0.94 0.198 50        0.042
+   0 0.05    v1       rho  0.006  0.90 0.773 50           NA
+   0 0.02    v1       rho  0.006  0.94 0.820 50           NA
+   2 0.05    v1       rho  0.022  0.94 0.874 50           NA
+   2 0.02    v1       rho  0.028  0.96 0.909 50           NA
+   0 0.05   mix theta_bar  0.005  0.94 0.107 50           NA
+   0 0.05    v1 theta_bar  0.006  0.94 0.109 50        0.001
+   0 0.02   mix theta_bar  0.015  0.96 0.130 50           NA
+   0 0.02    v1 theta_bar  0.016  0.96 0.133 50        0.002
+   2 0.05   mix theta_bar  0.032  0.84 0.108 50           NA
+   2 0.05    v1 theta_bar -0.004  1.00 0.110 50       -0.036
+   2 0.02   mix theta_bar  0.042  0.70 0.135 50           NA
+   2 0.02    v1 theta_bar -0.002  0.98 0.116 50       -0.044
+   0 0.05   mix    theta0  0.005  0.94 0.107 50           NA
+   0 0.05    v1    theta0  0.005  0.94 0.124 50        0.000
+   0 0.02   mix    theta0  0.015  0.96 0.130 50           NA
+   0 0.02    v1    theta0  0.016  0.94 0.150 50        0.001
+   2 0.05   mix    theta0  0.139  0.00 0.108 50           NA
+   2 0.05    v1    theta0 -0.003  0.96 0.070 50       -0.142
+   2 0.02   mix    theta0  0.149  0.00 0.135 50           NA
+   2 0.02    v1    theta0 -0.002  0.98 0.073 50       -0.151
+
+V1 (v1 cells with >= 95% converged): 4 of 4 
+V2 (v1: psi, theta0, theta_bar) cells passing: 12 of 12 
