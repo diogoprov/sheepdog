@@ -105,3 +105,27 @@ test_that("crywolf drops the score_bands clips of a real export", {
   expect_true(nrow(x$validation) > 0)
   expect_true(all(x$validation$sampling_mode == "random_detections"))
 })
+
+test_that("score_bands can pool the sites with strata = \"species\"", {
+  det <- pred_exemplo()
+  quebras <- c(0.1, 0.4, 0.7, 1)
+  man <- suppressMessages(select_clips(det, "score_bands", n_top = 4,
+                                       strata = "species",
+                                       score_breaks = quebras))
+  man$faixa <- cut(man$confidence, quebras, include.lowest = TRUE,
+                   right = FALSE)
+  expect_true(all(dplyr::count(man, species_code, faixa)$n <= 4))
+  # o local continua no manifesto, mas o estrato e a especie x faixa
+  expect_true(all(!is.na(man$site)))
+  det$faixa <- cut(det$confidence, quebras, include.lowest = TRUE,
+                   right = FALSE)
+  cand <- dplyr::count(dplyr::filter(det, !is.na(faixa)), species_code,
+                       faixa, name = "N")
+  chk <- dplyr::left_join(man, cand, by = c("species_code", "faixa"))
+  expect_equal(chk$inclusion_prob, pmin(4, chk$N) / chk$N)
+  # so no modo score_bands
+  expect_error(suppressMessages(select_clips(det, "random_detections",
+                                             threshold = 0.5,
+                                             strata = "species")),
+               "only available")
+})

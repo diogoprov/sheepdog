@@ -70,6 +70,11 @@ cycle without fixing the night);
 \item \code{"month"}: month of the night (\code{YYYY-MM}), which spreads the draw
 over the season;
 \item \code{"site_species"}: no further stratification;
+\item \code{"species"} (\code{"score_bands"} only): the species alone, pooling the
+sites, for a threshold of the species when the cut per site x band
+would be too coarse (with 60 sites and 3 bands, the smallest step is
+180 clips); \code{inclusion_prob} is then the share drawn among the
+predictions of the species in the band;
 }
 
 or a character vector of column names of \code{detections}, e.g.
@@ -79,7 +84,8 @@ site and species are always part of the strata, useful columns vary
 within a site (the moon phase, the rain of the night, a recorder when
 a site has several). \code{month} and \code{week} can also be used and are
 derived from the night when absent.
-\code{site} and \code{species_code} are always added to the strata, which keeps
+Except for \code{"species"}, \code{site} and \code{species_code} are always added to
+the strata, which keeps
 \code{inclusion_prob} exact when \code{target_total} or \code{max_per_species} draw
 again within site x species. Columns that depend on the score
 (\code{confidence}, \code{rank}) are refused, since the observation-confirmation
@@ -136,7 +142,8 @@ when needed (minute occasions) and leaves \code{clip_end} as \code{NA} otherwise
 \item{min_confidence}{Minimum confidence of a candidate prediction in
 \code{"top"}. \code{NULL} applies no filter. The random modes use \code{threshold}.}
 
-\item{sites}{Restrict to these sites. \code{NULL} keeps all.}
+\item{sites}{Restrict to these sites (the predictions and, in
+\code{"random_recordings"}, the list of recordings). \code{NULL} keeps all.}
 
 \item{date_start, date_end}{Date window of the recordings (\code{"YYYYMMDD"}).
 \code{NULL} leaves that side open.}

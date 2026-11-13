@@ -160,3 +160,58 @@ test_that("plot_calibration_curves() draws the curves and the bins", {
   attr(vazio, "curves") <- tibble::tibble()
   expect_error(plot_calibration_curves(vazio), "no fitted curves")
 })
+
+test_that("several targets share one fit, and cv = FALSE skips the folds", {
+  skip_if_not_installed("mgcv")
+  val <- sim_curvas(600, "certa")
+  um <- lapply(c(0.9, 0.95), function(t) suppressMessages(
+    compare_calibration_curves(val, target = t,
+                               curves = c("logistic", "gam"))))
+  dois <- suppressMessages(compare_calibration_curves(
+    val, target = c(0.95, 0.9), curves = c("logistic", "gam")))
+  expect_identical(sort(unique(dois$target)), c(0.9, 0.95))
+  expect_equal(nrow(dois), 4)
+  for (i in 1:2) {
+    t <- c(0.9, 0.95)[i]
+    a <- um[[i]]
+    b <- dois[dois$target == t, ]
+    expect_equal(b$threshold_precision, a$threshold_precision)
+    expect_equal(b$threshold_weighted, a$threshold_weighted)
+    expect_equal(b$cv_logloss, a$cv_logloss)
+    expect_identical(b$verdict, a$verdict)
+  }
+  expect_identical(attr(dois, "target"), c(0.9, 0.95))
+  sem <- suppressMessages(compare_calibration_curves(
+    val, target = 0.95, curves = c("logistic", "gam"), cv = FALSE))
+  expect_true(all(is.na(sem$cv_logloss)))
+  expect_identical(sem$threshold_precision, um[[2]]$threshold_precision)
+  expect_identical(sem$verdict, um[[2]]$verdict)
+  expect_error(compare_calibration_curves(val, target = c(0.9, 1)),
+               "between 0 and 1")
+  expect_error(compare_calibration_curves(val, cv = NA), "TRUE or FALSE")
+})
+
+test_that("folds without both verdicts and curves that fail give NA", {
+  skip_if_not_installed("mgcv")
+  # todos os negativos numa gravacao: a dobra que a deixa de fora nao tem
+  # negativos no treino
+  val <- sim_curvas(200, "certa", seed = 4)
+  val$verdict <- "positive"
+  val$verdict[1:6] <- "negative"
+  val$source_audio[1:6] <- "so_negativos.wav"
+  cmp <- suppressMessages(compare_calibration_curves(
+    val, target = c(0.9, 0.95), curves = c("logistic", "gam")))
+  expect_true(all(is.finite(cmp$cv_logloss) | is.na(cmp$cv_logloss)))
+  # uma curva que nao ajusta fica com NA, nos dois alvos
+  local_mocked_bindings(fit_curve = function(curve, d, k) {
+    if (curve == "gam") NULL else stats::glm(tp ~ x, binomial, data = d)
+  })
+  cmp <- suppressMessages(compare_calibration_curves(
+    sim_curvas(300, "certa"), target = c(0.9, 0.95),
+    curves = c("logistic", "gam")))
+  gam <- cmp[cmp$curve == "gam", ]
+  expect_equal(nrow(gam), 2)
+  expect_true(all(is.na(gam$threshold_precision)))
+  expect_true(all(is.na(gam$cv_logloss)))
+  expect_false(any(is.na(cmp$cv_logloss[cmp$curve == "logistic"])))
+})

@@ -470,17 +470,21 @@ threshold_for <- function(df, alvo, n_min, pesos = FALSE, weighted = NULL,
   completa <- pesos && !anyNA(df$inclusion_prob)
   if (isTRUE(weighted) && !completa) return(out)
   ponderar <- completa && !isFALSE(weighted)
-  cortes <- cortes[vapply(cortes, \(c0) any(df$confidence >= c0), TRUE)]
-  medida <- function(c0) {
-    sub <- filter(df, confidence >= c0)
-    if (ponderar) {
-      c(weighted_precision(sub$verdict, sub$inclusion_prob),
-        kish_n(sub$inclusion_prob))
-    } else {
-      c(mean(sub$verdict == "positive"), nrow(sub))
-    }
+  # one pass: clips sorted by score, sums from the top; the clips at or above
+  # a cut are the first n_ge of the sorted clips
+  ordem <- order(df$confidence, decreasing = TRUE)
+  conf <- df$confidence[ordem]
+  pos <- df$verdict[ordem] == "positive"
+  n_ge <- length(conf) - findInterval(cortes, rev(conf), left.open = TRUE)
+  cortes <- cortes[n_ge > 0]
+  n_ge <- n_ge[n_ge > 0]
+  medidas <- if (ponderar) {
+    w <- 1 / as.numeric(df$inclusion_prob[ordem])
+    sw <- cumsum(w)[n_ge]
+    rbind(cumsum(w * pos)[n_ge] / sw, sw^2 / cumsum(w^2)[n_ge])
+  } else {
+    rbind(cumsum(pos)[n_ge] / n_ge, n_ge)
   }
-  medidas <- vapply(cortes, medida, numeric(2))
   # o alvo vale neste corte e em todos os cortes acima com apoio, como em
   # calibrated_thresholds(); cortes com menos de min_n clipes nao contam
   apoiados <- which(medidas[2, ] >= n_min)
