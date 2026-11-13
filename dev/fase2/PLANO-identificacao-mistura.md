@@ -116,3 +116,63 @@ mesma célula e razão das larguras dos intervalos (mistura/v0).
   completa fica em cerca de **55 h de CPU**; numa c7a.16xlarge spot com 64
   workers, perto de 2 h de relógio e US$ 2 a 3. **Uma réplica não mede viés
   nem cobertura; os números do piloto não são interpretados.**
+
+## Etapas 2 e 3: resultados (13/11/2026)
+
+Rodada completa em `results/mixid_v0` (`task_all.rds` e `summary.txt`):
+500 ajustes, nenhum erro, mediana de 526 s por ajuste, 67,9 h de CPU, uma
+c7a.16xlarge spot sem interrupção. Mediana de positivos verificados por
+conjunto: 15 a 17 com 2% e 40 a 43 com 5%.
+
+| Critério | Resultado |
+|---|---|
+| M1 | passa: 4 de 4 células da verdade mistura com ≥ 95% convergidos (98% a 100%), nenhuma divergência em nenhuma célula |
+| M2 | passa: 8 de 8 células; \|viés\| ≤ 0,011 e cobertura de 0,90 a 0,96 em ψ e θ |
+| M3 | relatado: f₀ e o componente baixo de f₁ bem identificados; o componente alto de f₁ não (abaixo) |
+| M4 | passa: 8 de 8 células; \|viés\| ≤ 0,012 e cobertura de 0,94 a 1,00 |
+| M5 | relatado: sem verificação, θ na mistura tem viés 0,025 e cobertura 0,92, com intervalo 1,5 vez o do v0 |
+
+**θ na verdade mistura, mistura contra v0 nos mesmos dados:**
+
+| Fração | Desenho | Viés | Cobertura | Cobertura do v0 | Diferença pareada para o v0 | Largura / v0 |
+|---|---|---|---|---|---|---|
+| 5% | S1 | 0,001 | 0,96 | 0,78 | 0,021 | 0,98 |
+| 5% | S2 | 0,007 | 0,94 | 0,86 | 0,019 | 1,04 |
+| 2% | S1 | 0,011 | 0,90 | 0,80 | 0,029 | 1,13 |
+| 2% | S2 | 0,011 | 0,96 | 0,84 | 0,026 | 1,17 |
+| — | sem verificação | 0,025 | 0,92 | 0,78 | 0,044 | 1,50 |
+
+ψ fica com viés ≤ 0,005 nas duas verdades. Na mistura, a cobertura de ψ é
+0,92 (a do v0 era 0,96 a 0,98); está acima do limiar, a cerca de um
+erro-padrão de Monte Carlo de 0,95.
+
+**Leitura:**
+
+- A subcobertura de θ que o v0 tinha sob a mistura some quando f tem a
+  forma certa, com S1 e com S2. Isso confirma a interpretação registrada na
+  ignorabilidade: o problema era a forma de f, não a seleção.
+- PPS (S2) e aleatório (S1) dão o mesmo resultado nas duas frações, como
+  esperado se a seleção pelo score é ignorável.
+- Na verdade normal, a mistura não custa viés nem cobertura; os intervalos
+  de θ ficam de 5% a 18% mais largos que os do v0. A convergência fica
+  entre 94% e 100% por célula (S1 com 5% em 0,94, as outras ≥ 0,96); M1 só
+  bloqueia as células da mistura, mas isso é anotado.
+- O componente alto de f₁ (μ₁b, σ₁b) é mal identificado: viés de −0,23 a
+  −0,27 em μ₁b, intervalo de cerca de 1,4 a 1,6 na escala logit, cobertura
+  0,90 a 0,92. Ele tem só 22% das chamadas e boa parte acima de c_hi não é
+  censurada, mas é rara. Isso não chega a ψ e θ aqui. Não se deve
+  interpretar μ₁b nem σ₁b de um ajuste real.
+- Sem verificação, a mistura ainda recupera θ (cobertura 0,92), com
+  intervalo bem mais largo. Pela estrutura do modelo (f₀ com uma só média e
+  f₁ ordenada acima dela), a forma é identificada pelos scores; a
+  verificação estreita o intervalo de θ (0,17 → 0,10 a 0,13).
+
+**Decisão pela regra fixada:** M2 e M4 passam, então o `model_mix.stan` passa
+a ser a f padrão da fase 2: o v1 com Markov dentro da noite é construído
+sobre a mistura, com verificação por PPS.
+
+**Limites que continuam:** uma só forma de mistura (a mesma que gerou os
+dados, com as mesmas restrições do modelo); priors das emissões
+provisórios, sem prior predictive check; sem Markov; 150 × 20. Se a
+seleção do Curiango dependeu do estado w (pergunta à Liliana), nada disso
+protege.
