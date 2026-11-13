@@ -797,11 +797,18 @@ da ocupação, para diferentes formas das distribuições de score?
   de desenho e, talvez, uma função que lê a rodada 1 e recomenda a próxima.
 - **Ordem proposta:** Curiango da fase 2, simulador por detecção, fase 1 do
   estudo (sem Stan), fase 2 do estudo (ponta a ponta). A fase 1 não depende do
-  modelo de score e pode andar em paralelo. **[decidir]** quem lidera.
+  modelo de score e pode andar em paralelo.
+- **Decisão de 13/11/2026:** o Diogo lidera e o Massao revisa. A fase 1
+  começou no compêndio `~/GitHub/review-design-sim`, com a proposta em
+  `docs/proposal/`. O benchmark do "Threshold Workflow Review" da Larissa
+  (contagem ponderada como referência; ver `dev/NOTAS-limiares.md`) entra no
+  estudo.
 - **Ligação com a fase 2 do roadmap:** se o modelo de score aguentar dados reais,
   ele entra como mais um método. O desenho estratificado por score, que a proposta
   dá como inválido para o crywolf, talvez valha num modelo conjunto, porque a
-  seleção depende de dados observados (inferência, falta simular).
+  seleção depende de dados observados. Simulado em 13/11/2026: com f certa, a
+  seleção por PPS é ignorável (`dev/fase2/PLANO-ignorabilidade.md`), e a
+  mistura recupera ψ e θ (`dev/fase2/PLANO-identificacao-mistura.md`).
 - **Uso imediato do simulador:** gerar scores por detecção testa o v0 fora do
   próprio modelo, já que `simulate_v0()` gera um score por ocasião.
 
