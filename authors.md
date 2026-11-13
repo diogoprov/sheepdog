@@ -2,13 +2,14 @@
 
 ## Authors
 
-- **Diogo B. Provete**. Author, maintainer.
+- **Diogo B. Provete**. Author, maintainer, copyright holder.
   [](https://orcid.org/0000-0002-0097-0651)
 
-- **Larissa Sayuri Moreira Sugai**. Author.
+- **Larissa Sayuri Moreira Sugai**. Author, copyright holder.
   [](https://orcid.org/0000-0002-6248-291X)
 
-- **Liliana Piatti**. Author. [](https://orcid.org/0000-0001-6324-1723)
+- **Liliana Piatti**. Author, copyright holder.
+  [](https://orcid.org/0000-0001-6324-1723)
 
 ## Citation
 

@@ -2,7 +2,8 @@
 
 MIT License
 
-Copyright (c) 2026 Diogo B. Provete
+Copyright (c) 2026 Diogo B. Provete, Larissa Sayuri Moreira Sugai and
+Liliana Piatti
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the
