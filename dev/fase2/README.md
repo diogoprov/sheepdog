@@ -39,6 +39,7 @@ um limiar.
 | `model_mix.stan`, `score_emissions_mix.stanfunctions`, `mix.R`, `check_mix.R`, `probe_mix.R` | modelo com mistura em f₀ e f₁, ainda sem justificativa firme (ver a correção) |
 | `emissions_weighted_curiango.R` | etapa 0 com pesos de inclusão, provisória, e inclusão por hora e sítio |
 | `aws/` | execução em spot; `dev/fase2/aws/launch.sh BUCKET RUN [TIPO] [WORKERS] [HORAS] [PREÇO]` |
+| `PLANO-ignorabilidade.md` | plano da simulação de ignorabilidade (passo 4), com os critérios fixados antes de rodar |
 
 ## Modelo v0
 
