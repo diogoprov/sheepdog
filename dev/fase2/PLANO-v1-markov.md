@@ -191,3 +191,57 @@ independentes dado w.
 
 Ainda não se sabe se o problema vem do Markov ou da mistura: o
 `model_mix.stan` sem Markov nunca foi ajustado no Curiango.
+
+## Curiango: mistura sem Markov, para isolar a causa (13/11/2026)
+
+`run_curiango_v1.R ... mix` ajusta `model_mix.stan` com os mesmos dados, a
+mesma semente e os mesmos inits genéricos (`inits_mixid()`). 4 cadeias,
+1.000 + 1.000, 121 min no Mac, perto de três vezes o tempo do v1. Resumo em
+`results/curiango_v1/fit_mix_custom_0.1.rds`; conferência em
+`check_curiango_emissions.R`.
+
+**Convergência:** sem divergências, sem treedepth máximo, E-BFMI 0,95 a
+1,03, R-hat ≤ 1,004, ESS bulk ≥ 2.700.
+
+| Quantidade | Mistura sem Markov | v1 | v0 (piloto de 07/11) |
+|---|---|---|---|
+| ψ no centro | 0,60 | 0,87 | 0,43 |
+| θ (θ̄ no v1) | 0,60 | 0,63 | 0,136 |
+| ψ θ | 0,36 | 0,55 | ≈ 0,06 |
+| componente baixo de f₁ | 87% em N(−1,91; 0,30) | 87% em N(−1,92; 0,26) | (f₁ normal única) |
+| f₀ | 76% em N(−2,25; 0,18) | 85% em N(−2,31; 0,19) | |
+| negativos verificados não censurados com f₁ > f₀ | 67% | 78% | |
+| positivos verificados com f₁ > f₀ | 97% | 98% | |
+
+A estimativa ponderada dos verificados dá cerca de 0,107 de minutos com
+canto.
+
+**Leitura:**
+
+- O problema vem da mistura, não do Markov: sem o termo de Markov, o
+  componente baixo de f₁ continua sobre a faixa dos negativos logo acima de
+  c (mediana −1,96), e a fração de minutos com canto fica em 0,36, mais de
+  três vezes a estimativa ponderada.
+- O Markov piora o quadro (0,36 → 0,55) porque os scores dessa faixa vêm em
+  sequências dentro da noite, e ρ = 4,7 junta as sequências em "canto".
+- O v0, com f₁ normal única, não tinha flexibilidade para pôr um componente
+  estreito em −1,9 e ficou perto da estimativa ponderada. A flexibilidade
+  que ajudou na simulação (M2 e M4 do `PLANO-identificacao-mistura.md`) é a
+  que estraga o ajuste no Curiango, porque aqui os scores sem canto não
+  seguem f₀ com uma só forma por todas as noites (interpretação, não
+  testada).
+- A tabela usa as médias posteriores; a fração de f₁ > f₀ não é um PPC
+  completo por classe.
+
+**Opções para a próxima etapa (decisão do Diogo):**
+
+1. **Emissões em dois estágios:** estimar f₀ e f₁ só nos verificados, com
+   os pesos 1/π, e fixá-las (ou usá-las como priors informativos estreitos)
+   no ajuste de ocupação. Barato e direto; perde a propagação da incerteza
+   das emissões, a menos que se usem priors.
+2. **f₀ com variação por noite** (λ₀ aleatório por sítio-noite): ataca a
+   causa interpretada; custo de 1.753 parâmetros a mais e risco de
+   confundir com ψ.
+3. **Restringir f₁:** f₁ normal única (como no v0) com Markov, ou
+   componente baixo de f₁ com média acima de um limite. Rápido de testar,
+   mas é uma restrição ad hoc.
