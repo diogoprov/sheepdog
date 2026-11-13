@@ -13,6 +13,10 @@ NULL
 
 # Colunas usadas via tidy evaluation (evita NOTEs do R CMD check)
 utils::globalVariables(c(
+  "sign1_ceiling", "sign2_tp_kept", "sign6_fp_spread", "sign6_detail",
+  "sign7_share_below", "sign7_detail", "sign8_verdict", "sign1", "sign2",
+  "sign6", "sign7", "sign8", "n_checked", "n_raised", "nivel", "spread",
+  "detail", "grupo", "identity", "fp", ".confuser",
   "present", "max_score",
   "faixa", "tp", "w", "observed", "curve", "max_p", "threshold_p_tp",
   "threshold_precision", "threshold_weighted", "cv_logloss", "cv_logloss_se",

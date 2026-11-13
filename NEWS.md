@@ -1,5 +1,14 @@
 # sheepdog (development version)
 
+- New `warning_signs()`: for each species, the warning signs of the
+  threshold workflow that a review sample can show (1, low recall ceiling,
+  from `recall_ceiling()`; 2, the threshold discards most true positives; 6,
+  false-positive rates that vary by site or season, with the main
+  confusing identity; 7, a threshold below target in some group, from
+  `threshold_by_group()`; 8, a logistic curve wrong near the threshold, from
+  `compare_calibration_curves()`), and a verdict:
+  `"trustworthy_with_care"`, `"use_with_caveats"` or `"not_trustworthy"`.
+  Optionally writes the report as Markdown.
 - New `recall_ceiling()`: from the occasions of `"random_recordings"`
   annotated by ear and the highest score of the species in each, the
   recall ceiling (share of the occasions with the species that have any

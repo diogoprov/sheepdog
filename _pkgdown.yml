@@ -74,6 +74,7 @@ reference:
       - threshold_bootstrap
       - threshold_by_group
       - recall_ceiling
+      - warning_signs
       - threshold_record
       - review_support
       - nightly_presence
