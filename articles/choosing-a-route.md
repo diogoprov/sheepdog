@@ -251,10 +251,10 @@ calibration draws.
   writes the calibration draws, and
   [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md)
   (or
-  [`crywolf::fp_draws_data()`](https://provetelab.org/crywolf/reference/fp_draws_data.html))
+  [`crywolf::fp_draws_data()`](https://rdrr.io/pkg/crywolf/man/fp_draws_data.html))
   builds one detection matrix per draw. The model is fitted to each and
   the posteriors pooled
-  ([`crywolf::fp_occu_mc()`](https://provetelab.org/crywolf/reference/fp_occu_mc.html)),
+  ([`crywolf::fp_occu_mc()`](https://rdrr.io/pkg/crywolf/man/fp_occu_mc.html)),
   so the uncertainty of the calibration reaches occupancy.
 
 The article [How crywolf

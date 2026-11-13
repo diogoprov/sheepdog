@@ -383,7 +383,7 @@ are pooled (Wood &amp; Kahl 2024, <a href="https://doi.org/10.1007/s10336-024-02
 estimate the false-positive rate of the observation-confirmation design,
 which needs clips chosen independently of the score:
 <code><a href="export_occupancy_data.html">export_occupancy_data()</a></code> writes them to <code>validation.csv</code> with a warning,
-and <code><a href="https://provetelab.org/crywolf/reference/fp_read_sheepdog.html" class="external-link">crywolf::fp_read_sheepdog()</a></code> drops them with a warning, or stops
+and <code><a href="https://rdrr.io/pkg/crywolf/man/fp_read_sheepdog.html" class="external-link">crywolf::fp_read_sheepdog()</a></code> drops them with a warning, or stops
 when they are the only reviewed clips. For both uses in one project,
 draw a <code>"random_detections"</code> round for the occupancy model and a
 <code>"score_bands"</code> round for the threshold; a clip drawn by both is

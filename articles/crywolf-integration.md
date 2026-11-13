@@ -103,7 +103,7 @@ multiple-method design (Miller et al. 2011,
 <https://doi.org/10.1890/10-1396.1>), that is, manual annotation of
 recordings. They are not confirmations of detections and must not go to
 the `validation` argument of
-[`crywolf::fp_aggregate()`](https://provetelab.org/crywolf/reference/fp_aggregate.html).
+[`crywolf::fp_aggregate()`](https://rdrr.io/pkg/crywolf/man/fp_aggregate.html).
 
 ## Export for occupancy models
 
@@ -248,7 +248,7 @@ random with its probability of being true; with `"threshold"`, when that
 probability is at least `p_min`. Fitting the occupancy model to each
 draw and pooling the posteriors propagates the uncertainty of the
 calibration (Monte Carlo propagation);
-[`crywolf::fp_draws_data()`](https://provetelab.org/crywolf/reference/fp_draws_data.html)
+[`crywolf::fp_draws_data()`](https://rdrr.io/pkg/crywolf/man/fp_draws_data.html)
 reads the table when its settings match the request and otherwise draws
 the same detections itself.
 

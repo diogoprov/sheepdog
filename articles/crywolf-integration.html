@@ -346,7 +346,7 @@ verdicts. Clips of <code>"random_recordings"</code>
 multiple-method design (Miller et al. 2011, <a href="https://doi.org/10.1890/10-1396.1" class="external-link uri">https://doi.org/10.1890/10-1396.1</a>), that is, manual
 annotation of recordings. They are not confirmations of detections and
 must not go to the <code>validation</code> argument of
-<code><a href="https://provetelab.org/crywolf/reference/fp_aggregate.html" class="external-link">crywolf::fp_aggregate()</a></code>.</p>
+<code><a href="https://rdrr.io/pkg/crywolf/man/fp_aggregate.html" class="external-link">crywolf::fp_aggregate()</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="export-for-occupancy-models">Export for occupancy models<a class="anchor" aria-label="anchor" href="#export-for-occupancy-models"></a>
@@ -660,7 +660,7 @@ its probability of being true; with <code>"threshold"</code>, when that
 probability is at least <code>p_min</code>. Fitting the occupancy model
 to each draw and pooling the posteriors propagates the uncertainty of
 the calibration (Monte Carlo propagation);
-<code><a href="https://provetelab.org/crywolf/reference/fp_draws_data.html" class="external-link">crywolf::fp_draws_data()</a></code> reads the table when its settings
+<code><a href="https://rdrr.io/pkg/crywolf/man/fp_draws_data.html" class="external-link">crywolf::fp_draws_data()</a></code> reads the table when its settings
 match the request and otherwise draws the same detections itself.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/occasion_draws.html">occasion_draws</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"occupancy"</span><span class="op">)</span>, rule <span class="op">=</span> <span class="st">"sample"</span>,</span>
@@ -833,11 +833,11 @@ draws the same ones when the table is absent), fits the occupancy model
 with false positives to each version and pools the posteriors in equal
 shares.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">crywolf</span><span class="fu">::</span><span class="fu"><a href="https://provetelab.org/crywolf/reference/fp_read_sheepdog.html" class="external-link">fp_read_sheepdog</a></span><span class="op">(</span><span class="st">"curiango/custom"</span>, species <span class="op">=</span> <span class="st">"nyc_alb"</span><span class="op">)</span></span>
-<span><span class="va">versions</span> <span class="op">&lt;-</span> <span class="fu">crywolf</span><span class="fu">::</span><span class="fu"><a href="https://provetelab.org/crywolf/reference/fp_draws_data.html" class="external-link">fp_draws_data</a></span><span class="op">(</span><span class="va">x</span>, rule <span class="op">=</span> <span class="st">"sample"</span>, n_draws <span class="op">=</span> <span class="fl">20</span>,</span>
+<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">crywolf</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/crywolf/man/fp_read_sheepdog.html" class="external-link">fp_read_sheepdog</a></span><span class="op">(</span><span class="st">"curiango/custom"</span>, species <span class="op">=</span> <span class="st">"nyc_alb"</span><span class="op">)</span></span>
+<span><span class="va">versions</span> <span class="op">&lt;-</span> <span class="fu">crywolf</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/crywolf/man/fp_draws_data.html" class="external-link">fp_draws_data</a></span><span class="op">(</span><span class="va">x</span>, rule <span class="op">=</span> <span class="st">"sample"</span>, n_draws <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>                                   seed <span class="op">=</span> <span class="fl">2026</span>, occasions <span class="op">=</span> <span class="va">occ</span>, sites <span class="op">=</span> <span class="va">nights</span>,</span>
 <span>                                   site <span class="op">=</span> <span class="st">"night_site_id"</span><span class="op">)</span></span>
-<span><span class="va">mc</span> <span class="op">&lt;-</span> <span class="fu">crywolf</span><span class="fu">::</span><span class="fu"><a href="https://provetelab.org/crywolf/reference/fp_occu_mc.html" class="external-link">fp_occu_mc</a></span><span class="op">(</span><span class="va">versions</span>, occ <span class="op">=</span> <span class="op">~</span> <span class="va">temp</span> <span class="op">+</span> <span class="va">rh</span> <span class="op">+</span> <span class="va">moon</span>,</span>
+<span><span class="va">mc</span> <span class="op">&lt;-</span> <span class="fu">crywolf</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/crywolf/man/fp_occu_mc.html" class="external-link">fp_occu_mc</a></span><span class="op">(</span><span class="va">versions</span>, occ <span class="op">=</span> <span class="op">~</span> <span class="va">temp</span> <span class="op">+</span> <span class="va">rh</span> <span class="op">+</span> <span class="va">moon</span>,</span>
 <span>                          det <span class="op">=</span> <span class="op">~</span> <span class="va">bio</span> <span class="op">+</span> <span class="va">aci</span>, fp <span class="op">=</span> <span class="op">~</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>                          parallel <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">mc</span><span class="op">)</span></span></code></pre></div>
@@ -990,7 +990,7 @@ and <code>random_recordings</code>; <code>positivo</code>,
 <h2 id="reading-the-validation-in-crywolf">Reading the validation in crywolf<a class="anchor" aria-label="anchor" href="#reading-the-validation-in-crywolf"></a>
 </h2>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">v</span> <span class="op">&lt;-</span> <span class="fu">crywolf</span><span class="fu">::</span><span class="fu"><a href="https://provetelab.org/crywolf/reference/fp_read_validation.html" class="external-link">fp_read_validation</a></span><span class="op">(</span><span class="va">validation</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">v</span> <span class="op">&lt;-</span> <span class="fu">crywolf</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/crywolf/man/fp_read_validation.html" class="external-link">fp_read_validation</a></span><span class="op">(</span><span class="va">validation</span><span class="op">)</span></span></code></pre></div>
 <p><code>fp_read_validation()</code> reads the v1.2.0 format; reading
 the column names above needs a crywolf version that supports them.</p>
 </div>
