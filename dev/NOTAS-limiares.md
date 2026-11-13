@@ -29,7 +29,7 @@ fora dela.
 | 2 | unidades abaixo de 0,1; rodadas em duas fases | existe (`random_recordings`, `combine_rounds()`, `select_directed()`) |
 | 3 | revisão cega | **feito**: `run_app(blind = TRUE)` (PR #128) |
 | 4 | precisão por faixa, ponderada | existe (`precision_by_bin()`) |
-| 4 | **teto de recall** e recall no limiar | **pendente (médio)** |
+| 4 | **teto de recall** e recall no limiar | **feito**: `recall_ceiling()` (PR #134) |
 | 5 | logística no logit do score | existe (`fit_calibration()`) |
 | 6 | comparar com quadrática, GAM e GAM monótono | **feito**: `compare_calibration_curves()` (PR #131) |
 | 6 | estrutura dos FN por sítio (permutação, descontada a atividade) | **pendente (maior)**: exige gravações anotadas por inteiro |
@@ -37,7 +37,7 @@ fora dela.
 | 7 | incerteza do limiar por bootstrap de gravações ou noites | **feito**: `threshold_bootstrap()` (PR #128) |
 | 7 | um limiar único em cada grupo | **feito**: `threshold_by_group()` (PR #128) |
 | 8 | ficha do limiar | **feito**: `threshold_record()` (PR #128) |
-| — | sinais de alerta 2, 6, 7 e 8 (os que saem da amostra) | **pendente (médio)** |
+| — | sinais de alerta 1, 2, 6, 7 e 8 (os que saem da amostra) | **feito**: `warning_signs()` (PR da sessão de 13/11, depois do #134) |
 
 Os sinais 1, 3, 4 e 5 exigem anotação completa. Servem mais ao benchmark
 do que ao usuário.
@@ -58,7 +58,11 @@ do que ao usuário.
 - sheepdog #131 (aberto): `compare_calibration_curves()` e
   `plot_calibration_curves()`, com `mgcv` e `scam` nos Suggests e uma seção
   na vinheta `calibration`.
-- sheepdog #133 (aberto): `score_bands` nos fluxogramas e esquemas.
+- sheepdog #130–#133 (merged): `score_bands` no app, a
+  `compare_calibration_curves()`, estas notas e as figuras.
+- sheepdog #134 (merged): `recall_ceiling()`.
+- PR seguinte: `warning_signs()`, o relatório dos sinais de alerta por
+  espécie.
 - Os PRs #130 e #131 mexem no `NEWS.md`. Ao fazer o merge do segundo,
   resolva o conflito mantendo as duas entradas.
 
@@ -175,21 +179,17 @@ do que ao usuário.
    remota instalar pacotes do CRAN, autorize o comando ou rode a
    instalação localmente.
 
-## Próximos itens (médios), em ordem sugerida
+## Próximos itens
 
-1. **Teto de recall e recall no limiar.**
-   - Fonte: gravações de `random_recordings` com vereditos. O teto é a
-     fração das unidades com a espécie que têm score ≥ `min_confidence`.
-     O recall no limiar é o teto vezes a fração das unidades detectadas
-     com score ≥ θ.
-   - Use pesos `1 / inclusion_prob`, calcule por grupo e com bootstrap por
-     gravação, como em `threshold_bootstrap()`.
-   - Os dados já saem do export (`recordings_verified.csv`).
-2. **Relatório dos sinais de alerta 2, 6, 7 e 8**, os que saem da
-   amostra. Ver a tabela de sinais no documento da Larissa. Junte as
-   saídas de `precision_by_bin()`, `threshold_by_group()`,
-   `compare_calibration_curves()` e `threshold_bootstrap()` num veredito
-   por espécie: confiável / com ressalvas / não confiável.
-3. **(Maior)** Falsos negativos por sítio, descontada a atividade.
-   Precisa de dias-sítio com atividade verdadeira, ou seja, gravações
-   anotadas por inteiro.
+Os itens médios do documento da Larissa estão feitos (`recall_ceiling()` e
+`warning_signs()`). Falta o item maior:
+
+1. **Falsos negativos por sítio, descontada a atividade** (sinal 5;
+   sinais 3 e 4 também). Precisa de dias-sítio com atividade verdadeira,
+   ou seja, gravações anotadas por inteiro.
+2. **Validar `warning_signs()` com dados reais** (ACAD da Larissa): os
+   limites `min_tp_kept = 0.25`, `max_fp_spread = 0.3` e
+   `min_ceiling = 0.5`, e a regra do veredito (3 sinais ou mais, ou sem
+   limiar, ou nenhuma curva alcançando o alvo → `"not_trustworthy"`), são
+   heurísticas. Compare com a classificação dela (confiável com cuidado:
+   OVEN, BTNW, HETH, WIWR; não confiável: YRWA, GCKI, RBNU, AMCR, …).
