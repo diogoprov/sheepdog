@@ -96,19 +96,25 @@ select_clips(
 
   - `"site_species"`: no further stratification;
 
+  - `"species"` (`"score_bands"` only): the species alone, pooling the
+    sites, for a threshold of the species when the cut per site x band
+    would be too coarse (with 60 sites and 3 bands, the smallest step is
+    180 clips); `inclusion_prob` is then the share drawn among the
+    predictions of the species in the band;
+
   or a character vector of column names of `detections`, e.g.
   `c("site", "species_code", "habitat", "night")`, for strata defined by
   the user. Columns can be added to `detections` before the call; since
   site and species are always part of the strata, useful columns vary
   within a site (the moon phase, the rain of the night, a recorder when
   a site has several). `month` and `week` can also be used and are
-  derived from the night when absent. `site` and `species_code` are
-  always added to the strata, which keeps `inclusion_prob` exact when
-  `target_total` or `max_per_species` draw again within site x species.
-  Columns that depend on the score (`confidence`, `rank`) are refused,
-  since the observation-confirmation design needs strata independent of
-  the score, and every stratum column must be constant within an
-  occasion.
+  derived from the night when absent. Except for `"species"`, `site` and
+  `species_code` are always added to the strata, which keeps
+  `inclusion_prob` exact when `target_total` or `max_per_species` draw
+  again within site x species. Columns that depend on the score
+  (`confidence`, `rank`) are refused, since the observation-confirmation
+  design needs strata independent of the score, and every stratum column
+  must be constant within an occasion.
 
   With one recording per hour and `occasion_unit = "file"`,
   `"night_hour"` holds a single occasion per stratum and draws nothing
@@ -179,7 +185,8 @@ select_clips(
 
 - sites:
 
-  Restrict to these sites. `NULL` keeps all.
+  Restrict to these sites (the predictions and, in
+  `"random_recordings"`, the list of recordings). `NULL` keeps all.
 
 - date_start, date_end:
 

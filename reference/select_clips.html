@@ -163,6 +163,11 @@ cycle without fixing the night);</p></li>
 <li><p><code>"month"</code>: month of the night (<code>YYYY-MM</code>), which spreads the draw
 over the season;</p></li>
 <li><p><code>"site_species"</code>: no further stratification;</p></li>
+<li><p><code>"species"</code> (<code>"score_bands"</code> only): the species alone, pooling the
+sites, for a threshold of the species when the cut per site x band
+would be too coarse (with 60 sites and 3 bands, the smallest step is
+180 clips); <code>inclusion_prob</code> is then the share drawn among the
+predictions of the species in the band;</p></li>
 </ul><p>or a character vector of column names of <code>detections</code>, e.g.
 <code>c("site", "species_code", "habitat", "night")</code>, for strata defined by
 the user. Columns can be added to <code>detections</code> before the call; since
@@ -170,7 +175,8 @@ site and species are always part of the strata, useful columns vary
 within a site (the moon phase, the rain of the night, a recorder when
 a site has several). <code>month</code> and <code>week</code> can also be used and are
 derived from the night when absent.
-<code>site</code> and <code>species_code</code> are always added to the strata, which keeps
+Except for <code>"species"</code>, <code>site</code> and <code>species_code</code> are always added to
+the strata, which keeps
 <code>inclusion_prob</code> exact when <code>target_total</code> or <code>max_per_species</code> draw
 again within site x species. Columns that depend on the score
 (<code>confidence</code>, <code>rank</code>) are refused, since the observation-confirmation
@@ -244,7 +250,8 @@ when needed (minute occasions) and leaves <code>clip_end</code> as <code>NA</cod
 
 
 <dt id="arg-sites">sites<a class="anchor" aria-label="anchor" href="#arg-sites"></a></dt>
-<dd><p>Restrict to these sites. <code>NULL</code> keeps all.</p></dd>
+<dd><p>Restrict to these sites (the predictions and, in
+<code>"random_recordings"</code>, the list of recordings). <code>NULL</code> keeps all.</p></dd>
 
 
 <dt id="arg-date-start-date-end">date_start, date_end<a class="anchor" aria-label="anchor" href="#arg-date-start-date-end"></a></dt>

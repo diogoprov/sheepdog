@@ -22,6 +22,7 @@ compare_calibration_curves(
   weighted = NULL,
   k = 5,
   k_folds = 5,
+  cv = TRUE,
   cluster = "source_audio",
   top_from = 0.7,
   bin_width = 0.05,
@@ -46,7 +47,9 @@ compare_calibration_curves(
 - target:
 
   Target probability (`threshold_p_tp`) and precision
-  (`threshold_precision`, `threshold_weighted`).
+  (`threshold_precision`, `threshold_weighted`). Several targets can be
+  given: the curves and the cross-validation are fitted once per group,
+  and the result has one row per group x target x curve.
 
 - by:
 
@@ -74,6 +77,12 @@ compare_calibration_curves(
 - k_folds:
 
   Number of folds of the cross-validation.
+
+- cv:
+
+  `FALSE` skips the cross-validation (`cv_logloss`, `cv_logloss_se` and
+  `within_1se` are `NA`), when only the thresholds and the verdict,
+  which does not use it, are needed.
 
 - cluster:
 
@@ -111,15 +120,15 @@ compare_calibration_curves(
 
 ## Value
 
-A tibble with one row per group x curve: the `by` columns, `curve`, `n`,
-`n_positive`, `cv_logloss`, `cv_logloss_se`, `within_1se` (log-loss
-within one standard error of the best curve of the group), `top_error`,
-`top_error_excess`, `n_eff_top`, `max_p`, `reaches_target`,
-`threshold_p_tp`, `threshold_precision`, `threshold_weighted`,
-`diff_weighted`, `above_reviewed` (a threshold above the highest
-reviewed score is an extrapolation), `weighted` and `verdict`. The
-attribute `"curves"` holds the fitted curves on the grid (`score`,
-`p_tp`) and `"bins"` the observed precision by bin, for
+A tibble with one row per group x target x curve: the `by` columns,
+`curve`, `target`, `n`, `n_positive`, `cv_logloss`, `cv_logloss_se`,
+`within_1se` (log-loss within one standard error of the best curve of
+the group), `top_error`, `top_error_excess`, `n_eff_top`, `max_p`,
+`reaches_target`, `threshold_p_tp`, `threshold_precision`,
+`threshold_weighted`, `diff_weighted`, `above_reviewed` (a threshold
+above the highest reviewed score is an extrapolation), `weighted` and
+`verdict`. The attribute `"curves"` holds the fitted curves on the grid
+(`score`, `p_tp`) and `"bins"` the observed precision by bin, for
 [`plot_calibration_curves()`](https://provetelab.org/sheepdog/reference/plot_calibration_curves.md).
 
 ## Details
