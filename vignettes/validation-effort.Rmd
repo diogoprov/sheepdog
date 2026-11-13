@@ -324,6 +324,36 @@ gives no information on true detections at all; it may be a site where the
 species is absent. These are interpretations of the model structure, not
 flags computed by the package.
 
+### How certain is a threshold, and does it hold everywhere?
+
+A threshold from the reviewed clips is an estimate, and clips of the same
+recording are not independent. `threshold_bootstrap()` resamples whole
+recordings (or nights, `cluster = "night"`) within each cell and recomputes
+the threshold: its upper quantile, `threshold_conservative`, meets the
+target in about `conf` of the replicates. A wide interval means the
+precision curve is flat near the target, and a new round of review near
+the threshold (another round of `select_clips()`, combined with
+`combine_rounds()`) narrows it. `threshold_by_group()` then asks
+whether one threshold per cell still gives the target precision in each
+month, hour or chorus condition, and `threshold_record()` gathers the
+threshold, its interval, the groups below the target and the provenance of
+the clips in one table or Markdown file. With clips drawn with a known
+`inclusion_prob`, all three weight each clip by `1 / inclusion_prob`, the
+weighted count that needs no calibration curve:
+
+```{r, eval = FALSE}
+thr  <- suggest_thresholds(val, target_precision = 0.95, sustained = TRUE)
+boot <- threshold_bootstrap(val, target_precision = 0.95, n_boot = 1000)
+grp  <- threshold_by_group(val, boot, by = "recording_hour",
+                           target_precision = 0.95,
+                           threshold_column = "threshold_conservative")
+threshold_record(thr, boot, grp, "validation/extraction_info.csv",
+                 target_precision = 0.95, file = "threshold_record.md")
+```
+
+The example data hold only `"top"` clips, which are not a probability
+sample, so the chunk above is not run here.
+
 ## Stage 1 along a gradient
 
 The checks above split the reviewed clips by site x species. The share of

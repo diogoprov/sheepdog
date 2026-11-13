@@ -5,7 +5,8 @@
 app_state <- function(manifest = NULL, clips_dir = NULL, verdicts_file = NULL,
                       reviewer = NULL, max_freq = NULL, selection_dir = NULL,
                       output_dir = NULL, recordings = NULL, audio_dir = NULL,
-                      site_pattern = NULL, classifier = NULL) {
+                      site_pattern = NULL, blind = FALSE,
+                      classifier = NULL) {
   st <- new.env(parent = emptyenv())
   st$manifest <- manifest
   st$clips_dir <- clips_dir
@@ -17,6 +18,7 @@ app_state <- function(manifest = NULL, clips_dir = NULL, verdicts_file = NULL,
   st$output_dir <- output_dir
   st$audio_dir <- audio_dir
   st$site_pattern <- site_pattern
+  st$blind <- isTRUE(blind)
   # CSV das gravacoes dado a run_app(): e ele que a pasta de audio atualiza
   st$recordings_arg <- if (is.character(recordings)) recordings else NULL
   st$recordings_file <- st$recordings_arg
@@ -63,11 +65,12 @@ load_app_state <- function(st) {
   st$fila <- NULL
   if (!is.null(st$manifest) && !is.null(st$clips_dir)) {
     st$fila <- if (st$review_only) {
-      review_queue(st$manifest, st$clips_dir, st$reviewer)
+      review_queue(st$manifest, st$clips_dir, st$reviewer, blind = st$blind)
     } else {
       # um manifesto sem clipes cortados nao impede o app de abrir: da para
       # sortear e cortar de novo
-      tryCatch(review_queue(st$manifest, st$clips_dir, st$reviewer),
+      tryCatch(review_queue(st$manifest, st$clips_dir, st$reviewer,
+                            blind = st$blind),
                error = function(e) {
                  warning(conditionMessage(e), " Opening the app without ",
                          "clips to review; draw and cut them again in the ",
