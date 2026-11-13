@@ -246,4 +246,13 @@ test_that("random_recordings keeps only the recordings of `sites`", {
   todos <- manifesto_cenario("rec_table")
   expect_equal(unique(m$inclusion_prob),
                unique(todos$inclusion_prob[todos$site == um]))
+  # um local com predicoes e sem gravacoes na lista para com erro
+  grav <- readr::read_csv(args$recordings, show_col_types = FALSE)
+  grav <- grav[!apply(grav == um, 1, any, na.rm = TRUE), ]
+  arq <- withr::local_tempfile(fileext = ".csv")
+  readr::write_csv(grav, arq)
+  args$recordings <- arq
+  expect_error(suppressMessages(suppressWarnings(
+    do.call(select_clips, c(list(detections = pred, sites = um), args)))),
+    "No recording of `recordings` left")
 })

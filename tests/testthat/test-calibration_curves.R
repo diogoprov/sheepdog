@@ -190,3 +190,28 @@ test_that("several targets share one fit, and cv = FALSE skips the folds", {
                "between 0 and 1")
   expect_error(compare_calibration_curves(val, cv = NA), "TRUE or FALSE")
 })
+
+test_that("folds without both verdicts and curves that fail give NA", {
+  skip_if_not_installed("mgcv")
+  # todos os negativos numa gravacao: a dobra que a deixa de fora nao tem
+  # negativos no treino
+  val <- sim_curvas(200, "certa", seed = 4)
+  val$verdict <- "positive"
+  val$verdict[1:6] <- "negative"
+  val$source_audio[1:6] <- "so_negativos.wav"
+  cmp <- suppressMessages(compare_calibration_curves(
+    val, target = c(0.9, 0.95), curves = c("logistic", "gam")))
+  expect_true(all(is.finite(cmp$cv_logloss) | is.na(cmp$cv_logloss)))
+  # uma curva que nao ajusta fica com NA, nos dois alvos
+  local_mocked_bindings(fit_curve = function(curve, d, k) {
+    if (curve == "gam") NULL else stats::glm(tp ~ x, binomial, data = d)
+  })
+  cmp <- suppressMessages(compare_calibration_curves(
+    sim_curvas(300, "certa"), target = c(0.9, 0.95),
+    curves = c("logistic", "gam")))
+  gam <- cmp[cmp$curve == "gam", ]
+  expect_equal(nrow(gam), 2)
+  expect_true(all(is.na(gam$threshold_precision)))
+  expect_true(all(is.na(gam$cv_logloss)))
+  expect_false(any(is.na(cmp$cv_logloss[cmp$curve == "logistic"])))
+})
