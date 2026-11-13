@@ -4,12 +4,14 @@ Atualizada em 2026-10-22 (America/Campo_Grande).
 
 ## Fluxo de limiares da Larissa: ler antes de mexer em limiares
 
-- `dev/NOTAS-limiares.md` resume a sessão remota de 13/11/2026: o que do
-  fluxo de limiares da Larissa já existe no sheepdog, os PRs #128–#131 e o
-  crywolf #35, as decisões de desenho (`score_bands`,
-  `compare_calibration_curves()`) e uma lista do que **precisa ser feito
-  localmente** (instalar `scam`, rodar `document()`, crywolf com CmdStan,
-  check completo, teste do app, validação com dados reais).
+- `dev/NOTAS-limiares.md` resume as sessões remotas de 13/11/2026: o que
+  do fluxo de limiares da Larissa já existe no sheepdog (todos os itens
+  fáceis e médios: PRs #128–#137 e crywolf #35), as decisões de desenho
+  (`score_bands`, `compare_calibration_curves()`, `recall_ceiling()`,
+  `warning_signs()`), por que o sinal 5 (FN por sítio) não foi
+  implementado, e uma lista do que **precisa ser feito localmente**
+  (instalar `scam`, rodar `document()`, crywolf com CmdStan, check
+  completo, teste do app, validação com o ACAD).
 
 ## Fase 2 (modelo conjunto score–ocupação): ler antes de trabalhar nela
 

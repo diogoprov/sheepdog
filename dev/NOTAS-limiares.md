@@ -1,6 +1,6 @@
 # Fluxo de limiares da Larissa × sheepdog: notas da sessão remota
 
-Sessão remota de 13/11/2026. Ler antes de mexer em limiares, calibração,
+Sessões remotas de 13/11/2026. Ler antes de mexer em limiares, calibração,
 `select_clips()` ou no leitor do crywolf. A seção **"O que fazer
 localmente"** lista o que a sessão remota não conseguiu fazer.
 
@@ -37,34 +37,25 @@ fora dela.
 | 7 | incerteza do limiar por bootstrap de gravações ou noites | **feito**: `threshold_bootstrap()` (PR #128) |
 | 7 | um limiar único em cada grupo | **feito**: `threshold_by_group()` (PR #128) |
 | 8 | ficha do limiar | **feito**: `threshold_record()` (PR #128) |
-| — | sinais de alerta 1, 2, 6, 7 e 8 (os que saem da amostra) | **feito**: `warning_signs()` (PR da sessão de 13/11, depois do #134) |
+| — | sinais de alerta 1, 2, 6, 7 e 8 (os que saem da amostra) | **feito**: `warning_signs()` (PR #137) |
 
-Os sinais 1, 3, 4 e 5 exigem anotação completa. Servem mais ao benchmark
-do que ao usuário.
+O sinal 1 (teto de recall) sai das ocasiões de `random_recordings`
+anotadas de ouvido. Os sinais 3, 4 e 5 exigem sítios-dias anotados por
+inteiro e não estão implementados (ver "Próximos itens").
 
-## PRs desta sessão
+## PRs desta sessão (todos merged)
 
-- sheepdog #128 (merged): `threshold_bootstrap()`, `threshold_by_group()`,
-  `threshold_record()` e `run_app(blind = TRUE)`.
-- sheepdog #129 (merged): `sampling_mode = "score_bands"`, com o argumento
-  `score_breaks` e a seção "Which design for which use" na ajuda de
-  `select_clips()`. `export_occupancy_data()` avisa que o crywolf descarta
-  esses clipes.
-- crywolf #35 (merged): `fp_read_sheepdog()` descarta os clipes
-  `score_bands` com um aviso, qualquer que seja o `keep_top`. Para com erro
-  quando só há clipes `score_bands` e o export não tem gravações anotadas.
-- sheepdog #130 (aberto, CI verde): `score_bands` na aba Setup do app, com
-  `parse_breaks()`, e uma seção na vinheta `sampling-designs`.
-- sheepdog #131 (aberto): `compare_calibration_curves()` e
-  `plot_calibration_curves()`, com `mgcv` e `scam` nos Suggests e uma seção
-  na vinheta `calibration`.
-- sheepdog #130–#133 (merged): `score_bands` no app, a
-  `compare_calibration_curves()`, estas notas e as figuras.
-- sheepdog #134 (merged): `recall_ceiling()`.
-- PR seguinte: `warning_signs()`, o relatório dos sinais de alerta por
-  espécie.
-- Os PRs #130 e #131 mexem no `NEWS.md`. Ao fazer o merge do segundo,
-  resolva o conflito mantendo as duas entradas.
+| PR | O que entrou |
+|---|---|
+| sheepdog #128 | `threshold_bootstrap()`, `threshold_by_group()`, `threshold_record()` e `run_app(blind = TRUE)` |
+| sheepdog #129 | `sampling_mode = "score_bands"` (argumento `score_breaks`; seção "Which design for which use" na ajuda de `select_clips()`); `export_occupancy_data()` avisa que o crywolf descarta esses clipes |
+| crywolf #35 | `fp_read_sheepdog()` descarta os clipes `score_bands` com aviso, qualquer que seja o `keep_top`; erro quando só há clipes `score_bands` e nenhuma gravação anotada |
+| sheepdog #130 | `score_bands` na aba Setup do app (`parse_breaks()`); seção na vinheta `sampling-designs` |
+| sheepdog #131 | `compare_calibration_curves()` e `plot_calibration_curves()`; `mgcv` e `scam` nos Suggests; seção na vinheta `calibration` |
+| sheepdog #132 | estas notas e o ponteiro em `dev/MEMORY.md` |
+| sheepdog #133 | `score_bands` nas figuras: vinheta `sampling-designs`, esquema do site, `extraction_flow` do README, figura de abertura do app e cheatsheet |
+| sheepdog #134 | `recall_ceiling()`; seção na vinheta `validation-effort` |
+| sheepdog #137 | `warning_signs()`; seção na vinheta `validation-effort`; estas notas atualizadas |
 
 ## Decisões de desenho (não refazer sem motivo)
 
@@ -81,6 +72,29 @@ do que ao usuário.
 - Esses clipes viesariam a taxa de falsos positivos nas duas direções.
 - O erro só ocorre quando não sobra nada para estimar falsos positivos
   (nenhum clipe aleatório e nenhuma gravação anotada).
+
+**`recall_ceiling()`:**
+- A unidade é a ocasião sorteada com `random_recordings` e anotada de
+  ouvido (`verdict` positivo = a espécie estava lá). O maior score da
+  espécie na ocasião vem de `detections`, com o `occasion_id` montado como
+  em `select_clips()` (mesmo `occasion_unit` e remapeamento).
+- Teto = fração ponderada das ocasiões com a espécie que têm predição ≥
+  `min_confidence`; recall em θ = fração com maior score ≥ θ = teto ×
+  `share_above`. Bootstrap por gravação inteira (`cluster`).
+- Avisa quando nenhuma ocasião anotada casa com as predições (unidade ou
+  remapeamento errado).
+
+**`warning_signs()`:**
+- Sinais 2 e 6 usam só os clipes com `inclusion_prob`, ponderados; sem
+  nenhum, usam todos sem peso e avisam que são indicativos.
+- Sinal não checado é `NA`, não `FALSE`; `n_checked` e `n_raised` contam.
+- Sinal 7 por sítio olha a precisão acima do limiar da própria célula;
+  para outras colunas usa `threshold_by_group()`.
+- Sinal 8 usa o pior veredito da espécie em `compare_calibration_curves()`
+  (`sample_more_near_threshold` e `too_few_clips` viram `NA`).
+- Veredito: `not_trustworthy` (sem limiar, nenhuma curva alcança o alvo,
+  ou 3+ sinais), `use_with_caveats` (1–2), `trustworthy_with_care` (0),
+  `not_assessed`. Limites e regra são heurísticos: validar com o ACAD.
 
 **`compare_calibration_curves()`:**
 - As dobras da validação cruzada são de gravações inteiras
@@ -142,8 +156,10 @@ do que ao usuário.
    `pkgdown::build_site()`.**
    - A sessão remota só rodou `--no-tests --ignore-vignettes` e renderizou
      as vinhetas alteradas, uma a uma.
-   - Confira se `compare_calibration_curves` e `plot_calibration_curves`
-     aparecem na seção "Stage 2 - Calibration" da referência.
+   - Confira se as funções novas aparecem na referência:
+     `compare_calibration_curves` e `plot_calibration_curves` em "Stage 2 -
+     Calibration"; `recall_ceiling` e `warning_signs` em "Stage 1 - After
+     the review".
 5. **Testar o app na mão.**
    - Rode `run_app()` e use a aba Setup com `score_bands`: as faixas
      digitadas, o campo Strata e a mensagem sobre a finalidade dos clipes.
@@ -151,21 +167,33 @@ do que ao usuário.
      Design devem ficar escondidos e a ordem deve ser embaralhada por
      revisor.
    - Tire novos screenshots para a vinheta do app, se ela os usar.
-6. **Validar `compare_calibration_curves()` com dados reais.**
+6. **Validar `compare_calibration_curves()`, `recall_ceiling()` e
+   `warning_signs()` com dados reais.**
    - Use os dados do piloto da Larissa (ACAD) e, se possível, o Curiango
      (`dev/benchmarks`).
    - Confira se YRWA e GCKI recebem `use_monotone_or_weighted` ou
      `no_curve_reaches_target`, como o benchmark dela indica.
    - Com dados reais, reveja os valores padrão: `top_from = 0.7`,
      `bin_width = 0.05`, `min_n = 15`, `max_error` e `tolerance = 0.03`.
+   - Em `warning_signs()`, compare o veredito com a classificação da
+     Larissa (confiável com cuidado: OVEN, BTNW, HETH, WIWR; não
+     confiável: YRWA, GCKI, RBNU, AMCR, PUFI, CEDW, MODO, NAWA, WTSP) e
+     ajuste `min_tp_kept = 0.25`, `max_fp_spread = 0.3`,
+     `min_ceiling = 0.5` e a regra do veredito.
+   - Em `recall_ceiling()`, o ACAD tem anotação completa: o teto calculado
+     com um sorteio de `random_recordings` deve bater, dentro do
+     intervalo, com o teto exato.
 7. **Email para a Larissa.**
-   - O rascunho ficou só no chat da sessão remota, porque o endereço dela
-     não estava disponível.
-   - Antes de enviar, atualize o rascunho: "faixas de score" já está
-     implementado (PR #129), e a comparação com GAM também (PR #131).
-   - Pergunte se ela imagina o fluxo alternativo como um artigo separado
-     (com o benchmark do ACAD, MABI e SIMR) ou como uma vinheta do
-     sheepdog.
+   - O primeiro email foi enviado pelo Diogo. O segundo ficou redigido só
+     no chat da sessão remota (sem o endereço dela). Ele lista tudo o que
+     ficou pronto (#128–#137, crywolf #35) e explica por que o sinal 5
+     não foi implementado.
+   - O segundo email pede que ela teste o app com os datasets dela e tire
+     screenshots: Setup com `score_bands`, Review em modo cego, painel de
+     áudio, erros. Pede também que rode `compare_calibration_curves()` e
+     `warning_signs()` no ACAD e que diga se o ACAD pode servir para
+     testar os caminhos do sinal 5 (ver "Próximos itens").
+   - Ao receber os screenshots, atualize as vinhetas do app.
 8. **Re-renderizar o fluxograma do README com o DiagrammeR.**
    - O PR #133 pôs `score_bands` nas figuras: a da vinheta, o esquema do
      site, `extraction_flow`, a figura de abertura do app e o cheatsheet.
@@ -181,15 +209,25 @@ do que ao usuário.
 
 ## Próximos itens
 
-Os itens médios do documento da Larissa estão feitos (`recall_ceiling()` e
-`warning_signs()`). Falta o item maior:
+Todos os itens fáceis e médios do documento da Larissa estão no main.
+Falta:
 
-1. **Falsos negativos por sítio, descontada a atividade** (sinal 5;
-   sinais 3 e 4 também). Precisa de dias-sítio com atividade verdadeira,
-   ou seja, gravações anotadas por inteiro.
-2. **Validar `warning_signs()` com dados reais** (ACAD da Larissa): os
-   limites `min_tp_kept = 0.25`, `max_fp_spread = 0.3` e
-   `min_ceiling = 0.5`, e a regra do veredito (3 sinais ou mais, ou sem
-   limiar, ou nenhuma curva alcançando o alvo → `"not_trustworthy"`), são
-   heurísticas. Compare com a classificação dela (confiável com cuidado:
-   OVEN, BTNW, HETH, WIWR; não confiável: YRWA, GCKI, RBNU, AMCR, …).
+1. **Falsos negativos por sítio, descontada a atividade** (sinal 5, e os
+   sinais 3 e 4). Não implementado de propósito: o teste precisa da
+   atividade verdadeira de cada sítio-dia (quantos minutos tiveram a
+   espécie), que só sai de gravações anotadas por inteiro. O
+   `random_recordings` anota poucas ocasiões por sítio e só presença ou
+   ausência: basta para o teto de recall, mas não para um teste por
+   permutação. Implementar com esses dados daria um resultado com
+   aparência de rigor e sem base. Caminhos propostos à Larissa (nenhum
+   implementado):
+   - um modo de amostragem de **sítios-dias inteiros**, sorteados, para
+     anotar;
+   - levar a pergunta ao **modelo de ocupação**, com covariáveis de
+     detecção por sítio no crywolf.
+   O ACAD, com anotação completa, serviria para comparar os dois.
+2. **Validar com dados reais** os limites e vereditos de
+   `compare_calibration_curves()` e `warning_signs()` (item 6 acima).
+3. **Vinheta ou artigo do fluxo alternativo** (contagem ponderada como
+   estimador principal, logística como diagnóstico): depende da resposta
+   da Larissa sobre artigo separado ou vinheta.
