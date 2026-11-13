@@ -26,7 +26,7 @@ and compares the clips they select.
 A fourth design, for later rounds aimed by a model, has its own function,
 `select_directed()` (see [Directed rounds](#directed-rounds-select_directed)).
 
-![The same night of twelve hourly recordings, shown three times. "top" keeps the highest-scoring prediction of each recording; "random_detections" draws recordings with a detection above the threshold and reviews every detection in them; "random_recordings" draws recordings among all, including ones without predictions, and annotates them by ear.](figures/sampling-designs.svg){width=100%}
+![The same night of twelve hourly recordings, shown four times. "top" keeps the highest-scoring prediction of each recording; "random_detections" draws recordings with a detection above the threshold and reviews every detection in them; "random_recordings" draws recordings among all, including ones without predictions, and annotates them by ear; "score_bands" draws predictions at random within each band of score, for thresholds and calibration.](figures/sampling-designs.svg){width=100%}
 
 ## Example data
 

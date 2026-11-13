@@ -59,6 +59,8 @@ digraph extraction {
               fillcolor = "#f9e3ae"]
     rec      [label = "\\"random_recordings\\"\nrandom recordings (or minutes)\namong all recorded",
               fillcolor = "#f9e3ae"]
+    bands    [label = "\\"score_bands\\"\nn_top random clips per\nsite x species x strata x score band\n(score_breaks); for thresholds and\ncalibration, not for crywolf",
+              fillcolor = "#f9e3ae"]
     meta     [label = "target_total / max_per_species\nbalanced by species (and hour)",
               fillcolor = "#fceecf"]
   }
@@ -100,11 +102,13 @@ digraph extraction {
   modo     -> top
   modo     -> det
   modo     -> rec
+  modo     -> bands
   bins     -> det       [style = dashed]
   lista    -> rec       [style = dashed]
   top      -> meta
   det      -> meta
   rec      -> simular
+  bands    -> simular
   meta     -> simular
   simular  -> cortar    [label = " no"]
   simular  -> manifesto [label = " yes: manifest only,\n no audio cut, no zip", style = dashed]

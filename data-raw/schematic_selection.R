@@ -1,4 +1,4 @@
-# Esquema dos tres desenhos de select_clips(): a mesma noite de 12 gravacoes.
+# Esquema dos quatro desenhos de select_clips(): a mesma noite de 12 gravacoes.
 # Predicoes ilustrativas, as de dev/figures/sampling_designs_svg.py.
 # Rode a partir da raiz do repositorio.
 source("data-raw/schematic_icons.R")
@@ -23,6 +23,8 @@ linha <- function(y, titulo, sub, celula_on, ponto_on) {
   out
 }
 tem <- function(i) any(pred[[i]] >= limiar)
+# predicoes sorteadas em "score_bands": duas por faixa (0.1-0.4, 0.4-0.7, 0.7-1)
+faixas <- c("1 1", "9 1", "2 3", "6 4", "5 2", "8 2")
 b <- c(
   linha(16, "\"top\"", "highest score per recording",
         function(i) FALSE, function(i, j) pred[[i]][j] == max(pred[[i]])),
@@ -31,5 +33,8 @@ b <- c(
   svg_text(20, 146, "above the threshold", 11.5, cinza, "start"),
   linha(164, "\"random_recordings\"", "any recording, even empty", function(i) i %in% c(3, 6, 9),
         function(i, j) i %in% c(3, 6, 9)),
-  svg_text(x0 + 16, 238, "18h", 11, cinza), svg_text(x0 + 11.5 * cel, 238, "05h", 11, cinza))
-save_schematic(b, "schematic_selection", 660, 250)
+  linha(238, "\"score_bands\"", "random clips per score band", function(i) FALSE,
+        function(i, j) paste(i, j) %in% faixas),
+  svg_text(20, 294, "thresholds, calibration", 11.5, cinza, "start"),
+  svg_text(x0 + 16, 312, "18h", 11, cinza), svg_text(x0 + 11.5 * cel, 312, "05h", 11, cinza))
+save_schematic(b, "schematic_selection", 660, 324)
