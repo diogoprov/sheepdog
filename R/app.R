@@ -843,7 +843,8 @@ sampling_ui <- function(id, detections, audio_dir = NULL) {
     shiny::sidebarPanel(
       width = 4,
       shiny::selectInput(ns("mode"), "Sampling mode",
-                         c("random_detections", "top", "random_recordings")),
+                         c("random_detections", "top", "random_recordings",
+                           "score_bands")),
       hint("<b>top</b>: only the highest-scored clips (n_top per night x",
            "hour), for retraining and calibration.",
            "<b>random_detections</b>: draw clips from occasions drawn at",
@@ -851,7 +852,10 @@ sampling_ui <- function(id, detections, audio_dir = NULL) {
            "detection above the threshold in a drawn occasion is a clip.",
            "<b>random_recordings</b>: draw recordings (or minutes) at",
            "random from everything recorded, with or without detections,",
-           "to annotate by ear."),
+           "to annotate by ear.",
+           "<b>score_bands</b>: draw n_top clips per stratum x score band,",
+           "across the whole score range, for thresholds and calibration;",
+           "not for the false-positive rate of an occupancy model."),
       shiny::selectInput(ns("occasion_unit"), "Occasion", c("file", "minute")),
       hint("The unit of time over which a species counts as detected or",
            "not at a site: a whole file or one minute of it."),
@@ -862,12 +866,21 @@ sampling_ui <- function(id, detections, audio_dir = NULL) {
       num("n_top", "n_top (per stratum, or per night x hour in top)", 2,
           min = 1),
       hint("<b>top</b>: clips kept per site x species x night x hour.",
-           "<b>random_detections</b>: occasions drawn per stratum."),
+           "<b>random_detections</b>: occasions drawn per stratum.",
+           "<b>score_bands</b>: clips drawn per stratum x score band."),
       shiny::conditionalPanel(
-        "input.mode == 'random_detections'", ns = ns,
+        "input.mode == 'random_detections' || input.mode == 'score_bands'",
+        ns = ns,
         shiny::selectInput(ns("strata"), "Strata", strata_presets),
         hint("Groups, within each site x species, in which the occasions",
-             "are drawn (e.g. night x hour).")),
+             "(or, in score_bands, the clips) are drawn (e.g. night x",
+             "hour).")),
+      shiny::conditionalPanel(
+        "input.mode == 'score_bands'", ns = ns,
+        shiny::textInput(ns("score_breaks"), "Score bands (limits)",
+                         "0.1, 0.4, 0.7, 1"),
+        hint("Increasing limits between 0 and 1, separated by commas.",
+             "Predictions outside them are not drawn.")),
       shiny::conditionalPanel(
         "input.mode == 'random_recordings'", ns = ns,
         num("recording_fraction", "Fraction of recordings per site", 0.01,
@@ -875,7 +888,8 @@ sampling_ui <- function(id, detections, audio_dir = NULL) {
         hint("Share of the recordings (or minutes) of each site drawn, at",
              "least one per site.")),
       num("target_total", "Total clips per site (optional)", min = 1),
-      hint("Split evenly among species. Not used by random_recordings."),
+      hint("Split evenly among species. Not used by random_recordings",
+           "or score_bands."),
       num("max_per_species", "Maximum clips per site x species (optional)",
           min = 1),
       hint("A fixed limit per site and species. Ignored when a total per",
@@ -943,13 +957,33 @@ sampling_args <- function(input) {
                sites = input$sites, species = input$species,
                hour_start = input$hour_start, hour_end = input$hour_end,
                remap_from = input$remap_from, remap_to = input$remap_to)
-  if (identical(input$mode, "random_detections")) {
+  if (input$mode %in% c("random_detections", "score_bands")) {
     args$strata <- input$strata
+  }
+  if (identical(input$mode, "score_bands")) {
+    args$score_breaks <- parse_breaks(input$score_breaks)
+    args$target_total <- NULL
+    args$max_per_species <- NULL
+    args$threshold <- NULL
   }
   if (identical(input$mode, "random_recordings")) {
     args$recording_fraction <- input$recording_fraction
   }
   args[!vapply(args, vazio, logical(1))]
+}
+
+# Limites das faixas de score digitados como "0.1, 0.4, 0.7, 1"; virgula
+# decimal tambem vale quando separada por ponto e virgula ("0,1; 0,4")
+parse_breaks <- function(x) {
+  if (is.null(x) || !nzchar(trimws(x))) return(NULL)
+  partes <- if (grepl(";", x)) strsplit(x, ";")[[1]] else strsplit(x, ",")[[1]]
+  partes <- gsub(",", ".", trimws(partes))
+  valores <- suppressWarnings(as.numeric(partes[nzchar(partes)]))
+  if (anyNA(valores)) {
+    stop("Score bands must be numbers separated by commas, ",
+         "such as 0.1, 0.4, 0.7, 1.", call. = FALSE)
+  }
+  valores
 }
 
 # Roda uma funcao guardando os avisos e mensagens para mostrar no app
@@ -1081,7 +1115,11 @@ sampling_server <- function(id, detections, selection_dir, output_dir,
     realocadas <- shiny::reactiveVal(NULL)  # gravacoes trocadas de pasta
 
     shiny::observeEvent(input$draw, {
-      args <- sampling_args(input)
+      args <- tryCatch(sampling_args(input), error = function(e) e)
+      if (inherits(args, "error")) {
+        notas(paste("Error:", conditionMessage(args)))
+        return()
+      }
       if (identical(input$mode, "random_recordings")) {
         args$recordings <- recordings
       }
