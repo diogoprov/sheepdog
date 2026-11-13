@@ -27,6 +27,10 @@ function select(st){
   if(st.mode==='top'){
     const g={};for(let f=0;f<NF;f++)for(let m=0;m<NM;m++)DATA[f][m].forEach(s=>{if(s<0.1)return;(g[fileHour(f)]||(g[fileHour(f)]=[])).push({s,f,m});});
     Object.values(g).forEach(a=>{a.sort((x,y)=>y.s-x.s);a.slice(0,st.ntop).forEach(p=>addClip(p.f,p.m,1));});return res;}
+  if(st.mode==='score_bands'){ // n_top predictions at random in each score band
+    const B=st.breaks,P=B.slice(0,-1).map(()=>[]);
+    for(let f=0;f<NF;f++)for(let m=0;m<NM;m++)DATA[f][m].forEach(s=>{for(let b=0;b<P.length;b++){const last=b===P.length-1;if(s>=B[b]&&(s<B[b+1]||(last&&s<=B[b+1]))){P[b].push({f,m});break;}}});
+    const r=rng(st.seed);P.forEach(a=>{shuffle(a,r).slice(0,st.ntop).forEach(p=>addClip(p.f,p.m,1));res.p.push(Math.min(st.ntop,a.length)/a.length);});return res;}
   if(st.mode==='random_detections'){
     const S={};for(let f=0;f<NF;f++)for(let m=0;m<NM;m++){if(!DATA[f][m].some(s=>s>=st.thr))continue;const k=occKey(st.occ,f,m);if(res.cand.has(k))continue;res.cand.add(k);
       const sk=st.strata==='night_hour'?String(fileHour(f)):'all';(S[sk]||(S[sk]=[])).push(k);}
@@ -71,11 +75,11 @@ function block(x0,y0,cell,st,res,opt={}){
   return s;}
 
 // ---------- layout ----------
-const W=1690,H=1022;let out=[];
+const W=2020,H=1022;let out=[];
 out.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`);
 out.push(`<rect width="${W}" height="${H}" fill="${C.bg}"/>`);
 out.push(text(40,58,'How sheepdog picks the clips you review',{size:30,weight:700}));
-out.push(text(40,86,'One site, one species, one night of 30-minute recordings from 17:00 to midnight (simulated scores). Threshold 0.50 throughout.',{size:15,color:C.muted}));
+out.push(text(40,86,'One site, one species, one night of 30-minute recordings from 17:00 to midnight (simulated scores). Threshold 0.50 throughout (score_bands uses score bands instead).',{size:15,color:C.muted}));
 
 // Panel A
 const ax=40,ay=120,aw=560,ah=H-160;
@@ -116,7 +120,7 @@ defs.forEach(([k,v])=>{out.push(text(ax+24,ly,k,{size:13,weight:700}));const p=p
 // Grid
 const gx=640,gy=120,cw=318,gapx=12;
 const colsX=i=>gx+30+i*(cw+gapx);
-const heads=[['top','only the highest-scored clips'],['random_detections','clips from occasions drawn at random'],['random_recordings','random recordings, with or without detections']];
+const heads=[['top','only the highest-scored clips'],['random_detections','clips from occasions drawn at random'],['random_recordings','random recordings, with or without detections'],['score_bands','random clips in each score band']];
 heads.forEach(([h,s],i)=>{out.push(text(colsX(i)+8,gy+18,h,{size:17,weight:700}));out.push(text(colsX(i)+8,gy+38,s,{size:12.5,color:C.muted}));});
 const rowY=r=>gy+56+r*300;
 ['Occasion = file (30 min)','Occasion = minute'].forEach((t,r)=>{const y=rowY(r)+120;out.push(`<text transform="translate(${gx+12} ${y}) rotate(-90)" font-family='${F}' font-size="14" font-weight="700" fill="${C.ink}" text-anchor="middle">${t}</text>`);});
@@ -133,6 +137,9 @@ cellPanel(1,0,{mode:'random_detections',occ:'file',thr:THR,ntop:2,strata:'night_
 cellPanel(1,1,{mode:'random_detections',occ:'minute',thr:THR,ntop:2,strata:'night_hour',seed:SEED},r=>`n_top 2 per night × hour: **${r.drawn.size}** of ${r.cand.size} minutes drawn. **Every detection ≥ 0.50** inside a drawn minute is a clip: **${r.nclips}** clips.`);
 cellPanel(2,0,{mode:'random_recordings',occ:'file',frac:0.15,thr:THR,seed:SEED},r=>`Fraction 0.15: **${r.drawn.size}** of 14 files drawn at random. Each file should be listened to in full (30 min), irrespective of the classifier's outputs.`);
 cellPanel(2,1,{mode:'random_recordings',occ:'minute',frac:0.02,thr:THR,seed:SEED+3},r=>`Fraction 0.02: **${r.drawn.size}** of 420 minutes drawn at random, with or without detections.`);
+const BANDS=[0.1,0.4,0.7,1];
+cellPanel(3,0,{mode:'score_bands',occ:'file',ntop:2,breaks:BANDS,seed:SEED},r=>`**2 clips per score band** (0.1–0.4, 0.4–0.7, 0.7–1), drawn at random among all predictions: **${r.nclips}** clips. For thresholds and calibration curves across the score range.`,'Chosen by score: no false-positive rate, and crywolf drops them.');
+cellPanel(3,1,{mode:'score_bands',occ:'minute',ntop:2,breaks:BANDS,seed:SEED},r=>`Same **${r.nclips}** clips: the bands, not the occasion, set the draw. Each clip carries its inclusion probability (drawn / predictions of its band).`);
 
 // Strata strip
 const sy=rowY(2)-4;

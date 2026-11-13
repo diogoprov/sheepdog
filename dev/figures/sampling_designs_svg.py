@@ -2,7 +2,7 @@
 vignette("sampling-designs"). Run from the package root:
 python3 dev/figures/sampling_designs_svg.py
 
-The same night of twelve hourly recordings is shown three times; each row
+The same night of twelve hourly recordings is shown four times; each row
 marks what one sampling_mode of select_clips() sends to review. The
 predictions are illustrative, not data."""
 from xml.sax.saxutils import escape
@@ -18,8 +18,11 @@ PRED = [[.35, .62], [.81, .44, .58], [], [.28], [.92, .71],
 THR = 0.5
 DRAWN_DET = {1, 9}        # occasions drawn among those with a detection
 DRAWN_REC = {2, 5, 8}     # recordings drawn among all
+BREAKS = [0.1, 0.4, 0.7, 1.0]  # score bands of "score_bands"
+# (recording, prediction) drawn in "score_bands": two per band
+DRAWN_BAND = {(0, 0), (8, 0), (1, 2), (5, 3), (4, 1), (7, 1)}
 
-W, H = 1000, 500
+W, H = 1000, 630
 LEFT, RIGHT = 270, 750    # strip of recordings
 ROW_H, ROW_GAP, TOP = 96, 34, 40
 N = len(PRED)
@@ -63,6 +66,9 @@ rows = [
      ["false-positive rate", "(observation-confirmation", "design)."]),
     ("C", '"random_recordings"', "random recordings, by ear",
      ["false-positive and", "false-negative rates", "(multiple-method design)."]),
+    ("D", '"score_bands"', "random clips in each score band",
+     ["thresholds and calibration", "across the score range.", "Chosen by score:",
+      "no false-positive rate."]),
 ]
 
 out.append(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" '
@@ -70,11 +76,13 @@ out.append(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" '
 out.append('<title id="t">What each sampling design of select_clips() '
            'sends to review</title>')
 out.append('<desc id="d">The same night of twelve hourly recordings is shown '
-           'three times. Top keeps the highest-scoring prediction of each '
+           'four times. Top keeps the highest-scoring prediction of each '
            'recording. Random_detections draws recordings with a detection '
            'above the threshold and reviews every detection in them. '
            'Random_recordings draws recordings among all, including ones '
-           'without predictions, and annotates them by ear.</desc>')
+           'without predictions, and annotates them by ear. Score_bands draws '
+           'two predictions at random in each band of score (0.1 to 0.4, '
+           '0.4 to 0.7, 0.7 to 1).</desc>')
 rect(0, 0, W, H, "#ffffff")
 text(LEFT, 22, "sampling_mode", 11, GREY)
 text(RIGHT + 40, 22, "use", 11, GREY)
@@ -104,6 +112,8 @@ for r, (lab, mode, how, use) in enumerate(rows):
                 chosen = j == top_i
             elif r == 1:
                 chosen = i in DRAWN_DET and c >= THR
+            elif r == 3:
+                chosen = (i, j) in DRAWN_BAND
             else:
                 chosen = False
             lollipop(px, base, hgt, c, chosen)
@@ -116,6 +126,12 @@ for r, (lab, mode, how, use) in enumerate(rows):
         ty = base - THR * hgt
         line(LEFT, ty, RIGHT, ty, INK, 0.8, "4 3")
         text(RIGHT - 2, ty - 5, "threshold", 10, GREY, "end")
+    if r == 3:
+        for b in BREAKS[1:-1]:
+            ty = base - b * hgt
+            line(LEFT, ty, RIGHT, ty, GREY, 0.8, "1 3")
+            text(RIGHT + 6, ty + 4, f"{b:.1f}", 10, GREY)
+        text(RIGHT - 2, base - hgt - 2, "score bands", 10, GREY, "end")
     if r == 0:
         out.append(f'<text transform="translate({LEFT - 22},{base - hgt / 2})'
                    f' rotate(-90)" font-family="{SANS}" font-size="10" '
@@ -124,7 +140,7 @@ for r, (lab, mode, how, use) in enumerate(rows):
         text(RIGHT + 40, y0 + 16 + k * 16, s, 11.5)
 
 # time axis
-yb = TOP + 3 * ROW_H + 2 * ROW_GAP + 18
+yb = TOP + 4 * ROW_H + 3 * ROW_GAP + 18
 for i in range(0, N, 3):
     hh = (18 + i) % 24
     text(LEFT + i * CELL + CELL / 2, yb, f"{hh:02d}:00", 10, GREY, "middle")

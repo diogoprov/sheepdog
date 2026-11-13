@@ -24,7 +24,7 @@ reference:
     desc: |
       Read BirdNET selection tables, select clips for manual review, and cut and pack them. Each sampling design sends a different part of the night to review; later rounds leave out what was reviewed.
 
-      ![The same night of twelve recordings under the three sampling designs of select_clips().](../figures/schematic_selection.png)
+      ![The same night of twelve recordings under the four sampling designs of select_clips().](../figures/schematic_selection.png)
 
       ![Review rounds: what was reviewed leaves the pool, and combine_rounds() gives one simple random sample.](../figures/schematic_rounds.png)
     contents:
