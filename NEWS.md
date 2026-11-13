@@ -1,5 +1,13 @@
 # sheepdog (development version)
 
+- New `sampling_mode = "score_bands"` in `select_clips()`: `n_top` clips
+  drawn at random in each stratum x score band (`score_breaks`, default
+  0.1, 0.4, 0.7, 1), with `inclusion_prob` = drawn / candidates of the
+  stratum x band. These clips are meant for thresholds and calibration
+  curves across the whole score range, not for the false-positive rate of
+  an occupancy model, because they were chosen by their score. The
+  documentation of `select_clips()` gains a table of which design serves
+  which use. `export_occupancy_data()` warns that crywolf drops these clips.
 - New `threshold_bootstrap()`: the uncertainty of the threshold of
   `suggest_thresholds()` by resampling whole recordings (or nights) within
   each cell, with a conservative threshold (an upper quantile) and the

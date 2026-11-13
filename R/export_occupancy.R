@@ -23,8 +23,8 @@
 #'   x species pairs absent from this table had no prediction >=
 #'   `min_confidence` (a censored score).
 #' * `validation.csv`: the reviewed clips of the `"top"`,
-#'   `"random_detections"` and `"directed_pps"` designs (the last from
-#'   [select_directed()]), with their verdict, inclusion
+#'   `"random_detections"`, `"directed_pps"` (from [select_directed()]) and
+#'   `"score_bands"` designs, with their verdict, inclusion
 #'   probability, round and stratum, and what a negative verdict covers
 #'   (`review_scope`; only when `validation` is given).
 #' * `recordings_verified.csv`: the occasions annotated by ear in the
@@ -674,6 +674,15 @@ export_validation <- function(validation, ocasioes, candidatas = NULL) {
       arrange(site, occasion_id, species_code, clip_start)
   )
   check_clips_in_both_designs(out$validation)
+  faixas <- sum(out$validation$sampling_mode %in% "score_bands")
+  if (faixas > 0) {
+    warning(faixas, " reviewed clip(s) of sampling_mode = \"score_bands\" ",
+            "are written to validation.csv. They were chosen by their score, ",
+            "so they serve thresholds and calibration but not the ",
+            "false-positive rate of an occupancy model: crywolf drops them. ",
+            "Use \"random_detections\" or \"random_recordings\" clips for ",
+            "the occupancy model.", call. = FALSE)
+  }
   gravacoes <- filter(v, sampling_mode == "random_recordings")
   nas_duas <- semi_join(
     distinct(filter(out$validation, sampling_mode %in%

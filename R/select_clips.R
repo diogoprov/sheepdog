@@ -24,8 +24,35 @@
 #'   Miller et al. (2011, \doi{10.1890/10-1396.1}). The clip is the whole
 #'   recording (or minute), copied once per species to annotate, and
 #'   `confidence` is `NA`.
+#' * `"score_bands"` draws, at random, `n_top` predictions per stratum and
+#'   score band (`score_breaks`, by default 0.1 to 0.4, 0.4 to 0.7 and 0.7 to 1),
+#'   with `inclusion_prob = n_drawn / n_candidates` in each stratum x band.
+#'   The same number of clips per band covers the whole score range, which
+#'   is where a threshold and a calibration curve are estimated, and the
+#'   weights `1 / inclusion_prob` restore the true proportions when bands
+#'   are pooled (Wood & Kahl 2024, \doi{10.1007/s10336-024-02144-5}).
 #'
-#' In both random modes, use the same `threshold` as the occupancy analysis.
+#' In the random modes, use the same `threshold` as the occupancy analysis.
+#'
+#' @section Which design for which use:
+#' The draw decides what the reviewed clips can be used for:
+#'
+#' | Use | `"top"` | `"random_detections"` | `"random_recordings"` | `"score_bands"` |
+#' |---|---|---|---|---|
+#' | retraining the classifier | yes | yes | yes | yes |
+#' | calibration curve ([calibrate()], [fit_calibration()]) | high scores only | yes | no score | yes, best near the threshold |
+#' | threshold by weighted precision ([suggest_thresholds()]) | no (no `inclusion_prob`) | yes | no score | yes |
+#' | false-positive occupancy models (crywolf) | dropped | yes | yes (annotated occasions) | **no** |
+#'
+#' The clips of `"score_bands"` are chosen by their score, so they cannot
+#' estimate the false-positive rate of the observation-confirmation design,
+#' which needs clips chosen independently of the score:
+#' [export_occupancy_data()] writes them to `validation.csv` with a warning,
+#' and `crywolf::fp_read_sheepdog()` drops them with a warning, or stops
+#' when they are the only reviewed clips. For both uses in one project,
+#' draw a `"random_detections"` round for the occupancy model and a
+#' `"score_bands"` round for the threshold; a clip drawn by both is
+#' reviewed once (`previous`, `inherit`).
 #'
 #' @section Review rounds:
 #' `previous` draws one more round of a design without repeating what was
@@ -85,8 +112,9 @@
 #' model.
 #'
 #' @param detections Predictions, as returned by [read_selection_tables()].
-#' @param sampling_mode `"top"`, `"random_detections"` or
-#'   `"random_recordings"`. See *Sampling modes*.
+#' @param sampling_mode `"top"`, `"random_detections"`,
+#'   `"random_recordings"` or `"score_bands"`. See *Sampling modes* and
+#'   *Which design for which use*.
 #' @param occasion_unit The occasion of the occupancy model: `"file"` (the
 #'   whole recording) or `"minute"` (minute of the file, from
 #'   `file_offset`).
@@ -95,7 +123,12 @@
 #'   `n_detections_occasion` column. `NULL` leaves that column `NA`.
 #' @param n_top `"top"`: predictions kept per site x species x night x
 #'   hour. `"random_detections"`: occasions drawn per stratum (`strata`).
-#' @param strata `"random_detections"`: the strata of the occasion draw
+#'   `"score_bands"`: predictions drawn per stratum and score band.
+#' @param score_breaks `"score_bands"`: the limits of the score bands,
+#'   increasing, within 0 and 1. Predictions below the first limit are not
+#'   drawn; the last band includes its upper limit.
+#' @param strata `"random_detections"` and `"score_bands"`: the strata of
+#'   the draw (within each, `"score_bands"` also splits by score band)
 #'   (ignored by the other modes). Either one of the presets, all within
 #'   site x species:
 #'   * `"night_hour"`: night x hour (the rule of 2.0.0);
@@ -216,11 +249,13 @@
 #' @export
 select_clips <- function(detections,
                          sampling_mode = c("top", "random_detections",
-                                           "random_recordings"),
+                                           "random_recordings",
+                                           "score_bands"),
                          occasion_unit = c("file", "minute"),
                          threshold = NULL,
                          n_top = 2,
                          strata = "night_hour",
+                         score_breaks = c(0.1, 0.4, 0.7, 1),
                          covariates = NULL,
                          recording_fraction = 0.01,
                          n_recordings_per_site = NULL,
@@ -260,11 +295,11 @@ select_clips <- function(detections,
   if (!is.null(previous)) {
     anteriores <- read_previous(previous)
     modos <- setdiff(unique(anteriores$sampling_mode), modo)
-    aleatorios <- c("random_detections", "random_recordings")
+    aleatorios <- c("random_detections", "random_recordings", "score_bands")
     if (length(modos) > 0 && !all(c(modo, modos) %in% aleatorios)) {
       stop("`previous` has clips of ", paste(modos, collapse = ", "),
            ", and this draw is ", modo, ": `previous` takes rounds of the ",
-           "same design, or the other random design.", call. = FALSE)
+           "same design, or another random design.", call. = FALSE)
     }
     outro_desenho <- filter(anteriores, sampling_mode != modo)
     if (nrow(outro_desenho) == 0) outro_desenho <- NULL
@@ -295,6 +330,23 @@ select_clips <- function(detections,
   }
   if (!is.null(cells) && modo != "random_detections") {
     stop("`cells` is for \"random_detections\".", call. = FALSE)
+  }
+  if (modo == "score_bands") {
+    if (!is.numeric(score_breaks) || length(score_breaks) < 2 ||
+        anyNA(score_breaks) || is.unsorted(score_breaks, strictly = TRUE) ||
+        score_breaks[1] < 0 || score_breaks[length(score_breaks)] > 1) {
+      stop("`score_breaks` must be at least two increasing numbers ",
+           "within 0 and 1.", call. = FALSE)
+    }
+    if (!is.null(rodadas)) {
+      stop("Later rounds are not available for \"score_bands\" yet.",
+           call. = FALSE)
+    }
+    if (!is.null(target_total) || !is.null(max_per_species)) {
+      stop("`target_total` and `max_per_species` are not available for ",
+           "\"score_bands\": `n_top` clips are drawn per stratum and band, ",
+           "so that `inclusion_prob` stays exact.", call. = FALSE)
+    }
   }
 
   # Piloto: restringir aos locais pedidos
@@ -417,6 +469,49 @@ select_clips <- function(detections,
     message(nrow(selecao), " clips selected (top ", n_top,
             " per site x species x night x hour) of ",
             n_distinct(selecao$species_code), " species.")
+  } else if (modo == "score_bands") {
+    # Faixas de score: n_top predicoes sorteadas por estrato x faixa, com a
+    # probabilidade de inclusao de cada uma. Escolha PELO score: serve ao
+    # limiar e a calibracao, nao ao modelo de falsos positivos.
+    faixas <- cut(selecao$confidence, breaks = score_breaks,
+                  include.lowest = TRUE, right = FALSE)
+    fora <- sum(is.na(faixas))
+    if (fora > 0) {
+      message(fora, " prediction(s) outside `score_breaks` (",
+              score_breaks[1], " to ", score_breaks[length(score_breaks)],
+              ") are not drawn.")
+    }
+    candidatas <- mutate(selecao, score_band = faixas) |>
+      filter(!is.na(score_band)) |>
+      add_period_columns(estrato1) |>
+      join_covariates(covariates, estrato1)
+    faltam <- setdiff(estrato1, names(candidatas))
+    if (length(faltam) > 0) {
+      stop("Column(s) of `strata` not in `detections`: ",
+           paste(faltam, collapse = ", "), call. = FALSE)
+    }
+    if (nrow(candidatas) == 0) {
+      stop("No prediction within `score_breaks`.", call. = FALSE)
+    }
+    selecao <- withr::with_seed(seed, {
+      candidatas |>
+        group_by(across(all_of(c(estrato1, "score_band")))) |>
+        mutate(n_candidates = n(),
+               n_drawn = min(n_top, n()),
+               inclusion_prob = n_drawn / n_candidates) |>
+        slice_sample(n = n_top) |>
+        ungroup()
+    })
+    selecao <- selecao |>
+      mutate(rank = 1L,
+             species_folder = folder_name(species_code),
+             clip_file = clip_name(confidence, rank, source_audio,
+                                   clip_start, clip_end))
+    message(nrow(selecao), " clips drawn (", n_top, " per ", rotulo1,
+            " x score band) among ", nrow(candidatas), " predictions in ",
+            length(score_breaks) - 1, " score band(s). These clips serve ",
+            "thresholds and calibration, not false-positive occupancy ",
+            "models: they were chosen by their score.")
   } else if (modo == "random_detections") {
     # Candidatas: ocasioes com >= 1 predicao da especie >= threshold. O
     # sorteio (n_top ocasioes por estrato) nao olha o score.
