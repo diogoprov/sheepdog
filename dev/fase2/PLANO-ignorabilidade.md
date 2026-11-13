@@ -145,3 +145,70 @@ cobertura é cerca de 0,03 perto de 0,95; isso é relatado junto.
 - Nota para o resumo: nos braços sem h, α₀ estima θ médio sobre h, não θ em
   h = 0, então o viés contra 0,3 é esperado também em S1 sem h. Para I4 vale
   a diferença pareada para S1 sem h, que o `summarise_ignorab.R` já calcula.
+
+## Etapas 2 e 3: resultados (13/11/2026)
+
+Rodada completa na AWS (spot; c6i.16xlarge interrompida duas vezes,
+concluída numa c6a.8xlarge, retomando das tarefas salvas): 1.500 ajustes,
+nenhum erro, mediana de 143 s por ajuste, 62,9 h de CPU. Resultados em
+`results/ignorab_v0/` (`task_all.rds` e `summary.txt`, saída de
+`summarise_ignorab.R`). Com 50 réplicas, o erro-padrão de Monte Carlo da
+cobertura é cerca de 0,03 perto de 0,95 e cerca de 0,05 perto de 0,80.
+
+| # | Resultado | Situação |
+|---|---|---|
+| I1 | 30 de 30 células com ≥ 95% dos ajustes convergidos | passa |
+| I2 | 16 de 16 células (verdade normal, S1 a S4 com h): \|viés\| ≤ 0,007 e cobertura ≥ 0,94 em ψ e θ | passa |
+| I3 | 4 de 8 células: ψ passa nas quatro (S2 e S3, 5% e 2%); θ reprova nas quatro, pela cobertura | **reprova em S2 e S3** |
+| I4 | S5 enviesa θ (diferença pareada para S1 de 0,071 com 5% e 0,038 com 2%, verdade normal; cobertura 0,14 e 0,74). S4 sem h: diferença pareada para S1 sem h ≤ 0,014. ψ quase não muda | relatado |
+| I5 | Sem verificação, θ é recuperado na verdade normal (viés 0,005; cobertura 0,98); na mistura, viés −0,019 e cobertura 0,78 | relatado |
+
+**θ na verdade mistura (I3):**
+
+| Fração | Desenho | Viés | Cobertura | Diferença pareada para S1 |
+|---|---|---|---|---|
+| 5% | S1 | −0,020 | 0,78 | — |
+| 5% | S2 | −0,012 | 0,86 | 0,008 |
+| 5% | S3 | −0,048 | 0,56 | −0,029 |
+| 2% | S1 | −0,019 | 0,80 | — |
+| 2% | S2 | −0,015 | 0,84 | 0,004 |
+| 2% | S3 | −0,019 | 0,80 | 0,000 |
+| — | sem verificação | −0,019 | 0,78 | — |
+
+**Pela regra fixada antes de rodar**, o caso é "I2 passa e I3 reprova em S2
+e S3": a seleção pelo score só vale com f bem especificada; recomenda-se a
+camada aleatória (fase 3) e o PPC por classe (critério 6) antes de confiar
+em θ.
+
+**O que a regra não previa (interpretação, para o Diogo decidir):**
+
+- A subcobertura de θ sob a mistura não vem da seleção. S1 (aleatório) e o
+  ajuste sem verificação têm a mesma cobertura (0,78 a 0,80) e o mesmo viés
+  (cerca de −0,02). As diferenças pareadas de S2 para S1 ficam em 0,008 ou
+  menos, e a cobertura de S2 é até maior que a de S1. Quem reprova é a
+  normal censurada mal especificada, com qualquer desenho.
+- Logo, a camada aleatória, sozinha, não resolveria: S1 é justamente a
+  verificação aleatória e reprova igual. O que protege θ é o PPC por classe
+  (detectar a má especificação) e um modelo de emissões mais flexível
+  (`model_mix.stan`), não o desenho da verificação.
+- Com 5% a 2% verificados, a verificação quase não informa θ além da forma
+  de f: o ajuste sem verificação dá o mesmo resultado que S1. Isso vale para
+  este cenário (150 × 20, classificador fraco); com mais positivos
+  verificados pode mudar.
+- "Top" (S3) é pior que PPS (S2) com 5%: viés −0,048, no limite, e
+  cobertura 0,56. Com 2% os dois são parecidos. PPS sim, "top" não.
+- Seleção pelo estado (S5) enviesa θ para cima mesmo com f certa, como
+  esperado; ψ quase não muda.
+- 0,86 e 0,84 (S2) estão a cerca de um erro-padrão de Monte Carlo de 0,90;
+  com 50 réplicas, a reprovação de S2 por cobertura é frágil. A de S3 com
+  5% não é.
+
+Proposta: manter a recomendação de PPS (`directed_pps`) e não
+"top"; condicionar a confiança em θ ao PPC por classe; e retomar a
+simulação de identificação do `model_mix.stan` como o próximo passo
+para θ, antes da camada aleatória.
+
+Decisão (13/11/2026): proposta aceita. Fica registrado que ela se afasta
+da regra fixada antes de rodar, que mandaria recomendar a camada
+aleatória. Próximo passo da fase 2: simulação de identificação do
+`model_mix.stan`.
