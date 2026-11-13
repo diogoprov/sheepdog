@@ -203,7 +203,12 @@ em θ.
   com 50 réplicas, a reprovação de S2 por cobertura é frágil. A de S3 com
   5% não é.
 
-Proposta, a confirmar: manter a recomendação de PPS (`directed_pps`) e não
+Proposta: manter a recomendação de PPS (`directed_pps`) e não
 "top"; condicionar a confiança em θ ao PPC por classe; e retomar a
 simulação de identificação do `model_mix.stan` como o próximo passo
 para θ, antes da camada aleatória.
+
+Decisão (13/11/2026): proposta aceita. Fica registrado que ela se afasta
+da regra fixada antes de rodar, que mandaria recomendar a camada
+aleatória. Próximo passo da fase 2: simulação de identificação do
+`model_mix.stan`.
