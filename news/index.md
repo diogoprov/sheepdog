@@ -3,6 +3,21 @@
 ## sheepdog (development version)
 
 - New
+  [`recall_ceiling()`](https://provetelab.org/sheepdog/reference/recall_ceiling.md):
+  from the occasions of `"random_recordings"` annotated by ear and the
+  highest score of the species in each, the recall ceiling (share of the
+  occasions with the species that have any prediction at or above
+  `min_confidence`) and the recall at one or more thresholds (a vector,
+  or a table of thresholds per group such as the output of
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
+  or
+  [`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md)),
+  weighted by `1 / inclusion_prob`, with intervals from a bootstrap of
+  whole recordings. Also reports the occasions with the species and no
+  prediction (`n_missed`). The `validation-effort` vignette gains a
+  section on it.
+
+- New
   [`compare_calibration_curves()`](https://provetelab.org/sheepdog/reference/compare_calibration_curves.md):
   checks the shape of the calibration curve before a threshold is taken
   from it. For each species (or `by` group), fits the logistic in the

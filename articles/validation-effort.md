@@ -459,6 +459,36 @@ threshold_record(thr, boot, grp, "validation/extraction_info.csv",
 The example data hold only `"top"` clips, which are not a probability
 sample, so the chunk above is not run here.
 
+### What the threshold loses: the recall ceiling
+
+Precision says how many of the detections kept are true; it says nothing
+about the calls the classifier never scored. The occasions drawn with
+`sampling_mode = "random_recordings"` and annotated by ear say where the
+species called, whatever the classifier said.
+[`recall_ceiling()`](https://provetelab.org/sheepdog/reference/recall_ceiling.md)
+matches them with the highest score of the species in each occasion: the
+**recall ceiling** is the share of the occasions with the species that
+have any prediction of it at or above `min_confidence`, and the **recall
+at a threshold** is the share whose highest score reaches it (the
+ceiling times the share of the detected occasions above the threshold).
+Both are weighted by `1 / inclusion_prob`, with intervals from a
+bootstrap of whole recordings:
+
+``` r
+
+rr <- read_validation_tables(files)          # with "random_recordings"
+recall_ceiling(rr, pred, thresholds = boot,
+               by = c("site", "species_folder"),
+               threshold_column = "threshold_conservative")
+```
+
+A low ceiling means that the classifier misses the species in many
+occasions with it, and no threshold recovers them: check whether a lower
+minimum score brings them back without many false positives, and if not,
+improve the classifier. A high ceiling with a low recall at the
+threshold means that the threshold, not the classifier, loses the
+occasions; weigh it against the precision it buys.
+
 ## Stage 1 along a gradient
 
 The checks above split the reviewed clips by site x species. The share

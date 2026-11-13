@@ -508,6 +508,33 @@ calibration curve:</p>
 <p>The example data hold only <code>"top"</code> clips, which are not a
 probability sample, so the chunk above is not run here.</p>
 </div>
+<div class="section level3">
+<h3 id="what-the-threshold-loses-the-recall-ceiling">What the threshold loses: the recall ceiling<a class="anchor" aria-label="anchor" href="#what-the-threshold-loses-the-recall-ceiling"></a>
+</h3>
+<p>Precision says how many of the detections kept are true; it says
+nothing about the calls the classifier never scored. The occasions drawn
+with <code>sampling_mode = "random_recordings"</code> and annotated by
+ear say where the species called, whatever the classifier said.
+<code><a href="../reference/recall_ceiling.html">recall_ceiling()</a></code> matches them with the highest score of the
+species in each occasion: the <strong>recall ceiling</strong> is the
+share of the occasions with the species that have any prediction of it
+at or above <code>min_confidence</code>, and the <strong>recall at a
+threshold</strong> is the share whose highest score reaches it (the
+ceiling times the share of the detected occasions above the threshold).
+Both are weighted by <code>1 / inclusion_prob</code>, with intervals
+from a bootstrap of whole recordings:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">rr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_validation_tables.html">read_validation_tables</a></span><span class="op">(</span><span class="va">files</span><span class="op">)</span>          <span class="co"># with "random_recordings"</span></span>
+<span><span class="fu"><a href="../reference/recall_ceiling.html">recall_ceiling</a></span><span class="op">(</span><span class="va">rr</span>, <span class="va">pred</span>, thresholds <span class="op">=</span> <span class="va">boot</span>,</span>
+<span>               by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"species_folder"</span><span class="op">)</span>,</span>
+<span>               threshold_column <span class="op">=</span> <span class="st">"threshold_conservative"</span><span class="op">)</span></span></code></pre></div>
+<p>A low ceiling means that the classifier misses the species in many
+occasions with it, and no threshold recovers them: check whether a lower
+minimum score brings them back without many false positives, and if not,
+improve the classifier. A high ceiling with a low recall at the
+threshold means that the threshold, not the classifier, loses the
+occasions; weigh it against the precision it buys.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="stage-1-along-a-gradient">Stage 1 along a gradient<a class="anchor" aria-label="anchor" href="#stage-1-along-a-gradient"></a>
@@ -533,7 +560,7 @@ every later table. The covariates of the example are
 <strong>simulated</strong> here, independently of the verdicts, only to
 show the mechanics: a mean temperature per night and an acoustic index
 per recording.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">recordings</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"recordings.csv"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>occasion_id <span class="op">=</span> <span class="fu">tools</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/tools/fileutils.html" class="external-link">file_path_sans_ext</a></span><span class="op">(</span></span>
 <span>           <span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"\\\\"</span>, <span class="st">"/"</span>, <span class="va">source_audio</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -568,7 +595,7 @@ recorder, so its bins should be computed within sites.</p>
 <code>covariates</code>; it is joined to the predictions by the columns
 they share (here <code>site</code> and <code>night</code>). Every site x
 species x bin stratum then gets <code>n_top</code> occasions:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">detections_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/read_selection_tables.html">read_selection_tables</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"birdnet"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">clips_temp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/select_clips.html">select_clips</a></span><span class="op">(</span><span class="va">detections_raw</span>, <span class="st">"random_detections"</span>,</span>
@@ -596,7 +623,7 @@ its usual columns; the bin comes back from the same
 <p>An acoustic index works the same way, with the recording as key. With
 <code>occasion_unit = "minute"</code>, the key would be
 <code>occasion_id</code> of each minute:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">aci</span> <span class="op">&lt;-</span> <span class="va">recordings</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>aci <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>, mean <span class="op">=</span> <span class="fl">150</span>, sd <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">site</span>, <span class="va">occasion_id</span>, <span class="va">aci</span><span class="op">)</span></span>
@@ -624,7 +651,7 @@ columns that split each site x species cell. The bins are joined to the
 validation tables by the same key (the tables of the example were drawn
 with the <code>"top"</code> design, so they only illustrate the
 call):</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">val_temp</span> <span class="op">&lt;-</span> <span class="va">val_raw</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>night <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">night</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">temp_bins</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"night"</span><span class="op">)</span><span class="op">)</span></span>
@@ -668,7 +695,7 @@ the bins.</p>
 within each bin. It joins the table of bins to the clips and to the
 predictions itself, so the count of unreviewed high-score detections is
 also by bin:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">support_temp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/review_support.html">review_support</a></span><span class="op">(</span><span class="va">val_raw</span>, <span class="va">detections</span>, conf_high <span class="op">=</span> <span class="fl">0.7</span>,</span>
 <span>                               min_n <span class="op">=</span> <span class="fl">15</span>, by <span class="op">=</span> <span class="st">"temp_bin"</span>,</span>
 <span>                               covariates <span class="op">=</span> <span class="va">temp_bins</span><span class="op">)</span></span>
@@ -792,7 +819,7 @@ sample.</div>
 <code>previous</code>. The occasions drawn earlier leave the pool, so
 nothing is reviewed twice, and <code>n_top</code> occasions are drawn
 per stratum among the rest:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/extract_validation_clips.html">extract_validation_clips</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">"round1"</span>,</span>
 <span>                         sampling_mode <span class="op">=</span> <span class="st">"random_detections"</span>, threshold <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
 <span><span class="co"># ... review, then post_validation(), then:</span></span>
@@ -879,7 +906,7 @@ computed for the best model of the cross-validation and written to
 <code>effort_curve.csv</code>. The arguments <code>effort_n</code> and
 <code>effort_reps</code> set the training sizes and the number of
 repetitions.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ARA"</span>, <span class="st">"BAI"</span>, <span class="st">"NHE"</span>, <span class="st">"XAR"</span><span class="op">)</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibrate.html">calibrate</a></span><span class="op">(</span></span>
 <span>  validation_files  <span class="op">=</span> <span class="va">val_files</span>,</span>

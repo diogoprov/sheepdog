@@ -18,19 +18,21 @@ function,
 [`select_directed()`](https://provetelab.org/sheepdog/reference/select_directed.md)
 (see [Directed rounds](#directed-rounds-select_directed)).
 
-![The same night of twelve hourly recordings, shown three times. “top”
+![The same night of twelve hourly recordings, shown four times. “top”
 keeps the highest-scoring prediction of each recording;
 “random_detections” draws recordings with a detection above the
 threshold and reviews every detection in them; “random_recordings” draws
 recordings among all, including ones without predictions, and annotates
-them by ear.](figures/sampling-designs.svg)
+them by ear; “score_bands” draws predictions at random within each band
+of score, for thresholds and calibration.](figures/sampling-designs.svg)
 
-The same night of twelve hourly recordings, shown three times. “top”
+The same night of twelve hourly recordings, shown four times. “top”
 keeps the highest-scoring prediction of each recording;
 “random_detections” draws recordings with a detection above the
 threshold and reviews every detection in them; “random_recordings” draws
 recordings among all, including ones without predictions, and annotates
-them by ear.
+them by ear; “score_bands” draws predictions at random within each band
+of score, for thresholds and calibration.
 
 ## Example data
 

@@ -6,10 +6,10 @@ Read BirdNET selection tables, select clips for manual review, and cut
 and pack them. Each sampling design sends a different part of the night
 to review; later rounds leave out what was reviewed.
 
-![The same night of twelve recordings under the three sampling designs
-of select_clips().](../figures/schematic_selection.png)
+![The same night of twelve recordings under the four sampling designs of
+select_clips().](../figures/schematic_selection.png)
 
-The same night of twelve recordings under the three sampling designs of
+The same night of twelve recordings under the four sampling designs of
 select_clips().
 
 ![Review rounds: what was reviewed leaves the pool, and combine_rounds()
@@ -115,6 +115,8 @@ precision.
   : Uncertainty of the empirical threshold by bootstrap
 - [`threshold_by_group()`](https://provetelab.org/sheepdog/reference/threshold_by_group.md)
   : Does one threshold hold in every group?
+- [`recall_ceiling()`](https://provetelab.org/sheepdog/reference/recall_ceiling.md)
+  : Recall ceiling and recall at the threshold
 - [`threshold_record()`](https://provetelab.org/sheepdog/reference/threshold_record.md)
   : Threshold record
 - [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md)
