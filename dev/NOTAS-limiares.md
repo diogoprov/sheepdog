@@ -58,6 +58,7 @@ do que ao usuário.
 - sheepdog #131 (aberto): `compare_calibration_curves()` e
   `plot_calibration_curves()`, com `mgcv` e `scam` nos Suggests e uma seção
   na vinheta `calibration`.
+- sheepdog #133 (aberto): `score_bands` nos fluxogramas e esquemas.
 - Os PRs #130 e #131 mexem no `NEWS.md`. Ao fazer o merge do segundo,
   resolva o conflito mantendo as duas entradas.
 
@@ -161,7 +162,14 @@ do que ao usuário.
    - Pergunte se ela imagina o fluxo alternativo como um artigo separado
      (com o benchmark do ACAD, MABI e SIMR) ou como uma vinheta do
      sheepdog.
-8. **Ambiente remoto.** O host `cloud.r-project.org` foi liberado no
+8. **Re-renderizar o fluxograma do README com o DiagrammeR.**
+   - O PR #133 pôs `score_bands` nas figuras: a da vinheta, o esquema do
+     site, `extraction_flow`, a figura de abertura do app e o cheatsheet.
+   - Sem o DiagrammeR, o `man/figures/extraction_flow.*` foi gerado com o
+     Graphviz do sistema, e o estilo ficou um pouco diferente do anterior.
+   - Rode `source("data-raw/diagram_extraction.R")` e faça commit dos
+     arquivos gerados.
+9. **Ambiente remoto.** O host `cloud.r-project.org` foi liberado no
    ambiente padrão do claude.ai, mas a instalação de pacotes continua
    barrada pela regra de permissões da sessão. Para a próxima sessão
    remota instalar pacotes do CRAN, autorize o comando ou rode a
