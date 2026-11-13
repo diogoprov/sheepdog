@@ -425,10 +425,10 @@
 
 - `dev/roadmap-integration.md`: CRAN submissions of sheepdog 3.3.2 and
   crywolf 2.1.0, and steps 5 to 7 of
-  [`crywolf::fp_occu_dyn()`](https://rdrr.io/pkg/crywolf/man/fp_occu_dyn.html).
+  [`crywolf::fp_occu_dyn()`](https://provetelab.org/crywolf/reference/fp_occu_dyn.html).
 
 - `dev/roadmap-integration.md`: step 8 of
-  [`crywolf::fp_occu_dyn()`](https://rdrr.io/pkg/crywolf/man/fp_occu_dyn.html)
+  [`crywolf::fp_occu_dyn()`](https://provetelab.org/crywolf/reference/fp_occu_dyn.html)
   (blocked cross-validation on the Curiango data) and the multi-species
   model (phase 5) moved ahead of phase 2, with the sheepdog side of it:
   a multi-species fixture of the data contract and a check of
@@ -731,7 +731,7 @@ splits and checks for retraining BirdNET-Analyzer.
   export (schema version 1.2), so that any occupancy software can
   propagate the uncertainty of the calibration. The random numbers
   follow those of
-  [`crywolf::fp_draws_data()`](https://rdrr.io/pkg/crywolf/man/fp_draws_data.html),
+  [`crywolf::fp_draws_data()`](https://provetelab.org/crywolf/reference/fp_draws_data.html),
   and a test checks that both give the same detections;
   `tests/testthat/fixtures/export-1.2/` holds the shared case.
 - [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md)

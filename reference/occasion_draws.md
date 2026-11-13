@@ -93,7 +93,7 @@ with a warning, not a non-detection.
 ## Reproducibility
 
 The random numbers follow those of
-[`crywolf::fp_draws_data()`](https://rdrr.io/pkg/crywolf/man/fp_draws_data.html),
+[`crywolf::fp_draws_data()`](https://provetelab.org/crywolf/reference/fp_draws_data.html),
 so that both give the same detections for the same export, rule and
 seed: the seed is set once per species with R's default generators
 (Mersenne-Twister, Inversion, Rejection), and each draw, in increasing

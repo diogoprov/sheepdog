@@ -331,7 +331,7 @@ estimate the false-positive rate of the observation-confirmation design,
 which needs clips chosen independently of the score:
 [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
 writes them to `validation.csv` with a warning, and
-[`crywolf::fp_read_sheepdog()`](https://rdrr.io/pkg/crywolf/man/fp_read_sheepdog.html)
+[`crywolf::fp_read_sheepdog()`](https://provetelab.org/crywolf/reference/fp_read_sheepdog.html)
 drops them with a warning, or stops when they are the only reviewed
 clips. For both uses in one project, draw a `"random_detections"` round
 for the occupancy model and a `"score_bands"` round for the threshold; a
