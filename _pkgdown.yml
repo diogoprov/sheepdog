@@ -71,6 +71,9 @@ reference:
       - classify_review
       - precision_by_bin
       - suggest_thresholds
+      - threshold_bootstrap
+      - threshold_by_group
+      - threshold_record
       - review_support
       - nightly_presence
       - retraining_clips

@@ -87,6 +87,10 @@
 #'   selection tables of several sites share a folder (see
 #'   [list_recordings()] and [read_selection_tables()]). Can also be set in
 #'   the Audio panel.
+#' @param blind Blind review: the Review tab hides the score, the sampling
+#'   design and the clip file name (which starts with the score), and shows
+#'   the clips in an order shuffled once per reviewer instead of the order
+#'   of the manifest, so that the verdict does not lean on the score.
 #' @param classifier Label of the classifier, recorded in
 #'   `extraction_info.csv` and `schema.json`.
 #' @param launch.browser Open the app in the browser? Passed to
@@ -110,7 +114,7 @@
 run_app <- function(manifest = NULL, clips_dir = NULL, verdicts_file = NULL,
                     reviewer = NULL, max_freq = 12, selection_dir = NULL,
                     output_dir = NULL, recordings = NULL, audio_dir = NULL,
-                    site_pattern = NULL, classifier = NULL,
+                    site_pattern = NULL, blind = FALSE, classifier = NULL,
                     launch.browser = interactive(), ...) {
   require_suggested("shiny", "to run the review app")
   require_suggested("av", "to draw the spectrograms")
@@ -127,7 +131,7 @@ run_app <- function(manifest = NULL, clips_dir = NULL, verdicts_file = NULL,
                   max_freq = max_freq, selection_dir = selection_dir,
                   output_dir = output_dir, recordings = recordings,
                   audio_dir = audio_dir, site_pattern = site_pattern,
-                  classifier = classifier)
+                  blind = blind, classifier = classifier)
   load_app_state(st)
   if (!is.null(st$fila)) {
     message(nrow(st$fila), " clip(s) to review; verdicts written to ",
@@ -216,7 +220,8 @@ report_remarked <- function(log) {
 
 # Clipes da fila do app: os do revisor (com assign_reviewers()) e o
 # caminho de cada um
-review_queue <- function(manifest, clips_dir, reviewer = NULL) {
+review_queue <- function(manifest, clips_dir, reviewer = NULL,
+                         blind = FALSE) {
   fila <- read_manifest(manifest)
   fila <- fila[!is_inherited(fila), ]
   faltam <- setdiff(c("clip_file", "species_folder"), names(fila))
@@ -241,6 +246,7 @@ review_queue <- function(manifest, clips_dir, reviewer = NULL) {
     if (!col %in% names(fila)) fila[[col]] <- NA
   }
   fila$path <- file.path(clips_dir, fila$species_folder, fila$clip_file)
+  if (isTRUE(blind)) fila <- fila[blind_order(nrow(fila), reviewer), ]
   ausentes <- sum(!file.exists(fila$path))
   if (ausentes == nrow(fila)) {
     stop("None of the clips was found in `clips_dir` (",
@@ -251,6 +257,15 @@ review_queue <- function(manifest, clips_dir, reviewer = NULL) {
             "without audio.", call. = FALSE)
   }
   fila
+}
+
+# Ordem da revisao cega: embaralhada uma vez por revisor, sempre a mesma
+# para o mesmo revisor (a sessao retomada mostra a mesma ordem), e que nao
+# segue a do manifesto, ordenado pelo score
+blind_order <- function(n, reviewer = NULL) {
+  semente <- sum(utf8ToInt(paste0("sheepdog",
+                                   if (is.null(reviewer)) "" else reviewer)))
+  withr::with_seed(semente, sample.int(n))
 }
 
 verdict_columns <- c("clip_file", "species_folder", "reviewer", "verdict",
@@ -499,7 +514,7 @@ review_app <- function(st) {
       shiny::observeEvent(cortes(), {
         q <- tryCatch(
           review_queue(file.path(output_dir, "clip_manifest.csv"),
-                       st$clips_dir, st$reviewer),
+                       st$clips_dir, st$reviewer, blind = st$blind),
           error = function(e) {
             shiny::showNotification(conditionMessage(e), type = "warning",
                                     duration = NULL)
@@ -513,7 +528,7 @@ review_app <- function(st) {
                     st$verdicts_file, st$recordings, st$classifier)
     }
     review_server("review", fila_r, st$verdicts_file, st$reviewer, recurso,
-                  st$max_freq)
+                  st$max_freq, blind = st$blind)
   }
   shiny::shinyApp(ui = ui, server = server)
 }
@@ -611,7 +626,7 @@ review_ui <- function(id, max_freq = 12) {
 # `fila`: tabela de review_queue() ou um reativo que a devolve (NULL antes
 # do corte dos clipes)
 review_server <- function(id, fila, verdicts_file, reviewer, recurso = "",
-                          max_freq = NULL) {
+                          max_freq = NULL, blind = FALSE) {
   shiny::moduleServer(id, function(input, output, session) {
     fila_r <- if (shiny::is.reactive(fila)) fila else shiny::reactive(fila)
     tab <- shiny::reactive({
@@ -724,14 +739,18 @@ review_server <- function(id, fila, verdicts_file, reviewer, recurso = "",
       i <- atual()
       shiny::req(!is.na(i))
       f <- tab()
-      tibble(field = c("Clip", "Species", "Site", "Night", "Hour",
-                       "Score", "Design"),
-             value = c(f$clip_file[i], f$species_folder[i],
-                       as.character(f$site[i]),
-                       as.character(f$night[i]),
-                       as.character(f$recording_hour[i]),
-                       format(f$confidence[i], digits = 3),
-                       as.character(f$sampling_mode[i])))
+      info <- tibble(field = c("Clip", "Species", "Site", "Night", "Hour",
+                               "Score", "Design"),
+                     value = c(f$clip_file[i], f$species_folder[i],
+                               as.character(f$site[i]),
+                               as.character(f$night[i]),
+                               as.character(f$recording_hour[i]),
+                               format(f$confidence[i], digits = 3),
+                               as.character(f$sampling_mode[i])))
+      # revisao cega: o nome do clipe comeca com o score
+      if (isTRUE(blind)) info <- info[!info$field %in% c("Clip", "Score",
+                                                          "Design"), ]
+      info
     }, colnames = FALSE)
     output$current_verdict <- shiny::renderText({
       if (is.null(fila_r())) {

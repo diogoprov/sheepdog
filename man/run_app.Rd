@@ -15,6 +15,7 @@ run_app(
   recordings = NULL,
   audio_dir = NULL,
   site_pattern = NULL,
+  blind = FALSE,
   classifier = NULL,
   launch.browser = interactive(),
   ...
@@ -65,6 +66,11 @@ that takes the site from the file names, when the recordings or the
 selection tables of several sites share a folder (see
 \code{\link[=list_recordings]{list_recordings()}} and \code{\link[=read_selection_tables]{read_selection_tables()}}). Can also be set in
 the Audio panel.}
+
+\item{blind}{Blind review: the Review tab hides the score, the sampling
+design and the clip file name (which starts with the score), and shows
+the clips in an order shuffled once per reviewer instead of the order
+of the manifest, so that the verdict does not lean on the score.}
 
 \item{classifier}{Label of the classifier, recorded in
 \code{extraction_info.csv} and \code{schema.json}.}
