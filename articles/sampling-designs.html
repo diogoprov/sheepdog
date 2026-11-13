@@ -484,6 +484,51 @@ confirmations of detections and are handled differently downstream (see
 <code><a href="../articles/crywolf-integration.html">vignette("crywolf-integration")</a></code>).</p>
 </div>
 <div class="section level2">
+<h2 id="score_bands-thresholds-and-calibration-across-the-score-range">
+<code>"score_bands"</code>: thresholds and calibration across the
+score range<a class="anchor" aria-label="anchor" href="#score_bands-thresholds-and-calibration-across-the-score-range"></a>
+</h2>
+<p>A threshold or a calibration curve needs reviewed clips at every
+score, not only at the top (as in <code>"top"</code>) or where the
+detections pile up (as in a random draw, mostly low scores).
+<code>"score_bands"</code> cuts the predictions into bands of score
+(<code>score_breaks</code>) and draws <code>n_top</code> clips at random
+in each stratum x band, recording the inclusion probability of each clip
+(drawn / candidates of its stratum x band). Weighted by
+<code>1 / inclusion_prob</code>, the clips give the precision of each
+band and the weighted precision of <code><a href="../reference/suggest_thresholds.html">suggest_thresholds()</a></code> and
+<code><a href="../reference/threshold_bootstrap.html">threshold_bootstrap()</a></code>.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/select_clips.html">select_clips</a></span><span class="op">(</span><span class="va">pred</span>, sampling_mode <span class="op">=</span> <span class="st">"score_bands"</span>, n_top <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                   strata <span class="op">=</span> <span class="st">"site_species"</span>,</span>
+<span>                   score_breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.4</span>, <span class="fl">0.7</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Sampling mode: score_bands (occasion = file).</span></span>
+<span><span class="co">#&gt; 191 clips drawn (2 per site x species_code x score band) among 7553 predictions in 3 score band(s). These clips serve thresholds and calibration, not false-positive occupancy models: they were chosen by their score.</span></span>
+<span><span class="va">sb</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>band <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cut.html" class="external-link">cut</a></span><span class="op">(</span><span class="va">confidence</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.4</span>, <span class="fl">0.7</span>, <span class="fl">1</span><span class="op">)</span>, include.lowest <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                    right <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">site</span>, <span class="va">species_code</span>, <span class="va">band</span>, <span class="va">inclusion_prob</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 96 × 5</span></span></span>
+<span><span class="co">#&gt;    site  species_code                   band      inclusion_prob     n</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                          <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> ARA   Boana raniceps_boa-ran         [0.1,0.4)         0.040<span style="text-decoration: underline;">8</span>     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> ARA   Boana raniceps_boa-ran         [0.4,0.7)         0.017<span style="text-decoration: underline;">2</span>     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> ARA   Boana raniceps_boa-ran         [0.7,1]           0.011<span style="text-decoration: underline;">0</span>     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> ARA   Dendropsophus nanus_den-nan    [0.1,0.4)         0.018<span style="text-decoration: underline;">2</span>     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> ARA   Dendropsophus nanus_den-nan    [0.4,0.7)         0.011<span style="text-decoration: underline;">0</span>     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> ARA   Dendropsophus nanus_den-nan    [0.7,1]           0.021<span style="text-decoration: underline;">7</span>     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> ARA   Elachistocleis bicolor_ela-bic [0.1,0.4)         0.125      2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> ARA   Elachistocleis bicolor_ela-bic [0.4,0.7)         0.040<span style="text-decoration: underline;">8</span>     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> ARA   Elachistocleis bicolor_ela-bic [0.7,1]           0.019<span style="text-decoration: underline;">4</span>     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> ARA   Leptodactylus fuscus_lep-fus   [0.1,0.4)         0.095<span style="text-decoration: underline;">2</span>     2</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 86 more rows</span></span></span></code></pre></div>
+<p>These clips were chosen by their score, so they do not estimate the
+false-positive rate of an occupancy model:
+<code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code> warns, and crywolf drops them.
+Review <code>"random_detections"</code> occasions for that. The app
+(<code><a href="../reference/run_app.html">run_app()</a></code>) offers the same mode in its Setup tab.</p>
+</div>
+<div class="section level2">
 <h2 id="directed-rounds-select_directed">Directed rounds: <code>select_directed()</code><a class="anchor" aria-label="anchor" href="#directed-rounds-select_directed"></a>
 </h2>
 <p>After a first round, an occupancy model can say where one more review
@@ -499,7 +544,7 @@ occasion becomes a clip, as in <code>"random_detections"</code>. A floor
 (<code>floor</code>, 5% of the mean size by default) keeps every unit
 drawable, so the model can be corrected where it judged a review
 worthless.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">units</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">pred</span>, <span class="va">site</span>, <span class="va">species_code</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">0</span>, <span class="fl">2</span>, <span class="fl">1</span>, <span class="fl">4</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/select_directed.html">select_directed</a></span><span class="op">(</span><span class="va">pred</span>, <span class="va">units</span>, n_units <span class="op">=</span> <span class="fl">3</span>, threshold <span class="op">=</span> <span class="va">threshold</span>,</span>
@@ -553,7 +598,7 @@ i.e. the detections that enter the detection history. Clips from
 <code>"random_detections"</code> are weighted by
 <code>1 / inclusion_prob</code> (design weights), because occasions in
 strata with many candidates have a lower probability of being drawn.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">wquantile</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">w</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>                      <span class="va">probs</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.9</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">o</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
@@ -579,7 +624,7 @@ false positives receive lower scores than true detections, as they do on
 average in the simulated data (although the two distributions overlap),
 a false-positive rate estimated from the <code>"top"</code> clips is
 biased low.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">wecdf</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">w</span>, <span class="va">design</span><span class="op">)</span> <span class="op">{</span></span>
@@ -597,7 +642,7 @@ biased low.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Confidence"</span>, y <span class="op">=</span> <span class="st">"Cumulative proportion"</span>, colour <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="sampling-designs_files/figure-html/unnamed-chunk-18-1.png" class="r-plt" alt="Empirical cumulative distribution of confidence for all detections, random_detections clips and top clips." width="576"></p>
+<p><img src="sampling-designs_files/figure-html/unnamed-chunk-19-1.png" class="r-plt" alt="Empirical cumulative distribution of confidence for all detections, random_detections clips and top clips." width="576"></p>
 </div>
 <div class="section level2">
 <h2 id="limiting-the-effort">Limiting the effort<a class="anchor" aria-label="anchor" href="#limiting-the-effort"></a>
@@ -624,7 +669,7 @@ the diel cycle.</li>
 <code>target_total</code> and <code>max_per_species</code> are ignored
 with a warning.</li>
 </ul>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">target</span> <span class="op">&lt;-</span> <span class="fl">40</span></span>
 <span><span class="va">top_cap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/select_clips.html">select_clips</a></span><span class="op">(</span><span class="va">pred</span>, sampling_mode <span class="op">=</span> <span class="st">"top"</span>, n_top <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>                        min_confidence <span class="op">=</span> <span class="va">threshold</span>, target_total <span class="op">=</span> <span class="va">target</span><span class="op">)</span></span>
@@ -639,7 +684,7 @@ with a warning.</li>
 <span><span class="co">#&gt; 1876 occasions drawn (1 per site x species_code x night x recording_hour) among 3824 with a prediction &gt;= 0.5.</span></span>
 <span><span class="co">#&gt; Target of 40 occasions per site (balanced by species and hour): 1876 -&gt; 160 occasions.</span></span>
 <span><span class="co">#&gt; 191 clips (every prediction &gt;= 0.5 of the 160 occasions drawn).</span></span></code></pre></div>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rd_cap</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">site</span>, <span class="va">species_code</span>, <span class="va">occasion_id</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">site</span>, name <span class="op">=</span> <span class="st">"occasions"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -660,7 +705,7 @@ Plan the target in occasions and expect a larger number of clips.</p>
 the product of the first-stage probability and the fraction of candidate
 occasions kept in the stratum (site × species, and hour when
 <code>balance_by_hour = TRUE</code>):</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">rd_cap</span><span class="op">$</span><span class="va">inclusion_prob</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. </span></span>
 <span><span class="co">#&gt; 0.009615 0.029040 0.047619 0.080117 0.076923 1.000000</span></span></code></pre></div>
@@ -669,7 +714,7 @@ higher inclusion probabilities than common ones: the unweighted pool of
 clips over-represents them, and estimates pooled across species must
 weight the clips by <code>1 / inclusion_prob</code>.</p>
 <p>In <code>"random_recordings"</code> the cap is not applied:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/select_clips.html">select_clips</a></span><span class="op">(</span><span class="va">pred</span>, sampling_mode <span class="op">=</span> <span class="st">"random_recordings"</span>,</span>
 <span>               recordings <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"recordings.csv"</span><span class="op">)</span>,</span>

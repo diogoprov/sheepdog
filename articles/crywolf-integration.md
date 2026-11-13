@@ -76,7 +76,7 @@ One row per clip. Columns, in this order:
 | `source_audio` | character | Path of the source recording, after remapping. |
 | `begin_path` | character | Path as written in the selection table (`Begin Path`). |
 | `status` | character | `ok`, `already_exists`, `audio_not_found`, `simulated` or `error: <message>`. |
-| `sampling_mode` | character | `top`, `random_detections`, `random_recordings` or `directed_pps` (a directed round of [`select_directed()`](https://provetelab.org/sheepdog/reference/select_directed.md)). |
+| `sampling_mode` | character | `top`, `random_detections`, `random_recordings`, `directed_pps` (a directed round of [`select_directed()`](https://provetelab.org/sheepdog/reference/select_directed.md)) or `score_bands` (clips drawn by score band, for thresholds; crywolf drops them). |
 | `occasion_id` | character | Occasion (see above). |
 | `n_detections_occasion` | integer | Predictions of the species with confidence \>= `threshold` in the occasion. `NA` when no `threshold` was given. |
 | `inclusion_prob` | double | Probability that the occasion (or recording) was drawn. `NA` in `"top"`, which is not a probability sample. In `"directed_pps"`, the probability of the unit times the probability of the occasion within it. |

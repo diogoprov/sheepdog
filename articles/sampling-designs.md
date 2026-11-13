@@ -406,6 +406,55 @@ Recordings of `"random_recordings"` are not confirmations of detections
 and are handled differently downstream (see
 [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md)).
 
+## `"score_bands"`: thresholds and calibration across the score range
+
+A threshold or a calibration curve needs reviewed clips at every score,
+not only at the top (as in `"top"`) or where the detections pile up (as
+in a random draw, mostly low scores). `"score_bands"` cuts the
+predictions into bands of score (`score_breaks`) and draws `n_top` clips
+at random in each stratum x band, recording the inclusion probability of
+each clip (drawn / candidates of its stratum x band). Weighted by
+`1 / inclusion_prob`, the clips give the precision of each band and the
+weighted precision of
+[`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
+and
+[`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md).
+
+``` r
+
+sb <- select_clips(pred, sampling_mode = "score_bands", n_top = 2,
+                   strata = "site_species",
+                   score_breaks = c(0.1, 0.4, 0.7, 1))
+#> Sampling mode: score_bands (occasion = file).
+#> 191 clips drawn (2 per site x species_code x score band) among 7553 predictions in 3 score band(s). These clips serve thresholds and calibration, not false-positive occupancy models: they were chosen by their score.
+sb |>
+  mutate(band = cut(confidence, c(0.1, 0.4, 0.7, 1), include.lowest = TRUE,
+                    right = FALSE)) |>
+  count(site, species_code, band, inclusion_prob)
+#> # A tibble: 96 × 5
+#>    site  species_code                   band      inclusion_prob     n
+#>    <chr> <chr>                          <fct>              <dbl> <int>
+#>  1 ARA   Boana raniceps_boa-ran         [0.1,0.4)         0.0408     2
+#>  2 ARA   Boana raniceps_boa-ran         [0.4,0.7)         0.0172     2
+#>  3 ARA   Boana raniceps_boa-ran         [0.7,1]           0.0110     2
+#>  4 ARA   Dendropsophus nanus_den-nan    [0.1,0.4)         0.0182     2
+#>  5 ARA   Dendropsophus nanus_den-nan    [0.4,0.7)         0.0110     2
+#>  6 ARA   Dendropsophus nanus_den-nan    [0.7,1]           0.0217     2
+#>  7 ARA   Elachistocleis bicolor_ela-bic [0.1,0.4)         0.125      2
+#>  8 ARA   Elachistocleis bicolor_ela-bic [0.4,0.7)         0.0408     2
+#>  9 ARA   Elachistocleis bicolor_ela-bic [0.7,1]           0.0194     2
+#> 10 ARA   Leptodactylus fuscus_lep-fus   [0.1,0.4)         0.0952     2
+#> # ℹ 86 more rows
+```
+
+These clips were chosen by their score, so they do not estimate the
+false-positive rate of an occupancy model:
+[`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+warns, and crywolf drops them. Review `"random_detections"` occasions
+for that. The app
+([`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md))
+offers the same mode in its Setup tab.
+
 ## Directed rounds: `select_directed()`
 
 After a first round, an occupancy model can say where one more review is
@@ -529,7 +578,7 @@ ggplot(curves, aes(confidence, ecdf, colour = design)) +
 
 ![Empirical cumulative distribution of confidence for all detections,
 random_detections clips and top
-clips.](sampling-designs_files/figure-html/unnamed-chunk-18-1.png)
+clips.](sampling-designs_files/figure-html/unnamed-chunk-19-1.png)
 
 ## Limiting the effort
 
