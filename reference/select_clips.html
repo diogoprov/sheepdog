@@ -86,11 +86,12 @@ audio is read or written; cut the clips with <code><a href="cut_clips.html">cut_
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">select_clips</span><span class="op">(</span></span>
 <span>  <span class="va">detections</span>,</span>
-<span>  sampling_mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"top"</span>, <span class="st">"random_detections"</span>, <span class="st">"random_recordings"</span><span class="op">)</span>,</span>
+<span>  sampling_mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"top"</span>, <span class="st">"random_detections"</span>, <span class="st">"random_recordings"</span>, <span class="st">"score_bands"</span><span class="op">)</span>,</span>
 <span>  occasion_unit <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"file"</span>, <span class="st">"minute"</span><span class="op">)</span>,</span>
 <span>  threshold <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  n_top <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  strata <span class="op">=</span> <span class="st">"night_hour"</span>,</span>
+<span>  score_breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.4</span>, <span class="fl">0.7</span>, <span class="fl">1</span><span class="op">)</span>,</span>
 <span>  covariates <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  recording_fraction <span class="op">=</span> <span class="fl">0.01</span>,</span>
 <span>  n_recordings_per_site <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -127,8 +128,9 @@ audio is read or written; cut the clips with <code><a href="cut_clips.html">cut_
 
 
 <dt id="arg-sampling-mode">sampling_mode<a class="anchor" aria-label="anchor" href="#arg-sampling-mode"></a></dt>
-<dd><p><code>"top"</code>, <code>"random_detections"</code> or
-<code>"random_recordings"</code>. See <em>Sampling modes</em>.</p></dd>
+<dd><p><code>"top"</code>, <code>"random_detections"</code>,
+<code>"random_recordings"</code> or <code>"score_bands"</code>. See <em>Sampling modes</em> and
+<em>Which design for which use</em>.</p></dd>
 
 
 <dt id="arg-occasion-unit">occasion_unit<a class="anchor" aria-label="anchor" href="#arg-occasion-unit"></a></dt>
@@ -145,11 +147,13 @@ defines the candidate occasions of <code>"random_detections"</code> and the
 
 <dt id="arg-n-top">n_top<a class="anchor" aria-label="anchor" href="#arg-n-top"></a></dt>
 <dd><p><code>"top"</code>: predictions kept per site x species x night x
-hour. <code>"random_detections"</code>: occasions drawn per stratum (<code>strata</code>).</p></dd>
+hour. <code>"random_detections"</code>: occasions drawn per stratum (<code>strata</code>).
+<code>"score_bands"</code>: predictions drawn per stratum and score band.</p></dd>
 
 
 <dt id="arg-strata">strata<a class="anchor" aria-label="anchor" href="#arg-strata"></a></dt>
-<dd><p><code>"random_detections"</code>: the strata of the occasion draw
+<dd><p><code>"random_detections"</code> and <code>"score_bands"</code>: the strata of
+the draw (within each, <code>"score_bands"</code> also splits by score band)
 (ignored by the other modes). Either one of the presets, all within
 site x species:</p><ul><li><p><code>"night_hour"</code>: night x hour (the rule of 2.0.0);</p></li>
 <li><p><code>"night"</code>: night;</p></li>
@@ -178,6 +182,12 @@ column must be constant within an occasion.</p>
 random. With strata without the hour and <code>balance_by_hour = TRUE</code>
 under <code>target_total</code> or <code>max_per_species</code>, <code>inclusion_prob</code> is
 conditional on the first draw (a warning says so).</p></dd>
+
+
+<dt id="arg-score-breaks">score_breaks<a class="anchor" aria-label="anchor" href="#arg-score-breaks"></a></dt>
+<dd><p><code>"score_bands"</code>: the limits of the score bands,
+increasing, within 0 and 1. Predictions below the first limit are not
+drawn; the last band includes its upper limit.</p></dd>
 
 
 <dt id="arg-covariates">covariates<a class="anchor" aria-label="anchor" href="#arg-covariates"></a></dt>
@@ -355,7 +365,29 @@ Miller et al. (2011, <a href="https://doi.org/10.1890/10-1396.1" class="external
 ). The clip is the whole
 recording (or minute), copied once per species to annotate, and
 <code>confidence</code> is <code>NA</code>.</p></li>
-</ul><p>In both random modes, use the same <code>threshold</code> as the occupancy analysis.</p>
+<li><p><code>"score_bands"</code> draws, at random, <code>n_top</code> predictions per stratum and
+score band (<code>score_breaks</code>, by default 0.1 to 0.4, 0.4 to 0.7 and 0.7 to 1),
+with <code>inclusion_prob = n_drawn / n_candidates</code> in each stratum x band.
+The same number of clips per band covers the whole score range, which
+is where a threshold and a calibration curve are estimated, and the
+weights <code>1 / inclusion_prob</code> restore the true proportions when bands
+are pooled (Wood &amp; Kahl 2024, <a href="https://doi.org/10.1007/s10336-024-02144-5" class="external-link">doi:10.1007/s10336-024-02144-5</a>
+).</p></li>
+</ul><p>In the random modes, use the same <code>threshold</code> as the occupancy analysis.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="which-design-for-which-use">Which design for which use<a class="anchor" aria-label="anchor" href="#which-design-for-which-use"></a></h2>
+
+
+<p>The draw decides what the reviewed clips can be used for:</p><table class="table table"><tr><td>Use</td><td><code>"top"</code></td><td><code>"random_detections"</code></td><td><code>"random_recordings"</code></td><td><code>"score_bands"</code></td></tr><tr><td>retraining the classifier</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr><tr><td>calibration curve (<code><a href="calibrate.html">calibrate()</a></code>, <code><a href="fit_calibration.html">fit_calibration()</a></code>)</td><td>high scores only</td><td>yes</td><td>no score</td><td>yes, best near the threshold</td></tr><tr><td>threshold by weighted precision (<code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>)</td><td>no (no <code>inclusion_prob</code>)</td><td>yes</td><td>no score</td><td>yes</td></tr><tr><td>false-positive occupancy models (crywolf)</td><td>dropped</td><td>yes</td><td>yes (annotated occasions)</td><td><strong>no</strong></td></tr></table><p>The clips of <code>"score_bands"</code> are chosen by their score, so they cannot
+estimate the false-positive rate of the observation-confirmation design,
+which needs clips chosen independently of the score:
+<code><a href="export_occupancy_data.html">export_occupancy_data()</a></code> writes them to <code>validation.csv</code> with a warning,
+and <code><a href="https://provetelab.org/crywolf/reference/fp_read_sheepdog.html" class="external-link">crywolf::fp_read_sheepdog()</a></code> drops them with a warning, or stops
+when they are the only reviewed clips. For both uses in one project,
+draw a <code>"random_detections"</code> round for the occupancy model and a
+<code>"score_bands"</code> round for the threshold; a clip drawn by both is
+reviewed once (<code>previous</code>, <code>inherit</code>).</p>
     </div>
     <div class="section level2">
     <h2 id="review-rounds">Review rounds<a class="anchor" aria-label="anchor" href="#review-rounds"></a></h2>

@@ -12,11 +12,12 @@ written; cut the clips with
 ``` r
 select_clips(
   detections,
-  sampling_mode = c("top", "random_detections", "random_recordings"),
+  sampling_mode = c("top", "random_detections", "random_recordings", "score_bands"),
   occasion_unit = c("file", "minute"),
   threshold = NULL,
   n_top = 2,
   strata = "night_hour",
+  score_breaks = c(0.1, 0.4, 0.7, 1),
   covariates = NULL,
   recording_fraction = 0.01,
   n_recordings_per_site = NULL,
@@ -53,8 +54,9 @@ select_clips(
 
 - sampling_mode:
 
-  `"top"`, `"random_detections"` or `"random_recordings"`. See *Sampling
-  modes*.
+  `"top"`, `"random_detections"`, `"random_recordings"` or
+  `"score_bands"`. See *Sampling modes* and *Which design for which
+  use*.
 
 - occasion_unit:
 
@@ -71,11 +73,14 @@ select_clips(
 
   `"top"`: predictions kept per site x species x night x hour.
   `"random_detections"`: occasions drawn per stratum (`strata`).
+  `"score_bands"`: predictions drawn per stratum and score band.
 
 - strata:
 
-  `"random_detections"`: the strata of the occasion draw (ignored by the
-  other modes). Either one of the presets, all within site x species:
+  `"random_detections"` and `"score_bands"`: the strata of the draw
+  (within each, `"score_bands"` also splits by score band) (ignored by
+  the other modes). Either one of the presets, all within site x
+  species:
 
   - `"night_hour"`: night x hour (the rule of 2.0.0);
 
@@ -111,6 +116,12 @@ select_clips(
   random. With strata without the hour and `balance_by_hour = TRUE`
   under `target_total` or `max_per_species`, `inclusion_prob` is
   conditional on the first draw (a warning says so).
+
+- score_breaks:
+
+  `"score_bands"`: the limits of the score bands, increasing, within 0
+  and 1. Predictions below the first limit are not drawn; the last band
+  includes its upper limit.
 
 - covariates:
 
@@ -291,8 +302,40 @@ for their definitions.
   is the whole recording (or minute), copied once per species to
   annotate, and `confidence` is `NA`.
 
-In both random modes, use the same `threshold` as the occupancy
-analysis.
+- `"score_bands"` draws, at random, `n_top` predictions per stratum and
+  score band (`score_breaks`, by default 0.1 to 0.4, 0.4 to 0.7 and 0.7
+  to 1), with `inclusion_prob = n_drawn / n_candidates` in each stratum
+  x band. The same number of clips per band covers the whole score
+  range, which is where a threshold and a calibration curve are
+  estimated, and the weights `1 / inclusion_prob` restore the true
+  proportions when bands are pooled (Wood & Kahl 2024,
+  [doi:10.1007/s10336-024-02144-5](https://doi.org/10.1007/s10336-024-02144-5)
+  ).
+
+In the random modes, use the same `threshold` as the occupancy analysis.
+
+## Which design for which use
+
+The draw decides what the reviewed clips can be used for:
+
+|  |  |  |  |  |
+|----|----|----|----|----|
+| Use | `"top"` | `"random_detections"` | `"random_recordings"` | `"score_bands"` |
+| retraining the classifier | yes | yes | yes | yes |
+| calibration curve ([`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md), [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)) | high scores only | yes | no score | yes, best near the threshold |
+| threshold by weighted precision ([`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)) | no (no `inclusion_prob`) | yes | no score | yes |
+| false-positive occupancy models (crywolf) | dropped | yes | yes (annotated occasions) | **no** |
+
+The clips of `"score_bands"` are chosen by their score, so they cannot
+estimate the false-positive rate of the observation-confirmation design,
+which needs clips chosen independently of the score:
+[`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+writes them to `validation.csv` with a warning, and
+[`crywolf::fp_read_sheepdog()`](https://provetelab.org/crywolf/reference/fp_read_sheepdog.html)
+drops them with a warning, or stops when they are the only reviewed
+clips. For both uses in one project, draw a `"random_detections"` round
+for the occupancy model and a `"score_bands"` round for the threshold; a
+clip drawn by both is reviewed once (`previous`, `inherit`).
 
 ## Review rounds
 
