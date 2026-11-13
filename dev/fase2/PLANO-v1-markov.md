@@ -153,3 +153,41 @@ de autocorrelação e por classe, depois as etapas 3 e 4.
 constante; os dados vêm da forma que o modelo assume. O ajuste no Curiango
 tem 97.806 ocasiões e deve levar bem mais que os 6 min por ajuste daqui;
 o tempo precisa ser medido antes de planejar as etapas 3 e 4.
+
+## Curiango: primeiro ajuste do v1 (13/11/2026)
+
+`run_curiango_v1.R`, classificador próprio, c = logit(0,1), 1.753
+sítios-noite, 97.806 minutos (96,4% adjacentes), 1.199 verificados (257
+positivos). 4 cadeias, 1.000 + 1.000, 44 min no Mac. Resumo em
+`results/curiango_v1/fit_v1_custom_0.1.rds` (draws a cada 8).
+
+**Convergência:** sem divergências, sem treedepth máximo, E-BFMI 0,96 a
+1,02, R-hat 1,00, ESS bulk ≥ 2.500.
+
+**O ajuste não é plausível:**
+
+| Quantidade | v1 | Referência |
+|---|---|---|
+| ψ no centro | 0,87 | 0,43 no v0 (piloto de 07/11) |
+| θ̄ (canto por minuto nos ocupados) | 0,63 | 0,136 no v0 |
+| fração de minutos com canto, ψ θ̄ | ≈ 0,55 | 0,107 pela estimativa ponderada dos verificados |
+| ρ | 4,7 | |
+| componente baixo de f₁ | 87% em N(−1,92; 0,26) | mediana dos negativos verificados não censurados: −1,96 |
+| f₀ | 85% em N(−2,31; 0,19), quase todo abaixo de c = −2,20 | |
+
+**PPC por classe nos verificados (critério 6), com as médias posteriores:**
+78% dos negativos verificados não censurados têm f₁(s) > f₀(s), e 98% dos
+positivos. Os negativos verificados têm 47% de scores censurados, e os não
+censurados ficam entre −2,16 e −1,45 (percentis 10 e 90). O modelo pôs
+essa faixa em f₁.
+
+**Leitura (interpretação, não testada):** os scores sem canto logo acima de
+c variam em sequências dentro da noite (ruído de fundo, outras espécies).
+Sem outra forma de representar essa dependência, o termo de Markov e a
+mistura de f₁ a absorvem como canto. Os 942 negativos verificados não
+bastam contra os cerca de 58 mil minutos não censurados não verificados. A
+simulação não pegou isso porque, nela, os scores sem canto são
+independentes dado w.
+
+Ainda não se sabe se o problema vem do Markov ou da mistura: o
+`model_mix.stan` sem Markov nunca foi ajustado no Curiango.
