@@ -133,6 +133,21 @@ test_that("the monotone GAM is fitted and never decreases", {
   expect_false(is.na(cmp$cv_logloss[cmp$curve == "monotone_gam"]))
 })
 
+test_that("the monotone GAM takes non-integer weights", {
+  skip_if_not_installed("scam")
+  skip_if_not_installed("mgcv")
+  val <- sim_curvas(500, "certa", seed = 3)
+  val$inclusion_prob <- ifelse(val$confidence > 0.7, 0.9, 0.3)
+  cmp <- suppressMessages(compare_calibration_curves(
+    val, curves = c("logistic", "gam", "monotone_gam")))
+  expect_true(all(cmp$weighted))
+  mono <- cmp[cmp$curve == "monotone_gam", ]
+  expect_false(is.na(mono$cv_logloss))
+  expect_false(is.na(mono$top_error))
+  curva <- attr(cmp, "curves")
+  expect_true(all(diff(curva$p_tp[curva$curve == "monotone_gam"]) >= -1e-8))
+})
+
 test_that("plot_calibration_curves() draws the curves and the bins", {
   skip_if_not_installed("ggplot2")
   skip_if_not_installed("mgcv")

@@ -76,3 +76,32 @@ test_that("the export warns that score_bands clips are not for crywolf", {
     })
   expect_true(any(grepl("score_bands.*crywolf drops them", avisos)))
 })
+
+# Ponta a ponta com o crywolf: o export mistura clipes aleatorios e por
+# faixa; o crywolf descarta os de faixa com um aviso e fica com os demais
+test_that("crywolf drops the score_bands clips of a real export", {
+  skip_if_not_installed("crywolf")
+  skip_if(!any(grepl("score_bands", deparse(crywolf::fp_read_sheepdog))),
+          "this crywolf does not drop score_bands clips")
+  pred <- sim_pred()
+  ale <- sim_validation(pred, "random_detections", strata = "site_species",
+                        n_top = 2)
+  fai <- sim_validation(pred, "score_bands", strata = "site_species",
+                        n_top = 2)
+  chave <- function(m) paste(m$source_audio, m$clip_start, m$species_code)
+  fai <- fai[!chave(fai) %in% chave(ale), ]
+  val <- dplyr::bind_rows(ale, fai)
+  out <- suppressWarnings(export_sim(validation = val))
+  sp <- utils::read.csv(file.path(out$dir, "validation.csv"))
+  sp <- sp$species[sp$sampling_mode == "score_bands"][1]
+  avisos <- character()
+  x <- withCallingHandlers(
+    suppressMessages(crywolf::fp_read_sheepdog(out$dir, species = sp)),
+    warning = function(w) {
+      avisos <<- c(avisos, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    })
+  expect_true(any(grepl("score_bands\" were dropped", avisos)))
+  expect_true(nrow(x$validation) > 0)
+  expect_true(all(x$validation$sampling_mode == "random_detections"))
+})
