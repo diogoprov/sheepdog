@@ -14,6 +14,10 @@
   curves over the observed precision by bin. `mgcv` and `scam` join
   Suggests; a curve whose package is missing is left out with a message.
   The `calibration` vignette gains a section on it.
+- The Setup tab of `run_app()` offers `sampling_mode = "score_bands"`,
+  with its strata and score bands; fields the mode does not take (total and
+  maximum per species, threshold) are not passed on. The vignette
+  `sampling-designs` gains a section on the mode.
 - New `sampling_mode = "score_bands"` in `select_clips()`: `n_top` clips
   drawn at random in each stratum x score band (`score_breaks`, default
   0.1, 0.4, 0.7, 1), with `inclusion_prob` = drawn / candidates of the

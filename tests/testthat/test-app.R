@@ -633,3 +633,47 @@ test_that("join_identities() and confuser_summary() check their inputs", {
   expect_true(s$is_class)
   expect_identical(s$n_sure, 0L)
 })
+
+test_that("sampling_args() passes score bands and drops what they refuse", {
+  a <- sampling_args(list(mode = "score_bands", occasion_unit = "file",
+                          threshold = 0.5, n_top = 2, min_confidence = 0.1,
+                          seed = 2026, target_total = 20,
+                          max_per_species = 5, sites = NULL, species = NULL,
+                          hour_start = NA, hour_end = NA, remap_from = "",
+                          remap_to = "", strata = "site_species",
+                          score_breaks = "0.1, 0.5, 1"))
+  expect_identical(a$strata, "site_species")
+  expect_identical(a$score_breaks, c(0.1, 0.5, 1))
+  expect_null(a$target_total)
+  expect_null(a$max_per_species)
+  expect_null(a$threshold)
+  expect_identical(parse_breaks("0,1; 0,5; 1"), c(0.1, 0.5, 1))
+  expect_null(parse_breaks(""))
+  expect_error(parse_breaks("0.1, a, 1"), "numbers separated by commas")
+})
+
+test_that("the sampling tab draws score bands", {
+  skip_if_not_installed("shiny")
+  ex <- system.file("extdata", "example", package = "sheepdog")
+  det <- suppressMessages(read_selection_tables(file.path(ex, "birdnet")))
+  out <- withr::local_tempdir()
+  shiny::testServer(sampling_server, args = list(
+    detections = det, selection_dir = file.path(ex, "birdnet"),
+    output_dir = out, classifier = "test"), {
+      base <- list(mode = "score_bands", occasion_unit = "file",
+                   threshold = NA, n_top = 1, strata = "site_species",
+                   target_total = NA, max_per_species = NA,
+                   min_confidence = 0.1, sites = NULL, species = NULL,
+                   hour_start = NA, hour_end = NA, seed = 2026,
+                   remap_from = "", remap_to = "", audio_dir = "",
+                   simulate = TRUE, replace = FALSE)
+      do.call(session$setInputs, c(base, score_breaks = "0.1, x"))
+      session$setInputs(draw = 1)
+      expect_match(notas(), "numbers separated by commas", all = FALSE)
+      session$setInputs(score_breaks = "0.1, 0.5, 1")
+      session$setInputs(draw = 2)
+      expect_true(all(selecao()$sampling_mode == "score_bands"))
+      expect_match(notas(), "not false-positive occupancy models",
+                   all = FALSE)
+    })
+})
