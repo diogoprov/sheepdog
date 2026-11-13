@@ -13,6 +13,7 @@ NULL
 
 # Colunas usadas via tidy evaluation (evita NOTEs do R CMD check)
 utils::globalVariables(c(
+  "present", "max_score",
   "faixa", "tp", "w", "observed", "curve", "max_p", "threshold_p_tp",
   "threshold_precision", "threshold_weighted", "cv_logloss", "cv_logloss_se",
   "top_error", "top_error_excess", "p",

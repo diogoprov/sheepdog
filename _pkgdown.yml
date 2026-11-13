@@ -73,6 +73,7 @@ reference:
       - suggest_thresholds
       - threshold_bootstrap
       - threshold_by_group
+      - recall_ceiling
       - threshold_record
       - review_support
       - nightly_presence
