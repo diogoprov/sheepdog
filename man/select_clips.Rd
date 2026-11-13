@@ -6,11 +6,12 @@
 \usage{
 select_clips(
   detections,
-  sampling_mode = c("top", "random_detections", "random_recordings"),
+  sampling_mode = c("top", "random_detections", "random_recordings", "score_bands"),
   occasion_unit = c("file", "minute"),
   threshold = NULL,
   n_top = 2,
   strata = "night_hour",
+  score_breaks = c(0.1, 0.4, 0.7, 1),
   covariates = NULL,
   recording_fraction = 0.01,
   n_recordings_per_site = NULL,
@@ -40,8 +41,9 @@ select_clips(
 \arguments{
 \item{detections}{Predictions, as returned by \code{\link[=read_selection_tables]{read_selection_tables()}}.}
 
-\item{sampling_mode}{\code{"top"}, \code{"random_detections"} or
-\code{"random_recordings"}. See \emph{Sampling modes}.}
+\item{sampling_mode}{\code{"top"}, \code{"random_detections"},
+\code{"random_recordings"} or \code{"score_bands"}. See \emph{Sampling modes} and
+\emph{Which design for which use}.}
 
 \item{occasion_unit}{The occasion of the occupancy model: \code{"file"} (the
 whole recording) or \code{"minute"} (minute of the file, from
@@ -52,9 +54,11 @@ defines the candidate occasions of \code{"random_detections"} and the
 \code{n_detections_occasion} column. \code{NULL} leaves that column \code{NA}.}
 
 \item{n_top}{\code{"top"}: predictions kept per site x species x night x
-hour. \code{"random_detections"}: occasions drawn per stratum (\code{strata}).}
+hour. \code{"random_detections"}: occasions drawn per stratum (\code{strata}).
+\code{"score_bands"}: predictions drawn per stratum and score band.}
 
-\item{strata}{\code{"random_detections"}: the strata of the occasion draw
+\item{strata}{\code{"random_detections"} and \code{"score_bands"}: the strata of
+the draw (within each, \code{"score_bands"} also splits by score band)
 (ignored by the other modes). Either one of the presets, all within
 site x species:
 \itemize{
@@ -88,6 +92,10 @@ With one recording per hour and \code{occasion_unit = "file"},
 random. With strata without the hour and \code{balance_by_hour = TRUE}
 under \code{target_total} or \code{max_per_species}, \code{inclusion_prob} is
 conditional on the first draw (a warning says so).}
+
+\item{score_breaks}{\code{"score_bands"}: the limits of the score bands,
+increasing, within 0 and 1. Predictions below the first limit are not
+drawn; the last band includes its upper limit.}
 
 \item{covariates}{\code{"random_detections"}: optional data frame of
 occasion covariates whose columns can be used in \code{strata}, such as
@@ -224,9 +232,38 @@ each site, for annotation by ear. This is the multiple-method design of
 Miller et al. (2011, \doi{10.1890/10-1396.1}). The clip is the whole
 recording (or minute), copied once per species to annotate, and
 \code{confidence} is \code{NA}.
+\item \code{"score_bands"} draws, at random, \code{n_top} predictions per stratum and
+score band (\code{score_breaks}, by default 0.1 to 0.4, 0.4 to 0.7 and 0.7 to 1),
+with \code{inclusion_prob = n_drawn / n_candidates} in each stratum x band.
+The same number of clips per band covers the whole score range, which
+is where a threshold and a calibration curve are estimated, and the
+weights \code{1 / inclusion_prob} restore the true proportions when bands
+are pooled (Wood & Kahl 2024, \doi{10.1007/s10336-024-02144-5}).
 }
 
-In both random modes, use the same \code{threshold} as the occupancy analysis.
+In the random modes, use the same \code{threshold} as the occupancy analysis.
+}
+
+\section{Which design for which use}{
+
+The draw decides what the reviewed clips can be used for:\tabular{lllll}{
+   Use \tab \code{"top"} \tab \code{"random_detections"} \tab \code{"random_recordings"} \tab \code{"score_bands"} \cr
+   retraining the classifier \tab yes \tab yes \tab yes \tab yes \cr
+   calibration curve (\code{\link[=calibrate]{calibrate()}}, \code{\link[=fit_calibration]{fit_calibration()}}) \tab high scores only \tab yes \tab no score \tab yes, best near the threshold \cr
+   threshold by weighted precision (\code{\link[=suggest_thresholds]{suggest_thresholds()}}) \tab no (no \code{inclusion_prob}) \tab yes \tab no score \tab yes \cr
+   false-positive occupancy models (crywolf) \tab dropped \tab yes \tab yes (annotated occasions) \tab \strong{no} \cr
+}
+
+
+The clips of \code{"score_bands"} are chosen by their score, so they cannot
+estimate the false-positive rate of the observation-confirmation design,
+which needs clips chosen independently of the score:
+\code{\link[=export_occupancy_data]{export_occupancy_data()}} writes them to \code{validation.csv} with a warning,
+and \code{crywolf::fp_read_sheepdog()} drops them with a warning, or stops
+when they are the only reviewed clips. For both uses in one project,
+draw a \code{"random_detections"} round for the occupancy model and a
+\code{"score_bands"} round for the threshold; a clip drawn by both is
+reviewed once (\code{previous}, \code{inherit}).
 }
 
 \section{Review rounds}{
