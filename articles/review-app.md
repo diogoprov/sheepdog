@@ -202,6 +202,13 @@ calling
 [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md)
 again resumes where the review stopped.
 
+With `run_app(..., blind = TRUE)`, the review is blind: the Review tab
+hides the score, the sampling design and the clip file name (which
+starts with the score), and the clips come in an order shuffled once per
+reviewer, the same each time the app is opened, instead of the order of
+the manifest, which follows the score. The species stays visible, since
+the verdict is about it.
+
 `"uncertain"` verdicts are kept in the table but, like the
 `"disagreement"` of
 [`consensus_verdicts()`](https://provetelab.org/sheepdog/reference/consensus_verdicts.md),

@@ -17,6 +17,7 @@ run_app(
   recordings = NULL,
   audio_dir = NULL,
   site_pattern = NULL,
+  blind = FALSE,
   classifier = NULL,
   launch.browser = interactive(),
   ...
@@ -97,6 +98,13 @@ run_app(
   and
   [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)).
   Can also be set in the Audio panel.
+
+- blind:
+
+  Blind review: the Review tab hides the score, the sampling design and
+  the clip file name (which starts with the score), and shows the clips
+  in an order shuffled once per reviewer instead of the order of the
+  manifest, so that the verdict does not lean on the score.
 
 - classifier:
 

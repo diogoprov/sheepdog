@@ -314,6 +314,12 @@ reviewed again by going back to it (untick <em>Only clips not yet
 reviewed</em> to see every clip); the last verdict counts. Closing the
 browser tab and calling <code><a href="../reference/run_app.html">run_app()</a></code> again resumes where the
 review stopped.</p>
+<p>With <code>run_app(..., blind = TRUE)</code>, the review is blind:
+the Review tab hides the score, the sampling design and the clip file
+name (which starts with the score), and the clips come in an order
+shuffled once per reviewer, the same each time the app is opened,
+instead of the order of the manifest, which follows the score. The
+species stays visible, since the verdict is about it.</p>
 <p><code>"uncertain"</code> verdicts are kept in the table but, like the
 <code>"disagreement"</code> of <code><a href="../reference/consensus_verdicts.html">consensus_verdicts()</a></code>, left
 out of precision, thresholds and calibration, which use only positive

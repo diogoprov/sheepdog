@@ -89,6 +89,7 @@ workflow. The tabs depend on the arguments:</p>
 <span>  recordings <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  audio_dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  site_pattern <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  blind <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  classifier <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  launch.browser <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -162,6 +163,13 @@ that takes the site from the file names, when the recordings or the
 selection tables of several sites share a folder (see
 <code><a href="list_recordings.html">list_recordings()</a></code> and <code><a href="read_selection_tables.html">read_selection_tables()</a></code>). Can also be set in
 the Audio panel.</p></dd>
+
+
+<dt id="arg-blind">blind<a class="anchor" aria-label="anchor" href="#arg-blind"></a></dt>
+<dd><p>Blind review: the Review tab hides the score, the sampling
+design and the clip file name (which starts with the score), and shows
+the clips in an order shuffled once per reviewer instead of the order
+of the manifest, so that the verdict does not lean on the score.</p></dd>
 
 
 <dt id="arg-classifier">classifier<a class="anchor" aria-label="anchor" href="#arg-classifier"></a></dt>

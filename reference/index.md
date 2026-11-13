@@ -111,6 +111,12 @@ precision.
   : Precision by confidence bin
 - [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
   : Suggest a confidence threshold per species
+- [`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md)
+  : Uncertainty of the empirical threshold by bootstrap
+- [`threshold_by_group()`](https://provetelab.org/sheepdog/reference/threshold_by_group.md)
+  : Does one threshold hold in every group?
+- [`threshold_record()`](https://provetelab.org/sheepdog/reference/threshold_record.md)
+  : Threshold record
 - [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md)
   : Review support of each cell: is more validation worth it?
 - [`nightly_presence()`](https://provetelab.org/sheepdog/reference/nightly_presence.md)

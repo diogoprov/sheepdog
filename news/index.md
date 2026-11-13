@@ -3,6 +3,28 @@
 ## sheepdog (development version)
 
 - New
+  [`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md):
+  the uncertainty of the threshold of
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
+  by resampling whole recordings (or nights) within each cell, with a
+  conservative threshold (an upper quantile) and the share of replicates
+  that reach the target.
+
+- New
+  [`threshold_by_group()`](https://provetelab.org/sheepdog/reference/threshold_by_group.md):
+  the precision that one threshold per cell gives in each month, hour or
+  other group, flagging the groups below the target.
+
+- New
+  [`threshold_record()`](https://provetelab.org/sheepdog/reference/threshold_record.md):
+  one table (and optionally a Markdown file) with the threshold, its
+  interval, the groups below the target and the provenance of the clips.
+
+- `run_app(blind = TRUE)`: blind review, which hides the score, the
+  sampling design and the clip file name, and shuffles the queue once
+  per reviewer.
+
+- New
   [`select_directed()`](https://provetelab.org/sheepdog/reference/select_directed.md):
   a review round aimed by a model. Units (such as site x month x
   species) are drawn with probability proportional to a size, typically
