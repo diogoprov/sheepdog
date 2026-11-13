@@ -117,6 +117,8 @@ precision.
   : Does one threshold hold in every group?
 - [`recall_ceiling()`](https://provetelab.org/sheepdog/reference/recall_ceiling.md)
   : Recall ceiling and recall at the threshold
+- [`warning_signs()`](https://provetelab.org/sheepdog/reference/warning_signs.md)
+  : Warning signs of a threshold, by species
 - [`threshold_record()`](https://provetelab.org/sheepdog/reference/threshold_record.md)
   : Threshold record
 - [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md)

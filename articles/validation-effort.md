@@ -489,6 +489,35 @@ improve the classifier. A high ceiling with a low recall at the
 threshold means that the threshold, not the classifier, loses the
 occasions; weigh it against the precision it buys.
 
+### Warning signs, by species
+
+[`warning_signs()`](https://provetelab.org/sheepdog/reference/warning_signs.md)
+gathers what the review sample can show about whether the detections
+left after a threshold can feed an ecological model: a low recall
+ceiling (sign 1, from
+[`recall_ceiling()`](https://provetelab.org/sheepdog/reference/recall_ceiling.md)),
+a threshold that discards most true positives (sign 2), false-positive
+rates that vary between sites or months (sign 6, with the main confusing
+identity when the clips have identities), a threshold that misses the
+target in some group (sign 7, from
+[`threshold_by_group()`](https://provetelab.org/sheepdog/reference/threshold_by_group.md))
+and a logistic curve wrong near the threshold (sign 8, from
+[`compare_calibration_curves()`](https://provetelab.org/sheepdog/reference/compare_calibration_curves.md)).
+Each species gets a verdict: `"trustworthy_with_care"`,
+`"use_with_caveats"` or `"not_trustworthy"`. Signs 3 to 5 (occupied
+sites lost, detected days that do not track the true activity, false
+negatives that vary by site) need recordings annotated in full and are
+not checked.
+
+``` r
+
+warning_signs(val, thr, groups = c("site", "month"),
+              curves = compare_calibration_curves(val),
+              recall = recall_ceiling(rr, pred, thresholds = thr,
+                                      by = c("site", "species_folder")),
+              file = "warning_signs.md")
+```
+
 ## Stage 1 along a gradient
 
 The checks above split the reviewed clips by site x species. The share

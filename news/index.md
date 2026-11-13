@@ -3,6 +3,20 @@
 ## sheepdog (development version)
 
 - New
+  [`warning_signs()`](https://provetelab.org/sheepdog/reference/warning_signs.md):
+  for each species, the warning signs of the threshold workflow that a
+  review sample can show (1, low recall ceiling, from
+  [`recall_ceiling()`](https://provetelab.org/sheepdog/reference/recall_ceiling.md);
+  2, the threshold discards most true positives; 6, false-positive rates
+  that vary by site or season, with the main confusing identity; 7, a
+  threshold below target in some group, from
+  [`threshold_by_group()`](https://provetelab.org/sheepdog/reference/threshold_by_group.md);
+  8, a logistic curve wrong near the threshold, from
+  [`compare_calibration_curves()`](https://provetelab.org/sheepdog/reference/compare_calibration_curves.md)),
+  and a verdict: `"trustworthy_with_care"`, `"use_with_caveats"` or
+  `"not_trustworthy"`. Optionally writes the report as Markdown.
+
+- New
   [`recall_ceiling()`](https://provetelab.org/sheepdog/reference/recall_ceiling.md):
   from the occasions of `"random_recordings"` annotated by ear and the
   highest score of the species in each, the recall ceiling (share of the
