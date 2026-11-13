@@ -107,6 +107,8 @@ reference:
       - score_detections
       - calibrated_thresholds
       - compare_thresholds
+      - compare_calibration_curves
+      - plot_calibration_curves
       - detection_history
       - threshold_history
       - summarise_history
