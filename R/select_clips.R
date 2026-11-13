@@ -139,6 +139,11 @@
 #'   * `"month"`: month of the night (`YYYY-MM`), which spreads the draw
 #'     over the season;
 #'   * `"site_species"`: no further stratification;
+#'   * `"species"` (`"score_bands"` only): the species alone, pooling the
+#'     sites, for a threshold of the species when the cut per site x band
+#'     would be too coarse (with 60 sites and 3 bands, the smallest step is
+#'     180 clips); `inclusion_prob` is then the share drawn among the
+#'     predictions of the species in the band;
 #'
 #'   or a character vector of column names of `detections`, e.g.
 #'   `c("site", "species_code", "habitat", "night")`, for strata defined by
@@ -147,7 +152,8 @@
 #'   within a site (the moon phase, the rain of the night, a recorder when
 #'   a site has several). `month` and `week` can also be used and are
 #'   derived from the night when absent.
-#'   `site` and `species_code` are always added to the strata, which keeps
+#'   Except for `"species"`, `site` and `species_code` are always added to
+#'   the strata, which keeps
 #'   `inclusion_prob` exact when `target_total` or `max_per_species` draw
 #'   again within site x species. Columns that depend on the score
 #'   (`confidence`, `rank`) are refused, since the observation-confirmation
@@ -192,7 +198,8 @@
 #'   when needed (minute occasions) and leaves `clip_end` as `NA` otherwise.
 #' @param min_confidence Minimum confidence of a candidate prediction in
 #'   `"top"`. `NULL` applies no filter. The random modes use `threshold`.
-#' @param sites Restrict to these sites. `NULL` keeps all.
+#' @param sites Restrict to these sites (the predictions and, in
+#'   `"random_recordings"`, the list of recordings). `NULL` keeps all.
 #' @param date_start,date_end Date window of the recordings (`"YYYYMMDD"`).
 #'   `NULL` leaves that side open.
 #' @param species Restrict to these short species codes (the last part of
@@ -281,7 +288,7 @@ select_clips <- function(detections,
                          cells = NULL,
                          inherit = FALSE) {
   modo    <- match.arg(sampling_mode)
-  estrato1 <- resolve_strata(strata)
+  estrato1 <- resolve_strata(strata, modo)
   rotulo1  <- paste(estrato1, collapse = " x ")
   unidade <- match.arg(occasion_unit)
   janela  <- list(hour_start = hour_start, hour_end = hour_end,
@@ -396,6 +403,13 @@ select_clips <- function(detections,
   if (modo == "random_recordings") {
     gravacoes <- get_recordings(selecao, recordings, audio_pattern,
                                  remap_from, remap_to)
+    if (!is.null(sites)) {
+      gravacoes <- filter(gravacoes, site %in% sites)
+      if (nrow(gravacoes) == 0) {
+        stop("No recording of `recordings` left after the site filter - ",
+             "check `sites`.", call. = FALSE)
+      }
+    }
   }
 
   # Filtro de especies (codigos curtos)
@@ -928,7 +942,7 @@ sample_clips <- function(df, n_alvo, por_hora = TRUE) {
 
 # Estratos do sorteio de random_detections: um dos atalhos ou um vetor de
 # colunas, sempre com local e especie e nunca com colunas do score
-resolve_strata <- function(strata) {
+resolve_strata <- function(strata, modo = NULL) {
   atalhos <- list(
     night_hour   = c("night", "recording_hour"),
     night        = "night",
@@ -939,6 +953,15 @@ resolve_strata <- function(strata) {
   if (!is.character(strata) || length(strata) == 0) {
     stop("`strata` must be a preset name or a character vector of columns.",
          call. = FALSE)
+  }
+  # "species": so a especie, com os locais agrupados; so em score_bands,
+  # cujos clipes nao vao para o modelo de ocupacao por local
+  if (length(strata) == 1 && identical(strata, "species")) {
+    if (!identical(modo, "score_bands")) {
+      stop("`strata = \"species\"` is only available for ",
+           "sampling_mode = \"score_bands\".", call. = FALSE)
+    }
+    return("species_code")
   }
   cols <- if (length(strata) == 1 && strata %in% names(atalhos)) {
     atalhos[[strata]]

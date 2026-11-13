@@ -74,7 +74,9 @@
 #'   `verdict` (`"positive"` or `"negative"`; others are left out),
 #'   `confidence` and, for weights, `inclusion_prob`.
 #' @param target Target probability (`threshold_p_tp`) and precision
-#'   (`threshold_precision`, `threshold_weighted`).
+#'   (`threshold_precision`, `threshold_weighted`). Several targets can be
+#'   given: the curves and the cross-validation are fitted once per group,
+#'   and the result has one row per group x target x curve.
 #' @param by Columns of `validation` that define the groups fitted
 #'   separately. `"species_folder"` by default; `c("site",
 #'   "species_folder")` fits each cell.
@@ -87,6 +89,9 @@
 #' @param k Basis dimension of the GAMs (reduced when the group has fewer
 #'   distinct scores).
 #' @param k_folds Number of folds of the cross-validation.
+#' @param cv `FALSE` skips the cross-validation (`cv_logloss`,
+#'   `cv_logloss_se` and `within_1se` are `NA`), when only the thresholds
+#'   and the verdict, which does not use it, are needed.
 #' @param cluster Column of `validation` whose levels are kept together in
 #'   the folds (`"source_audio"`, the recording, by default). Without it,
 #'   clips are split one by one.
@@ -105,8 +110,9 @@
 #' @param seed Seed of the folds. The global random number generator is
 #'   left as it was.
 #'
-#' @return A tibble with one row per group x curve: the `by` columns,
-#'   `curve`, `n`, `n_positive`, `cv_logloss`, `cv_logloss_se`,
+#' @return A tibble with one row per group x target x curve: the `by`
+#'   columns,
+#'   `curve`, `target`, `n`, `n_positive`, `cv_logloss`, `cv_logloss_se`,
 #'   `within_1se` (log-loss within one standard error of the best curve of
 #'   the group), `top_error`, `top_error_excess`, `n_eff_top`, `max_p`,
 #'   `reaches_target`,
@@ -136,7 +142,7 @@ compare_calibration_curves <- function(validation, target = 0.95,
                                        curves = c("logistic", "quadratic",
                                                   "gam", "monotone_gam"),
                                        weighted = NULL, k = 5, k_folds = 5,
-                                       cluster = "source_audio",
+                                       cv = TRUE, cluster = "source_audio",
                                        top_from = 0.7, bin_width = 0.05,
                                        min_n = 15, min_bin = 5,
                                        max_error = 0.03, tolerance = 0.03,
@@ -147,9 +153,14 @@ compare_calibration_curves <- function(validation, target = 0.95,
     stop("`curves` must be among: ", paste(curvas_ok, collapse = ", "), ".",
          call. = FALSE)
   }
-  if (!is.numeric(target) || length(target) != 1 || target <= 0 ||
-      target >= 1) {
-    stop("`target` must be a single number between 0 and 1.", call. = FALSE)
+  if (!is.numeric(target) || length(target) == 0 || anyNA(target) ||
+      any(target <= 0) || any(target >= 1)) {
+    stop("`target` must be one or more numbers between 0 and 1.",
+         call. = FALSE)
+  }
+  target <- sort(unique(target))
+  if (!isTRUE(cv) && !isFALSE(cv)) {
+    stop("`cv` must be TRUE or FALSE.", call. = FALSE)
   }
   check_by(validation, by)
   if ("gam" %in% curves && !requireNamespace("mgcv", quietly = TRUE)) {
@@ -186,7 +197,8 @@ compare_calibration_curves <- function(validation, target = 0.95,
   resultados <- withr::with_seed(seed, lapply(grupos, function(d) {
     chave <- if (length(by) == 0) tibble() else
       as_tibble(d[1, by, drop = FALSE])
-    out <- curves_for_group(d, curves, target, weighted, k, k_folds,
+    out <- curves_for_group(d, curves, target, weighted, k,
+                            if (cv) k_folds else 0L,
                             if (sem_cluster) NULL else cluster, top_from,
                             bin_width, min_n, min_bin, max_error, tolerance,
                             grade)
@@ -217,18 +229,22 @@ curves_for_group <- function(d, curves, target, weighted, k, k_folds,
   ponderar <- completa && !isFALSE(weighted)
   d$w <- if (ponderar) 1 / d$inclusion_prob else rep(1, nrow(d))
   d$w <- d$w / mean(d$w)
-  # limiar sem modelo: a contagem ponderada de suggest_thresholds()
-  empirico <- threshold_for(d, target, min_n, pesos = completa,
-                            weighted = if (ponderar) TRUE else FALSE,
-                            sustained = TRUE)$threshold
-  base <- tibble(curve = curves, n = nrow(d), n_positive = sum(d$tp))
+  # limiar sem modelo: a contagem ponderada de suggest_thresholds(), por alvo
+  empirico <- vapply(target, function(t) {
+    threshold_for(d, t, min_n, pesos = completa,
+                  weighted = if (ponderar) TRUE else FALSE,
+                  sustained = TRUE)$threshold
+  }, numeric(1))
+  base <- tidyr::expand_grid(target = target, curve = curves) |>
+    mutate(n = nrow(d), n_positive = sum(d$tp), .after = curve) |>
+    relocate(curve, .before = target)
   vazio <- base |>
     mutate(cv_logloss = NA_real_, cv_logloss_se = NA_real_,
            within_1se = NA, top_error = NA_real_,
            top_error_excess = NA_real_, n_eff_top = NA_real_,
            max_p = NA_real_, reaches_target = NA,
            threshold_p_tp = NA_real_, threshold_precision = NA_real_,
-           threshold_weighted = empirico,
+           threshold_weighted = empirico[match(target, .env$target)],
            diff_weighted = NA_real_, above_reviewed = NA,
            weighted = ponderar, verdict = "too_few_clips")
   if (nrow(d) < min_n || sum(d$tp) < 2 || sum(1 - d$tp) < 2) {
@@ -237,24 +253,28 @@ curves_for_group <- function(d, curves, target, weighted, k, k_folds,
 
   ajustes <- lapply(curves, function(cv) fit_curve(cv, d, k))
   names(ajustes) <- curves
-  # validacao cruzada com dobras de gravacoes inteiras
-  dobras <- make_folds(d, k_folds, cluster)
-  perdas <- vapply(curves, function(cv) {
-    por_dobra <- vapply(seq_len(max(dobras)), function(f) {
-      treino <- d[dobras != f, ]
-      teste <- d[dobras == f, ]
-      if (sum(treino$tp) < 2 || sum(1 - treino$tp) < 2) return(NA_real_)
-      a <- fit_curve(cv, treino, k)
-      if (is.null(a)) return(NA_real_)
-      p <- clamp_p(predict_curve(a, teste$x))
-      ll <- -(teste$tp * log(p) + (1 - teste$tp) * log(1 - p))
-      sum(teste$w * ll) / sum(teste$w)
-    }, numeric(1))
-    ok <- !is.na(por_dobra)
-    c(if (any(ok)) mean(por_dobra[ok]) else NA_real_,
-      if (sum(ok) > 1) stats::sd(por_dobra[ok]) / sqrt(sum(ok)) else
-        NA_real_)
-  }, numeric(2))
+  # validacao cruzada com dobras de gravacoes inteiras (k_folds = 0: pular)
+  perdas <- if (k_folds == 0) {
+    matrix(NA_real_, 2, length(curves), dimnames = list(NULL, curves))
+  } else {
+    dobras <- make_folds(d, k_folds, cluster)
+    vapply(curves, function(cv) {
+      por_dobra <- vapply(seq_len(max(dobras)), function(f) {
+        treino <- d[dobras != f, ]
+        teste <- d[dobras == f, ]
+        if (sum(treino$tp) < 2 || sum(1 - treino$tp) < 2) return(NA_real_)
+        a <- fit_curve(cv, treino, k)
+        if (is.null(a)) return(NA_real_)
+        p <- clamp_p(predict_curve(a, teste$x))
+        ll <- -(teste$tp * log(p) + (1 - teste$tp) * log(1 - p))
+        sum(teste$w * ll) / sum(teste$w)
+      }, numeric(1))
+      ok <- !is.na(por_dobra)
+      c(if (any(ok)) mean(por_dobra[ok]) else NA_real_,
+        if (sum(ok) > 1) stats::sd(por_dobra[ok]) / sqrt(sum(ok)) else
+          NA_real_)
+    }, numeric(2))
+  }
 
   # faixas altas de score, observado x previsto
   quebras <- unique(c(seq(top_from, 1, by = bin_width), 1))
@@ -273,11 +293,12 @@ curves_for_group <- function(d, curves, target, weighted, k, k_folds,
   max_rev <- max(d$confidence)
   cortes <- sort(unique(round(d$confidence, 2)))
   cortes <- cortes[cortes <= max_rev]
+  na_grade <- grade[grade <= max_rev + 1e-9]
   linhas <- lapply(curves, function(cv) {
     a <- ajustes[[cv]]
     if (is.null(a)) {
-      return(tibble(curve = cv, top_error = NA_real_, max_p = NA_real_,
-                    threshold_p_tp = NA_real_,
+      return(tibble(curve = cv, target = target, top_error = NA_real_,
+                    max_p = NA_real_, threshold_p_tp = NA_real_,
                     threshold_precision = NA_real_))
     }
     d$p <- predict_curve(a, d$x)
@@ -292,28 +313,31 @@ curves_for_group <- function(d, curves, target, weighted, k, k_folds,
       if (nrow(e) == 0) NA_real_ else
         sum(e$n_eff * abs(e$obs - e$pred)) / sum(e$n_eff)
     }
-    na_grade <- grade[grade <= max_rev + 1e-9]
     p_grade <- predict_curve(a, score_logit(na_grade))
-    i <- first_sustained(p_grade, target)
     # precisao prevista dos clipes acima de cada corte (ponderada)
     prec <- vapply(cortes, function(c0) {
       s <- d$confidence >= c0
       if (sum(d$w[s])^2 / sum(d$w[s]^2) < min_n) return(NA_real_)
       sum(d$w[s] * d$p[s]) / sum(d$w[s])
     }, numeric(1))
-    j <- first_sustained(prec, target)
-    tibble(curve = cv, top_error = erro, max_p = max(p_grade),
-           threshold_p_tp = if (is.na(i)) NA_real_ else na_grade[i],
-           threshold_precision = if (is.na(j)) NA_real_ else cortes[j])
+    bind_rows(lapply(target, function(t) {
+      i <- first_sustained(p_grade, t)
+      j <- first_sustained(prec, t)
+      tibble(curve = cv, target = t, top_error = erro, max_p = max(p_grade),
+             threshold_p_tp = if (is.na(i)) NA_real_ else na_grade[i],
+             threshold_precision = if (is.na(j)) NA_real_ else cortes[j])
+    }))
   })
   tabela <- base |>
-    mutate(cv_logloss = perdas[1, ], cv_logloss_se = perdas[2, ]) |>
-    left_join(bind_rows(linhas), by = "curve")
-  melhor <- which.min(tabela$cv_logloss)
-  tabela <- tabela |>
-    mutate(within_1se = if (length(melhor) == 0) NA else
-             cv_logloss <= cv_logloss[melhor] +
-               dplyr::coalesce(cv_logloss_se[melhor], 0),
+    mutate(cv_logloss = perdas[1, curve], cv_logloss_se = perdas[2, curve]) |>
+    left_join(bind_rows(linhas), by = c("curve", "target")) |>
+    group_by(target) |>
+    mutate(within_1se = {
+             melhor <- which.min(cv_logloss)
+             if (length(melhor) == 0) NA else
+               cv_logloss <= cv_logloss[melhor] +
+                 dplyr::coalesce(cv_logloss_se[melhor], 0)
+           },
            top_error_excess = top_error - suppressWarnings(min(
              top_error[curve %in% c("quadratic", "gam", "monotone_gam")],
              na.rm = TRUE)),
@@ -321,13 +345,14 @@ curves_for_group <- function(d, curves, target, weighted, k, k_folds,
                                      top_error_excess, NA_real_),
            n_eff_top = n_eff_top,
            reaches_target = max_p >= target,
-           threshold_weighted = empirico,
+           threshold_weighted = empirico[match(target, .env$target)],
            diff_weighted = threshold_precision - threshold_weighted,
            above_reviewed = pmax(threshold_p_tp, threshold_precision,
                                  na.rm = TRUE) > max_rev,
-           weighted = ponderar)
-  tabela$verdict <- curve_verdict(tabela, n_eff_top, min_n, max_error,
-                                  tolerance)
+           weighted = ponderar) |>
+    mutate(verdict = curve_verdict(pick(everything()), .env$n_eff_top, min_n,
+                                   max_error, tolerance)) |>
+    ungroup()
 
   curvas <- bind_rows(lapply(curves, function(cv) {
     a <- ajustes[[cv]]

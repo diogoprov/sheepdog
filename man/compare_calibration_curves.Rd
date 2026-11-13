@@ -12,6 +12,7 @@ compare_calibration_curves(
   weighted = NULL,
   k = 5,
   k_folds = 5,
+  cv = TRUE,
   cluster = "source_audio",
   top_from = 0.7,
   bin_width = 0.05,
@@ -29,7 +30,9 @@ compare_calibration_curves(
 \code{confidence} and, for weights, \code{inclusion_prob}.}
 
 \item{target}{Target probability (\code{threshold_p_tp}) and precision
-(\code{threshold_precision}, \code{threshold_weighted}).}
+(\code{threshold_precision}, \code{threshold_weighted}). Several targets can be
+given: the curves and the cross-validation are fitted once per group,
+and the result has one row per group x target x curve.}
 
 \item{by}{Columns of \code{validation} that define the groups fitted
 separately. \code{"species_folder"} by default; \code{c("site", "species_folder")} fits each cell.}
@@ -46,6 +49,10 @@ clips all have it), \code{TRUE} or \code{FALSE}.}
 distinct scores).}
 
 \item{k_folds}{Number of folds of the cross-validation.}
+
+\item{cv}{\code{FALSE} skips the cross-validation (\code{cv_logloss},
+\code{cv_logloss_se} and \code{within_1se} are \code{NA}), when only the thresholds
+and the verdict, which does not use it, are needed.}
 
 \item{cluster}{Column of \code{validation} whose levels are kept together in
 the folds (\code{"source_audio"}, the recording, by default). Without it,
@@ -72,8 +79,9 @@ the curves returned.}
 left as it was.}
 }
 \value{
-A tibble with one row per group x curve: the \code{by} columns,
-\code{curve}, \code{n}, \code{n_positive}, \code{cv_logloss}, \code{cv_logloss_se},
+A tibble with one row per group x target x curve: the \code{by}
+columns,
+\code{curve}, \code{target}, \code{n}, \code{n_positive}, \code{cv_logloss}, \code{cv_logloss_se},
 \code{within_1se} (log-loss within one standard error of the best curve of
 the group), \code{top_error}, \code{top_error_excess}, \code{n_eff_top}, \code{max_p},
 \code{reaches_target},

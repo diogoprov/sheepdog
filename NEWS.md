@@ -1,5 +1,22 @@
 # sheepdog (development version)
 
+- `compare_calibration_curves()` takes several targets in one call
+  (`target = c(0.90, 0.95)`): the curves and the cross-validation are fitted
+  once per group, and the result gains a `target` column, with one row per
+  group x target x curve. The new argument `cv = FALSE` skips the
+  cross-validation when only the thresholds and the verdict are needed.
+- `select_clips(sampling_mode = "score_bands")` accepts `strata =
+  "species"`, which pools the sites and draws `n_top` clips per species x
+  score band, for a threshold of the species when the cut per site x band
+  would be too coarse.
+- `threshold_bootstrap()`, `suggest_thresholds()` and the other functions
+  built on the empirical threshold are faster: the precision at every
+  candidate cut is computed in one pass over the clips sorted by score,
+  with the same result (about ten times faster in a bootstrap of 360 clips).
+- Bug fix: `select_clips(sampling_mode = "random_recordings", sites = )`
+  now restricts the list of recordings to `sites`; it only filtered the
+  predictions, so every site of `recordings` was drawn.
+
 - New `warning_signs()`: for each species, the warning signs of the
   threshold workflow that a review sample can show (1, low recall ceiling,
   from `recall_ceiling()`; 2, the threshold discards most true positives; 6,

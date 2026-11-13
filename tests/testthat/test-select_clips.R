@@ -231,3 +231,19 @@ test_that("strata takes user columns and validates them", {
     det_h, "random_detections", threshold = 0.5, strata = "file_offset")),
     "constant within an occasion")
 })
+
+test_that("random_recordings keeps only the recordings of `sites`", {
+  pred <- suppressMessages(
+    read_selection_tables(file.path(sim_root(), "tabelas")))
+  args <- scenario_args("rec_table")
+  args$sites <- NULL
+  locais <- unique(pred$site)
+  um <- locais[1]
+  m <- suppressMessages(suppressWarnings(
+    do.call(select_clips, c(list(detections = pred, sites = um), args))))
+  expect_identical(unique(m$site), um)
+  # a probabilidade de inclusao continua sendo a do local
+  todos <- manifesto_cenario("rec_table")
+  expect_equal(unique(m$inclusion_prob),
+               unique(todos$inclusion_prob[todos$site == um]))
+})

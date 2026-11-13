@@ -129,3 +129,34 @@ test_that("blind review shuffles the queue and hides the score", {
       expect_match(output$info, "Score")
     })
 })
+
+test_that("threshold_for() in one pass matches the cut-by-cut definition", {
+  ref <- function(df, alvo, n_min, ponderar, sustained) {
+    cortes <- sort(unique(round(df$confidence, 2)))
+    cortes <- cortes[vapply(cortes, \(c0) any(df$confidence >= c0), TRUE)]
+    m <- vapply(cortes, function(c0) {
+      s <- df[df$confidence >= c0, ]
+      if (ponderar) c(weighted_precision(s$verdict, s$inclusion_prob),
+                      kish_n(s$inclusion_prob))
+      else c(mean(s$verdict == "positive"), nrow(s))
+    }, numeric(2))
+    ap <- which(m[2, ] >= n_min)
+    ok <- ap[m[1, ap] >= alvo]
+    ruins <- ap[m[1, ap] < alvo]
+    if (sustained && length(ruins)) ok <- ok[ok > max(ruins)]
+    if (length(ok)) cortes[ok[1]] else NA_real_
+  }
+  withr::with_seed(5, for (i in 1:60) {
+    n <- sample(c(8, 50, 250), 1)
+    df <- tibble::tibble(
+      confidence = round(stats::runif(n), sample(2:3, 1)),
+      verdict = ifelse(stats::runif(n) < confidence, "positive", "negative"),
+      inclusion_prob = stats::runif(n, 0.1, 1))
+    for (p in c(TRUE, FALSE)) for (s in c(TRUE, FALSE)) {
+      expect_identical(
+        threshold_for(df, 0.8, 10, pesos = TRUE, weighted = p,
+                      sustained = s)$threshold,
+        ref(df, 0.8, 10, p, s))
+    }
+  })
+})
