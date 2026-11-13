@@ -446,6 +446,73 @@ global model. A single score threshold, or a single calibration curve,
 would be too lenient for some species and sites and too strict for
 others.
 
+## Checking the shape of the curve
+
+The logistic curve assumes that P(TP) is linear in the logit of the
+score. When it is not, the curve can fit the bulk of the clips, at low
+scores, and still be wrong near the threshold, where it matters;
+cross-validated log-loss, dominated by the bulk, may not show it.
+[`compare_calibration_curves()`](https://provetelab.org/sheepdog/reference/compare_calibration_curves.md)
+fits, for each species, the logistic, a quadratic, a GAM (package
+`mgcv`) and a monotone GAM (package `scam`), and judges them in the high
+score bins and by their thresholds: `threshold_precision`, the cut from
+which the precision of the clips kept, as predicted by the curve,
+reaches the target, is compared with `threshold_weighted`, the same cut
+from the reviewed clips alone (the weighted count of
+[`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)).
+
+``` r
+
+val_tab <- read_validation_tables(val_files)
+cmp <- compare_calibration_curves(val_tab, target = 0.95,
+                                  curves = c("logistic", "quadratic", "gam"))
+cmp |>
+  filter(curve == "logistic") |>
+  select(species_folder, verdict, threshold_precision, threshold_weighted,
+         top_error_excess) |>
+  as.data.frame()
+#>   species_folder                  verdict threshold_precision
+#> 1        boa_ran            keep_logistic                0.58
+#> 2        den_nan use_monotone_or_weighted                  NA
+#> 3        ela_bic            keep_logistic                0.28
+#> 4        lep_fus  no_curve_reaches_target                  NA
+#> 5        lep_pod            keep_logistic                0.34
+#> 6        phy_cuv            keep_logistic                0.24
+#> 7        pse_pla  no_curve_reaches_target                  NA
+#> 8        sci_nas use_monotone_or_weighted                  NA
+#>   threshold_weighted top_error_excess
+#> 1               0.58     1.252263e-04
+#> 2               0.91     1.571108e-07
+#> 3               0.28     1.688774e-04
+#> 4                 NA     7.601977e-07
+#> 5               0.34     8.763312e-04
+#> 6               0.24     4.384463e-04
+#> 7                 NA     3.482801e-02
+#> 8               0.89    -5.239716e-03
+```
+
+The verdict follows the decision table of the threshold workflow:
+`"keep_logistic"` when the logistic fits the high bins as well as the
+flexible curves and its threshold agrees with the weighted count;
+`"use_monotone_or_weighted"` when it does not;
+`"no_curve_reaches_target"` when no curve and not even the reviewed
+clips reach the target, a problem of the classifier that no threshold
+fixes; and `"sample_more_near_threshold"` when the high bins hold too
+few clips to judge. Here the well-separated species keep the logistic,
+`pse_pla` and `lep_fus` reach the target with no curve, and `den_nan`
+and `sci_nas` reach it with the weighted count but not with the
+logistic, whose shape misses the top of the score range. These example
+clips come from the `"top"` design, with no inclusion probabilities;
+with clips of `"random_detections"` or `"score_bands"` the fits and
+precisions are weighted by `1 / inclusion_prob`.
+
+``` r
+
+plot_calibration_curves(cmp, validation = val_tab)
+```
+
+![](calibration_files/figure-html/unnamed-chunk-18-1.png)
+
 ## Scoring every detection
 
 [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md)

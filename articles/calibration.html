@@ -509,6 +509,68 @@ would be too lenient for some species and sites and too strict for
 others.</p>
 </div>
 <div class="section level2">
+<h2 id="checking-the-shape-of-the-curve">Checking the shape of the curve<a class="anchor" aria-label="anchor" href="#checking-the-shape-of-the-curve"></a>
+</h2>
+<p>The logistic curve assumes that P(TP) is linear in the logit of the
+score. When it is not, the curve can fit the bulk of the clips, at low
+scores, and still be wrong near the threshold, where it matters;
+cross-validated log-loss, dominated by the bulk, may not show it.
+<code><a href="../reference/compare_calibration_curves.html">compare_calibration_curves()</a></code> fits, for each species, the
+logistic, a quadratic, a GAM (package <code>mgcv</code>) and a monotone
+GAM (package <code>scam</code>), and judges them in the high score bins
+and by their thresholds: <code>threshold_precision</code>, the cut from
+which the precision of the clips kept, as predicted by the curve,
+reaches the target, is compared with <code>threshold_weighted</code>,
+the same cut from the reviewed clips alone (the weighted count of
+<code><a href="../reference/suggest_thresholds.html">suggest_thresholds()</a></code>).</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">val_tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_validation_tables.html">read_validation_tables</a></span><span class="op">(</span><span class="va">val_files</span><span class="op">)</span></span>
+<span><span class="va">cmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_calibration_curves.html">compare_calibration_curves</a></span><span class="op">(</span><span class="va">val_tab</span>, target <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>                                  curves <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"logistic"</span>, <span class="st">"quadratic"</span>, <span class="st">"gam"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">cmp</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">curve</span> <span class="op">==</span> <span class="st">"logistic"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">species_folder</span>, <span class="va">verdict</span>, <span class="va">threshold_precision</span>, <span class="va">threshold_weighted</span>,</span>
+<span>         <span class="va">top_error_excess</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   species_folder                  verdict threshold_precision</span></span>
+<span><span class="co">#&gt; 1        boa_ran            keep_logistic                0.58</span></span>
+<span><span class="co">#&gt; 2        den_nan use_monotone_or_weighted                  NA</span></span>
+<span><span class="co">#&gt; 3        ela_bic            keep_logistic                0.28</span></span>
+<span><span class="co">#&gt; 4        lep_fus  no_curve_reaches_target                  NA</span></span>
+<span><span class="co">#&gt; 5        lep_pod            keep_logistic                0.34</span></span>
+<span><span class="co">#&gt; 6        phy_cuv            keep_logistic                0.24</span></span>
+<span><span class="co">#&gt; 7        pse_pla  no_curve_reaches_target                  NA</span></span>
+<span><span class="co">#&gt; 8        sci_nas use_monotone_or_weighted                  NA</span></span>
+<span><span class="co">#&gt;   threshold_weighted top_error_excess</span></span>
+<span><span class="co">#&gt; 1               0.58     1.252263e-04</span></span>
+<span><span class="co">#&gt; 2               0.91     1.571108e-07</span></span>
+<span><span class="co">#&gt; 3               0.28     1.688774e-04</span></span>
+<span><span class="co">#&gt; 4                 NA     7.601977e-07</span></span>
+<span><span class="co">#&gt; 5               0.34     8.763312e-04</span></span>
+<span><span class="co">#&gt; 6               0.24     4.384463e-04</span></span>
+<span><span class="co">#&gt; 7                 NA     3.482801e-02</span></span>
+<span><span class="co">#&gt; 8               0.89    -5.239716e-03</span></span></code></pre></div>
+<p>The verdict follows the decision table of the threshold workflow:
+<code>"keep_logistic"</code> when the logistic fits the high bins as
+well as the flexible curves and its threshold agrees with the weighted
+count; <code>"use_monotone_or_weighted"</code> when it does not;
+<code>"no_curve_reaches_target"</code> when no curve and not even the
+reviewed clips reach the target, a problem of the classifier that no
+threshold fixes; and <code>"sample_more_near_threshold"</code> when the
+high bins hold too few clips to judge. Here the well-separated species
+keep the logistic, <code>pse_pla</code> and <code>lep_fus</code> reach
+the target with no curve, and <code>den_nan</code> and
+<code>sci_nas</code> reach it with the weighted count but not with the
+logistic, whose shape misses the top of the score range. These example
+clips come from the <code>"top"</code> design, with no inclusion
+probabilities; with clips of <code>"random_detections"</code> or
+<code>"score_bands"</code> the fits and precisions are weighted by
+<code>1 / inclusion_prob</code>.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_calibration_curves.html">plot_calibration_curves</a></span><span class="op">(</span><span class="va">cmp</span>, validation <span class="op">=</span> <span class="va">val_tab</span><span class="op">)</span></span></code></pre></div>
+<p><img src="calibration_files/figure-html/unnamed-chunk-18-1.png" class="r-plt" alt="" width="100%"></p>
+</div>
+<div class="section level2">
 <h2 id="scoring-every-detection">Scoring every detection<a class="anchor" aria-label="anchor" href="#scoring-every-detection"></a>
 </h2>
 <p><code><a href="../reference/score_detections.html">score_detections()</a></code> reads the complete selection tables
@@ -518,7 +580,7 @@ the names must match the sites of the calibration. A site absent from
 the calibration is scored with the species effects only, with a warning.
 The night of a detection is its recording date, or the day before for
 recordings that start before <code>dawn_hour</code>.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sites</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ARA"</span>, <span class="st">"XAR"</span>, <span class="st">"BAI"</span>, <span class="st">"NHE"</span><span class="op">)</span></span>
 <span><span class="va">tables</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"birdnet"</span>, <span class="va">sites</span>,</span>
 <span>                             <span class="st">"BirdNET_SelectionTable.txt"</span><span class="op">)</span>, <span class="va">sites</span><span class="op">)</span></span>
@@ -556,7 +618,7 @@ only.</p>
 <code>rule = "probability"</code>, the threshold is the lowest score at
 which P(TP) reaches the target and stays above it for every higher
 score:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">thr_p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibrated_thresholds.html">calibrated_thresholds</a></span><span class="op">(</span><span class="va">fit_full</span>, target <span class="op">=</span> <span class="fl">0.95</span>, scored <span class="op">=</span> <span class="va">scored</span><span class="op">)</span></span>
 <span><span class="va">thr_p</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 32 × 4</span></span></span>
@@ -581,7 +643,7 @@ target. It answers the same question as
 selection tables instead of the reviewed clips, and it is lower than the
 threshold of <code>"probability"</code>, because the detections above a
 score are more reliable than a detection at that score:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">thr_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibrated_thresholds.html">calibrated_thresholds</a></span><span class="op">(</span><span class="va">fit_full</span>, target <span class="op">=</span> <span class="fl">0.95</span>, rule <span class="op">=</span> <span class="st">"precision"</span>,</span>
 <span>                               scored <span class="op">=</span> <span class="va">scored</span><span class="op">)</span></span>
 <span><span class="va">thr_q</span></span>
@@ -728,7 +790,7 @@ k reliable detections (<code>min_detections_night</code>, the repetition
 rule). The columns <code>detection_k1</code> to
 <code>detection_k3</code> give the same rule with k = 1, 2 and 3;
 <code>detection</code> uses the chosen k.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">history</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/detection_history.html">detection_history</a></span><span class="op">(</span><span class="va">scored</span>, p_min <span class="op">=</span> <span class="fl">0.95</span>, min_detections_night <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">history</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 872 × 10</span></span></span>
@@ -806,7 +868,7 @@ lenient rule, whereas analyses with no false-positive component (for
 example, ordinations of community matrices) call for a strict one. The
 sensitivity of the number of nights with a detection to both settings is
 cheap to check:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sensitivity</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.80</span>, <span class="fl">0.90</span>, <span class="fl">0.95</span>, <span class="fl">0.99</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">p</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/detection_history.html">detection_history</a></span><span class="op">(</span><span class="va">scored</span>, p_min <span class="op">=</span> <span class="va">p</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>p_min <span class="op">=</span> <span class="va">p</span>, k1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">detection_k1</span><span class="op">)</span>, k2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">detection_k2</span><span class="op">)</span>,</span>
@@ -828,7 +890,7 @@ more than one setting.</p>
 <p>The same check applies to the choice of model. Scoring with the
 global model and comparing the histories shows how many site x species x
 nights change, and for which species:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">history_global</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/score_detections.html">score_detections</a></span><span class="op">(</span><span class="va">tables</span>, <span class="va">fit_global</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/detection_history.html">detection_history</a></span><span class="op">(</span>p_min <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span>
@@ -886,7 +948,7 @@ singular, as it did for m4 above, and convergence warnings of
 <code><a href="../reference/compare_calibration_models.html">compare_calibration_models()</a></code> drops a fold whose fit fails
 from the mean AUC, warns about it and counts it in
 <code>n_failed</code>. Inspect the refitted model directly:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lme4/man/isSingular.html" class="external-link">isSingular</a></span><span class="op">(</span><span class="va">fit_full</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span>
 <span><span class="va">fit_full</span><span class="op">@</span><span class="va">optinfo</span><span class="op">$</span><span class="va">conv</span><span class="op">$</span><span class="va">lme4</span><span class="op">$</span><span class="va">messages</span></span>
@@ -932,7 +994,7 @@ AUC of the probabilities (<code>auc</code>) and of the raw score
 (<code>auc_score</code>) within the group, and the calibration intercept
 and slope. <code><a href="../reference/calibrate.html">calibrate()</a></code> writes this table to
 <code>calibration_quality.csv</code>.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">quality</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibration_quality.html">calibration_quality</a></span><span class="op">(</span><span class="va">val</span>, <span class="va">models</span><span class="op">$</span><span class="va">m4_species_x_site</span><span class="op">)</span></span>
 <span><span class="va">quality</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">species</span>, <span class="va">n_fp</span>, <span class="va">auc</span>, <span class="va">auc_score</span>, <span class="va">logloss_gain</span>, <span class="va">cal_slope</span>, <span class="va">status</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -1004,7 +1066,7 @@ transfer to new sites. Rare species may be absent from a particular
 train or test partition.</p>
 <p>Retain the metadata explicitly when assembling the stages by
 hand:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">val_grouped</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_validations.html">read_validations</a></span><span class="op">(</span><span class="va">val_files</span>, keep <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"source_audio"</span>, <span class="st">"night"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">folds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibration_folds.html">calibration_folds</a></span><span class="op">(</span><span class="va">val_grouped</span>, k_folds <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">2026</span>,</span>
 <span>                           fold_group <span class="op">=</span> <span class="st">"night"</span><span class="op">)</span></span>
@@ -1041,7 +1103,7 @@ final fit. Use <code>uncorrelated = TRUE</code> to include the
 uncorrelated m4 variant in the candidates. Read the comparison,
 <code>calibration_model.txt</code> and the curves before using the
 output.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"calibration"</span><span class="op">)</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibrate.html">calibrate</a></span><span class="op">(</span>validation_files  <span class="op">=</span> <span class="va">val_files</span>,</span>
 <span>                 prediction_tables <span class="op">=</span> <span class="va">tables</span>,</span>

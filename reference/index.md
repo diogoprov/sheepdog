@@ -187,6 +187,10 @@ The detections of a night become one cell of the nightly history.
   : Confidence thresholds from the calibration model
 - [`compare_thresholds()`](https://provetelab.org/sheepdog/reference/compare_thresholds.md)
   : Compare the empirical and the model-based thresholds
+- [`compare_calibration_curves()`](https://provetelab.org/sheepdog/reference/compare_calibration_curves.md)
+  : Compare the logistic calibration with flexible curves
+- [`plot_calibration_curves()`](https://provetelab.org/sheepdog/reference/plot_calibration_curves.md)
+  : Plot the calibration curves of compare_calibration_curves()
 - [`detection_history()`](https://provetelab.org/sheepdog/reference/detection_history.md)
   : Nightly detection history
 - [`threshold_history()`](https://provetelab.org/sheepdog/reference/threshold_history.md)
