@@ -11,6 +11,7 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 has_lme4    <- requireNamespace("lme4", quietly = TRUE)
 has_ggplot2 <- requireNamespace("ggplot2", quietly = TRUE)
+has_mgcv    <- requireNamespace("mgcv", quietly = TRUE)
 ```
 
 This vignette covers the second stage of sheepdog in detail: turning
@@ -330,6 +331,50 @@ never reach it, against a single threshold of
 `r if (has_lme4) unique(thresholds$conf_global)` under the global model.
 A single score threshold, or a single calibration curve, would be too
 lenient for some species and sites and too strict for others.
+
+## Checking the shape of the curve
+
+The logistic curve assumes that P(TP) is linear in the logit of the score.
+When it is not, the curve can fit the bulk of the clips, at low scores,
+and still be wrong near the threshold, where it matters; cross-validated
+log-loss, dominated by the bulk, may not show it.
+`compare_calibration_curves()` fits, for each species, the logistic, a
+quadratic, a GAM (package `mgcv`) and a monotone GAM (package `scam`), and
+judges them in the high score bins and by their thresholds:
+`threshold_precision`, the cut from which the precision of the clips kept,
+as predicted by the curve, reaches the target, is compared with
+`threshold_weighted`, the same cut from the reviewed clips alone (the
+weighted count of `suggest_thresholds()`).
+
+```{r, eval = has_mgcv}
+val_tab <- read_validation_tables(val_files)
+cmp <- compare_calibration_curves(val_tab, target = 0.95,
+                                  curves = c("logistic", "quadratic", "gam"))
+cmp |>
+  filter(curve == "logistic") |>
+  select(species_folder, verdict, threshold_precision, threshold_weighted,
+         top_error_excess) |>
+  as.data.frame()
+```
+
+The verdict follows the decision table of the threshold workflow:
+`"keep_logistic"` when the logistic fits the high bins as well as the
+flexible curves and its threshold agrees with the weighted count;
+`"use_monotone_or_weighted"` when it does not; `"no_curve_reaches_target"`
+when no curve and not even the reviewed clips reach the target, a problem
+of the classifier that no threshold fixes; and
+`"sample_more_near_threshold"` when the high bins hold too few clips to
+judge. Here the well-separated species keep the logistic, `pse_pla` and
+`lep_fus` reach the target with no curve, and `den_nan` and `sci_nas` reach it with the
+weighted count but not with the logistic, whose shape misses the top of
+the score range. These example clips come from the `"top"` design, with no
+inclusion probabilities; with clips of `"random_detections"` or
+`"score_bands"` the fits and precisions are weighted by
+`1 / inclusion_prob`.
+
+```{r, eval = has_mgcv && has_ggplot2, fig.width = 7, fig.height = 5.5, out.width = "100%"}
+plot_calibration_curves(cmp, validation = val_tab)
+```
 
 ## Scoring every detection
 

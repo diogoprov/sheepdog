@@ -9,6 +9,20 @@
   `1 / inclusion_prob`, with intervals from a bootstrap of whole recordings.
   Also reports the occasions with the species and no prediction
   (`n_missed`). The `validation-effort` vignette gains a section on it.
+- New `compare_calibration_curves()`: checks the shape of the calibration
+  curve before a threshold is taken from it. For each species (or `by`
+  group), fits the logistic in the logit of the score, a quadratic, a GAM
+  (`mgcv`) and a monotone GAM (`scam`), weighted by `1 / inclusion_prob`
+  when the clips have it, and reports the cross-validated log-loss (folds
+  of whole recordings), the calibration error in the high score bins, the
+  thresholds of each curve (probability and precision rules) against the
+  weighted count of `suggest_thresholds()`, and a verdict from the decision
+  table of the threshold workflow (`"keep_logistic"`,
+  `"use_monotone_or_weighted"`, `"no_curve_reaches_target"`,
+  `"sample_more_near_threshold"`). `plot_calibration_curves()` draws the
+  curves over the observed precision by bin. `mgcv` and `scam` join
+  Suggests; a curve whose package is missing is left out with a message.
+  The `calibration` vignette gains a section on it.
 - The Setup tab of `run_app()` offers `sampling_mode = "score_bands"`,
   with its strata and score bands; fields the mode does not take (total and
   maximum per species, threshold) are not passed on. The vignette
