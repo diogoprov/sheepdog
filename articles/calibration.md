@@ -163,7 +163,7 @@ cv |> select(model, auc_mean, auc_sd, n_failed)
 #> 2 m3_plus_site            0.928 0.00640        0
 #> 3 m2_species_slope        0.916 0.00556        0
 #> 4 m1_species_intercept    0.902 0.00544        0
-#> 5 m0_global               0.862 0.0121         0
+#> 5 m0_global               0.862 0.0120         0
 ```
 
 The table is ordered by mean AUC. Read the differences between models
@@ -294,7 +294,7 @@ coef(fit_global)
 #>  -0.5310926   1.5993695
 lme4::fixef(fit_full)
 #> (Intercept)  logit_conf 
-#>  -0.2818954   2.8003920
+#>   -0.281896    2.800392
 lme4::VarCorr(fit_full)
 #>  Groups       Name        Std.Dev. Corr  
 #>  site:species (Intercept) 1.19511        
@@ -464,8 +464,8 @@ from the reviewed clips alone (the weighted count of
 ``` r
 
 val_tab <- read_validation_tables(val_files)
-cmp <- compare_calibration_curves(val_tab, target = 0.95,
-                                  curves = c("logistic", "quadratic", "gam"))
+curves <- c("logistic", "quadratic", "gam", if (has_scam) "monotone_gam")
+cmp <- compare_calibration_curves(val_tab, target = 0.95, curves = curves)
 cmp |>
   filter(curve == "logistic") |>
   select(species_folder, verdict, threshold_precision, threshold_weighted,
