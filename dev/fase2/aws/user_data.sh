@@ -1,10 +1,11 @@
 #!/bin/bash
 # EC2 user data (Amazon Linux 2023). __BUCKET__, __RUN__, __WORKERS__ and
-# __MAX_HOURS__ are filled in by launch.sh. Runs the validation, resuming from
+# __MAX_HOURS__, __SCRIPT__ and __EXTRA__ are filled in by launch.sh. Runs the validation, resuming from
 # the task files in S3, checkpoints every 5 min and on a spot notice, writes a
 # DONE or FAILED marker and terminates the instance.
 set -uxo pipefail
 BUCKET=__BUCKET__; RUN=__RUN__; WORKERS=__WORKERS__; MAX_HOURS=__MAX_HOURS__
+SCRIPT=__SCRIPT__; EXTRA="__EXTRA__"
 # watchdog: terminate after MAX_HOURS whatever happens (shutdown = terminate)
 shutdown -h +$((MAX_HOURS * 60))
 WORK=/opt/fase2; OUT=dev/fase2/results/${RUN}
@@ -43,7 +44,7 @@ echo "instance ${ID} $(date); WORKERS=${WORKERS}; $(ls ${OUT} | wc -l) task file
 docker build -f dev/fase2/aws/Dockerfile -t fase2 dev/fase2/aws > build.log 2>&1 && \
 docker run --rm -v ${WORK}:/project fase2 \
   bash -c "Rscript -e 'for (f in list.files(\"${OUT}\", \"rds\$\", full.names = TRUE)) if (inherits(try(readRDS(f), silent = TRUE), \"try-error\")) file.remove(f)' && \
-           Rscript --max-connections=512 dev/fase2/run_val2_v0.R ${OUT} ${WORKERS}" >> ${LOG} 2>&1
+           Rscript --max-connections=512 dev/fase2/${SCRIPT} ${OUT} ${WORKERS} ${EXTRA}" >> ${LOG} 2>&1
 STATUS=$?
 echo "exit status ${STATUS} at $(date)" >> ${LOG}
 cat build.log >> ${LOG}

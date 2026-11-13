@@ -127,3 +127,21 @@ cobertura é cerca de 0,03 perto de 0,95; isso é relatado junto.
   maior para compensar o número de positivos.
 - Os mesmos conjuntos simulados servem depois ao passo 5 (reimplementar
   Rhinehart et al. e Ogawa et al.).
+
+## Etapas 0 e 1 feitas (12/11/2026)
+
+- `sim_ignorab.R` (simulador, seleções, dados do Stan, grade e sementes) e
+  `check_ignorab.R`: todas as conferências passam. Tamanho igual nos cinco
+  desenhos; frequências do PPS a ≤ 0,016 de π em 4.000 sorteios; 19,4% de
+  ocasiões com chamada, 41% censuradas, cerca de 12 positivos verificados
+  com 2% ao acaso (não 9, como estimado acima).
+- `run_ignorab.R` e `summarise_ignorab.R`; o lançador da AWS agora recebe o
+  script e os argumentos extras (`launch.sh ... [script] [extra]`).
+- **Piloto:** 30 ajustes (1 réplica de cada braço), nenhum erro, todos
+  convergidos (R-hat < 1,01, sem divergências). Mediana de 178 s por ajuste
+  (máximo 225 s), 1,53 h de CPU. A rodada completa fica em cerca de 75 h de
+  CPU, como estimado. **Uma réplica não mede viés nem cobertura; os números
+  do piloto não são interpretados.**
+- Nota para o resumo: nos braços sem h, α₀ estima θ médio sobre h, não θ em
+  h = 0, então o viés contra 0,3 é esperado também em S1 sem h. Para I4 vale
+  a diferença pareada para S1 sem h, que o `summarise_ignorab.R` já calcula.
