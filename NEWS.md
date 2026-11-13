@@ -1,5 +1,9 @@
 # sheepdog (development version)
 
+- Larissa S. M. Sugai and Liliana Piatti are now copyright holders with
+  Diogo B. Provete (`LICENSE`, `LICENSE.md` and the `cph` role in
+  `DESCRIPTION`).
+
 - `compare_calibration_curves()` takes several targets in one call
   (`target = c(0.90, 0.95)`): the curves and the cross-validation are fitted
   once per group, and the result gains a `target` column, with one row per

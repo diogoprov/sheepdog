@@ -2,11 +2,11 @@ Package: sheepdog
 Title: Sample, Validate and Calibrate 'BirdNET' Detections
 Version: 3.3.3.9000
 Authors@R: c(
-    person("Diogo B.", "Provete", , "dbprovete@gmail.com", role = c("aut", "cre"),
+    person("Diogo B.", "Provete", , "dbprovete@gmail.com", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0002-0097-0651")),
-    person("Larissa Sayuri Moreira", "Sugai", role = "aut",
+    person("Larissa Sayuri Moreira", "Sugai", role = c("aut", "cph"),
            comment = c(ORCID = "0000-0002-6248-291X")),
-    person("Liliana", "Piatti", role = "aut",
+    person("Liliana", "Piatti", role = c("aut", "cph"),
            comment = c(ORCID = "0000-0001-6324-1723"))
   )
 Description: Tools to check whether automated detections from 'BirdNET'
