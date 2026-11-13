@@ -308,7 +308,55 @@ ponderada dos verificados.
   estreitos demais. Saídas: refazer o estágio 2 com algumas réplicas do
   bootstrap, ou usar o bootstrap como priors informativos no ajuste
   conjunto.
-- O PPC de autocorrelação (P(y = 1 | minuto anterior com y = 1) e
-  detecções por noite) ainda não foi feito para o v1 de dois estágios.
+- O PPC de autocorrelação reprova (seção seguinte).
 - O ψ θ̄ no centro das covariáveis é uma aproximação da fração média de
   minutos com canto.
+
+## Curiango: PPC do v1 em dois estágios (13/11/2026)
+
+`ppc_curiango_2stage.R`, com as mesmas estatísticas de `ppc_curiango_v0.R`:
+y = 1 quando o score próprio passa de logit(0,4). 200 draws do estágio 2;
+as emissões ficam nas estimativas pontuais do estágio 1. Leva segundos.
+Saídas em `results/curiango_v1/ppc_2stage_m*.rds`.
+
+| Estatística | Observado | 2 estágios, v1 | 2 estágios, sem Markov | v0 |
+|---|---|---|---|---|
+| P(y = 1 \| y = 1 no minuto anterior) | 0,39 | 0,13 a 0,17 | 0,04 a 0,06 | 0,07 a 0,09 |
+| Fração de minutos com y = 1 | 0,018 | 0,017 a 0,021 | 0,015 a 0,019 | |
+| Noites com alguma detecção | 0,25 | 0,34 a 0,41 | 0,30 a 0,37 | 0,36 a 0,42 |
+| Variância de detecções por noite | 10,3 | 2,8 a 3,6 | 2,3 a 2,9 | 4,5 a 5,7 |
+| Fração censurada (todos os minutos) | 0,41 | 0,42 a 0,43 | 0,43 a 0,44 | |
+| Quantil de 90% do score (todos) | −1,32 | −1,20 a −1,14 | −1,24 a −1,18 | |
+
+Intervalos de 95% das réplicas.
+
+**Leitura:**
+
+- O Markov em w triplica a autocorrelação replicada (de 0,05 para 0,15),
+  mas fica longe de 0,39. Com ρ = 4,5 os cantos já vêm em sequências; o
+  que falta parece estar no score: dado w = 1, 78% dos minutos caem no
+  componente baixo de f₁ (abaixo de logit(0,4)), sorteado de forma
+  independente a cada minuto. No dado, um minuto alto parece puxar o
+  seguinte para alto, como se a intensidade do canto (ou a distância ao
+  gravador) persistisse dentro da sequência. É uma interpretação, não foi
+  testada.
+- As detecções se concentram em menos noites do que o modelo produz
+  (25% contra 34% a 41%), com variância três vezes maior. O v1 de dois
+  estágios fica pior que o v0 nisso. Falta heterogeneidade entre noites
+  além das covariáveis: um efeito aleatório de noite (ou de sítio) em θ.
+- A distribuição global do score também não fecha: o modelo põe massa
+  demais acima de −1,3. As estatísticas dos negativos verificados passam,
+  então f₀ descreve os verificados, mas não a massa dos minutos não
+  verificados. Isso é consistente com a seleção dos verificados depender
+  de hora e sítio além do score (os pesos só corrigem o score).
+- As estatísticas por classe nos verificados (`t_*`, `f_*`) não valem
+  aqui: a réplica sorteia s de novo nos mesmos minutos, sem a seleção pelo
+  score que formou o conjunto verificado. Os positivos reprovam por isso.
+
+**O que isso muda:** ψ θ̄ = 0,102 bate com a referência, mas o modelo não
+reproduz a estrutura temporal nem a heterogeneidade entre noites, então os
+intervalos de ψ e θ̄ são otimistas mesmo antes de propagar a incerteza das
+emissões. Candidatos, em ordem de custo: (1) efeito aleatório de noite em
+θ; (2) dependência no score dentro da sequência (um estado latente de
+intensidade, ou f₁ com dois estados persistentes no lugar da mistura
+independente); (3) pesos de inclusão por hora e sítio no estágio 1.
