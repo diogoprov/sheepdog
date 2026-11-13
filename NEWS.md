@@ -1,5 +1,14 @@
 # sheepdog (development version)
 
+- New `recall_ceiling()`: from the occasions of `"random_recordings"`
+  annotated by ear and the highest score of the species in each, the
+  recall ceiling (share of the occasions with the species that have any
+  prediction at or above `min_confidence`) and the recall at one or more
+  thresholds (a vector, or a table of thresholds per group such as the
+  output of `suggest_thresholds()` or `threshold_bootstrap()`), weighted by
+  `1 / inclusion_prob`, with intervals from a bootstrap of whole recordings.
+  Also reports the occasions with the species and no prediction
+  (`n_missed`). The `validation-effort` vignette gains a section on it.
 - The Setup tab of `run_app()` offers `sampling_mode = "score_bands"`,
   with its strata and score bands; fields the mode does not take (total and
   maximum per species, threshold) are not passed on. The vignette
