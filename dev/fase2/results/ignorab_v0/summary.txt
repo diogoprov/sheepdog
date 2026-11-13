@@ -1,0 +1,67 @@
+fits: 1500  errors: 0 
+seconds per fit: median 143, max 258; CPU hours: 62.94
+   truth frac    arm variable   bias cover width  n conv paired
+ mixture 0.05     S1      psi  0.017  0.98 0.179 50    1  0.000
+ mixture 0.05 S1-noh      psi  0.016  0.98 0.181 50    1  0.000
+ mixture 0.05     S2      psi  0.018  0.96 0.179 50    1  0.000
+ mixture 0.05     S3      psi -0.017  0.94 0.180 50    1 -0.034
+ mixture 0.05     S4      psi  0.018  0.94 0.178 50    1  0.001
+ mixture 0.05 S4-noh      psi  0.019  0.92 0.179 50    1  0.003
+ mixture 0.05     S5      psi  0.037  0.78 0.177 50    1  0.020
+ mixture 0.02     S1      psi  0.019  0.96 0.181 50    1  0.000
+ mixture 0.02 S1-noh      psi  0.018  0.96 0.182 50    1  0.000
+ mixture 0.02     S2      psi  0.017  0.96 0.181 50    1 -0.001
+ mixture 0.02     S3      psi  0.017  0.96 0.184 50    1 -0.002
+ mixture 0.02     S4      psi  0.019  0.96 0.182 50    1  0.001
+ mixture 0.02 S4-noh      psi  0.019  0.96 0.182 50    1  0.002
+ mixture 0.02     S5      psi  0.029  0.94 0.178 50    1  0.010
+ mixture 0.00   none      psi  0.017  0.96 0.184 50    1     NA
+  normal 0.05     S1      psi  0.004  0.98 0.172 50    1  0.000
+  normal 0.05 S1-noh      psi  0.003  1.00 0.172 50    1  0.000
+  normal 0.05     S2      psi  0.003  0.98 0.171 50    1  0.000
+  normal 0.05     S3      psi  0.004  0.98 0.171 50    1  0.000
+  normal 0.05     S4      psi  0.004  1.00 0.171 50    1  0.000
+  normal 0.05 S4-noh      psi  0.004  1.00 0.172 50    1  0.001
+  normal 0.05     S5      psi  0.007  1.00 0.171 50    1  0.003
+  normal 0.02     S1      psi  0.004  0.98 0.172 50    1  0.000
+  normal 0.02 S1-noh      psi  0.004  1.00 0.172 50    1  0.000
+  normal 0.02     S2      psi  0.004  1.00 0.172 50    1  0.000
+  normal 0.02     S3      psi  0.004  1.00 0.173 50    1  0.000
+  normal 0.02     S4      psi  0.004  0.98 0.172 50    1  0.001
+  normal 0.02 S4-noh      psi  0.004  1.00 0.172 50    1  0.001
+  normal 0.02     S5      psi  0.005  0.98 0.172 50    1  0.002
+  normal 0.00   none      psi  0.004  1.00 0.172 50    1     NA
+ mixture 0.05     S1    theta -0.020  0.78 0.100 50    1  0.000
+ mixture 0.05 S1-noh    theta  0.041  0.64 0.103 50    1  0.000
+ mixture 0.05     S2    theta -0.012  0.86 0.102 50    1  0.008
+ mixture 0.05     S3    theta -0.048  0.56 0.108 50    1 -0.029
+ mixture 0.05     S4    theta -0.020  0.82 0.102 50    1  0.000
+ mixture 0.05 S4-noh    theta  0.050  0.54 0.103 50    1  0.009
+ mixture 0.05     S5    theta  0.047  0.62 0.105 50    1  0.067
+ mixture 0.02     S1    theta -0.019  0.80 0.108 50    1  0.000
+ mixture 0.02 S1-noh    theta  0.040  0.64 0.112 50    1  0.000
+ mixture 0.02     S2    theta -0.015  0.84 0.109 50    1  0.004
+ mixture 0.02     S3    theta -0.019  0.80 0.113 50    1  0.000
+ mixture 0.02     S4    theta -0.018  0.80 0.108 50    1  0.001
+ mixture 0.02 S4-noh    theta  0.047  0.56 0.113 50    1  0.007
+ mixture 0.02     S5    theta  0.012  0.84 0.109 50    1  0.031
+ mixture 0.00   none    theta -0.019  0.78 0.113 50    1     NA
+  normal 0.05     S1    theta  0.003  0.96 0.101 50    1  0.000
+  normal 0.05 S1-noh    theta  0.058  0.44 0.106 50    1  0.000
+  normal 0.05     S2    theta  0.004  0.96 0.105 50    1  0.001
+  normal 0.05     S3    theta  0.005  0.96 0.120 50    1  0.002
+  normal 0.05     S4    theta  0.004  0.94 0.102 50    1  0.001
+  normal 0.05 S4-noh    theta  0.072  0.22 0.108 50    1  0.014
+  normal 0.05     S5    theta  0.074  0.14 0.109 50    1  0.071
+  normal 0.02     S1    theta  0.005  0.98 0.111 50    1  0.000
+  normal 0.02 S1-noh    theta  0.060  0.44 0.120 50    1  0.000
+  normal 0.02     S2    theta  0.003  1.00 0.113 50    1 -0.002
+  normal 0.02     S3    theta  0.005  0.98 0.120 50    1  0.000
+  normal 0.02     S4    theta  0.007  0.96 0.112 50    1  0.002
+  normal 0.02 S4-noh    theta  0.069  0.40 0.120 50    1  0.009
+  normal 0.02     S5    theta  0.043  0.74 0.115 50    1  0.038
+  normal 0.00   none    theta  0.005  0.98 0.120 50    1     NA
+
+I1 cells with >= 95% converged: 30 of 30 
+I2 (control) cells passing: 16 of 16 
+I3 (score selection, mixture) cells passing: 4 of 8 
