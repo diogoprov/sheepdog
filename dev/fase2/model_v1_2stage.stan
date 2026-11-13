@@ -2,6 +2,9 @@
 // (emissions_2stage_curiango.R), passed as per-occasion log densities e0 and
 // e1; only occupancy, calling and the Markov term are estimated. With
 // markov = 0 the Markov term is dropped (rho = 0) and theta0 = theta_bar.
+// With night_re = 1, the calling rate gets a random effect of the calendar
+// night (shared by the sites recorded that night), non-centred; theta0 and
+// theta_bar are then at the median night (u = 0).
 functions {
   real site_lik_markov(int first, int last, real eta_psi, vector eta_theta,
                        real rho, vector e0, vector e1, array[] int v,
@@ -43,11 +46,16 @@ data {
   vector[N_occ] e0;                         // log f0(score), fixed
   vector[N_occ] e1;                         // log f1(score), fixed
   int<lower=0, upper=1> markov;
+  int<lower=0, upper=1> night_re;
+  int<lower=1> N_night;
+  array[N_site] int<lower=1, upper=N_night> night;  // calendar night of each site
 }
 parameters {
   vector[P_psi] beta;
   vector[P_theta] alpha;
   array[markov] real rho;
+  array[night_re] real<lower=0> sigma_night;
+  vector[night_re == 1 ? N_night : 0] u_night;
 }
 transformed parameters {
   real r = markov == 1 ? rho[1] : 0;
@@ -55,6 +63,13 @@ transformed parameters {
 model {
   vector[N_site] eta_psi = X * beta;
   vector[N_occ] eta_theta = D * alpha;
+  if (night_re == 1) {
+    for (i in 1:N_site) {
+      eta_theta[first[i]:last[i]] += sigma_night[1] * u_night[night[i]];
+    }
+    u_night ~ std_normal();
+    sigma_night ~ normal(0, 1);
+  }
   beta[1] ~ normal(0, 1.5);
   alpha[1] ~ normal(0, 1.5);
   if (P_psi > 1) beta[2:P_psi] ~ normal(0, 2.5);

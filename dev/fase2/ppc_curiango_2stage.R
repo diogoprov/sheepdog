@@ -1,10 +1,15 @@
 # Posterior predictive checks of the two-stage v1 on the Curiango, with the same
 # statistics as ppc_curiango_v0.R (dependence between minutes, detections per
 # night, scores by class). Stage 1 emissions are fixed at their point estimates.
-#   Rscript dev/fase2/ppc_curiango_2stage.R FIT_FILE [N_DRAWS]
+# With a night random effect, `new` draws fresh night effects from N(0, sigma)
+# (marginal replication); `same` keeps the posterior effects of each night.
+#   Rscript dev/fase2/ppc_curiango_2stage.R FIT_FILE [N_DRAWS] [same|new]
 source("dev/fase2/curiango_v1.R")
 a <- commandArgs(TRUE); f <- readRDS(a[1]); nd <- if (length(a) > 1) as.integer(a[2]) else 200L
-st <- curiango_v1("custom", c_lo = qlogis(0.1))$stan
+mode <- if (length(a) > 2) a[3] else "new"
+d <- curiango_v1("custom", c_lo = qlogis(0.1)); st <- d$stan
+nights <- d$night[st$first]
+night <- match(nights, sort(unique(nights)))
 len <- st$last - st$first + 1L
 site <- rep(seq_len(st$N_site), len)
 pos <- sequence(len)
@@ -30,11 +35,17 @@ remix <- function(n, p) {
 obs <- stats(st$s, st$cens, st$v)
 dr <- f$draws; idx <- round(seq(1, nrow(dr), length.out = nd)); set.seed(2026)
 rho_col <- "rho[1]" %in% colnames(dr)
+re <- "sigma_night[1]" %in% colnames(dr)
 rep <- vapply(idx, \(i) {
   g <- \(n) as.numeric(dr[i, n])
   psi <- plogis(drop(st$X %*% g(paste0("beta[", seq_len(st$P_psi), "]"))))
   eta <- drop(st$D %*% g(paste0("alpha[", seq_len(st$P_theta), "]")))
   rho <- if (rho_col) g("rho[1]") else 0
+  if (re) {
+    nn <- max(night)
+    u <- if (mode == "same") g(paste0("u_night[", seq_len(nn), "]")) else rnorm(nn)
+    eta <- eta + (g("sigma_night[1]") * u[night])[site]
+  }
   z <- rbinom(st$N_site, 1, psi)[site]
   u <- runif(st$N_occ)
   w <- integer(st$N_occ)
@@ -52,4 +63,4 @@ out <- data.frame(stat = names(obs), obs = obs, lo = apply(rep, 1, quantile, .02
                   hi = apply(rep, 1, quantile, .975, na.rm = TRUE), row.names = NULL)
 out$inside <- out$lo <= out$obs & out$obs <= out$hi
 print(out, digits = 3)
-saveRDS(out, sub("fit_", "ppc_", a[1]))
+saveRDS(out, sub("fit_", if (re) paste0("ppc_", mode, "_") else "ppc_", a[1]))

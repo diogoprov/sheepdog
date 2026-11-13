@@ -360,3 +360,38 @@ emissões. Candidatos, em ordem de custo: (1) efeito aleatório de noite em
 θ; (2) dependência no score dentro da sequência (um estado latente de
 intensidade, ou f₁ com dois estados persistentes no lugar da mistura
 independente); (3) pesos de inclusão por hora e sítio no estágio 1.
+
+## Curiango: efeito aleatório de noite em θ (13/11/2026)
+
+Candidato 1 da seção anterior. `model_v1_2stage.stan` ganhou `night_re`: um
+efeito aleatório da data (noite de calendário) em θ, não centrado, com
+σ ~ N⁺(0, 1). Usei a data, e não o sítio-noite: há 7 sítios e 460 datas
+(cerca de 3,8 sítios por data), e a data concentra a variação das detecções
+(ANOVA das detecções por sítio-noite: F = 5,4 para data, 19,9 para sítio,
+com 6 gl). Um efeito por sítio-noite se confundiria com z.
+
+Só um teste curto: 2 cadeias, 150 + 150, com Markov. Levou 30 min (o
+ajuste sem o efeito leva 30 min com 1.000 + 1.000), então o ajuste completo
+custaria cerca de 3 h e iria para a AWS. Sem divergências, R-hat ≤ 1,01 nos
+parâmetros fixos e ≤ 1,08 nos u, ESS de σ = 124.
+
+- σ_noite = 0,32 (0,25 a 0,38), pequeno na escala logit. ψ = 0,50,
+  θ̄ = 0,19 e ρ = 4,47, praticamente iguais ao ajuste sem o efeito.
+- PPC (`ppc_curiango_2stage.R`, 200 draws, efeitos novos ou os posteriores
+  de cada noite, mesmo resultado):
+
+| Estatística | Observado | sem efeito | com efeito de data |
+|---|---|---|---|
+| P(y = 1 \| y = 1 antes) | 0,39 | 0,13 a 0,17 | 0,13 a 0,17 |
+| Noites com detecção | 0,25 | 0,34 a 0,41 | 0,34 a 0,40 |
+| Variância por noite | 10,3 | 2,8 a 3,6 | 2,8 a 3,9 |
+
+**Leitura:** a heterogeneidade entre noites não parece estar na taxa de
+canto. ψ já tem temperatura e umidade da data, e z por sítio-noite absorve
+parte do resto. O que concentra as detecções (score acima de logit(0,4)) em
+poucas noites parece ser o score dado o canto: em algumas noites os cantos
+saem altos, em outras ficam no componente baixo de f₁. Isso aponta de novo
+para o candidato 2 (o componente de f₁ variando por noite ou persistindo
+na sequência). É interpretação; o teste direto é ajustar esse modelo.
+
+Não rodei o ajuste completo.
