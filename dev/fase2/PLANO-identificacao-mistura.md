@@ -159,8 +159,8 @@ erro-padrão de Monte Carlo de 0,95.
   bloqueia as células da mistura, mas isso é anotado.
 - O componente alto de f₁ (μ₁b, σ₁b) é mal identificado: viés de −0,23 a
   −0,27 em μ₁b, intervalo de cerca de 1,4 a 1,6 na escala logit, cobertura
-  0,90 a 0,92. Ele tem só 22% das chamadas e boa parte acima de c_hi não é
-  censurada, mas é rara. Isso não chega a ψ e θ aqui. Não se deve
+  0,90 a 0,92. Ele tem só 22% das chamadas, que são
+  poucas e espalhadas (σ 1,42). Isso não chega a ψ e θ aqui. Não se deve
   interpretar μ₁b nem σ₁b de um ajuste real.
 - Sem verificação, a mistura ainda recupera θ (cobertura 0,92), com
   intervalo bem mais largo. Pela estrutura do modelo (f₀ com uma só média e
