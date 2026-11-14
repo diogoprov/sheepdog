@@ -464,3 +464,51 @@ verificados. ψ θ̄ = 0,114 fica perto da referência de 0,107.
 pode durar mais), ou persistência como estado latente contínuo no lugar
 de dois componentes; pesos de inclusão por hora e sítio (candidato 3); e
 propagar a incerteza do estágio 1.
+
+## Curiango: ρ por componente no modelo de três estados (14/11/2026)
+
+`rho_comp = 1` em `model_v1_3state.stan`: o termo de Markov do canto
+depende do componente do minuto anterior (ρ_H depois de H, ρ_L depois de
+L). θ̄ passa a ser a fração estacionária de minutos com canto da cadeia de
+três estados no centro (com `rho_comp = 0` dá o mesmo valor da fórmula
+anterior). Verossimilhança conferida contra o forward em R com ρ_H ≠ ρ_L,
+inclusive num sítio-noite com positivo verificado.
+
+4 cadeias, 1.000 + 1.000, 59 min no Mac. Sem divergências, E-BFMI ≥ 0,95,
+R-hat ≤ 1,01, ESS bulk ≥ 2.200. Resumo em
+`results/curiango_v1/fit_3state_rc.rds`.
+
+| Quantidade | ρ comum | ρ por componente |
+|---|---|---|
+| ψ no centro | 0,50 | 0,50 (0,47 a 0,53) |
+| θ̄ | 0,23 | 0,23 (0,21 a 0,24) |
+| ρ_H | 4,53 | 3,97 (3,82 a 4,11) |
+| ρ_L | 4,53 | 4,82 (4,69 a 4,95) |
+| P(H) depois de silêncio | 0,22 | 0,25 |
+| P(H) depois de H | 0,77 | 0,81 |
+| P(H) depois de L | 0,040 | 0,038 |
+| ψ θ̄ | 0,114 | 0,114 (0,106 a 0,122) |
+
+| PPC | Observado | ρ comum | ρ por componente |
+|---|---|---|---|
+| P(y = 1 \| y = 1 antes) | 0,39 | 0,47 a 0,53 | 0,44 a 0,50 |
+| Fração de minutos com y = 1 | 0,018 | 0,016 a 0,020 | 0,015 a 0,019 |
+| Noites com detecção | 0,25 | 0,28 a 0,34 | 0,29 a 0,34 |
+| Variância por noite | 10,3 | 3,6 a 5,4 | 3,0 a 4,7 |
+
+**Leitura:**
+
+- Ao contrário do que eu supunha, o canto em H não dura mais: ρ_H < ρ_L.
+  No centro, P(canto continua) é 0,73 depois de H e 0,86 depois de L. As
+  sequências em L são mais longas.
+- O PPC melhora pouco: a autocorrelação desce para 0,44 a 0,50, ainda
+  acima de 0,39, e a variância por noite piora um pouco. ψ, θ̄ e ψ θ̄ não
+  mudam.
+- O excesso de autocorrelação, então, não parece vir da duração do canto.
+  Fica a hipótese da seção anterior: o score dentro de uma sequência em H
+  varia mais do que um único N(0,91; 1,48) com componente persistente
+  permite (por exemplo, minutos de H com score abaixo de logit(0,4)
+  quebrando a sequência de y). É interpretação.
+- As quantidades de interesse estão estáveis entre as variantes de três
+  estados (ψ θ̄ = 0,114 nas duas), o que sugere que o detalhe das emissões
+  importa mais para o PPC do que para ψ e θ̄.

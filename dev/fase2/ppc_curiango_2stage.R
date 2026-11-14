@@ -42,7 +42,8 @@ rep <- vapply(idx, \(i) {
   g <- \(n) as.numeric(dr[i, n])
   psi <- plogis(drop(st$X %*% g(paste0("beta[", seq_len(st$P_psi), "]"))))
   eta <- drop(st$D %*% g(paste0("alpha[", seq_len(st$P_theta), "]")))
-  rho <- if (three) g("rho") else if (rho_col) g("rho[1]") else 0
+  rho <- if (three && "rho" %in% colnames(dr)) g("rho") else if (rho_col) g("rho[1]") else 0
+  rho_l <- if ("rho[2]" %in% colnames(dr)) g("rho[2]") else rho
   if (re) {
     nn <- max(night)
     u <- if (mode == "same") g(paste0("u_night[", seq_len(nn), "]")) else rnorm(nn)
@@ -56,7 +57,8 @@ rep <- vapply(idx, \(i) {
   for (j in seq_len(max(len))) {
     k <- which(pos == j)
     prev <- if (j == 1L) 0L else ifelse(adj[k], w[k - 1L], 0L)
-    w[k] <- as.integer(z[k] == 1L & u[k] < plogis(eta[k] + rho * prev))
+    r <- if (three && j > 1L) ifelse(hc[k - 1L] == 1L, rho, rho_l) else rho
+    w[k] <- as.integer(z[k] == 1L & u[k] < plogis(eta[k] + r * prev))
     if (three) {
       ph <- if (j == 1L) rep(g("p_h"), length(k)) else
         ifelse(prev == 1L, ifelse(hc[k - 1L] == 1L, g("p_hh"), g("p_hl")), g("p_h"))
