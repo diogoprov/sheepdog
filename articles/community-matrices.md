@@ -309,7 +309,7 @@ mats <- build_community_matrices(history_file, out, core_species = core,
                                  k_min = 2, min_nights_month = 5)
 #> Matrix: 23 rows (site x month) x 5 species | rule k >= 2
 #> Effort: 23 site x month cells included; 1 dropped for having < 5 recorded nights (see effort_site_month.csv)
-#> Files in: /tmp/RtmpEFBlME/community_matrices
+#> Files in: /tmp/RtmpABF7DW/community_matrices
 list.files(out)
 #> [1] "count_matrix_site_month_k2.csv"     "effort_site_month.csv"             
 #> [3] "frequency_matrix_site_month_k2.csv"
@@ -531,6 +531,8 @@ fit_season <- gllvm::gllvm(y = Y, X = X, formula = ~ season,
                            row.eff = ~ (1 | site), studyDesign = design,
                            starting.val = "zero", seed = 2026)
 #> Warning in gllvm::gllvm(y = Y, X = X, formula = ~season, family = "binomial", : There are responses full of zeros.
+#> Warning in se.gllvm(out): 2 parameter(s) have negative variance estimates (b
+#> x2). The model likely has not converged - consider re-fitting.
 fit_null   <- gllvm::gllvm(y = Y, family = "binomial", Ntrials = Nt,
                            num.lv = 1, row.eff = ~ (1 | site),
                            studyDesign = design,
