@@ -36,7 +36,7 @@ um limiar.
 | `emissions_curiango_v0.R`, `emissions_family_curiango.R` | etapa 0: normal censurada por classe nos minutos verificados e comparação com mistura, por noite |
 | `selection_curiango.R` | inclusão dos minutos verificados por score e estimativas ponderadas |
 | `run_curiango_v0.R`, `ppc_curiango_v0.R` | piloto base do v0 no Curiango e seus PPC |
-| `emissions_2stage_curiango.R`, `model_v1_2stage.stan`, `run_curiango_2stage.R`, `ppc_curiango_2stage.R` | v1 em dois estágios no Curiango e seu PPC (ver `PLANO-v1-markov.md`) |
+| `emissions_2stage_curiango.R`, `model_v1_2stage.stan`, `run_curiango_2stage.R`, `model_v1_3state.stan`, `run_curiango_3state.R`, `ppc_curiango_2stage.R` | v1 em dois estágios no Curiango, com e sem componente de f₁ persistente, e seu PPC (ver `PLANO-v1-markov.md`) |
 | `model_mix.stan`, `score_emissions_mix.stanfunctions`, `mix.R`, `check_mix.R`, `probe_mix.R` | modelo com mistura em f₀ e f₁, ainda sem justificativa firme (ver a correção) |
 | `emissions_weighted_curiango.R` | etapa 0 com pesos de inclusão, provisória, e inclusão por hora e sítio |
 | `aws/` | execução em spot; `dev/fase2/aws/launch.sh BUCKET RUN [TIPO] [WORKERS] [HORAS] [PREÇO]` |
