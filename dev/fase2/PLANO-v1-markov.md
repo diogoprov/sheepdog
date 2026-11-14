@@ -395,3 +395,120 @@ para o candidato 2 (o componente de f₁ variando por noite ou persistindo
 na sequência). É interpretação; o teste direto é ajustar esse modelo.
 
 Não rodei o ajuste completo.
+
+## Curiango: componente de f₁ persistente na sequência (13/11/2026)
+
+Candidato 2. No dado, depois de um minuto com score ≥ logit(0,4), o
+seguinte também passa em 39% dos casos; depois de um minuto entre
+logit(0,2) e logit(0,4), em 6,6%; depois de um abaixo de logit(0,2), em
+0,8%. Entre sítios-noite com pelo menos 5 minutos acima de logit(0,2), a
+fração dos que passam de logit(0,4) tem 2,5 vezes a variância binomial.
+
+**Modelo** (`model_v1_3state.stan`, `run_curiango_3state.R`): três estados
+por minuto, sem canto, canto no componente baixo de f₁ (L) e canto no alto
+(H). As densidades dos dois componentes de f₁ e de f₀ ficam fixas no
+estágio 1; o peso dos componentes passa a ser estimado e depende do minuto
+anterior: P(H | canto) = logit⁻¹(ξ) depois de silêncio ou lacuna,
+logit⁻¹(ξ + τ_H) depois de H e logit⁻¹(ξ + τ_L) depois de L. O canto segue
+o Markov do v1 (ρ). Com τ_H = τ_L = 0 a verossimilhança por sítio-noite
+coincide com a do `model_v1_2stage.stan` (conferido com as funções
+expostas, inclusive em sítios com positivos verificados), e com τ ≠ 0
+coincide com um forward escrito em R.
+
+4 cadeias, 1.000 + 1.000, 41 min no Mac. Sem divergências, E-BFMI ≥ 0,91,
+R-hat 1,00, ESS bulk ≥ 3.000. Resumo em `results/curiango_v1/fit_3state.rds`.
+
+| Quantidade | Estimativa (90%) |
+|---|---|
+| ψ no centro | 0,50 (0,48 a 0,53) |
+| θ₀ | 0,050 (0,046 a 0,053) |
+| θ̄ | 0,23 (0,21 a 0,24) |
+| ρ | 4,53 (4,42 a 4,64) |
+| P(H) depois de silêncio | 0,22 (0,20 a 0,25) |
+| P(H) depois de H | 0,77 (0,75 a 0,80) |
+| P(H) depois de L | 0,040 (0,034 a 0,045) |
+| ψ θ̄ | 0,114 (0,105 a 0,122) |
+
+P(H) depois de silêncio (0,22) bate com o peso do componente alto de f₁
+estimado nos verificados (1 − 0,78), embora aqui venha sobretudo dos não
+verificados. ψ θ̄ = 0,114 fica perto da referência de 0,107.
+
+**PPC** (200 draws):
+
+| Estatística | Observado | 2 estágios, v1 | 3 estados |
+|---|---|---|---|
+| P(y = 1 \| y = 1 antes) | 0,39 | 0,13 a 0,17 | 0,47 a 0,53 |
+| Fração de minutos com y = 1 | 0,018 | 0,017 a 0,021 | 0,016 a 0,020 |
+| Noites com detecção | 0,25 | 0,34 a 0,41 | 0,28 a 0,34 |
+| Variância por noite | 10,3 | 2,8 a 3,6 | 3,6 a 5,4 |
+| Quantil de 90% do score (todos) | −1,32 | −1,20 a −1,14 | −1,19 a −1,13 |
+
+**Leitura:**
+
+- A persistência do componente é forte e explica a maior parte da
+  dependência que o Markov em w deixava de fora: a autocorrelação passa de
+  0,15 para 0,50, agora acima do observado (0,39). O excesso parece vir de
+  supor que todo canto em H tem a mesma distribuição de score: com
+  P(canto continua) ≈ 0,82, P(H | H) = 0,77 e 81% de N(0,91; 1,48) acima de
+  logit(0,4), a réplica dá ≈ 0,5. Os scores dentro de uma sequência em H
+  parecem variar mais que isso (interpretação).
+- Concentração entre noites melhora (0,31 contra 0,37 de noites com
+  detecção; variância 4,5 contra 3,2), mas continua abaixo do observado.
+- A distribuição global do score continua sem fechar (f₀ dos verificados
+  contra a massa dos não verificados), como antes.
+- ψ e θ̄ mudam pouco em relação ao v1 de dois estágios (0,48 e 0,21):
+  a estrutura das emissões afeta mais o PPC que as quantidades de
+  interesse, ao menos com as emissões fixas.
+
+**Próximos passos possíveis:** ρ diferente por componente (canto em H
+pode durar mais), ou persistência como estado latente contínuo no lugar
+de dois componentes; pesos de inclusão por hora e sítio (candidato 3); e
+propagar a incerteza do estágio 1.
+
+## Curiango: ρ por componente no modelo de três estados (14/11/2026)
+
+`rho_comp = 1` em `model_v1_3state.stan`: o termo de Markov do canto
+depende do componente do minuto anterior (ρ_H depois de H, ρ_L depois de
+L). θ̄ passa a ser a fração estacionária de minutos com canto da cadeia de
+três estados no centro (com `rho_comp = 0` dá o mesmo valor da fórmula
+anterior). Verossimilhança conferida contra o forward em R com ρ_H ≠ ρ_L,
+inclusive num sítio-noite com positivo verificado.
+
+4 cadeias, 1.000 + 1.000, 59 min no Mac. Sem divergências, E-BFMI ≥ 0,95,
+R-hat ≤ 1,01, ESS bulk ≥ 2.200. Resumo em
+`results/curiango_v1/fit_3state_rc.rds`.
+
+| Quantidade | ρ comum | ρ por componente |
+|---|---|---|
+| ψ no centro | 0,50 | 0,50 (0,47 a 0,53) |
+| θ̄ | 0,23 | 0,23 (0,21 a 0,24) |
+| ρ_H | 4,53 | 3,97 (3,82 a 4,11) |
+| ρ_L | 4,53 | 4,82 (4,69 a 4,95) |
+| P(H) depois de silêncio | 0,22 | 0,25 |
+| P(H) depois de H | 0,77 | 0,81 |
+| P(H) depois de L | 0,040 | 0,038 |
+| ψ θ̄ | 0,114 | 0,114 (0,106 a 0,122) |
+
+| PPC | Observado | ρ comum | ρ por componente |
+|---|---|---|---|
+| P(y = 1 \| y = 1 antes) | 0,39 | 0,47 a 0,53 | 0,44 a 0,50 |
+| Fração de minutos com y = 1 | 0,018 | 0,016 a 0,020 | 0,015 a 0,019 |
+| Noites com detecção | 0,25 | 0,28 a 0,34 | 0,29 a 0,34 |
+| Variância por noite | 10,3 | 3,6 a 5,4 | 3,0 a 4,7 |
+
+**Leitura:**
+
+- Ao contrário do que eu supunha, o canto em H não dura mais: ρ_H < ρ_L.
+  No centro, P(canto continua) é 0,73 depois de H e 0,86 depois de L. As
+  sequências em L são mais longas.
+- O PPC melhora pouco: a autocorrelação desce para 0,44 a 0,50, ainda
+  acima de 0,39, e a variância por noite piora um pouco. ψ, θ̄ e ψ θ̄ não
+  mudam.
+- O excesso de autocorrelação, então, não parece vir da duração do canto.
+  Fica a hipótese da seção anterior: o score dentro de uma sequência em H
+  varia mais do que um único N(0,91; 1,48) com componente persistente
+  permite (por exemplo, minutos de H com score abaixo de logit(0,4)
+  quebrando a sequência de y). É interpretação.
+- As quantidades de interesse estão estáveis entre as variantes de três
+  estados (ψ θ̄ = 0,114 nas duas), o que sugere que o detalhe das emissões
+  importa mais para o PPC do que para ψ e θ̄.
