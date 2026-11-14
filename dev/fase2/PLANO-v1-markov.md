@@ -427,7 +427,7 @@ R-hat 1,00, ESS bulk ≥ 3.000. Resumo em `results/curiango_v1/fit_3state.rds`.
 | P(H) depois de silêncio | 0,22 (0,20 a 0,25) |
 | P(H) depois de H | 0,77 (0,75 a 0,80) |
 | P(H) depois de L | 0,040 (0,034 a 0,045) |
-| ψ θ̄ | 0,114 (0,107 a 0,121) |
+| ψ θ̄ | 0,114 (0,105 a 0,122) |
 
 P(H) depois de silêncio (0,22) bate com o peso do componente alto de f₁
 estimado nos verificados (1 − 0,78), embora aqui venha sobretudo dos não
