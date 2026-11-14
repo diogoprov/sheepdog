@@ -512,3 +512,59 @@ R-hat ≤ 1,01, ESS bulk ≥ 2.200. Resumo em
 - As quantidades de interesse estão estáveis entre as variantes de três
   estados (ψ θ̄ = 0,114 nas duas), o que sugere que o detalhe das emissões
   importa mais para o PPC do que para ψ e θ̄.
+
+## Curiango: incerteza das emissões propagada ao modelo de três estados (14/11/2026)
+
+O estágio 2 foi refeito no modelo de três estados com ρ comum para as 20
+primeiras réplicas do bootstrap por noite do estágio 1 (`emis$boot`, b = 1
+a 20, na ordem do sorteio). Em cada réplica, e0, e1a e e1b foram recalculados
+a partir dos parâmetros dela (`run_curiango_3state.R`, argumento BOOT). Cada
+réplica: 2 cadeias, 500 + 500, semente 2026, 35 a 45 min, 5 réplicas por vez
+no Mac (10 núcleos). As amostras foram juntadas com o mesmo peso por réplica
+(`pool_curiango_3state_boot.R`). A variância de cada quantidade foi separada
+em duas partes: a média das variâncias dentro de cada réplica (emissões
+fixas) e a variância das médias entre réplicas (incerteza das emissões).
+Resumo em `results/curiango_v1/pool_3state_boot.rds`.
+
+Diagnósticos: nenhuma divergência nem árvore no limite nas 20 réplicas,
+R-hat ≤ 1,02, ESS bulk ≥ 458 e ESS tail ≥ 350 em cada uma.
+
+| Quantidade | Emissões fixas (mediana, 90%) | Réplicas juntadas (mediana, 90%) | Parte da variância entre réplicas |
+|---|---|---|---|
+| ψ no centro | 0,50 (0,48 a 0,53) | 0,52 (0,47 a 0,55) | 0,63 |
+| θ̄ | 0,23 (0,21 a 0,24) | 0,23 (0,19 a 0,27) | 0,87 |
+| ψ θ̄ | 0,114 (0,106 a 0,122) | 0,121 (0,091 a 0,143) | 0,91 |
+| θ₀ | 0,050 (0,046 a 0,053) | 0,051 (0,045 a 0,056) | 0,58 |
+| ρ | 4,53 (4,42 a 4,64) | 4,54 (4,22 a 4,80) | 0,85 |
+| P(H) depois de silêncio | 0,22 (0,20 a 0,25) | 0,21 (0,16 a 0,27) | 0,86 |
+| P(H) depois de H | 0,77 (0,75 a 0,80) | 0,77 (0,71 a 0,82) | 0,79 |
+
+**Leitura:**
+
+- A incerteza das emissões domina. Ela responde por 91% da variância de
+  ψ θ̄, e o intervalo de 90% fica 3,2 vezes mais largo (0,052 contra
+  0,016). Os intervalos com as emissões fixas, nesta e nas seções
+  anteriores, são otimistas.
+- A média de ψ θ̄ por réplica vai de 0,089 a 0,147. Ela acompanha sobretudo
+  a média do componente baixo de f₁ (correlação de −0,89 entre réplicas):
+  quando esse componente fica mais baixo e se sobrepõe mais a f₀, mais
+  minutos de score baixo passam a ser atribuídos ao canto. É uma leitura
+  da correlação entre réplicas, não um teste. O componente baixo de f₁
+  vem de poucos verificados positivos (n efetivo de f₁ = 120).
+- A mediana conjunta (0,121) fica um pouco acima da estimativa com as
+  emissões pontuais (0,114). O intervalo com as emissões pontuais cabe
+  dentro do conjunto.
+
+**Limites:**
+
+- A distribuição do bootstrap é tratada como se fosse a posterior das
+  emissões. É uma aproximação, não um ajuste conjunto.
+- Os pesos de inclusão ficam fixos nas réplicas: a incerteza das taxas
+  de inclusão por estrato não entra, e o mecanismo do sorteio dos
+  verificados continua desconhecido.
+- Com 20 réplicas, o desvio-padrão entre réplicas tem ~19 graus de
+  liberdade, e as caudas do intervalo conjunto são aproximadas.
+- O PPC continua reprovando a autocorrelação e a variância por noite.
+  Propagar a incerteza das emissões não corrige a falta de ajuste.
+- Para reduzir a incerteza, mais verificados positivos, sobretudo de
+  score baixo, parecem render mais do que mais réplicas.
