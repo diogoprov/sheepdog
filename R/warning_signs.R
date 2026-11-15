@@ -13,12 +13,30 @@
 #' | 6 | false positives vary by site or season | the reviewed clips: range of the false-positive rate among the levels of each `groups` column; the most frequent identity of the negative clips, when `validation` has `identity` |
 #' | 7 | the threshold is not stable across groups | [threshold_by_group()] for each `groups` column |
 #' | 8 | the logistic curve is wrong near the threshold | `curves`, the output of [compare_calibration_curves()] |
+#' | 9 | false positives cluster in recordings | the reviewed clips at or above the threshold: design effect of the false positives by `cluster` |
 #'
 #' Signs 3, 4 and 5 (occupied sites lost, detected days that do not track
 #' the true activity, false negatives that vary by site) need site-days
 #' whose true activity is known, that is recordings annotated in full, and
 #' are not computed here. A sign whose input is missing is `NA`, not
 #' `FALSE`: it was not checked.
+#'
+#' **Sign 9.** Among the reviewed clips at or above the threshold of their
+#' cell (all cells of the species together, unweighted), the false
+#' positives may concentrate in a few recordings, for instance a recording
+#' with an insect chorus or a similar species calling all night. The sign
+#' gives the design effect of the false-positive indicator by `cluster`,
+#' \eqn{1 + (\bar m - 1)\rho}, where \eqn{\rho} is the intraclass
+#' correlation (ANOVA estimator, truncated at 0) and \eqn{\bar m =
+#' \sum m_i^2 / \sum m_i} the mean cluster size weighted by size. A design
+#' effect of 3 means that the precision above the threshold is as uncertain
+#' as with a third of the clips: intervals that treat clips as independent
+#' are too narrow ([threshold_bootstrap()] resamples whole recordings and
+#' does not have this problem), and false positives that cluster in
+#' recordings can turn into false occupied sites. It needs several reviewed
+#' clips per recording, as in designs that review whole occasions; with one
+#' clip per recording it is `NA`. With no false positive (or no true
+#' positive) above the threshold, the design effect is 1.
 #'
 #' **Verdict.** A heuristic summary, not a test:
 #'
@@ -27,7 +45,7 @@
 #'   or more signs are raised;
 #' - `"use_with_caveats"`: one or two signs are raised;
 #' - `"trustworthy_with_care"`: every sign checked is clear. The signs not
-#'   checked (`n_checked` < 5) and signs 3 to 5 may still be raised;
+#'   checked (`n_checked` < 6) and signs 3 to 5 may still be raised;
 #' - `"not_assessed"`: no sign could be checked.
 #'
 #' **The verdict is not a probability that the threshold fails.** The
@@ -72,13 +90,18 @@
 #' @param min_ceiling Sign 1 is raised when the recall ceiling is below
 #'   this.
 #' @param threshold_column Column of `thresholds` with the threshold.
+#' @param cluster Column of `validation` with the recording (or other unit)
+#'   of each clip, for sign 9. A missing column leaves sign 9 `NA`.
+#' @param max_deff Sign 9 is raised when the design effect of the false
+#'   positives above the threshold is above this.
 #' @param file Optional path of a Markdown file to write the report to.
 #'
 #' @return A tibble with one row per species: `species_folder`,
 #'   `threshold` (the median over its cells), `sign1_ceiling`,
 #'   `sign1`, `sign2_tp_kept`, `sign2`, `sign6_fp_spread`, `sign6`,
 #'   `sign6_detail`, `sign7_share_below`, `sign7`, `sign7_detail`,
-#'   `sign8_verdict`, `sign8`, `n_checked`, `n_raised` and `verdict`. The
+#'   `sign8_verdict`, `sign8`, `sign9_deff`, `sign9`, `n_checked`,
+#'   `n_raised` and `verdict`. The
 #'   `signN` columns are `TRUE` (raised), `FALSE` (clear) or `NA` (not
 #'   checked).
 #' @seealso [recall_ceiling()], [compare_calibration_curves()],
@@ -98,6 +121,7 @@ warning_signs <- function(validation, thresholds, groups = NULL,
                           target_precision = 0.95, min_n = 15,
                           min_tp_kept = 0.25, max_fp_spread = 0.3,
                           min_ceiling = 0.5, threshold_column = "threshold",
+                          cluster = "source_audio", max_deff = 2,
                           file = NULL) {
   validados <- reviewed_with_confidence(validation)
   if (nrow(validados) == 0) {
@@ -160,6 +184,7 @@ warning_signs <- function(validation, thresholds, groups = NULL,
   sinal7 <- group_stability(validados, celulas, groups, target_precision,
                             min_n)
   sinal8 <- curve_signs(curves)
+  sinal9 <- fp_design_effect(validados, celulas, cluster, min_n, max_deff)
   sinal1 <- ceiling_signs(recall, min_ceiling)
 
   limiar_especie <- celulas |>
@@ -172,18 +197,20 @@ warning_signs <- function(validation, thresholds, groups = NULL,
     left_join(sinal2, by = "species_folder") |>
     left_join(sinal6, by = "species_folder") |>
     left_join(sinal7, by = "species_folder") |>
-    left_join(sinal8, by = "species_folder")
+    left_join(sinal8, by = "species_folder") |>
+    left_join(sinal9, by = "species_folder")
   for (col in c("sign1_ceiling", "sign2_tp_kept", "sign6_fp_spread",
-                "sign7_share_below")) {
+                "sign7_share_below", "sign9_deff")) {
     if (!col %in% names(saida)) saida[[col]] <- NA_real_
   }
-  for (col in c("sign1", "sign2", "sign6", "sign7", "sign8")) {
+  for (col in c("sign1", "sign2", "sign6", "sign7", "sign8", "sign9")) {
     if (!col %in% names(saida)) saida[[col]] <- NA
   }
   for (col in c("sign6_detail", "sign7_detail", "sign8_verdict")) {
     if (!col %in% names(saida)) saida[[col]] <- NA_character_
   }
-  sinais <- as.matrix(saida[c("sign1", "sign2", "sign6", "sign7", "sign8")])
+  sinais <- as.matrix(saida[c("sign1", "sign2", "sign6", "sign7", "sign8",
+                              "sign9")])
   saida$n_checked <- rowSums(!is.na(sinais))
   saida$n_raised <- rowSums(matrix(sinais %in% TRUE, nrow = nrow(sinais)))
   saida$verdict <- case_when(
@@ -196,7 +223,7 @@ warning_signs <- function(validation, thresholds, groups = NULL,
   saida <- select(saida, species_folder, threshold, sign1_ceiling, sign1,
                   sign2_tp_kept, sign2, sign6_fp_spread, sign6, sign6_detail,
                   sign7_share_below, sign7, sign7_detail, sign8_verdict,
-                  sign8, n_checked, n_raised, verdict)
+                  sign8, sign9_deff, sign9, n_checked, n_raised, verdict)
   if (!is.null(file)) write_warning_signs(saida, file)
   saida
 }
@@ -314,6 +341,40 @@ curve_signs <- function(curves) {
                            "use_monotone_or_weighted") ~ TRUE,
       sign8_verdict == "keep_logistic" ~ FALSE,
       .default = NA))
+}
+
+# Sinal 9: efeito de desenho dos falsos positivos acima do limiar, por
+# gravacao (ICC de ANOVA truncado em 0; tamanho medio ponderado pelo tamanho)
+fp_design_effect <- function(validados, celulas, cluster, min_n, max_deff) {
+  if (is.null(cluster) || !cluster %in% names(validados)) {
+    return(tibble(species_folder = character()))
+  }
+  validados |>
+    inner_join(filter(celulas, !is.na(.limiar)),
+               by = c("site", "species_folder")) |>
+    filter(confidence >= .limiar, !is.na(.data[[cluster]])) |>
+    group_by(species_folder) |>
+    summarise(sign9_deff = design_effect(verdict == "negative",
+                                         paste(site, .data[[cluster]]),
+                                         min_n),
+              .groups = "drop") |>
+    mutate(sign9 = sign9_deff > max_deff)
+}
+
+design_effect <- function(y, unidade, min_n) {
+  y <- as.numeric(y)
+  n <- length(y)
+  g <- factor(unidade)
+  m <- tabulate(g)
+  k <- length(m)
+  if (n < min_n || k < 2 || n == k) return(NA_real_)
+  if (all(y == y[1])) return(1)
+  medias <- tapply(y, g, mean)
+  msb <- sum(m * (medias - mean(y))^2) / (k - 1)
+  msw <- sum((y - medias[as.integer(g)])^2) / (n - k)
+  m0 <- (n - sum(m^2) / n) / (k - 1)
+  icc <- max(0, (msb - msw) / (msb + (m0 - 1) * msw))
+  1 + (sum(m^2) / n - 1) * icc
 }
 
 # Sinal 1: teto de recall de recall_ceiling() (o menor da especie)

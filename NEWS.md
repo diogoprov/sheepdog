@@ -4,6 +4,20 @@
   Diogo B. Provete (`LICENSE`, `LICENSE.md` and the `cph` role in
   `DESCRIPTION`).
 
+- `warning_signs()` gains sign 9: the design effect of the false positives
+  above the threshold by recording (new arguments `cluster` and
+  `max_deff`). False positives that concentrate in a few recordings make
+  intervals that treat clips as independent too narrow, and can turn into
+  false occupied sites. Sign 9 is computed whenever the reviewed clips have
+  `source_audio` and several clips per recording, so `n_checked` and the
+  verdict of existing calls may change.
+- `compare_calibration_curves(n_boot = )` resamples whole recordings to give
+  a bootstrap interval of the difference between the logistic and the
+  weighted thresholds (`diff_weighted_lower`, `diff_weighted_upper`). With
+  it, a difference larger than `tolerance` counts against the logistic only
+  when the interval excludes 0, that is when the two thresholds disagree
+  more than the sample allows. The default `n_boot = 0` keeps the previous
+  behaviour.
 - `threshold_bootstrap()` stops with an error when `cluster` is constant
   within the cells (`"site"`, `"species_folder"` or a `by` column), and
   gives `NA` in `threshold_median`, `threshold_conservative` and

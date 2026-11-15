@@ -215,3 +215,55 @@ test_that("folds without both verdicts and curves that fail give NA", {
   expect_true(all(is.na(gam$cv_logloss)))
   expect_false(any(is.na(cmp$cv_logloss[cmp$curve == "logistic"])))
 })
+
+test_that("n_boot gives a bootstrap interval of the disagreement", {
+  val <- sim_curvas(400, "certa")
+  sem <- suppressMessages(compare_calibration_curves(
+    val, target = c(0.9, 0.95), curves = c("logistic", "quadratic"),
+    cv = FALSE))
+  expect_true(all(is.na(sem$diff_weighted_lower)))
+  com <- suppressMessages(compare_calibration_curves(
+    val, target = c(0.9, 0.95), curves = c("logistic", "quadratic"),
+    cv = FALSE, n_boot = 100))
+  # o resto da tabela nao muda
+  expect_identical(com$threshold_precision, sem$threshold_precision)
+  expect_identical(com$diff_weighted, sem$diff_weighted)
+  log <- com[com$curve == "logistic", ]
+  expect_true(all(log$diff_weighted_lower <= log$diff_weighted_upper))
+  expect_true(all(is.na(com$diff_weighted_lower[com$curve != "logistic"])))
+  # mesma semente, mesmo intervalo
+  de_novo <- suppressMessages(compare_calibration_curves(
+    val, target = c(0.9, 0.95), curves = c("logistic", "quadratic"),
+    cv = FALSE, n_boot = 100))
+  expect_identical(de_novo$diff_weighted_upper, com$diff_weighted_upper)
+  # uma diferenca acima da tolerancia, mas dentro do ruido, mantem a logistica
+  apertado <- suppressMessages(compare_calibration_curves(
+    val, target = 0.9, curves = c("logistic", "quadratic"), cv = FALSE,
+    tolerance = 0, n_boot = 100))
+  l <- apertado[apertado$curve == "logistic", ]
+  if (isTRUE(l$diff_weighted_lower <= 0 && l$diff_weighted_upper >= 0) &&
+      isTRUE(l$top_error_excess <= 0.03)) {
+    expect_identical(l$verdict, "keep_logistic")
+  }
+  expect_error(compare_calibration_curves(val, n_boot = -1), "n_boot")
+  expect_error(compare_calibration_curves(val, conf = 1), "conf")
+})
+
+test_that("curve_verdict() uses the bootstrap interval only when it exists", {
+  tab <- tibble::tibble(curve = c("logistic", "quadratic"),
+                        threshold_precision = c(0.80, 0.85),
+                        threshold_weighted = 0.85,
+                        top_error_excess = c(0, NA), top_error = 0.01,
+                        diff_weighted = c(-0.05, 0),
+                        diff_weighted_lower = c(NA, NA),
+                        diff_weighted_upper = c(NA, NA))
+  expect_identical(curve_verdict(tab, 50, 15, 0.03, 0.03)[1],
+                   "use_monotone_or_weighted")
+  tab$diff_weighted_lower[1] <- -0.12
+  tab$diff_weighted_upper[1] <- 0.02
+  expect_identical(curve_verdict(tab, 50, 15, 0.03, 0.03)[1],
+                   "keep_logistic")
+  tab$diff_weighted_upper[1] <- -0.01
+  expect_identical(curve_verdict(tab, 50, 15, 0.03, 0.03)[1],
+                   "use_monotone_or_weighted")
+})

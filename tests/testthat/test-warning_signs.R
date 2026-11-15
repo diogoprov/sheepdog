@@ -42,7 +42,10 @@ test_that("signs 2, 6 and 7 come from the reviewed clips", {
   # sem curves e recall, sinais 1 e 8 nao foram checados
   expect_true(all(is.na(ws$sign1)))
   expect_true(all(is.na(ws$sign8)))
-  expect_equal(ws$n_checked, c(3, 3))
+  # sinal 9: gravacoes sorteadas ao acaso, sem agrupamento dos FP
+  expect_true(all(ws$sign9_deff < 2))
+  expect_false(any(ws$sign9))
+  expect_equal(ws$n_checked, c(4, 4))
   expect_identical(ws$verdict[ws$species_folder == "ruim"],
                    "use_with_caveats")
 })
@@ -66,7 +69,7 @@ test_that("signs 1 and 8 come from recall_ceiling() and the curves", {
   expect_true(ruim$sign1)
   expect_false(boa$sign8)
   expect_true(ruim$sign8)
-  expect_equal(ws$n_checked, c(5, 5))
+  expect_equal(ws$n_checked, c(6, 6))
   expect_identical(boa$verdict, "trustworthy_with_care")
   # nenhuma curva alcanca o alvo: nao confiavel, com qualquer numero de sinais
   expect_identical(ruim$verdict, "not_trustworthy")
@@ -143,8 +146,35 @@ test_that("a single site skips the group signs unless groups are given", {
   ws <- warning_signs(val, 0.8)
   expect_true(all(is.na(ws$sign6)))
   expect_true(all(is.na(ws$sign7)))
-  expect_equal(ws$n_checked, c(1, 1))
+  expect_equal(ws$n_checked, c(2, 2))
   sem_nada <- warning_signs(val, 0.8)
   expect_true(all(sem_nada$verdict %in% c("use_with_caveats",
                                           "trustworthy_with_care")))
+})
+
+test_that("sign 9 gives the design effect of false positives by recording", {
+  # 30 gravacoes de 6 clipes acima do limiar; FP concentrados em 5
+  # gravacoes (todas FP) e raros nas outras
+  val <- tibble::tibble(
+    site = "A", species_folder = "agr",
+    source_audio = rep(sprintf("r%02d", 1:30), each = 6),
+    confidence = 0.9,
+    verdict = ifelse(rep(1:30, each = 6) <= 5, "negative", "positive"))
+  ws <- warning_signs(val, thresholds = 0.5, groups = character())
+  # ICC = 1: deff = tamanho medio = 6
+  expect_equal(ws$sign9_deff, 6)
+  expect_true(ws$sign9)
+  # FP espalhados (um por gravacao em 10 gravacoes): sem agrupamento
+  val$verdict <- ifelse(rep(1:6, 30) == 1 & rep(1:30, each = 6) <= 10,
+                        "negative", "positive")
+  ws <- warning_signs(val, thresholds = 0.5, groups = character())
+  expect_lt(ws$sign9_deff, 1.5)
+  expect_false(ws$sign9)
+  # um clipe por gravacao, sem FP, ou sem coluna: NA, 1 e NA
+  um <- val[!duplicated(val$source_audio), ]
+  expect_true(is.na(warning_signs(um, 0.5, groups = character())$sign9_deff))
+  val$verdict <- "positive"
+  expect_equal(warning_signs(val, 0.5, groups = character())$sign9_deff, 1)
+  expect_true(is.na(warning_signs(val, 0.5, groups = character(),
+                                  cluster = "nada")$sign9))
 })

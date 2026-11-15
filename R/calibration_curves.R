@@ -53,13 +53,26 @@
 #'   target, or reaches it only at the very top, and no usable score
 #'   guarantees it: improve the classifier before setting a threshold.
 #' - `"keep_logistic"`: the logistic has `top_error_excess <= max_error`
-#'   and its `threshold_precision` is within `tolerance` of the weighted
-#'   count. A flexible curve may still fit better in log-loss, but away
+#'   and its `threshold_precision` agrees with the weighted count: within
+#'   `tolerance` of it or, with `n_boot > 0`, either within `tolerance` or
+#'   with a bootstrap interval of the difference that includes 0 (the two
+#'   thresholds do not disagree more than the sample allows). A flexible curve may still fit better in log-loss, but away
 #'   from the threshold.
 #' - `"use_monotone_or_weighted"`: larger error in the high bins, or
 #'   thresholds that disagree; take the threshold from the monotone GAM or
 #'   from the weighted precision ([suggest_thresholds()],
 #'   [threshold_bootstrap()]).
+#'
+#' **Bootstrap of the disagreement.** With `n_boot > 0`, the clips are
+#' resampled by whole recordings (`cluster`) and, in each replicate, the
+#' logistic is refitted and its `threshold_precision` and the weighted
+#' count are recomputed. The quantiles of their difference give
+#' `diff_weighted_lower` and `diff_weighted_upper` (row of the logistic),
+#' so that a difference larger than `tolerance` counts against the logistic
+#' only when it is larger than the sampling noise. Only the logistic and
+#' the weighted count are resampled, since refitting the GAMs in each
+#' replicate would be slow. When fewer than half of the replicates give
+#' both thresholds, the interval is `NA` and the fixed `tolerance` is used.
 #'
 #' **What the verdict detects.** The verdict is built to detect a drop of
 #' the precision at the top of the scores, that is false positives with
@@ -115,6 +128,9 @@
 #' @param max_error,tolerance Largest `top_error_excess` and largest
 #'   difference between the logistic and the weighted thresholds, in score
 #'   units, for `"keep_logistic"`.
+#' @param n_boot Number of bootstrap replicates of the difference between
+#'   the logistic and the weighted thresholds (`0`, the default, skips it).
+#' @param conf Probability of the bootstrap interval of the difference.
 #' @param grid_step Step of the grid of scores of `threshold_p_tp` and of
 #'   the curves returned.
 #' @param seed Seed of the folds. The global random number generator is
@@ -127,7 +143,9 @@
 #'   the group), `top_error`, `top_error_excess`, `n_eff_top`, `max_p`,
 #'   `reaches_target`,
 #'   `threshold_p_tp`, `threshold_precision`, `threshold_weighted`,
-#'   `diff_weighted`, `above_reviewed` (a threshold above the highest
+#'   `diff_weighted`, `diff_weighted_lower`, `diff_weighted_upper` (bootstrap
+#'   interval of `diff_weighted`, logistic only, with `n_boot > 0`),
+#'   `above_reviewed` (a threshold above the highest
 #'   reviewed score is an extrapolation), `weighted` and `verdict`. The
 #'   attribute `"curves"` holds the fitted curves on the grid (`score`,
 #'   `p_tp`) and `"bins"` the observed precision by bin, for
@@ -156,6 +174,7 @@ compare_calibration_curves <- function(validation, target = 0.95,
                                        top_from = 0.7, bin_width = 0.05,
                                        min_n = 15, min_bin = 5,
                                        max_error = 0.03, tolerance = 0.03,
+                                       n_boot = 0, conf = 0.95,
                                        grid_step = 0.01, seed = 2026) {
   curvas_ok <- c("logistic", "quadratic", "gam", "monotone_gam")
   if (!is.character(curves) || length(curves) == 0 ||
@@ -169,6 +188,14 @@ compare_calibration_curves <- function(validation, target = 0.95,
          call. = FALSE)
   }
   target <- sort(unique(target))
+  if (!is.numeric(n_boot) || length(n_boot) != 1 || is.na(n_boot) ||
+      n_boot < 0) {
+    stop("`n_boot` must be a single number >= 0.", call. = FALSE)
+  }
+  if (!is.numeric(conf) || length(conf) != 1 || is.na(conf) || conf <= 0 ||
+      conf >= 1) {
+    stop("`conf` must be a single number between 0 and 1.", call. = FALSE)
+  }
   if (!isTRUE(cv) && !isFALSE(cv)) {
     stop("`cv` must be TRUE or FALSE.", call. = FALSE)
   }
@@ -211,7 +238,7 @@ compare_calibration_curves <- function(validation, target = 0.95,
                             if (cv) k_folds else 0L,
                             if (sem_cluster) NULL else cluster, top_from,
                             bin_width, min_n, min_bin, max_error, tolerance,
-                            grade)
+                            grade, n_boot, conf)
     list(tabela = bind_cols(chave[rep(1, nrow(out$tabela)), , drop = FALSE],
                             out$tabela),
          curvas = if (is.null(out$curvas)) NULL else
@@ -232,7 +259,8 @@ compare_calibration_curves <- function(validation, target = 0.95,
 # Ajusta e julga as curvas de um grupo
 curves_for_group <- function(d, curves, target, weighted, k, k_folds,
                              cluster, top_from, bin_width, min_n, min_bin,
-                             max_error, tolerance, grade) {
+                             max_error, tolerance, grade, n_boot = 0,
+                             conf = 0.95) {
   d$tp <- as.integer(d$verdict == "positive")
   d$x <- score_logit(d$confidence)
   completa <- !anyNA(d$inclusion_prob)
@@ -255,7 +283,8 @@ curves_for_group <- function(d, curves, target, weighted, k, k_folds,
            max_p = NA_real_, reaches_target = NA,
            threshold_p_tp = NA_real_, threshold_precision = NA_real_,
            threshold_weighted = empirico[match(target, .env$target)],
-           diff_weighted = NA_real_, above_reviewed = NA,
+           diff_weighted = NA_real_, diff_weighted_lower = NA_real_,
+           diff_weighted_upper = NA_real_, above_reviewed = NA,
            weighted = ponderar, verdict = "too_few_clips")
   if (nrow(d) < min_n || sum(d$tp) < 2 || sum(1 - d$tp) < 2) {
     return(list(tabela = vazio))
@@ -357,9 +386,21 @@ curves_for_group <- function(d, curves, target, weighted, k, k_folds,
            reaches_target = max_p >= target,
            threshold_weighted = empirico[match(target, .env$target)],
            diff_weighted = threshold_precision - threshold_weighted,
+           diff_weighted_lower = NA_real_, diff_weighted_upper = NA_real_,
            above_reviewed = pmax(threshold_p_tp, threshold_precision,
                                  na.rm = TRUE) > max_rev,
            weighted = ponderar) |>
+    ungroup()
+  if (n_boot > 0 && "logistic" %in% curves) {
+    ic <- boot_diff_weighted(d, target, min_n, completa, ponderar, k,
+                             n_boot, cluster, conf)
+    linha <- tabela$curve == "logistic"
+    i <- match(tabela$target[linha], target)
+    tabela$diff_weighted_lower[linha] <- ic[1, i]
+    tabela$diff_weighted_upper[linha] <- ic[2, i]
+  }
+  tabela <- tabela |>
+    group_by(target) |>
     mutate(verdict = curve_verdict(pick(everything()), .env$n_eff_top, min_n,
                                    max_error, tolerance)) |>
     ungroup()
@@ -389,12 +430,62 @@ curve_verdict <- function(tabela, n_eff_top, min_n, max_error, tolerance) {
   } else if (nrow(log) == 1 &&
              isTRUE(dplyr::coalesce(log$top_error_excess, log$top_error) <=
                       max_error) &&
-             isTRUE(abs(log$diff_weighted) <= tolerance + 1e-8)) {
+             (isTRUE(abs(log$diff_weighted) <= tolerance + 1e-8) ||
+                isTRUE(log$diff_weighted_lower <= 0 &
+                         log$diff_weighted_upper >= 0))) {
     "keep_logistic"
   } else {
     "use_monotone_or_weighted"
   }
   rep(veredito, nrow(tabela))
+}
+
+# Intervalo bootstrap (por gravacao) da diferenca entre o limiar de precisao
+# da logistica e o da contagem ponderada; matriz 2 x alvos
+boot_diff_weighted <- function(d, target, min_n, completa, ponderar, k,
+                               n_boot, cluster, conf) {
+  unidades <- if (is.null(cluster)) seq_len(nrow(d)) else
+    as.character(d[[cluster]])
+  grupos <- split(seq_len(nrow(d)), unidades)
+  difs <- vapply(seq_len(n_boot), function(b) {
+    db <- d[unlist(grupos[sample(length(grupos), replace = TRUE)],
+                   use.names = FALSE), ]
+    na <- rep(NA_real_, length(target))
+    if (sum(db$tp) < 2 || sum(1 - db$tp) < 2) return(na)
+    a <- fit_curve("logistic", db, k)
+    if (is.null(a)) return(na)
+    log_thr <- predicted_precision_thresholds(db, predict_curve(a, db$x),
+                                              target, min_n)
+    emp <- vapply(target, function(t) {
+      threshold_for(db, t, min_n, pesos = completa,
+                    weighted = if (ponderar) TRUE else FALSE,
+                    sustained = TRUE)$threshold
+    }, numeric(1))
+    log_thr - emp
+  }, numeric(length(target)))
+  difs <- matrix(difs, nrow = length(target))
+  apply(difs, 1, function(x) {
+    ok <- !is.na(x)
+    if (mean(ok) < 0.5) return(c(NA_real_, NA_real_))
+    unname(stats::quantile(x[ok], c((1 - conf) / 2, 1 - (1 - conf) / 2),
+                           names = FALSE))
+  })
+}
+
+# Menor corte em que a precisao prevista dos clipes acima dele (media
+# ponderada de p) fica no alvo, como threshold_precision
+predicted_precision_thresholds <- function(d, p, target, min_n) {
+  cortes <- sort(unique(round(d$confidence, 2)))
+  cortes <- cortes[cortes <= max(d$confidence)]
+  prec <- vapply(cortes, function(c0) {
+    s <- d$confidence >= c0
+    if (sum(d$w[s])^2 / sum(d$w[s]^2) < min_n) return(NA_real_)
+    sum(d$w[s] * p[s]) / sum(d$w[s])
+  }, numeric(1))
+  vapply(target, function(t) {
+    j <- first_sustained(prec, t)
+    if (is.na(j)) NA_real_ else cortes[j]
+  }, numeric(1))
 }
 
 # Logito do score, com os extremos contidos
