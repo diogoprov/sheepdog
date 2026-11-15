@@ -44,6 +44,18 @@ test_that("threshold_bootstrap() resamples recordings around the threshold", {
   expect_identical(bn$n_clusters, 10L)
   expect_error(threshold_bootstrap(val, cluster = "nada"), "not a column")
   expect_error(threshold_bootstrap(val, conf = 1), "between 0 and 1")
+  # unidade constante na celula: erro; uma so gravacao: NA com aviso
+  expect_error(threshold_bootstrap(val, cluster = "site"), "constant")
+  expect_error(threshold_bootstrap(val, by = "recording_hour",
+                                   cluster = "recording_hour"), "constant")
+  val1 <- val
+  val1$source_audio <- "/a/unica.wav"
+  expect_warning(b1 <- threshold_bootstrap(val1, 0.9, 10, n_boot = 20),
+                 "single")
+  expect_identical(b1$n_clusters, 1L)
+  expect_identical(b1$threshold, b$threshold)
+  expect_true(is.na(b1$threshold_conservative))
+  expect_true(is.na(b1$share_reached))
 })
 
 test_that("threshold_by_group() checks one threshold within each group", {

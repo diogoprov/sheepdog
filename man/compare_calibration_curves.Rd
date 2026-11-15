@@ -156,6 +156,16 @@ from the weighted precision (\code{\link[=suggest_thresholds]{suggest_thresholds
 \code{\link[=threshold_bootstrap]{threshold_bootstrap()}}).
 }
 
+\strong{What the verdict detects.} The verdict is built to detect a drop of
+the precision at the top of the scores, that is false positives with
+high scores (for instance, a sound similar to the species), where the
+logistic overestimates the precision near the threshold. It is not a
+general choice of the best curve: when the shape departs from the
+logistic in other ways, neither \code{"keep_logistic"} nor
+\code{"use_monotone_or_weighted"} says which threshold has the smaller error,
+and \code{cv_logloss} is a weak guide to that choice (see above). For the
+uncertainty of the threshold, use \code{\link[=threshold_bootstrap]{threshold_bootstrap()}}.
+
 \strong{Which clips.} Clips of any probability design can be used:
 \code{"random_detections"} and \code{"score_bands"} clips carry \code{inclusion_prob},
 and are weighted by \code{1 / inclusion_prob} in the fits and in the

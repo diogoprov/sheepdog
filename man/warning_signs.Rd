@@ -101,6 +101,17 @@ checked (\code{n_checked} < 5) and signs 3 to 5 may still be raised;
 \item \code{"not_assessed"}: no sign could be checked.
 }
 
+\strong{The verdict is not a probability that the threshold fails.} The
+signs are checks whose reach grows with the sample: with more reviewed
+clips, more groups reach \code{min_n} and enter signs 6 and 7, and smaller
+differences are seen. A large sample therefore tends to raise more signs
+even when its threshold is more precise, and a small one can clear every
+sign with a threshold that misses the target. Read the verdict as a list
+of what to look at, together with the value of each sign (the
+\code{sign1_ceiling}, \code{sign2_tp_kept}, \code{sign6_fp_spread} and
+\code{sign7_share_below} columns), and judge the uncertainty of the threshold
+itself with \code{\link[=threshold_bootstrap]{threshold_bootstrap()}} (\code{threshold_conservative}).
+
 \strong{Which clips.} Signs 2 and 6 are rates of the predictions, so they use
 the clips with an inclusion probability (\code{"random_detections"},
 \code{"score_bands"}, \code{"directed_pps"}), weighted by \code{1 / inclusion_prob}.

@@ -43,7 +43,13 @@ least \code{min_n} clips? See Sustained target.}
 \item{n_boot}{Number of bootstrap replicates.}
 
 \item{cluster}{Column of \code{validation} that defines the resampling unit:
-\code{"source_audio"} (the recording, the default) or \code{"night"}.}
+\code{"source_audio"} (the recording, the default), \code{"night"} or any other
+column. Resampling is done within each site x species cell (and \code{by}
+group), so the unit must vary within it: \code{"site"} is not a valid unit
+here. A cell with a single unit gets \code{NA} in \code{threshold_median},
+\code{threshold_conservative} and \code{share_reached}, with a warning, since
+resampling it gives no information on the uncertainty. With few units (say, fewer than 10),
+the quantiles of the replicates are rough.}
 
 \item{conf}{Probability of the conservative (upper) quantile.}
 
