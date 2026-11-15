@@ -61,6 +61,16 @@
 #'   from the weighted precision ([suggest_thresholds()],
 #'   [threshold_bootstrap()]).
 #'
+#' **What the verdict detects.** The verdict is built to detect a drop of
+#' the precision at the top of the scores, that is false positives with
+#' high scores (for instance, a sound similar to the species), where the
+#' logistic overestimates the precision near the threshold. It is not a
+#' general choice of the best curve: when the shape departs from the
+#' logistic in other ways, neither `"keep_logistic"` nor
+#' `"use_monotone_or_weighted"` says which threshold has the smaller error,
+#' and `cv_logloss` is a weak guide to that choice (see above). For the
+#' uncertainty of the threshold, use [threshold_bootstrap()].
+#'
 #' **Which clips.** Clips of any probability design can be used:
 #' `"random_detections"` and `"score_bands"` clips carry `inclusion_prob`,
 #' and are weighted by `1 / inclusion_prob` in the fits and in the

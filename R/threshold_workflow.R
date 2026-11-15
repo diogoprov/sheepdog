@@ -19,7 +19,13 @@
 #' @inheritParams suggest_thresholds
 #' @param n_boot Number of bootstrap replicates.
 #' @param cluster Column of `validation` that defines the resampling unit:
-#'   `"source_audio"` (the recording, the default) or `"night"`.
+#'   `"source_audio"` (the recording, the default), `"night"` or any other
+#'   column. Resampling is done within each site x species cell (and `by`
+#'   group), so the unit must vary within it: `"site"` is not a valid unit
+#'   here. A cell with a single unit gets `NA` in `threshold_median`,
+#'   `threshold_conservative` and `share_reached`, with a warning, since
+#'   resampling it gives no information on the uncertainty. With few units (say, fewer than 10),
+#'   the quantiles of the replicates are rough.
 #' @param conf Probability of the conservative (upper) quantile.
 #' @param seed Seed of the resampling. The global random number generator
 #'   is left as it was.
@@ -42,6 +48,11 @@ threshold_bootstrap <- function(validation, target_precision = 0.90,
     stop("`cluster` (", cluster, ") is not a column of `validation`.",
          call. = FALSE)
   }
+  if (cluster %in% c("site", "species_folder", by)) {
+    stop("`cluster` (", cluster, ") is constant within each cell; ",
+         "resample a unit that varies within it, such as \"source_audio\".",
+         call. = FALSE)
+  }
   if (!is.numeric(conf) || length(conf) != 1 || conf <= 0 || conf >= 1) {
     stop("`conf` must be a single number between 0 and 1.", call. = FALSE)
   }
@@ -51,7 +62,7 @@ threshold_bootstrap <- function(validation, target_precision = 0.90,
     stop("No reviewed clip with a confidence in `validation`.",
          call. = FALSE)
   }
-  withr::with_seed(seed, {
+  res <- withr::with_seed(seed, {
     validados |>
       group_by(site, species_folder, across(all_of(by))) |>
       group_modify(function(d, chave) {
@@ -65,17 +76,24 @@ threshold_bootstrap <- function(validation, target_precision = 0.90,
           limiar(d[unlist(grupos[escolhidos], use.names = FALSE), ])
         }, numeric(1))
         ok <- !is.na(reps)
+        so_um <- length(grupos) < 2
         tibble(
           threshold = limiar(d),
-          threshold_median = if (any(ok)) stats::median(reps[ok]) else
+          threshold_median = if (!so_um && any(ok)) stats::median(reps[ok]) else
             NA_real_,
-          threshold_conservative = if (any(ok)) unname(stats::quantile(
+          threshold_conservative = if (!so_um && any(ok)) unname(stats::quantile(
             reps[ok], conf, names = FALSE)) else NA_real_,
-          share_reached = mean(ok),
+          share_reached = if (so_um) NA_real_ else mean(ok),
           n_clusters = length(grupos))
       }) |>
       ungroup()
   })
+  um <- res$n_clusters < 2
+  if (any(um)) {
+    warning(sum(um), " cell(s) with a single `", cluster, "` unit: ",
+            "no bootstrap interval for them.", call. = FALSE)
+  }
+  res
 }
 
 #' Does one threshold hold in every group?

@@ -30,6 +30,17 @@
 #'   checked (`n_checked` < 5) and signs 3 to 5 may still be raised;
 #' - `"not_assessed"`: no sign could be checked.
 #'
+#' **The verdict is not a probability that the threshold fails.** The
+#' signs are checks whose reach grows with the sample: with more reviewed
+#' clips, more groups reach `min_n` and enter signs 6 and 7, and smaller
+#' differences are seen. A large sample therefore tends to raise more signs
+#' even when its threshold is more precise, and a small one can clear every
+#' sign with a threshold that misses the target. Read the verdict as a list
+#' of what to look at, together with the value of each sign (the
+#' `sign1_ceiling`, `sign2_tp_kept`, `sign6_fp_spread` and
+#' `sign7_share_below` columns), and judge the uncertainty of the threshold
+#' itself with [threshold_bootstrap()] (`threshold_conservative`).
+#'
 #' **Which clips.** Signs 2 and 6 are rates of the predictions, so they use
 #' the clips with an inclusion probability (`"random_detections"`,
 #' `"score_bands"`, `"directed_pps"`), weighted by `1 / inclusion_prob`.
