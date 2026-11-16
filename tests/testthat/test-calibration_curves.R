@@ -267,3 +267,18 @@ test_that("curve_verdict() uses the bootstrap interval only when it exists", {
   expect_identical(curve_verdict(tab, 50, 15, 0.03, 0.03)[1],
                    "use_monotone_or_weighted")
 })
+
+test_that("the bootstrap interval is NA when most replicates fail", {
+  # poucos positivos, em poucas gravacoes: muitas replicas ficam sem dois
+  # positivos e o intervalo nao sai
+  val <- tibble::tibble(
+    site = "A", species_folder = "rara",
+    source_audio = paste0("r", rep(1:20, each = 2)),
+    confidence = seq(0.2, 0.99, length.out = 40),
+    verdict = ifelse(seq_len(40) %in% c(38, 40), "positive", "negative"))
+  cmp <- suppressMessages(compare_calibration_curves(
+    val, target = 0.9, curves = "logistic", cv = FALSE, min_n = 2,
+    n_boot = 30))
+  expect_true(is.na(cmp$diff_weighted_lower))
+  expect_true(is.na(cmp$diff_weighted_upper))
+})
