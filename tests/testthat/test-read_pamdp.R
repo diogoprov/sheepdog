@@ -110,3 +110,17 @@ test_that("bad tables stop with a clear error", {
   utils::write.csv(med, file.path(dp, "media.csv"), row.names = FALSE)
   expect_error(suppressMessages(read_pamdp(dp)), "filePath")
 })
+
+test_that("inconsistent deployments are caught", {
+  dp <- pamdp_fixture()
+  expect_error(read_pamdp(dp, site_column = c("a", "b")), "single column")
+  obs <- utils::read.csv(file.path(dp, "observations.csv"))
+  obs$deploymentID[1] <- "d3"
+  utils::write.csv(obs, file.path(dp, "observations.csv"), row.names = FALSE)
+  expect_warning(pam <- suppressMessages(read_pamdp(dp)), "follows the media")
+  expect_equal(pam$predictions$deployment_id[1], "d1")
+  med <- utils::read.csv(file.path(dp, "media.csv"))
+  med$deploymentID[4] <- "d9"
+  utils::write.csv(med, file.path(dp, "media.csv"), row.names = FALSE)
+  expect_error(suppressMessages(read_pamdp(dp)), "not in deployments.csv")
+})
