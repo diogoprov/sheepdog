@@ -31,6 +31,7 @@ reference:
       - extract_validation_clips
       - read_selection_tables
       - list_recordings
+      - read_pamdp
       - select_clips
       - select_directed
       - covariate_bins

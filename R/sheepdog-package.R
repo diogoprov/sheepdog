@@ -13,6 +13,9 @@ NULL
 
 # Colunas usadas via tidy evaluation (evita NOTEs do R CMD check)
 utils::globalVariables(c(
+  "mediaID", "deploymentID", "momento", "duracao", "media_id", "deployment_media",
+  "deployment_id", "observation_id", "scientific_name", "classified_by",
+  "low_freq", "high_freq",
   "sign1_ceiling", "sign2_tp_kept", "sign6_fp_spread", "sign6_detail",
   "sign7_share_below", "sign7_detail", "sign8_verdict", "sign1", "sign2",
   "sign6", "sign7", "sign8", "sign9", "sign9_deff", "n_checked", "n_raised",
