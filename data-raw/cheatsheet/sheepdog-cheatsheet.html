@@ -136,7 +136,9 @@ extract_validation_clips(data_dir, "validation",
 val_clips &lt;- read_validation_tables(val_files)
 thr_A &lt;- review_support(val_clips, pred,
                         target_precision = 0.90)
-history_A &lt;- threshold_history(pred, thr_A)
+boot_A &lt;- threshold_bootstrap(val_clips, 0.90)
+boot_A$threshold &lt;- boot_A$threshold_conservative
+history_A &lt;- threshold_history(pred, boot_A)
 
 <span class="c"># B, way 1</span>
 history_1 &lt;- res$history

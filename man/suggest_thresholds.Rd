@@ -63,6 +63,14 @@ cell, the share of cells without a threshold rose from 0.09 to 0.24, and
 the true precision of the cuts from 0.888 to 0.896
 (\code{dev/sustained-threshold-rule.R}).
 
+\strong{Point or conservative threshold.} The threshold is an estimate from a
+sample of clips. It is nearly unbiased, but its sampling variation is
+large: a new sample of the same size would often give a lower cut, whose
+true precision misses the target. For the threshold that is actually
+applied, use \code{threshold_conservative} of \code{\link[=threshold_bootstrap]{threshold_bootstrap()}}, which
+meets the target in about \code{conf} of the bootstrap replicates, at the cost
+of a higher cut and some recall.
+
 The precision is computed from the reviewed clips of each cell alone, so
 it is reliable only when the clips were drawn at random within the cell
 and are numerous. \code{\link[=calibrated_thresholds]{calibrated_thresholds()}} derives the thresholds from
@@ -87,6 +95,6 @@ precision, with a warning, since \code{"top"} clips are not a probability
 sample and should not set thresholds.
 }
 \seealso{
-\code{\link[=calibrated_thresholds]{calibrated_thresholds()}} for thresholds from the calibration
-model.
+\code{\link[=threshold_bootstrap]{threshold_bootstrap()}} for the conservative threshold to apply;
+\code{\link[=calibrated_thresholds]{calibrated_thresholds()}} for thresholds from the calibration model.
 }

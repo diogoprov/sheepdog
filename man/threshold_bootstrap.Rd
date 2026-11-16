@@ -76,7 +76,18 @@ clips at or above it reaches \code{target_precision}, weighted by
 \code{1 / inclusion_prob} when the clips have it (the weighted count of a
 probability sample). The upper quantile of the replicates
 (\code{threshold_conservative}) is the conservative threshold: with it, the
-target is met in about \code{conf} of the replicates. A wide interval means
+target is met in about \code{conf} of the replicates.
+
+\strong{Which threshold to apply.} Use \code{threshold_conservative}, not the point
+\code{threshold}, for the detections that are kept (for instance in
+\code{\link[=threshold_history]{threshold_history()}} and \code{\link[=warning_signs]{warning_signs()}}). The point threshold is
+nearly unbiased, but it falls below the cut that gives the target in a
+large share of samples, by sampling variation alone, and no warning
+sign computed from the same sample tells those samples apart. The
+conservative threshold trades some recall for that guarantee. With few
+reviewed clips per cell (about 100 or fewer), or a precision that levels
+off near the target, even the conservative threshold can miss it: review
+more clips near the threshold. A wide interval means
 the precision curve is flat near the target, and a new round of review
 near the threshold narrows it (a new round of \code{\link[=select_clips]{select_clips()}}, combined
 with the first by \code{\link[=combine_rounds]{combine_rounds()}}).

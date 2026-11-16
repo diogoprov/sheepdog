@@ -23,7 +23,9 @@
 #'   prediction, not only those of the cells with a threshold.
 #' @param thresholds Table with `site`, `species_folder` and `threshold`, one
 #'   row per cell, such as the output of [review_support()]. Cells with a
-#'   missing threshold or without a row have no threshold.
+#'   missing threshold or without a row have no threshold. The conservative
+#'   threshold of [threshold_bootstrap()] is the one to apply: pass it as
+#'   `dplyr::mutate(boot, threshold = threshold_conservative)`.
 #' @param min_confidence Predictions below this confidence are left out, as
 #'   in [score_detections()]. This also sets which nights count as recorded.
 #' @param dawn_hour Recordings that start before this hour belong to the

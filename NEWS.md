@@ -4,6 +4,15 @@
   Diogo B. Provete (`LICENSE`, `LICENSE.md` and the `cph` role in
   `DESCRIPTION`).
 
+- The documentation now recommends the conservative threshold of
+  `threshold_bootstrap()` (`threshold_conservative`) as the threshold to
+  apply, instead of the point threshold of `suggest_thresholds()`: the
+  point threshold is nearly unbiased but misses the target in a large share
+  of samples by sampling variation alone, and no warning sign from the same
+  sample tells those samples apart (`dev/oob-6b/`). The help pages of
+  `suggest_thresholds()`, `threshold_bootstrap()`, `threshold_history()` and
+  `warning_signs()`, the vignette `validation-effort`, the article *Choosing
+  a route* and the diagram of stage 1 were updated. No default changed.
 - `warning_signs()` gains sign 9: the design effect of the false positives
   above the threshold by recording (new arguments `cluster` and
   `max_deff`). False positives that concentrate in a few recordings make

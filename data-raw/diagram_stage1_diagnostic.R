@@ -23,7 +23,8 @@ save_diagram(paste0('digraph diag {', diagram_header("After the review: the empi
     d3 [label = "high-score\ndetections left?", ', decisao, ', fillcolor = "#c8def3"]
     d4 [label = "precision at\nhigh scores\n>= min_precision?", ', decisao, ', fillcolor = "#c8def3"]
     nr [label = "\\"not reviewed\\"\ndraw clips for the cell"]
-    re [label = "\\"reached\\"\nthe cell has a threshold", penwidth = 2]
+    re [label = "\\"reached\\"\nthe cell has a threshold"]
+    bt [label = "threshold_bootstrap()\nkeep threshold_conservative,\nnot the point threshold,\nfor threshold_history()", penwidth = 2]
     ex [label = "\\"exhausted\\"\nkeep the clips; the model may\nstill give a threshold"]
     un [label = "\\"unreliable\\"\nthe classifier is the limit:\nretraining"]
     mo [label = "\\"review more\\"\nselect_clips(previous = ),\nthen combine_rounds()"]
@@ -49,5 +50,5 @@ save_diagram(paste0('digraph diag {', diagram_header("After the review: the empi
   d4 -> un [label = " no"]; d4 -> mo [label = " yes"]
   mo -> val [style = dashed, constraint = false, label = " new round"]
   cal -> q; q -> thr [label = " yes"]; q -> poor [label = " no"]
-  re -> cmp; thr -> cmp
+  re -> bt; re -> cmp; thr -> cmp
 }'), "stage1_diagnostic")

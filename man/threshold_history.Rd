@@ -19,7 +19,9 @@ prediction, not only those of the cells with a threshold.}
 
 \item{thresholds}{Table with \code{site}, \code{species_folder} and \code{threshold}, one
 row per cell, such as the output of \code{\link[=review_support]{review_support()}}. Cells with a
-missing threshold or without a row have no threshold.}
+missing threshold or without a row have no threshold. The conservative
+threshold of \code{\link[=threshold_bootstrap]{threshold_bootstrap()}} is the one to apply: pass it as
+\code{dplyr::mutate(boot, threshold = threshold_conservative)}.}
 
 \item{min_confidence}{Predictions below this confidence are left out, as
 in \code{\link[=score_detections]{score_detections()}}. This also sets which nights count as recorded.}

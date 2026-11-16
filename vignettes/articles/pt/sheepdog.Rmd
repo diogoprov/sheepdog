@@ -174,7 +174,9 @@ atinge `target_precision`, com pelo menos `min_n` clipes. `NA` indica que
 nenhum limiar (*threshold*) atingiu a meta com os clipes revisados. Com no
 máximo `r n_max` clipes por local x espécie, muitas células não têm suporte
 suficiente para atingir a meta; `vignette("validation-effort")` discute
-quantos clipes são necessários.
+quantos clipes são necessários. Esse limiar pontual é uma estimativa; o
+limiar a aplicar é o conservador de `threshold_bootstrap()`, que reamostra
+gravações inteiras.
 
 ```{r}
 suggest_thresholds(val, target_precision = 0.90, min_n = 15)
