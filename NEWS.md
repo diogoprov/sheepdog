@@ -1,5 +1,11 @@
 # sheepdog (development version)
 
+- New `read_pamdp()` reads a pamDP data package (the format of pamflow,
+  adapted from Camtrap DP): the machine predictions of `observations.csv`
+  come in the shape of `read_selection_tables()`, and the audio files of
+  `media.csv` in the shape of `list_recordings()`, including those without
+  predictions. Both go to `select_clips()` and `export_occupancy_data()`.
+
 - Larissa S. M. Sugai and Liliana Piatti are now copyright holders with
   Diogo B. Provete (`LICENSE`, `LICENSE.md` and the `cph` role in
   `DESCRIPTION`).
