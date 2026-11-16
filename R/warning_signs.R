@@ -1,10 +1,14 @@
 #' Warning signs of a threshold, by species
 #'
 #' Gathers, for each species, the warning signs that the detections left
-#' after a threshold are not a reliable input for an ecological model, and
-#' gives a verdict. The signs follow the threshold workflow (Larissa S. M.
-#' Sugai, ACAD pilot); this function computes those that a review sample
-#' can show:
+#' after a threshold carry problems an ecological model has to deal with
+#' (recall that is low or uneven, false positives that change between
+#' sites or seasons or cluster in recordings, a calibration curve of the
+#' wrong shape), and sums them up in a verdict. The signs describe the
+#' heterogeneity of the data, not whether the threshold reaches its target
+#' precision (see "What the verdict says" below). They follow the
+#' threshold workflow (Larissa S. M. Sugai, ACAD pilot); this function
+#' computes those that a review sample can show:
 #'
 #' | sign | what it says | from |
 #' |---|---|---|
@@ -38,7 +42,7 @@
 #' clip per recording it is `NA`. With no false positive (or no true
 #' positive) above the threshold, the design effect is 1.
 #'
-#' **Verdict.** A heuristic summary, not a test:
+#' **Verdict.** A heuristic summary of the signs, not a test:
 #'
 #' - `"not_trustworthy"`: the species has no threshold (no score reaches
 #'   the target), no calibration curve reaches the target (sign 8), or three
@@ -48,16 +52,32 @@
 #'   checked (`n_checked` < 6) and signs 3 to 5 may still be raised;
 #' - `"not_assessed"`: no sign could be checked.
 #'
-#' **The verdict is not a probability that the threshold fails.** The
-#' signs are checks whose reach grows with the sample: with more reviewed
-#' clips, more groups reach `min_n` and enter signs 6 and 7, and smaller
-#' differences are seen. A large sample therefore tends to raise more signs
-#' even when its threshold is more precise, and a small one can clear every
-#' sign with a threshold that misses the target. Read the verdict as a list
-#' of what to look at, together with the value of each sign (the
-#' `sign1_ceiling`, `sign2_tp_kept`, `sign6_fp_spread` and
-#' `sign7_share_below` columns), and judge the uncertainty of the threshold
-#' itself with [threshold_bootstrap()] (`threshold_conservative`).
+#' **What the verdict says.** The verdict is a diagnosis of the
+#' heterogeneity of the data, not of the reliability of the threshold, and
+#' it is not a probability that the threshold misses its target. Two
+#' reasons:
+#'
+#' - the signs are checks whose reach grows with the sample: with more
+#'   reviewed clips, more groups reach `min_n` and enter signs 6 and 7, and
+#'   smaller differences are seen. A large sample therefore tends to raise
+#'   more signs even when its threshold is more precise, and a small one can
+#'   clear every sign with a threshold that misses the target;
+#' - a threshold taken from a review sample misses its target mostly
+#'   through sampling variation, which no sign computed from the same
+#'   sample tells apart. In resamples of a real data set, samples with every
+#'   sign clear missed the target more often than samples judged
+#'   `"not_trustworthy"`, and in simulations a clear verdict was reassuring
+#'   only in a small share of the samples. Changing the rule of the verdict
+#'   (more signs required, intervals for signs 6 and 7) did not reorder it.
+#'
+#' Read the verdict as a list of what to look at, and of what the
+#' ecological model should account for (false positives by site or season,
+#' clustered false positives, a low recall ceiling), together with the
+#' value of each sign (the `sign1_ceiling`, `sign2_tp_kept`,
+#' `sign6_fp_spread`, `sign7_share_below` and `sign9_deff` columns). For
+#' the reliability of the threshold, apply the conservative threshold of
+#' [threshold_bootstrap()] (`threshold_conservative`), whatever the
+#' verdict.
 #'
 #' **Which clips.** Signs 2 and 6 are rates of the predictions, so they use
 #' the clips with an inclusion probability (`"random_detections"`,
@@ -406,7 +426,10 @@ write_warning_signs <- function(saida, file) {
                      utils::packageVersion("sheepdog"), " on ",
                      format(Sys.Date()), ". Signs 3 to 5 need recordings ",
                      "annotated in full and are not checked; an empty sign ",
-                     "was not checked."), "",
+                     "was not checked. The verdict sums up the ",
+                     "heterogeneity of the data, not whether the ",
+                     "threshold reaches its target: for that, use the ",
+                     "conservative threshold of threshold_bootstrap()."), "",
               paste0("| ", paste(names(tab), collapse = " | "), " |"),
               paste0("|", paste(rep("---", ncol(tab)), collapse = "|"), "|"),
               apply(tab, 1, \(r) paste0("| ", paste(r, collapse = " | "),
