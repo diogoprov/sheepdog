@@ -330,7 +330,9 @@ A threshold from the reviewed clips is an estimate, and clips of the same
 recording are not independent. `threshold_bootstrap()` resamples whole
 recordings (or nights, `cluster = "night"`) within each cell and recomputes
 the threshold: its upper quantile, `threshold_conservative`, meets the
-target in about `conf` of the replicates. A wide interval means the
+target in about `conf` of the replicates. The unit must vary within the
+cell, so `cluster = "site"` is refused, and a cell reviewed in a single
+recording gets no interval. A wide interval means the
 precision curve is flat near the target, and a new round of review near
 the threshold (another round of `select_clips()`, combined with
 `combine_rounds()`) narrows it. `threshold_by_group()` then asks
