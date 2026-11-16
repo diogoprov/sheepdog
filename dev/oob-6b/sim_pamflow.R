@@ -25,13 +25,19 @@
 # Arms: sd_point and sd_cons (two-stage sample of sim_oob.R), pf_same
 # (pamflow logistic on that same sample), pf_native and pf_native_logit
 # (pamflow on its own sample, same n).
-#   Rscript dev/oob-6b/sim_pamflow.R OUT_RDS [reps] [n_boot] [cores]
+# Two-branch workflow (two_branch, two_branch_ptp): compare_calibration_curves()
+# on the two-stage sample (logistic and monotone GAM, bootstrap of the
+# disagreement with n_boot_cmp replicates); with "keep_logistic", the
+# threshold_precision (two_branch) or threshold_p_tp (two_branch_ptp) of
+# the logistic; with "use_monotone_or_weighted", sd_cons; otherwise none.
+#   Rscript dev/oob-6b/sim_pamflow.R OUT_RDS [reps] [n_boot] [cores] [n_boot_cmp]
 suppressPackageStartupMessages(devtools::load_all(quiet = TRUE))
 a <- commandArgs(TRUE)
 out <- a[1]
 reps <- if (length(a) > 1) as.integer(a[2]) else 300L
 n_boot <- if (length(a) > 2) as.integer(a[3]) else 200L
 cores <- if (length(a) > 3) as.integer(a[4]) else 6L
+n_boot_cmp <- if (length(a) > 4) as.integer(a[5]) else 100L
 targets <- c(0.90, 0.95)
 bands <- c(0.1, 0.3, 0.5, 0.7, 0.9, 1.0001)
 
@@ -131,6 +137,22 @@ truth <- function(pop, cut) {
     recall = sum(pop$tp[keep]) / sum(pop$tp))
 }
 
+two_branch <- function(s, t_cons) {
+  v <- s
+  v$species_folder <- "sp"
+  v$source_audio <- v$rec
+  cmp <- suppressMessages(suppressWarnings(compare_calibration_curves(
+    v, target = targets, curves = c("logistic", "monotone_gam"),
+    cv = FALSE, n_boot = n_boot_cmp, seed = 1)))
+  lg <- cmp[cmp$curve == "logistic", ]
+  lg <- lg[match(targets, lg$target), ]
+  keep <- lg$verdict == "keep_logistic"
+  other <- lg$verdict == "use_monotone_or_weighted"
+  pick <- function(x) ifelse(keep, x, ifelse(other, t_cons, NA_real_))
+  list(precision = pick(lg$threshold_precision), p_tp = pick(lg$threshold_p_tp),
+       verdict = lg$verdict)
+}
+
 one_sample <- function(pop, n) {
   s <- draw_sample(pop, n)
   t_pt <- vapply(targets, \(t) thr(s, t), 0)
@@ -145,7 +167,13 @@ one_sample <- function(pop, n) {
     unname(stats::quantile(b, 0.95, na.rm = TRUE))
   } else NA_real_)
   pn <- pamflow_sample(pop, n)
+  # Two-branch workflow: logistic threshold when compare_calibration_curves()
+  # keeps the logistic, conservative threshold when it does not, none
+  # otherwise (too few clips, sample more near the threshold, no curve
+  # reaches the target)
+  cmp <- two_branch(s, t_cons)
   arms <- list(sd_point = t_pt, sd_cons = t_cons,
+               two_branch = cmp$precision, two_branch_ptp = cmp$p_tp,
                pf_same = pamflow_threshold(s, targets),
                pf_native = pamflow_threshold(pn, targets),
                pf_native_logit = pamflow_threshold(pn, targets, "logit"))
@@ -153,6 +181,7 @@ one_sample <- function(pop, n) {
     do.call(rbind, lapply(seq_along(targets), function(j) {
       tr <- truth(pop, arms[[arm]][j])
       data.frame(n = n, target = targets[j], arm = arm,
+                 cmp_verdict = cmp$verdict[j],
                  threshold = arms[[arm]][j], prec_true = tr[1],
                  local_true = tr[2], recall = tr[3])
     }))

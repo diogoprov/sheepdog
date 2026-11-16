@@ -201,10 +201,9 @@ limiar.
    aviso, e em logit dá limiar sempre. A contagem ponderada com bootstrap
    se recusa a dar limiar. Detectar esse caso é o papel de
    `compare_calibration_curves()` (7a e 7b).
-3. Isso sugere, para o sheepdog, um fluxo em dois ramos: usar o limiar da
-   logística quando `compare_calibration_curves()` dá `keep_logistic`, e o
-   `threshold_conservative` caso contrário. Falta testar esse fluxo aqui,
-   porque esta simulação não roda `compare_calibration_curves()`.
+3. Um fluxo em dois ramos (logística quando `compare_calibration_curves()`
+   dá `keep_logistic`, `threshold_conservative` caso contrário) foi testado
+   abaixo e não se sustenta.
 
 **Limites:**
 
@@ -214,3 +213,94 @@ limiar.
   código lido em 15/11/2026.
 - A P(TP) local verdadeira é estimada numa janela de ± 0,02, então tem
   ruído próprio.
+
+# Fluxo em dois ramos (15/11/2026)
+
+Pergunta: guiar a escolha do limiar pelo veredito de
+`compare_calibration_curves()` junta o recall da logística, quando a curva
+é suave, com a segurança do `threshold_conservative`, quando a precisão
+estaciona?
+
+## Desenho
+
+Em `sim_pamflow.R` (função `two_branch()`): em cada amostra em dois estágios,
+`compare_calibration_curves()` com a logística e o GAM monótono, sem
+validação cruzada, com bootstrap da discordância (`n_boot = 100`).
+
+- Com `keep_logistic`:
+  - `two_branch`: o `threshold_precision` da logística (meta acumulada);
+  - `two_branch_ptp`: o `threshold_p_tp` (meta local, como o pamflow).
+- Com `use_monotone_or_weighted`: o `sd_cons`.
+- Nos outros vereditos: nenhum limiar.
+- **Tempo:** 8 min em 6 núcleos.
+
+## Resultados
+
+**Veredito.** A fração de amostras com `keep_logistic` é de 0,92 a 0,97 em
+`indep` e `clumped`. No platô, é de 0,54 com alvo 0,90 e de 0,20 com alvo
+0,95.
+
+**`two_branch`.** Falha como o limiar pontual (11% a 35% em `indep`, alvo
+0,90). É uma estimativa pontual da meta acumulada, sem o deslocamento do
+bootstrap.
+
+**`two_branch_ptp`.** Falha e recall, comparados ao `sd_cons`:
+
+| Cenário | n | Alvo | `two_branch_ptp` falha / recall | `sd_cons` falha / recall |
+|---|---|---|---|---|
+| indep | 200 | 0,90 | 0,00 / 0,28 | 0,01 / 0,21 |
+| indep | 800 | 0,90 | 0,00 / 0,28 | 0,00 / 0,37 |
+| indep | 800 | 0,95 | 0,00 / 0,16 | 0,00 / 0,13 |
+| clumped | 800 | 0,95 | 0,00 / 0,07 | 0,00 / 0,08 |
+| plateau | 400 | 0,90 | 0,01 / 0,08 | 0,00 / 0,02 |
+| plateau | 400 | 0,95 | 0,51 / 0,03 | 0,03 / 0,01 |
+| plateau | 800 | 0,95 | 0,32 / 0,02 | 0,04 / 0,01 |
+
+**Onde vaza.** No platô com alvo 0,95, o veredito mantém a logística em 10%
+a 32% das amostras. Nelas, o limiar falha em 70% a 84%. Num diagnóstico
+com 100 amostras por combinação e n ≥ 200, no platô com alvo 0,95:
+
+| | `keep_logistic` | falha com `keep_logistic` | falha geral |
+|---|---|---|---|
+| tolerância fixa (`n_boot = 0`) | 0,06 | 0,47 | 0,23 |
+| com o resgate do 7b (`n_boot = 100`) | 0,26 | 0,81 | 0,58 |
+
+Fora do platô, a tolerância fixa mantém a logística em só 36% a 39% das
+amostras, contra 93% a 98% com o resgate do 7b.
+
+Exigir também que o `sd_cons` exista não resolve: no platô com alvo 0,95,
+a falha continua em 32% a 64% com n ≥ 200.
+
+## Leitura
+
+- **Curva suave:** o fluxo com a meta local é tão seguro quanto o
+  `sd_cons`. O ganho de recall não é uniforme: é maior com n pequeno, e com
+  n = 800 e alvo 0,90 o `sd_cons` mantém mais (0,37 contra 0,28), porque o
+  deslocamento do bootstrap encolhe com n, e a meta local não.
+- **Platô suave perto do alvo:** o veredito não o reconhece com
+  segurança, e o fluxo herda a falha da logística. É um nivelamento perto
+  do alvo, não uma queda no topo, que é o que o veredito foi feito para
+  detectar (7a).
+- **O resgate do 7b** aumenta muito a fração de `keep_logistic` nas curvas
+  suaves, mas também no platô, onde dobra a falha. A tolerância fixa é
+  mais segura no platô e rejeita a logística em ~60% das curvas suaves.
+  Nenhuma das duas versões serve para escolher o limiar.
+
+## Conclusão
+
+1. Não adotar o fluxo em dois ramos. A recomendação do PR #150 se mantém:
+   o `threshold_conservative` como limiar a aplicar.
+2. A documentação de `compare_calibration_curves()` poderia dizer que
+   `keep_logistic` não garante o alvo quando a precisão estaciona perto
+   dele. O veredito vale como diagnóstico da forma, não como escolha do
+   limiar.
+3. Para a diferenciação com o pamflow: a logística (dele ou do sheepdog)
+   é eficiente quando a forma está certa, mas falha sem aviso quando a
+   precisão estaciona perto do alvo, e nenhum diagnóstico de forma
+   testado aqui a protege. O limiar conservador com bootstrap por gravação
+   é a parte robusta.
+
+**Limites.** Valem os da seção anterior. Além disso:
+- o platô simulado é um caso só (teto de 0,955, alvo 0,95);
+- `compare_calibration_curves()` rodou sem o GAM livre nem a quadrática, e
+  sem validação cruzada, que o veredito não usa.
