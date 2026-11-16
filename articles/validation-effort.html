@@ -562,11 +562,15 @@ threshold (sign 8, from <code><a href="../reference/compare_calibration_curves.h
 false positives that cluster in a few recordings (sign 9, the design
 effect by recording). Each species gets a verdict:
 <code>"trustworthy_with_care"</code>, <code>"use_with_caveats"</code> or
-<code>"not_trustworthy"</code>. The verdict is a list of what to look
-at, not a probability that the threshold fails: larger samples tend to
-raise more signs. Signs 3 to 5 (occupied sites lost, detected days that
-do not track the true activity, false negatives that vary by site) need
-recordings annotated in full and are not checked.</p>
+<code>"not_trustworthy"</code>. The verdict describes the heterogeneity
+of the data, that is what the ecological model has to account for, and
+not the reliability of the threshold: larger samples tend to raise more
+signs, and a threshold misses its target mostly by sampling variation,
+which no sign from the same sample tells apart. Apply
+<code>threshold_conservative</code> whatever the verdict. Signs 3 to 5
+(occupied sites lost, detected days that do not track the true activity,
+false negatives that vary by site) need recordings annotated in full and
+are not checked.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/warning_signs.html">warning_signs</a></span><span class="op">(</span><span class="va">val</span>, <span class="va">boot</span>, groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"month"</span><span class="op">)</span>,</span>
 <span>              threshold_column <span class="op">=</span> <span class="st">"threshold_conservative"</span>,</span>

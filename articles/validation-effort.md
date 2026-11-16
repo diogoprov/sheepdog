@@ -519,11 +519,14 @@ a logistic curve wrong near the threshold (sign 8, from
 and false positives that cluster in a few recordings (sign 9, the design
 effect by recording). Each species gets a verdict:
 `"trustworthy_with_care"`, `"use_with_caveats"` or `"not_trustworthy"`.
-The verdict is a list of what to look at, not a probability that the
-threshold fails: larger samples tend to raise more signs. Signs 3 to 5
-(occupied sites lost, detected days that do not track the true activity,
-false negatives that vary by site) need recordings annotated in full and
-are not checked.
+The verdict describes the heterogeneity of the data, that is what the
+ecological model has to account for, and not the reliability of the
+threshold: larger samples tend to raise more signs, and a threshold
+misses its target mostly by sampling variation, which no sign from the
+same sample tells apart. Apply `threshold_conservative` whatever the
+verdict. Signs 3 to 5 (occupied sites lost, detected days that do not
+track the true activity, false negatives that vary by site) need
+recordings annotated in full and are not checked.
 
 ``` r
 

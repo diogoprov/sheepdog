@@ -6,14 +6,22 @@
     }
   };
 </script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Warning signs of a threshold, by species — warning_signs"><meta name="description" content="Gathers, for each species, the warning signs that the detections left
-after a threshold are not a reliable input for an ecological model, and
-gives a verdict. The signs follow the threshold workflow (Larissa S. M.
-Sugai, ACAD pilot); this function computes those that a review sample
-can show:"><meta property="og:description" content="Gathers, for each species, the warning signs that the detections left
-after a threshold are not a reliable input for an ecological model, and
-gives a verdict. The signs follow the threshold workflow (Larissa S. M.
-Sugai, ACAD pilot); this function computes those that a review sample
-can show:"><meta property="og:image" content="https://provetelab.org/sheepdog/logo.svg"></head><body>
+after a threshold carry problems an ecological model has to deal with
+(recall that is low or uneven, false positives that change between
+sites or seasons or cluster in recordings, a calibration curve of the
+wrong shape), and sums them up in a verdict. The signs describe the
+heterogeneity of the data, not whether the threshold reaches its target
+precision (see &quot;What the verdict says&quot; below). They follow the
+threshold workflow (Larissa S. M. Sugai, ACAD pilot); this function
+computes those that a review sample can show:"><meta property="og:description" content="Gathers, for each species, the warning signs that the detections left
+after a threshold carry problems an ecological model has to deal with
+(recall that is low or uneven, false positives that change between
+sites or seasons or cluster in recordings, a calibration curve of the
+wrong shape), and sums them up in a verdict. The signs describe the
+heterogeneity of the data, not whether the threshold reaches its target
+precision (see &quot;What the verdict says&quot; below). They follow the
+threshold workflow (Larissa S. M. Sugai, ACAD pilot); this function
+computes those that a review sample can show:"><meta property="og:image" content="https://provetelab.org/sheepdog/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -79,10 +87,14 @@ can show:"><meta property="og:image" content="https://provetelab.org/sheepdog/lo
 
     <div class="ref-description section level2">
     <p>Gathers, for each species, the warning signs that the detections left
-after a threshold are not a reliable input for an ecological model, and
-gives a verdict. The signs follow the threshold workflow (Larissa S. M.
-Sugai, ACAD pilot); this function computes those that a review sample
-can show:</p>
+after a threshold carry problems an ecological model has to deal with
+(recall that is low or uneven, false positives that change between
+sites or seasons or cluster in recordings, a calibration curve of the
+wrong shape), and sums them up in a verdict. The signs describe the
+heterogeneity of the data, not whether the threshold reaches its target
+precision (see "What the verdict says" below). They follow the
+threshold workflow (Larissa S. M. Sugai, ACAD pilot); this function
+computes those that a review sample can show:</p>
     </div>
 
     <div class="section level2">
@@ -216,23 +228,36 @@ recordings can turn into false occupied sites. It needs several reviewed
 clips per recording, as in designs that review whole occasions; with one
 clip per recording it is <code>NA</code>. With no false positive (or no true
 positive) above the threshold, the design effect is 1.</p>
-<p><strong>Verdict.</strong> A heuristic summary, not a test:</p><ul><li><p><code>"not_trustworthy"</code>: the species has no threshold (no score reaches
+<p><strong>Verdict.</strong> A heuristic summary of the signs, not a test:</p><ul><li><p><code>"not_trustworthy"</code>: the species has no threshold (no score reaches
 the target), no calibration curve reaches the target (sign 8), or three
 or more signs are raised;</p></li>
 <li><p><code>"use_with_caveats"</code>: one or two signs are raised;</p></li>
 <li><p><code>"trustworthy_with_care"</code>: every sign checked is clear. The signs not
 checked (<code>n_checked</code> &lt; 6) and signs 3 to 5 may still be raised;</p></li>
 <li><p><code>"not_assessed"</code>: no sign could be checked.</p></li>
-</ul><p><strong>The verdict is not a probability that the threshold fails.</strong> The
-signs are checks whose reach grows with the sample: with more reviewed
-clips, more groups reach <code>min_n</code> and enter signs 6 and 7, and smaller
-differences are seen. A large sample therefore tends to raise more signs
-even when its threshold is more precise, and a small one can clear every
-sign with a threshold that misses the target. Read the verdict as a list
-of what to look at, together with the value of each sign (the
-<code>sign1_ceiling</code>, <code>sign2_tp_kept</code>, <code>sign6_fp_spread</code> and
-<code>sign7_share_below</code> columns), and judge the uncertainty of the threshold
-itself with <code><a href="threshold_bootstrap.html">threshold_bootstrap()</a></code> (<code>threshold_conservative</code>).</p>
+</ul><p><strong>What the verdict says.</strong> The verdict is a diagnosis of the
+heterogeneity of the data, not of the reliability of the threshold, and
+it is not a probability that the threshold misses its target. Two
+reasons:</p><ul><li><p>the signs are checks whose reach grows with the sample: with more
+reviewed clips, more groups reach <code>min_n</code> and enter signs 6 and 7, and
+smaller differences are seen. A large sample therefore tends to raise
+more signs even when its threshold is more precise, and a small one can
+clear every sign with a threshold that misses the target;</p></li>
+<li><p>a threshold taken from a review sample misses its target mostly
+through sampling variation, which no sign computed from the same
+sample tells apart. In resamples of a real data set, samples with every
+sign clear missed the target more often than samples judged
+<code>"not_trustworthy"</code>, and in simulations a clear verdict was reassuring
+only in a small share of the samples. Changing the rule of the verdict
+(more signs required, intervals for signs 6 and 7) did not reorder it.</p></li>
+</ul><p>Read the verdict as a list of what to look at, and of what the
+ecological model should account for (false positives by site or season,
+clustered false positives, a low recall ceiling), together with the
+value of each sign (the <code>sign1_ceiling</code>, <code>sign2_tp_kept</code>,
+<code>sign6_fp_spread</code>, <code>sign7_share_below</code> and <code>sign9_deff</code> columns). For
+the reliability of the threshold, apply the conservative threshold of
+<code><a href="threshold_bootstrap.html">threshold_bootstrap()</a></code> (<code>threshold_conservative</code>), whatever the
+verdict.</p>
 <p><strong>Which clips.</strong> Signs 2 and 6 are rates of the predictions, so they use
 the clips with an inclusion probability (<code>"random_detections"</code>,
 <code>"score_bands"</code>, <code>"directed_pps"</code>), weighted by <code>1 / inclusion_prob</code>.
