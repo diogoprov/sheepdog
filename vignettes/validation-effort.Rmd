@@ -330,7 +330,9 @@ A threshold from the reviewed clips is an estimate, and clips of the same
 recording are not independent. `threshold_bootstrap()` resamples whole
 recordings (or nights, `cluster = "night"`) within each cell and recomputes
 the threshold: its upper quantile, `threshold_conservative`, meets the
-target in about `conf` of the replicates. A wide interval means the
+target in about `conf` of the replicates. The unit must vary within the
+cell, so `cluster = "site"` is refused, and a cell reviewed in a single
+recording gets no interval. A wide interval means the
 precision curve is flat near the target, and a new round of review near
 the threshold (another round of `select_clips()`, combined with
 `combine_rounds()`) narrows it. `threshold_by_group()` then asks
@@ -390,9 +392,13 @@ recall ceiling (sign 1, from `recall_ceiling()`), a threshold that discards
 most true positives (sign 2), false-positive rates that vary between sites
 or months (sign 6, with the main confusing identity when the clips have
 identities), a threshold that misses the target in some group (sign 7, from
-`threshold_by_group()`) and a logistic curve wrong near the threshold (sign
-8, from `compare_calibration_curves()`). Each species gets a verdict:
-`"trustworthy_with_care"`, `"use_with_caveats"` or `"not_trustworthy"`.
+`threshold_by_group()`), a logistic curve wrong near the threshold (sign
+8, from `compare_calibration_curves()`) and false positives that cluster in
+a few recordings (sign 9, the design effect by recording). Each species
+gets a verdict: `"trustworthy_with_care"`, `"use_with_caveats"` or
+`"not_trustworthy"`. The verdict is a list of what to look at, not a
+probability that the threshold fails: larger samples tend to raise more
+signs.
 Signs 3 to 5 (occupied sites lost, detected days that do not track the true
 activity, false negatives that vary by site) need recordings annotated in
 full and are not checked.

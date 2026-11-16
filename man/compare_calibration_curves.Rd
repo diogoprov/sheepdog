@@ -20,6 +20,8 @@ compare_calibration_curves(
   min_bin = 5,
   max_error = 0.03,
   tolerance = 0.03,
+  n_boot = 0,
+  conf = 0.95,
   grid_step = 0.01,
   seed = 2026
 )
@@ -72,6 +74,11 @@ bins.}
 difference between the logistic and the weighted thresholds, in score
 units, for \code{"keep_logistic"}.}
 
+\item{n_boot}{Number of bootstrap replicates of the difference between
+the logistic and the weighted thresholds (\code{0}, the default, skips it).}
+
+\item{conf}{Probability of the bootstrap interval of the difference.}
+
 \item{grid_step}{Step of the grid of scores of \code{threshold_p_tp} and of
 the curves returned.}
 
@@ -86,7 +93,9 @@ columns,
 the group), \code{top_error}, \code{top_error_excess}, \code{n_eff_top}, \code{max_p},
 \code{reaches_target},
 \code{threshold_p_tp}, \code{threshold_precision}, \code{threshold_weighted},
-\code{diff_weighted}, \code{above_reviewed} (a threshold above the highest
+\code{diff_weighted}, \code{diff_weighted_lower}, \code{diff_weighted_upper} (bootstrap
+interval of \code{diff_weighted}, logistic only, with \code{n_boot > 0}),
+\code{above_reviewed} (a threshold above the highest
 reviewed score is an extrapolation), \code{weighted} and \code{verdict}. The
 attribute \code{"curves"} holds the fitted curves on the grid (\code{score},
 \code{p_tp}) and \code{"bins"} the observed precision by bin, for
@@ -147,14 +156,27 @@ weighted count give a threshold with precision \code{target} (with at least
 target, or reaches it only at the very top, and no usable score
 guarantees it: improve the classifier before setting a threshold.
 \item \code{"keep_logistic"}: the logistic has \code{top_error_excess <= max_error}
-and its \code{threshold_precision} is within \code{tolerance} of the weighted
-count. A flexible curve may still fit better in log-loss, but away
+and its \code{threshold_precision} agrees with the weighted count: within
+\code{tolerance} of it or, with \code{n_boot > 0}, either within \code{tolerance} or
+with a bootstrap interval of the difference that includes 0 (the two
+thresholds do not disagree more than the sample allows). A flexible curve may still fit better in log-loss, but away
 from the threshold.
 \item \code{"use_monotone_or_weighted"}: larger error in the high bins, or
 thresholds that disagree; take the threshold from the monotone GAM or
 from the weighted precision (\code{\link[=suggest_thresholds]{suggest_thresholds()}},
 \code{\link[=threshold_bootstrap]{threshold_bootstrap()}}).
 }
+
+\strong{Bootstrap of the disagreement.} With \code{n_boot > 0}, the clips are
+resampled by whole recordings (\code{cluster}) and, in each replicate, the
+logistic is refitted and its \code{threshold_precision} and the weighted
+count are recomputed. The quantiles of their difference give
+\code{diff_weighted_lower} and \code{diff_weighted_upper} (row of the logistic),
+so that a difference larger than \code{tolerance} counts against the logistic
+only when it is larger than the sampling noise. Only the logistic and
+the weighted count are resampled, since refitting the GAMs in each
+replicate would be slow. When fewer than half of the replicates give
+both thresholds, the interval is \code{NA} and the fixed \code{tolerance} is used.
 
 \strong{What the verdict detects.} The verdict is built to detect a drop of
 the precision at the top of the scores, that is false positives with

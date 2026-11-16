@@ -16,6 +16,8 @@ warning_signs(
   max_fp_spread = 0.3,
   min_ceiling = 0.5,
   threshold_column = "threshold",
+  cluster = "source_audio",
+  max_deff = 2,
   file = NULL
 )
 }
@@ -55,6 +57,12 @@ this.}
 
 \item{threshold_column}{Column of \code{thresholds} with the threshold.}
 
+\item{cluster}{Column of \code{validation} with the recording (or other unit)
+of each clip, for sign 9. A missing column leaves sign 9 \code{NA}.}
+
+\item{max_deff}{Sign 9 is raised when the design effect of the false
+positives above the threshold is above this.}
+
 \item{file}{Optional path of a Markdown file to write the report to.}
 }
 \value{
@@ -62,7 +70,8 @@ A tibble with one row per species: \code{species_folder},
 \code{threshold} (the median over its cells), \code{sign1_ceiling},
 \code{sign1}, \code{sign2_tp_kept}, \code{sign2}, \code{sign6_fp_spread}, \code{sign6},
 \code{sign6_detail}, \code{sign7_share_below}, \code{sign7}, \code{sign7_detail},
-\code{sign8_verdict}, \code{sign8}, \code{n_checked}, \code{n_raised} and \code{verdict}. The
+\code{sign8_verdict}, \code{sign8}, \code{sign9_deff}, \code{sign9}, \code{n_checked},
+\code{n_raised} and \code{verdict}. The
 \code{signN} columns are \code{TRUE} (raised), \code{FALSE} (clear) or \code{NA} (not
 checked).
 }
@@ -81,6 +90,7 @@ can show:
    6 \tab false positives vary by site or season \tab the reviewed clips: range of the false-positive rate among the levels of each \code{groups} column; the most frequent identity of the negative clips, when \code{validation} has \code{identity} \cr
    7 \tab the threshold is not stable across groups \tab \code{\link[=threshold_by_group]{threshold_by_group()}} for each \code{groups} column \cr
    8 \tab the logistic curve is wrong near the threshold \tab \code{curves}, the output of \code{\link[=compare_calibration_curves]{compare_calibration_curves()}} \cr
+   9 \tab false positives cluster in recordings \tab the reviewed clips at or above the threshold: design effect of the false positives by \code{cluster} \cr
 }
 
 
@@ -90,6 +100,23 @@ whose true activity is known, that is recordings annotated in full, and
 are not computed here. A sign whose input is missing is \code{NA}, not
 \code{FALSE}: it was not checked.
 
+\strong{Sign 9.} Among the reviewed clips at or above the threshold of their
+cell (all cells of the species together, unweighted), the false
+positives may concentrate in a few recordings, for instance a recording
+with an insect chorus or a similar species calling all night. The sign
+gives the design effect of the false-positive indicator by \code{cluster},
+\eqn{1 + (\bar m - 1)\rho}, where \eqn{\rho} is the intraclass
+correlation (ANOVA estimator, truncated at 0) and \eqn{\bar m =
+\sum m_i^2 / \sum m_i} the mean cluster size weighted by size. A design
+effect of 3 means that the precision above the threshold is as uncertain
+as with a third of the clips: intervals that treat clips as independent
+are too narrow (\code{\link[=threshold_bootstrap]{threshold_bootstrap()}} resamples whole recordings and
+does not have this problem), and false positives that cluster in
+recordings can turn into false occupied sites. It needs several reviewed
+clips per recording, as in designs that review whole occasions; with one
+clip per recording it is \code{NA}. With no false positive (or no true
+positive) above the threshold, the design effect is 1.
+
 \strong{Verdict.} A heuristic summary, not a test:
 \itemize{
 \item \code{"not_trustworthy"}: the species has no threshold (no score reaches
@@ -97,7 +124,7 @@ the target), no calibration curve reaches the target (sign 8), or three
 or more signs are raised;
 \item \code{"use_with_caveats"}: one or two signs are raised;
 \item \code{"trustworthy_with_care"}: every sign checked is clear. The signs not
-checked (\code{n_checked} < 5) and signs 3 to 5 may still be raised;
+checked (\code{n_checked} < 6) and signs 3 to 5 may still be raised;
 \item \code{"not_assessed"}: no sign could be checked.
 }
 
