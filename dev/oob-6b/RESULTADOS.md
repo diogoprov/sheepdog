@@ -236,7 +236,7 @@ validação cruzada, com bootstrap da discordância (`n_boot = 100`).
 
 ## Resultados
 
-**Veredito.** A fração de amostras com `keep_logistic` é de 0,92 a 0,97 em
+**Veredito.** A fração de amostras com `keep_logistic` é de 0,87 a 0,97 em
 `indep` e `clumped`. No platô, é de 0,54 com alvo 0,90 e de 0,20 com alvo
 0,95.
 
