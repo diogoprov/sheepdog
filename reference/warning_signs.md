@@ -42,7 +42,8 @@ warning_signs(
   [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
   (`threshold_column` picks another column, such as
   `"threshold_conservative"` of
-  [`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md)).
+  [`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md),
+  the threshold to apply).
 
 - groups:
 
@@ -193,11 +194,14 @@ then only indicative.
 
 ``` r
 if (FALSE) { # \dontrun{
-thr <- suggest_thresholds(val, target_precision = 0.95, sustained = TRUE)
+thr <- threshold_bootstrap(val, target_precision = 0.95)
 warning_signs(val, thr, groups = c("site", "month"),
+              threshold_column = "threshold_conservative",
               curves = compare_calibration_curves(val),
               recall = recall_ceiling(rr, det, thresholds = thr,
-                                      by = c("site", "species_folder")),
+                                      by = c("site", "species_folder"),
+                                      threshold_column =
+                                        "threshold_conservative"),
               file = "warning_signs.md")
 } # }
 ```

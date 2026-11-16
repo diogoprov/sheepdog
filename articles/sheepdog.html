@@ -380,7 +380,9 @@ it reaches <code>target_precision</code>, with at least
 target with the clips reviewed. With at most 40 clips per site x
 species, many cells lack the support to reach the target;
 <code><a href="../articles/validation-effort.html">vignette("validation-effort")</a></code> discusses how many clips are
-needed.</p>
+needed. This point threshold is an estimate; the threshold to apply is
+the conservative one of <code><a href="../reference/threshold_bootstrap.html">threshold_bootstrap()</a></code>, which
+resamples whole recordings.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/suggest_thresholds.html">suggest_thresholds</a></span><span class="op">(</span><span class="va">val</span>, target_precision <span class="op">=</span> <span class="fl">0.90</span>, min_n <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 32 × 5</span></span></span>

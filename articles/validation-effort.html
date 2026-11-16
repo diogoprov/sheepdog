@@ -485,8 +485,15 @@ same recording are not independent. <code><a href="../reference/threshold_bootst
 resamples whole recordings (or nights, <code>cluster = "night"</code>)
 within each cell and recomputes the threshold: its upper quantile,
 <code>threshold_conservative</code>, meets the target in about
-<code>conf</code> of the replicates. The unit must vary within the cell,
-so <code>cluster = "site"</code> is refused, and a cell reviewed in a
+<code>conf</code> of the replicates. This is the threshold to apply. The
+point threshold of <code><a href="../reference/suggest_thresholds.html">suggest_thresholds()</a></code> is nearly unbiased,
+but by sampling variation alone it falls below the cut that gives the
+target in a large share of samples, and none of the warning signs below
+tells those samples apart; the conservative threshold trades some recall
+for that guarantee. With about 100 reviewed clips per cell or fewer, or
+a precision that levels off near the target, even the conservative
+threshold can miss it. The unit must vary within the cell, so
+<code>cluster = "site"</code> is refused, and a cell reviewed in a
 single recording gets no interval. A wide interval means the precision
 curve is flat near the target, and a new round of review near the
 threshold (another round of <code><a href="../reference/select_clips.html">select_clips()</a></code>, combined with
@@ -506,7 +513,10 @@ calibration curve:</p>
 <span>                           target_precision <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>                           threshold_column <span class="op">=</span> <span class="st">"threshold_conservative"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/threshold_record.html">threshold_record</a></span><span class="op">(</span><span class="va">thr</span>, <span class="va">boot</span>, <span class="va">grp</span>, <span class="st">"validation/extraction_info.csv"</span>,</span>
-<span>                 target_precision <span class="op">=</span> <span class="fl">0.95</span>, file <span class="op">=</span> <span class="st">"threshold_record.md"</span><span class="op">)</span></span></code></pre></div>
+<span>                 target_precision <span class="op">=</span> <span class="fl">0.95</span>, file <span class="op">=</span> <span class="st">"threshold_record.md"</span><span class="op">)</span></span>
+<span><span class="co"># the nightly history with the conservative threshold</span></span>
+<span><span class="va">hist</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/threshold_history.html">threshold_history</a></span><span class="op">(</span><span class="va">pred</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="va">boot</span>,</span>
+<span>                                 threshold <span class="op">=</span> <span class="va">threshold_conservative</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>The example data hold only <code>"top"</code> clips, which are not a
 probability sample, so the chunk above is not run here.</p>
 </div>
@@ -558,10 +568,13 @@ raise more signs. Signs 3 to 5 (occupied sites lost, detected days that
 do not track the true activity, false negatives that vary by site) need
 recordings annotated in full and are not checked.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/warning_signs.html">warning_signs</a></span><span class="op">(</span><span class="va">val</span>, <span class="va">thr</span>, groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"month"</span><span class="op">)</span>,</span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/warning_signs.html">warning_signs</a></span><span class="op">(</span><span class="va">val</span>, <span class="va">boot</span>, groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"month"</span><span class="op">)</span>,</span>
+<span>              threshold_column <span class="op">=</span> <span class="st">"threshold_conservative"</span>,</span>
 <span>              curves <span class="op">=</span> <span class="fu"><a href="../reference/compare_calibration_curves.html">compare_calibration_curves</a></span><span class="op">(</span><span class="va">val</span><span class="op">)</span>,</span>
-<span>              recall <span class="op">=</span> <span class="fu"><a href="../reference/recall_ceiling.html">recall_ceiling</a></span><span class="op">(</span><span class="va">rr</span>, <span class="va">pred</span>, thresholds <span class="op">=</span> <span class="va">thr</span>,</span>
-<span>                                      by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"species_folder"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>              recall <span class="op">=</span> <span class="fu"><a href="../reference/recall_ceiling.html">recall_ceiling</a></span><span class="op">(</span><span class="va">rr</span>, <span class="va">pred</span>, thresholds <span class="op">=</span> <span class="va">boot</span>,</span>
+<span>                                      by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"species_folder"</span><span class="op">)</span>,</span>
+<span>                                      threshold_column <span class="op">=</span></span>
+<span>                                        <span class="st">"threshold_conservative"</span><span class="op">)</span>,</span>
 <span>              file <span class="op">=</span> <span class="st">"warning_signs.md"</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>

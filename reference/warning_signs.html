@@ -118,7 +118,8 @@ can show:</p>
 number, or a table with <code>species_folder</code> (and optionally <code>site</code>) and a
 <code>threshold</code> column, such as the output of <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>
 (<code>threshold_column</code> picks another column, such as
-<code>"threshold_conservative"</code> of <code><a href="threshold_bootstrap.html">threshold_bootstrap()</a></code>).</p></dd>
+<code>"threshold_conservative"</code> of <code><a href="threshold_bootstrap.html">threshold_bootstrap()</a></code>, the threshold
+to apply).</p></dd>
 
 
 <dt id="arg-groups">groups<a class="anchor" aria-label="anchor" href="#arg-groups"></a></dt>
@@ -248,11 +249,14 @@ then only indicative.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="va">thr</span> <span class="op">&lt;-</span> <span class="fu"><a href="suggest_thresholds.html">suggest_thresholds</a></span><span class="op">(</span><span class="va">val</span>, target_precision <span class="op">=</span> <span class="fl">0.95</span>, sustained <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">thr</span> <span class="op">&lt;-</span> <span class="fu"><a href="threshold_bootstrap.html">threshold_bootstrap</a></span><span class="op">(</span><span class="va">val</span>, target_precision <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">warning_signs</span><span class="op">(</span><span class="va">val</span>, <span class="va">thr</span>, groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"month"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>              threshold_column <span class="op">=</span> <span class="st">"threshold_conservative"</span>,</span></span>
 <span class="r-in"><span>              curves <span class="op">=</span> <span class="fu"><a href="compare_calibration_curves.html">compare_calibration_curves</a></span><span class="op">(</span><span class="va">val</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>              recall <span class="op">=</span> <span class="fu"><a href="recall_ceiling.html">recall_ceiling</a></span><span class="op">(</span><span class="va">rr</span>, <span class="va">det</span>, thresholds <span class="op">=</span> <span class="va">thr</span>,</span></span>
-<span class="r-in"><span>                                      by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"species_folder"</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                                      by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"species_folder"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                                      threshold_column <span class="op">=</span></span></span>
+<span class="r-in"><span>                                        <span class="st">"threshold_conservative"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>              file <span class="op">=</span> <span class="st">"warning_signs.md"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>

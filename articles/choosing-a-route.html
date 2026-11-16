@@ -233,7 +233,11 @@ weighted by the sampling design, with its diagnosis (diagram below).
 There is no model: the threshold is read off the clips, and
 <code><a href="../reference/threshold_history.html">threshold_history()</a></code> turns the thresholds into a nightly
 history. The guarantee is for the <strong>set</strong> of detections
-kept, not for each one.</p>
+kept, not for each one. The threshold to apply is the conservative one
+of <code><a href="../reference/threshold_bootstrap.html">threshold_bootstrap()</a></code>
+(<code>threshold_conservative</code>): the point threshold is nearly
+unbiased, but in many samples it falls below the cut that gives the
+target, by sampling variation alone.</p>
 <div class="float">
 <img src="figures/stage1_diagnostic.png" alt="What to do with each label of review_support(), and how to compare the empirical and model-based thresholds."><div class="figcaption">What to do with each label of
 <code><a href="../reference/review_support.html">review_support()</a></code>, and how to compare the empirical and
@@ -276,6 +280,12 @@ draw, and a mean and an interval per cell of the matrices.</div>
 <ul>
 <li>The 90% holds for the set of detections kept: those just above the
 cut can be mostly false.</li>
+<li>The point threshold is an estimate: a new sample of the same size
+often gives a lower cut that misses the target, and no warning sign from
+the same sample flags it. Apply <code>threshold_conservative</code> of
+<code><a href="../reference/threshold_bootstrap.html">threshold_bootstrap()</a></code>, which resamples whole recordings;
+with about 100 reviewed clips per cell or fewer, even it can miss the
+target.</li>
 <li>The threshold is the first cut that passes; precision can dip again
 above it. <code>suggest_thresholds(sustained = TRUE)</code> requires the
 target at every higher cut with at least <code>min_n</code> clips, but

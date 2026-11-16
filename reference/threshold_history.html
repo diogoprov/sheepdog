@@ -109,7 +109,9 @@ prediction, not only those of the cells with a threshold.</p></dd>
 <dt id="arg-thresholds">thresholds<a class="anchor" aria-label="anchor" href="#arg-thresholds"></a></dt>
 <dd><p>Table with <code>site</code>, <code>species_folder</code> and <code>threshold</code>, one
 row per cell, such as the output of <code><a href="review_support.html">review_support()</a></code>. Cells with a
-missing threshold or without a row have no threshold.</p></dd>
+missing threshold or without a row have no threshold. The conservative
+threshold of <code><a href="threshold_bootstrap.html">threshold_bootstrap()</a></code> is the one to apply: pass it as
+<code>dplyr::mutate(boot, threshold = threshold_conservative)</code>.</p></dd>
 
 
 <dt id="arg-min-confidence">min_confidence<a class="anchor" aria-label="anchor" href="#arg-min-confidence"></a></dt>

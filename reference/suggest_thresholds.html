@@ -156,6 +156,13 @@ leaves the cell without a threshold. In a simulation with 300 clips per
 cell, the share of cells without a threshold rose from 0.09 to 0.24, and
 the true precision of the cuts from 0.888 to 0.896
 (<code>dev/sustained-threshold-rule.R</code>).</p>
+<p><strong>Point or conservative threshold.</strong> The threshold is an estimate from a
+sample of clips. It is nearly unbiased, but its sampling variation is
+large: a new sample of the same size would often give a lower cut, whose
+true precision misses the target. For the threshold that is actually
+applied, use <code>threshold_conservative</code> of <code><a href="threshold_bootstrap.html">threshold_bootstrap()</a></code>, which
+meets the target in about <code>conf</code> of the bootstrap replicates, at the cost
+of a higher cut and some recall.</p>
 <p>The precision is computed from the reviewed clips of each cell alone, so
 it is reliable only when the clips were drawn at random within the cell
 and are numerous. <code><a href="calibrated_thresholds.html">calibrated_thresholds()</a></code> derives the thresholds from
@@ -179,8 +186,8 @@ sample and should not set thresholds.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="calibrated_thresholds.html">calibrated_thresholds()</a></code> for thresholds from the calibration
-model.</p></div>
+    <div class="dont-index"><p><code><a href="threshold_bootstrap.html">threshold_bootstrap()</a></code> for the conservative threshold to apply;
+<code><a href="calibrated_thresholds.html">calibrated_thresholds()</a></code> for thresholds from the calibration model.</p></div>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

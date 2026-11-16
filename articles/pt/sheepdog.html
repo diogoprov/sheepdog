@@ -382,7 +382,9 @@ ou superior a ela atinge <code>target_precision</code>, com pelo menos
 máximo 40 clipes por local x espécie, muitas células não têm suporte
 suficiente para atingir a meta;
 <code><a href="../../articles/validation-effort.html">vignette("validation-effort")</a></code> discute quantos clipes são
-necessários.</p>
+necessários. Esse limiar pontual é uma estimativa; o limiar a aplicar é
+o conservador de <code><a href="../../reference/threshold_bootstrap.html">threshold_bootstrap()</a></code>, que reamostra
+gravações inteiras.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../../reference/suggest_thresholds.html">suggest_thresholds</a></span><span class="op">(</span><span class="va">val</span>, target_precision <span class="op">=</span> <span class="fl">0.90</span>, min_n <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 32 × 5</span></span></span>

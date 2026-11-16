@@ -38,7 +38,11 @@ threshold_history(
   Table with `site`, `species_folder` and `threshold`, one row per cell,
   such as the output of
   [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md).
-  Cells with a missing threshold or without a row have no threshold.
+  Cells with a missing threshold or without a row have no threshold. The
+  conservative threshold of
+  [`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md)
+  is the one to apply: pass it as
+  `dplyr::mutate(boot, threshold = threshold_conservative)`.
 
 - min_confidence:
 

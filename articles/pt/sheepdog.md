@@ -310,7 +310,10 @@ nenhum limiar (*threshold*) atingiu a meta com os clipes revisados. Com
 no máximo 40 clipes por local x espécie, muitas células não têm suporte
 suficiente para atingir a meta;
 [`vignette("validation-effort")`](https://provetelab.org/sheepdog/articles/validation-effort.md)
-discute quantos clipes são necessários.
+discute quantos clipes são necessários. Esse limiar pontual é uma
+estimativa; o limiar a aplicar é o conservador de
+[`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md),
+que reamostra gravações inteiras.
 
 ``` r
 

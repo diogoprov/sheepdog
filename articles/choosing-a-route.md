@@ -61,7 +61,12 @@ weighted by the sampling design, with its diagnosis (diagram below).
 There is no model: the threshold is read off the clips, and
 [`threshold_history()`](https://provetelab.org/sheepdog/reference/threshold_history.md)
 turns the thresholds into a nightly history. The guarantee is for the
-**set** of detections kept, not for each one.
+**set** of detections kept, not for each one. The threshold to apply is
+the conservative one of
+[`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md)
+(`threshold_conservative`): the point threshold is nearly unbiased, but
+in many samples it falls below the cut that gives the target, by
+sampling variation alone.
 
 ![What to do with each label of review_support(), and how to compare the
 empirical and model-based thresholds.](figures/stage1_diagnostic.png)
@@ -112,6 +117,12 @@ interval per cell of the matrices.
 
 - The 90% holds for the set of detections kept: those just above the cut
   can be mostly false.
+- The point threshold is an estimate: a new sample of the same size
+  often gives a lower cut that misses the target, and no warning sign
+  from the same sample flags it. Apply `threshold_conservative` of
+  [`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md),
+  which resamples whole recordings; with about 100 reviewed clips per
+  cell or fewer, even it can miss the target.
 - The threshold is the first cut that passes; precision can dip again
   above it. `suggest_thresholds(sustained = TRUE)` requires the target
   at every higher cut with at least `min_n` clips, but high cuts rest on

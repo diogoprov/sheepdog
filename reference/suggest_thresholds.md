@@ -80,6 +80,15 @@ of cells without a threshold rose from 0.09 to 0.24, and the true
 precision of the cuts from 0.888 to 0.896
 (`dev/sustained-threshold-rule.R`).
 
+**Point or conservative threshold.** The threshold is an estimate from a
+sample of clips. It is nearly unbiased, but its sampling variation is
+large: a new sample of the same size would often give a lower cut, whose
+true precision misses the target. For the threshold that is actually
+applied, use `threshold_conservative` of
+[`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md),
+which meets the target in about `conf` of the bootstrap replicates, at
+the cost of a higher cut and some recall.
+
 The precision is computed from the reviewed clips of each cell alone, so
 it is reliable only when the clips were drawn at random within the cell
 and are numerous.
@@ -107,5 +116,7 @@ sample and should not set thresholds.
 
 ## See also
 
+[`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md)
+for the conservative threshold to apply;
 [`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md)
 for thresholds from the calibration model.

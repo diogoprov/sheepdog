@@ -6,6 +6,23 @@
   Diogo B. Provete (`LICENSE`, `LICENSE.md` and the `cph` role in
   `DESCRIPTION`).
 
+- The documentation now recommends the conservative threshold of
+  [`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md)
+  (`threshold_conservative`) as the threshold to apply, instead of the
+  point threshold of
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md):
+  the point threshold is nearly unbiased but misses the target in a
+  large share of samples by sampling variation alone, and no warning
+  sign from the same sample tells those samples apart (`dev/oob-6b/`).
+  The help pages of
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md),
+  [`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md),
+  [`threshold_history()`](https://provetelab.org/sheepdog/reference/threshold_history.md)
+  and
+  [`warning_signs()`](https://provetelab.org/sheepdog/reference/warning_signs.md),
+  the vignette `validation-effort`, the article *Choosing a route* and
+  the diagram of stage 1 were updated. No default changed.
+
 - [`warning_signs()`](https://provetelab.org/sheepdog/reference/warning_signs.md)
   gains sign 9: the design effect of the false positives above the
   threshold by recording (new arguments `cluster` and `max_deff`). False

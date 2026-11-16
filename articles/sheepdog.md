@@ -307,7 +307,10 @@ with at least `min_n` clips. `NA` means that no cut reached the target
 with the clips reviewed. With at most 40 clips per site x species, many
 cells lack the support to reach the target;
 [`vignette("validation-effort")`](https://provetelab.org/sheepdog/articles/validation-effort.md)
-discusses how many clips are needed.
+discusses how many clips are needed. This point threshold is an
+estimate; the threshold to apply is the conservative one of
+[`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md),
+which resamples whole recordings.
 
 ``` r
 

@@ -429,10 +429,18 @@ same recording are not independent.
 resamples whole recordings (or nights, `cluster = "night"`) within each
 cell and recomputes the threshold: its upper quantile,
 `threshold_conservative`, meets the target in about `conf` of the
-replicates. The unit must vary within the cell, so `cluster = "site"` is
-refused, and a cell reviewed in a single recording gets no interval. A
-wide interval means the precision curve is flat near the target, and a
-new round of review near the threshold (another round of
+replicates. This is the threshold to apply. The point threshold of
+[`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
+is nearly unbiased, but by sampling variation alone it falls below the
+cut that gives the target in a large share of samples, and none of the
+warning signs below tells those samples apart; the conservative
+threshold trades some recall for that guarantee. With about 100 reviewed
+clips per cell or fewer, or a precision that levels off near the target,
+even the conservative threshold can miss it. The unit must vary within
+the cell, so `cluster = "site"` is refused, and a cell reviewed in a
+single recording gets no interval. A wide interval means the precision
+curve is flat near the target, and a new round of review near the
+threshold (another round of
 [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md),
 combined with
 [`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md))
@@ -456,6 +464,9 @@ grp  <- threshold_by_group(val, boot, by = "recording_hour",
                            threshold_column = "threshold_conservative")
 threshold_record(thr, boot, grp, "validation/extraction_info.csv",
                  target_precision = 0.95, file = "threshold_record.md")
+# the nightly history with the conservative threshold
+hist <- threshold_history(pred, dplyr::mutate(boot,
+                                 threshold = threshold_conservative))
 ```
 
 The example data hold only `"top"` clips, which are not a probability
@@ -516,10 +527,13 @@ are not checked.
 
 ``` r
 
-warning_signs(val, thr, groups = c("site", "month"),
+warning_signs(val, boot, groups = c("site", "month"),
+              threshold_column = "threshold_conservative",
               curves = compare_calibration_curves(val),
-              recall = recall_ceiling(rr, pred, thresholds = thr,
-                                      by = c("site", "species_folder")),
+              recall = recall_ceiling(rr, pred, thresholds = boot,
+                                      by = c("site", "species_folder"),
+                                      threshold_column =
+                                        "threshold_conservative"),
               file = "warning_signs.md")
 ```
 
