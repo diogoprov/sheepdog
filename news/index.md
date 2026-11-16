@@ -23,6 +23,16 @@
   the vignette `validation-effort`, the article *Choosing a route* and
   the diagram of stage 1 were updated. No default changed.
 
+- The help page of
+  [`compare_calibration_curves()`](https://provetelab.org/sheepdog/reference/compare_calibration_curves.md)
+  now says that `"keep_logistic"` does not guarantee the target when the
+  precision levels off just above it, and that the verdict is a check of
+  the shape of the curve, not the choice of the threshold. In
+  simulations, choosing the logistic threshold when the verdict keeps
+  the logistic, and the conservative threshold otherwise, missed the
+  target in a third to two thirds of the samples in that case, against
+  3-4% for the conservative threshold alone (`dev/oob-6b/`).
+
 - [`warning_signs()`](https://provetelab.org/sheepdog/reference/warning_signs.md)
   gains sign 9: the design effect of the false positives above the
   threshold by recording (new arguments `cluster` and `max_deff`). False
