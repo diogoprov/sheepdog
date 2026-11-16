@@ -111,3 +111,106 @@ insuficiente).
   em todas as amostras.
 - O critério de alvo − 0,02 é o do estudo; com um critério estrito (abaixo
   do alvo), todas as taxas de falha sobem.
+
+# Braço "estilo pamflow" (15/11/2026)
+
+Pergunta: o limiar do pipeline `detection_validation` do pamflow
+(Betancourt et al. 2026, *Methods Ecol Evol*, doi:10.1111/2041-210x.70432)
+falha mais ou menos que os do sheepdog nas mesmas populações?
+
+## Desenho
+
+`sim_pamflow.R` (resumo em `summarise_pamflow.R`; resultados em
+`sim_pamflow.rds`, local). As populações, a amostra em dois estágios, o
+limiar pontual (`sd_point`) e o conservador (`sd_cons`, quantil de 95% de
+200 réplicas por gravação) são os de `sim_oob.R`. O pamflow foi
+reimplementado em R a partir do código público
+(`src/pamflow/pipelines/detection_validation/nodes.py` e
+`species_detection/nodes.py`):
+
+- **Sorteio do pamflow:** n segmentos entre todas as detecções, em 5 faixas
+  de largura igual do score, com o mesmo n por faixa. Não guarda
+  probabilidade de inclusão.
+- **Ajuste:** logística sem pesos do acerto contra o score (na escala do
+  score, o padrão, ou em logit). Sem limiar com n < 15, < 3 por classe,
+  separação, teste de razão de verossimilhança com p ≥ 0,05 ou inclinação
+  negativa.
+- **Limiar t\*:** o score em que a P(TP) ajustada vale o alvo, isto é, a
+  meta é **local**. Sem limiar quando t\* passa do maior score revisado.
+- **Braços:**
+  - `pf_same`: a logística do pamflow na nossa amostra em dois estágios;
+  - `pf_native`: o pamflow com o sorteio dele;
+  - `pf_native_logit`: o mesmo, com o score em logit.
+- **Medidas:**
+  - a precisão verdadeira acima do limiar (a meta do sheepdog), com falha
+    abaixo de alvo − 0,02;
+  - a P(TP) local verdadeira no limiar (a meta do pamflow: média dos TP da
+    população a ± 0,02 do corte);
+  - o recall mantido.
+- **Tempo:** 4 min em 6 núcleos.
+
+## Resultados (seleção; a tabela completa sai de `summarise_pamflow.R`)
+
+"Falha" é a fração das amostras com limiar em que a precisão acima do
+limiar fica abaixo de alvo − 0,02. "Tem" é a fração das amostras com algum
+limiar.
+
+| Cenário | n | Alvo | `sd_point` falha / recall | `sd_cons` falha / recall (tem) | `pf_native` falha / recall (tem) | `pf_native_logit` falha (tem) | `pf_native` falha local |
+|---|---|---|---|---|---|---|---|
+| indep | 200 | 0,90 | 0,23 / 0,45 | 0,01 / 0,21 (1,00) | 0,00 / 0,31 (1,00) | 0,00 (1,00) | 0,40 |
+| indep | 800 | 0,95 | 0,08 / 0,28 | 0,00 / 0,12 (1,00) | 0,00 / 0,18 (1,00) | 0,00 (1,00) | 0,05 |
+| clumped | 200 | 0,90 | 0,25 / 0,28 | 0,01 / 0,12 (1,00) | 0,00 / 0,18 (1,00) | 0,00 (1,00) | 0,32 |
+| clumped | 800 | 0,95 | 0,06 / 0,15 | 0,00 / 0,08 (1,00) | 0,00 / 0,06 (1,00) | 0,00 (1,00) | 0,04 |
+| plateau | 400 | 0,90 | 0,09 / 0,08 | 0,00 / 0,02 (0,82) | 0,01 / 0,10 (0,99) | 0,00 (1,00) | 0,15 |
+| plateau | 400 | 0,95 | 0,25 / 0,02 | 0,03 / 0,01 (0,46) | 0,59 / 0,02 (0,42) | 0,70 (1,00) | 0,68 |
+| plateau | 800 | 0,95 | 0,06 / 0,02 | 0,04 / 0,01 (0,24) | 0,52 / 0,01 (0,42) | 0,80 (1,00) | 0,55 |
+
+**Leitura:**
+
+- **Com a curva suave (`indep` e `clumped`), o pamflow quase nunca falha na
+  precisão acumulada** (0 a 5%). Com alvo 0,90, mantém mais recall que o `sd_cons` (por
+  exemplo, 0,31 contra 0,21 em `indep`, n = 200); com alvo 0,95 em
+  `clumped`, mantém um pouco menos (0,06 contra 0,08 com n = 800). Isso
+  não vem de tratar a incerteza: a meta local é mais exigente que a
+  acumulada, então o t\* fica acima do limiar pontual do sheepdog, e a
+  logística usa toda a faixa de scores, não só os clipes acima do corte.
+  Quando a logística está bem especificada, ela é mais eficiente que a
+  contagem ponderada com o deslocamento do bootstrap.
+- **Na meta dele próprio (a P(TP) local), o pamflow falha com frequência:**
+  de 19% a 46% em `indep` e `clumped` com alvo 0,90 e escala do score,
+  e de 8% a 30% em logit. Não há intervalo para t\*, e a logística na
+  escala do score está mal especificada nessas populações.
+- **Quando a precisão estaciona perto do alvo (`plateau`, alvo 0,95), a
+  logística falha muito e não melhora com n:** 52% a 79% de falha com o
+  sorteio dele, e 70% a 82% em logit, que sempre devolve um limiar. É o
+  modo de falha do pedido 7a: a forma logística força a curva a passar do
+  alvo. O `sd_cons` falha em 3% a 4% com n ≥ 400, porque, quando o alvo
+  não é atingível com segurança, ele deixa de dar limiar (tem = 0,24 a
+  0,46).
+- **`pf_same` e `pf_native` dão resultados parecidos.** Sortear em dois
+  estágios ou pelas faixas do pamflow pouco muda a logística sem pesos,
+  como se espera quando o sorteio depende só do score.
+
+## Conclusão para a diferenciação
+
+1. O argumento não é "a logística falha": com a curva bem comportada, ela
+   cumpre a meta acumulada, em geral com mais recall que o
+   `threshold_conservative`.
+2. A diferença está na robustez. Quando a precisão estaciona (FP de score
+   alto), a logística dá limiares que falham na maioria das amostras, sem
+   aviso, e em logit dá limiar sempre. A contagem ponderada com bootstrap
+   se recusa a dar limiar. Detectar esse caso é o papel de
+   `compare_calibration_curves()` (7a e 7b).
+3. Isso sugere, para o sheepdog, um fluxo em dois ramos: usar o limiar da
+   logística quando `compare_calibration_curves()` dá `keep_logistic`, e o
+   `threshold_conservative` caso contrário. Falta testar esse fluxo aqui,
+   porque esta simulação não roda `compare_calibration_curves()`.
+
+**Limites:**
+
+- Uma população por cenário, e a curva verdadeira é logística no logit
+  do score (a favor do `pf_native_logit` fora do platô).
+- O pamflow foi reimplementado em R, não executado; as regras seguem o
+  código lido em 15/11/2026.
+- A P(TP) local verdadeira é estimada numa janela de ± 0,02, então tem
+  ruído próprio.
