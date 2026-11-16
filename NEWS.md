@@ -1,5 +1,11 @@
 # sheepdog (development version)
 
+- New `read_pamdp()` reads a pamDP data package (the format of pamflow,
+  adapted from Camtrap DP): the machine predictions of `observations.csv`
+  come in the shape of `read_selection_tables()`, and the audio files of
+  `media.csv` in the shape of `list_recordings()`, including those without
+  predictions. Both go to `select_clips()` and `export_occupancy_data()`.
+
 - The help page of `warning_signs()` now presents the verdict as a
   diagnosis of the heterogeneity of the data (what the ecological model has
   to account for), not of the reliability of the threshold. In resamples of
