@@ -2,6 +2,19 @@
 
 ## sheepdog (development version)
 
+- New
+  [`read_pamdp()`](https://provetelab.org/sheepdog/reference/read_pamdp.md)
+  reads a pamDP data package (the format of pamflow, adapted from
+  Camtrap DP): the machine predictions of `observations.csv` come in the
+  shape of
+  [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md),
+  and the audio files of `media.csv` in the shape of
+  [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md),
+  including those without predictions. Both go to
+  [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
+  and
+  [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md).
+
 - Larissa S. M. Sugai and Liliana Piatti are now copyright holders with
   Diogo B. Provete (`LICENSE`, `LICENSE.md` and the `cph` role in
   `DESCRIPTION`).

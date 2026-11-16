@@ -118,9 +118,9 @@ rec
 #> # A tibble: 3 × 2
 #>   site  source_audio                                             
 #>   <chr> <chr>                                                    
-#> 1 ARA   /tmp/RtmpeJkucK/audio/ARA/ARA01_20211001_190000.wav      
-#> 2 ARA   /tmp/RtmpeJkucK/audio/ARA/ARA01_20211001_200000.wav      
-#> 3 BAI   /tmp/RtmpeJkucK/audio/BAI/card1/BAI01_20211001_190000.wav
+#> 1 ARA   /tmp/RtmpDLDW0x/audio/ARA/ARA01_20211001_190000.wav      
+#> 2 ARA   /tmp/RtmpDLDW0x/audio/ARA/ARA01_20211001_200000.wav      
+#> 3 BAI   /tmp/RtmpDLDW0x/audio/BAI/card1/BAI01_20211001_190000.wav
 ```
 
 The paths must match `Begin Path`. When the list is built on a computer
@@ -147,12 +147,54 @@ CSV written with `file` can be given as `recordings` to
 [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
 and [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md).
 
+## Predictions in a pamDP data package
+
+pamflow (Betancourt et al. 2026) standardises passive acoustic data in
+pamDP, an adaptation of Camtrap DP (Bubnicki et al. 2024) with three
+tables: `deployments.csv`, `media.csv` and `observations.csv`.
+[`read_pamdp()`](https://provetelab.org/sheepdog/reference/read_pamdp.md)
+reads such a package and returns the machine predictions in the shape of
+[`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)
+and the list of recordings in the shape of
+[`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md).
+The list comes from `media.csv`, so it includes the audio files without
+any prediction:
+
+``` r
+
+pam <- read_pamdp("pamdp", audio_root = "/Volumes/NAS/pam/audio")
+clips <- select_clips(pam$predictions, sampling_mode = "score_bands",
+                      recordings = pam$recordings)
+```
+
+- **Site:** taken from `locationID` of the deployment (`site_column`
+  changes it).
+- **Species:** `species_code` is the scientific name followed by its
+  lower-case, hyphenated form, so that `"Boana raniceps"` goes to the
+  folder `boana_raniceps`.
+- **Paths:** relative `filePath` values are resolved against
+  `audio_root`.
+- **Dates and hours:** sheepdog still reads them from the file names
+  (`YYYYMMDD_HHMMSS`), not from the `timestamp` of `media.csv`.
+- **Human classifications:** left out, because pamDP has no field that
+  ties them to the prediction they check.
+- **Which functions accept the tables:**
+  [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
+  and
+  [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md),
+  and through the manifest the review app.
+  [`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md)
+  and
+  [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md)
+  still read BirdNET selection tables from disk.
+
 ## Where each function looks
 
 | step | function | reads | writes |
 |----|----|----|----|
 | read predictions | [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md) | `birdnet/<site>/` | a table in R |
 | list recordings | [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md) | `audio/<site>/` | `recordings.csv` |
+| or read a pamDP package | [`read_pamdp()`](https://provetelab.org/sheepdog/reference/read_pamdp.md) | `deployments.csv`, `media.csv`, `observations.csv` | predictions and recordings in R |
 | choose clips | [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md) | predictions, recordings | a manifest in R |
 | cut clips | [`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md), [`extract_validation_clips()`](https://provetelab.org/sheepdog/reference/extract_validation_clips.md) | the audio, through `Begin Path` | `clips/<species>/`, `clip_manifest.csv` |
 | review | file manager (`Positive`/`Negative` subfolders) or [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md) | clips, manifest | folders, or a verdicts CSV |
@@ -164,3 +206,15 @@ See
 for the whole pipeline on the example data and
 [`vignette("frognet-workflow")`](https://provetelab.org/sheepdog/articles/frognet-workflow.md)
 for a project with a network drive mapped as `N:`.
+
+## References
+
+Betancourt, N., Toro-Gómez, M., Cañas, J., Barona-Cortés, E., et al.
+(2026). pamflow: an open-source workflow for simplified passive acoustic
+monitoring data analysis. *Methods in Ecology and Evolution*.
+<https://doi.org/10.1111/2041-210x.70432>
+
+Bubnicki, J. W., Norton, B., Baskauf, S. J., Bruce, T., et al. (2024).
+Camtrap DP: an open standard for the FAIR exchange and archiving of
+camera trap data. *Remote Sensing in Ecology and Conservation*, 10(3),
+283-295. <https://doi.org/10.1002/rse2.374>

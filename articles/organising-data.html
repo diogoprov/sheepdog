@@ -215,9 +215,9 @@ audio folders instead. Here on a small simulated tree:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 2</span></span></span>
 <span><span class="co">#&gt;   site  source_audio                                             </span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ARA   /tmp/RtmpeJkucK/audio/ARA/ARA01_20211001_190000.wav      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ARA   /tmp/RtmpeJkucK/audio/ARA/ARA01_20211001_200000.wav      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> BAI   /tmp/RtmpeJkucK/audio/BAI/card1/BAI01_20211001_190000.wav</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ARA   /tmp/RtmpDLDW0x/audio/ARA/ARA01_20211001_190000.wav      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ARA   /tmp/RtmpDLDW0x/audio/ARA/ARA01_20211001_200000.wav      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> BAI   /tmp/RtmpDLDW0x/audio/BAI/card1/BAI01_20211001_190000.wav</span></span></code></pre></div>
 <p>The paths must match <code>Begin Path</code>. When the list is built
 on a computer other than the one that ran BirdNET, rewrite the prefix
 with <code>remap_from</code> and <code>remap_to</code>, and give the
@@ -236,6 +236,49 @@ same <code>remap_from</code> and <code>remap_to</code> to
 to the local prefix. Either way, the CSV written with <code>file</code>
 can be given as <code>recordings</code> to <code><a href="../reference/select_clips.html">select_clips()</a></code>,
 <code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code> and <code><a href="../reference/run_app.html">run_app()</a></code>.</p>
+</div>
+<div class="section level2">
+<h2 id="predictions-in-a-pamdp-data-package">Predictions in a pamDP data package<a class="anchor" aria-label="anchor" href="#predictions-in-a-pamdp-data-package"></a>
+</h2>
+<p>pamflow (Betancourt et al. 2026) standardises passive acoustic data
+in pamDP, an adaptation of Camtrap DP (Bubnicki et al. 2024) with three
+tables: <code>deployments.csv</code>, <code>media.csv</code> and
+<code>observations.csv</code>. <code><a href="../reference/read_pamdp.html">read_pamdp()</a></code> reads such a
+package and returns the machine predictions in the shape of
+<code><a href="../reference/read_selection_tables.html">read_selection_tables()</a></code> and the list of recordings in the
+shape of <code><a href="../reference/list_recordings.html">list_recordings()</a></code>. The list comes from
+<code>media.csv</code>, so it includes the audio files without any
+prediction:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">pam</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_pamdp.html">read_pamdp</a></span><span class="op">(</span><span class="st">"pamdp"</span>, audio_root <span class="op">=</span> <span class="st">"/Volumes/NAS/pam/audio"</span><span class="op">)</span></span>
+<span><span class="va">clips</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/select_clips.html">select_clips</a></span><span class="op">(</span><span class="va">pam</span><span class="op">$</span><span class="va">predictions</span>, sampling_mode <span class="op">=</span> <span class="st">"score_bands"</span>,</span>
+<span>                      recordings <span class="op">=</span> <span class="va">pam</span><span class="op">$</span><span class="va">recordings</span><span class="op">)</span></span></code></pre></div>
+<ul>
+<li>
+<strong>Site:</strong> taken from <code>locationID</code> of the
+deployment (<code>site_column</code> changes it).</li>
+<li>
+<strong>Species:</strong> <code>species_code</code> is the
+scientific name followed by its lower-case, hyphenated form, so that
+<code>"Boana raniceps"</code> goes to the folder
+<code>boana_raniceps</code>.</li>
+<li>
+<strong>Paths:</strong> relative <code>filePath</code> values are
+resolved against <code>audio_root</code>.</li>
+<li>
+<strong>Dates and hours:</strong> sheepdog still reads them from the
+file names (<code>YYYYMMDD_HHMMSS</code>), not from the
+<code>timestamp</code> of <code>media.csv</code>.</li>
+<li>
+<strong>Human classifications:</strong> left out, because pamDP has
+no field that ties them to the prediction they check.</li>
+<li>
+<strong>Which functions accept the tables:</strong>
+<code><a href="../reference/select_clips.html">select_clips()</a></code> and <code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code>,
+and through the manifest the review app. <code><a href="../reference/calibrate.html">calibrate()</a></code> and
+<code><a href="../reference/score_detections.html">score_detections()</a></code> still read BirdNET selection tables from
+disk.</li>
+</ul>
 </div>
 <div class="section level2">
 <h2 id="where-each-function-looks">Where each function looks<a class="anchor" aria-label="anchor" href="#where-each-function-looks"></a>
@@ -267,12 +310,21 @@ can be given as <code>recordings</code> to <code><a href="../reference/select_cl
 <td><code>recordings.csv</code></td>
 </tr>
 <tr class="odd">
+<td>or read a pamDP package</td>
+<td><code><a href="../reference/read_pamdp.html">read_pamdp()</a></code></td>
+<td>
+<code>deployments.csv</code>, <code>media.csv</code>,
+<code>observations.csv</code>
+</td>
+<td>predictions and recordings in R</td>
+</tr>
+<tr class="even">
 <td>choose clips</td>
 <td><code><a href="../reference/select_clips.html">select_clips()</a></code></td>
 <td>predictions, recordings</td>
 <td>a manifest in R</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>cut clips</td>
 <td>
 <code><a href="../reference/cut_clips.html">cut_clips()</a></code>,
@@ -285,7 +337,7 @@ can be given as <code>recordings</code> to <code><a href="../reference/select_cl
 <code>clip_manifest.csv</code>
 </td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>review</td>
 <td>file manager (<code>Positive</code>/<code>Negative</code>
 subfolders) or <code><a href="../reference/run_app.html">run_app()</a></code>
@@ -293,14 +345,14 @@ subfolders) or <code><a href="../reference/run_app.html">run_app()</a></code>
 <td>clips, manifest</td>
 <td>folders, or a verdicts CSV</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>join verdicts</td>
 <td><code><a href="../reference/post_validation.html">post_validation()</a></code></td>
 <td>review folder or <code>verdicts.csv</code>, manifest</td>
 <td>
 <code>validation_by_clip.csv</code> and summaries</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>calibrate</td>
 <td><code><a href="../reference/calibrate.html">calibrate()</a></code></td>
 <td>
@@ -312,6 +364,17 @@ subfolders) or <code><a href="../reference/run_app.html">run_app()</a></code>
 <p>See <code><a href="../articles/sheepdog.html">vignette("sheepdog")</a></code> for the whole pipeline on the
 example data and <code><a href="../articles/frognet-workflow.html">vignette("frognet-workflow")</a></code> for a project
 with a network drive mapped as <code>N:</code>.</p>
+</div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<p>Betancourt, N., Toro-Gómez, M., Cañas, J., Barona-Cortés, E., et al.
+(2026). pamflow: an open-source workflow for simplified passive acoustic
+monitoring data analysis. <em>Methods in Ecology and Evolution</em>. <a href="https://doi.org/10.1111/2041-210x.70432" class="external-link uri">https://doi.org/10.1111/2041-210x.70432</a></p>
+<p>Bubnicki, J. W., Norton, B., Baskauf, S. J., Bruce, T., et
+al. (2024). Camtrap DP: an open standard for the FAIR exchange and
+archiving of camera trap data. <em>Remote Sensing in Ecology and
+Conservation</em>, 10(3), 283-295. <a href="https://doi.org/10.1002/rse2.374" class="external-link uri">https://doi.org/10.1002/rse2.374</a></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

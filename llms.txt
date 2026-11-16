@@ -323,6 +323,8 @@ gives one simple random sample.
   : Read BirdNET selection tables
 - [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md)
   : List every recording made, from the audio folders
+- [`read_pamdp()`](https://provetelab.org/sheepdog/reference/read_pamdp.md)
+  : Read predictions and recordings from a pamDP data package
 - [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
   : Select the clips to validate
 - [`select_directed()`](https://provetelab.org/sheepdog/reference/select_directed.md)
