@@ -185,8 +185,15 @@ logistic overestimates the precision near the threshold. It is not a
 general choice of the best curve: when the shape departs from the
 logistic in other ways, neither \code{"keep_logistic"} nor
 \code{"use_monotone_or_weighted"} says which threshold has the smaller error,
-and \code{cv_logloss} is a weak guide to that choice (see above). For the
-uncertainty of the threshold, use \code{\link[=threshold_bootstrap]{threshold_bootstrap()}}.
+and \code{cv_logloss} is a weak guide to that choice (see above). In
+particular, \code{"keep_logistic"} does not guarantee the target when the
+precision levels off just above it: the logistic then crosses the target
+too early, and its threshold can miss it in most samples, while the
+verdict, above all with the bootstrap interval of \code{n_boot}, often keeps
+it. Read the verdict as a check of the shape of the curve, not as the
+choice of the threshold to apply; for that, use the conservative
+threshold of \code{\link[=threshold_bootstrap]{threshold_bootstrap()}} (\code{threshold_conservative}), which
+also gives the uncertainty of the threshold.
 
 \strong{Which clips.} Clips of any probability design can be used:
 \code{"random_detections"} and \code{"score_bands"} clips carry \code{inclusion_prob},

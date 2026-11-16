@@ -81,8 +81,15 @@
 #' general choice of the best curve: when the shape departs from the
 #' logistic in other ways, neither `"keep_logistic"` nor
 #' `"use_monotone_or_weighted"` says which threshold has the smaller error,
-#' and `cv_logloss` is a weak guide to that choice (see above). For the
-#' uncertainty of the threshold, use [threshold_bootstrap()].
+#' and `cv_logloss` is a weak guide to that choice (see above). In
+#' particular, `"keep_logistic"` does not guarantee the target when the
+#' precision levels off just above it: the logistic then crosses the target
+#' too early, and its threshold can miss it in most samples, while the
+#' verdict, above all with the bootstrap interval of `n_boot`, often keeps
+#' it. Read the verdict as a check of the shape of the curve, not as the
+#' choice of the threshold to apply; for that, use the conservative
+#' threshold of [threshold_bootstrap()] (`threshold_conservative`), which
+#' also gives the uncertainty of the threshold.
 #'
 #' **Which clips.** Clips of any probability design can be used:
 #' `"random_detections"` and `"score_bands"` clips carry `inclusion_prob`,
