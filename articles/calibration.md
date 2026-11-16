@@ -163,7 +163,7 @@ cv |> select(model, auc_mean, auc_sd, n_failed)
 #> 2 m3_plus_site            0.928 0.00640        0
 #> 3 m2_species_slope        0.916 0.00556        0
 #> 4 m1_species_intercept    0.902 0.00544        0
-#> 5 m0_global               0.862 0.0121         0
+#> 5 m0_global               0.862 0.0120         0
 ```
 
 The table is ordered by mean AUC. Read the differences between models
@@ -505,6 +505,16 @@ logistic, whose shape misses the top of the score range. These example
 clips come from the `"top"` design, with no inclusion probabilities;
 with clips of `"random_detections"` or `"score_bands"` the fits and
 precisions are weighted by `1 / inclusion_prob`.
+
+The verdict is built to catch one failure: false positives with high
+scores (a similar sound, for instance), which make the precision drop at
+the top of the score range while the logistic keeps rising. It is not a
+general choice of the best curve. A difference between the logistic and
+the weighted thresholds can also be sampling noise: with `n_boot = 200`,
+whole recordings are resampled, the logistic and the weighted count are
+recomputed in each replicate, and the difference counts against the
+logistic only when its bootstrap interval (`diff_weighted_lower`,
+`diff_weighted_upper`) excludes 0.
 
 ``` r
 

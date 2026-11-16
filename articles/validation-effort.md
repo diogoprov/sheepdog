@@ -105,7 +105,7 @@ select(cv, model, auc_mean, auc_sd)
 #> 2 m3_plus_site            0.928 0.00640
 #> 3 m2_species_slope        0.916 0.00556
 #> 4 m1_species_intercept    0.902 0.00544
-#> 5 m0_global               0.862 0.0121
+#> 5 m0_global               0.862 0.0120
 ```
 
 The effort curve below is drawn for the global model (`m0_global`, a
@@ -429,8 +429,10 @@ same recording are not independent.
 resamples whole recordings (or nights, `cluster = "night"`) within each
 cell and recomputes the threshold: its upper quantile,
 `threshold_conservative`, meets the target in about `conf` of the
-replicates. A wide interval means the precision curve is flat near the
-target, and a new round of review near the threshold (another round of
+replicates. The unit must vary within the cell, so `cluster = "site"` is
+refused, and a cell reviewed in a single recording gets no interval. A
+wide interval means the precision curve is flat near the target, and a
+new round of review near the threshold (another round of
 [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md),
 combined with
 [`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md))
@@ -500,14 +502,17 @@ a threshold that discards most true positives (sign 2), false-positive
 rates that vary between sites or months (sign 6, with the main confusing
 identity when the clips have identities), a threshold that misses the
 target in some group (sign 7, from
-[`threshold_by_group()`](https://provetelab.org/sheepdog/reference/threshold_by_group.md))
-and a logistic curve wrong near the threshold (sign 8, from
-[`compare_calibration_curves()`](https://provetelab.org/sheepdog/reference/compare_calibration_curves.md)).
-Each species gets a verdict: `"trustworthy_with_care"`,
-`"use_with_caveats"` or `"not_trustworthy"`. Signs 3 to 5 (occupied
-sites lost, detected days that do not track the true activity, false
-negatives that vary by site) need recordings annotated in full and are
-not checked.
+[`threshold_by_group()`](https://provetelab.org/sheepdog/reference/threshold_by_group.md)),
+a logistic curve wrong near the threshold (sign 8, from
+[`compare_calibration_curves()`](https://provetelab.org/sheepdog/reference/compare_calibration_curves.md))
+and false positives that cluster in a few recordings (sign 9, the design
+effect by recording). Each species gets a verdict:
+`"trustworthy_with_care"`, `"use_with_caveats"` or `"not_trustworthy"`.
+The verdict is a list of what to look at, not a probability that the
+threshold fails: larger samples tend to raise more signs. Signs 3 to 5
+(occupied sites lost, detected days that do not track the true activity,
+false negatives that vary by site) need recordings annotated in full and
+are not checked.
 
 ``` r
 

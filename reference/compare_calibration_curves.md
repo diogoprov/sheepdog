@@ -30,6 +30,8 @@ compare_calibration_curves(
   min_bin = 5,
   max_error = 0.03,
   tolerance = 0.03,
+  n_boot = 0,
+  conf = 0.95,
   grid_step = 0.01,
   seed = 2026
 )
@@ -108,6 +110,15 @@ compare_calibration_curves(
   Largest `top_error_excess` and largest difference between the logistic
   and the weighted thresholds, in score units, for `"keep_logistic"`.
 
+- n_boot:
+
+  Number of bootstrap replicates of the difference between the logistic
+  and the weighted thresholds (`0`, the default, skips it).
+
+- conf:
+
+  Probability of the bootstrap interval of the difference.
+
 - grid_step:
 
   Step of the grid of scores of `threshold_p_tp` and of the curves
@@ -125,10 +136,12 @@ A tibble with one row per group x target x curve: the `by` columns,
 `within_1se` (log-loss within one standard error of the best curve of
 the group), `top_error`, `top_error_excess`, `n_eff_top`, `max_p`,
 `reaches_target`, `threshold_p_tp`, `threshold_precision`,
-`threshold_weighted`, `diff_weighted`, `above_reviewed` (a threshold
-above the highest reviewed score is an extrapolation), `weighted` and
-`verdict`. The attribute `"curves"` holds the fitted curves on the grid
-(`score`, `p_tp`) and `"bins"` the observed precision by bin, for
+`threshold_weighted`, `diff_weighted`, `diff_weighted_lower`,
+`diff_weighted_upper` (bootstrap interval of `diff_weighted`, logistic
+only, with `n_boot > 0`), `above_reviewed` (a threshold above the
+highest reviewed score is an extrapolation), `weighted` and `verdict`.
+The attribute `"curves"` holds the fitted curves on the grid (`score`,
+`p_tp`) and `"bins"` the observed precision by bin, for
 [`plot_calibration_curves()`](https://provetelab.org/sheepdog/reference/plot_calibration_curves.md).
 
 ## Details
@@ -187,15 +200,28 @@ threshold workflow:
   guarantees it: improve the classifier before setting a threshold.
 
 - `"keep_logistic"`: the logistic has `top_error_excess <= max_error`
-  and its `threshold_precision` is within `tolerance` of the weighted
-  count. A flexible curve may still fit better in log-loss, but away
-  from the threshold.
+  and its `threshold_precision` agrees with the weighted count: within
+  `tolerance` of it or, with `n_boot > 0`, either within `tolerance` or
+  with a bootstrap interval of the difference that includes 0 (the two
+  thresholds do not disagree more than the sample allows). A flexible
+  curve may still fit better in log-loss, but away from the threshold.
 
 - `"use_monotone_or_weighted"`: larger error in the high bins, or
   thresholds that disagree; take the threshold from the monotone GAM or
   from the weighted precision
   ([`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md),
   [`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md)).
+
+**Bootstrap of the disagreement.** With `n_boot > 0`, the clips are
+resampled by whole recordings (`cluster`) and, in each replicate, the
+logistic is refitted and its `threshold_precision` and the weighted
+count are recomputed. The quantiles of their difference give
+`diff_weighted_lower` and `diff_weighted_upper` (row of the logistic),
+so that a difference larger than `tolerance` counts against the logistic
+only when it is larger than the sampling noise. Only the logistic and
+the weighted count are resampled, since refitting the GAMs in each
+replicate would be slow. When fewer than half of the replicates give
+both thresholds, the interval is `NA` and the fixed `tolerance` is used.
 
 **What the verdict detects.** The verdict is built to detect a drop of
 the precision at the top of the scores, that is false positives with

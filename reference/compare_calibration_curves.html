@@ -112,6 +112,8 @@ weighted precision (<code><a href="suggest_thresholds.html">suggest_thresholds()
 <span>  min_bin <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  max_error <span class="op">=</span> <span class="fl">0.03</span>,</span>
 <span>  tolerance <span class="op">=</span> <span class="fl">0.03</span>,</span>
+<span>  n_boot <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  conf <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  grid_step <span class="op">=</span> <span class="fl">0.01</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">2026</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -194,6 +196,15 @@ difference between the logistic and the weighted thresholds, in score
 units, for <code>"keep_logistic"</code>.</p></dd>
 
 
+<dt id="arg-n-boot">n_boot<a class="anchor" aria-label="anchor" href="#arg-n-boot"></a></dt>
+<dd><p>Number of bootstrap replicates of the difference between
+the logistic and the weighted thresholds (<code>0</code>, the default, skips it).</p></dd>
+
+
+<dt id="arg-conf">conf<a class="anchor" aria-label="anchor" href="#arg-conf"></a></dt>
+<dd><p>Probability of the bootstrap interval of the difference.</p></dd>
+
+
 <dt id="arg-grid-step">grid_step<a class="anchor" aria-label="anchor" href="#arg-grid-step"></a></dt>
 <dd><p>Step of the grid of scores of <code>threshold_p_tp</code> and of
 the curves returned.</p></dd>
@@ -213,7 +224,9 @@ columns,
 the group), <code>top_error</code>, <code>top_error_excess</code>, <code>n_eff_top</code>, <code>max_p</code>,
 <code>reaches_target</code>,
 <code>threshold_p_tp</code>, <code>threshold_precision</code>, <code>threshold_weighted</code>,
-<code>diff_weighted</code>, <code>above_reviewed</code> (a threshold above the highest
+<code>diff_weighted</code>, <code>diff_weighted_lower</code>, <code>diff_weighted_upper</code> (bootstrap
+interval of <code>diff_weighted</code>, logistic only, with <code>n_boot &gt; 0</code>),
+<code>above_reviewed</code> (a threshold above the highest
 reviewed score is an extrapolation), <code>weighted</code> and <code>verdict</code>. The
 attribute <code>"curves"</code> holds the fitted curves on the grid (<code>score</code>,
 <code>p_tp</code>) and <code>"bins"</code> the observed precision by bin, for
@@ -259,14 +272,26 @@ weighted count give a threshold with precision <code>target</code> (with at leas
 target, or reaches it only at the very top, and no usable score
 guarantees it: improve the classifier before setting a threshold.</p></li>
 <li><p><code>"keep_logistic"</code>: the logistic has <code>top_error_excess &lt;= max_error</code>
-and its <code>threshold_precision</code> is within <code>tolerance</code> of the weighted
-count. A flexible curve may still fit better in log-loss, but away
+and its <code>threshold_precision</code> agrees with the weighted count: within
+<code>tolerance</code> of it or, with <code>n_boot &gt; 0</code>, either within <code>tolerance</code> or
+with a bootstrap interval of the difference that includes 0 (the two
+thresholds do not disagree more than the sample allows). A flexible curve may still fit better in log-loss, but away
 from the threshold.</p></li>
 <li><p><code>"use_monotone_or_weighted"</code>: larger error in the high bins, or
 thresholds that disagree; take the threshold from the monotone GAM or
 from the weighted precision (<code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>,
 <code><a href="threshold_bootstrap.html">threshold_bootstrap()</a></code>).</p></li>
-</ul><p><strong>What the verdict detects.</strong> The verdict is built to detect a drop of
+</ul><p><strong>Bootstrap of the disagreement.</strong> With <code>n_boot &gt; 0</code>, the clips are
+resampled by whole recordings (<code>cluster</code>) and, in each replicate, the
+logistic is refitted and its <code>threshold_precision</code> and the weighted
+count are recomputed. The quantiles of their difference give
+<code>diff_weighted_lower</code> and <code>diff_weighted_upper</code> (row of the logistic),
+so that a difference larger than <code>tolerance</code> counts against the logistic
+only when it is larger than the sampling noise. Only the logistic and
+the weighted count are resampled, since refitting the GAMs in each
+replicate would be slow. When fewer than half of the replicates give
+both thresholds, the interval is <code>NA</code> and the fixed <code>tolerance</code> is used.</p>
+<p><strong>What the verdict detects.</strong> The verdict is built to detect a drop of
 the precision at the top of the scores, that is false positives with
 high scores (for instance, a sound similar to the species), where the
 logistic overestimates the precision near the threshold. It is not a

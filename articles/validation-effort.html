@@ -193,7 +193,7 @@ cross-validation on all the clips (formulas with random effects need the
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> m3_plus_site            0.928 0.006<span style="text-decoration: underline;">40</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> m2_species_slope        0.916 0.005<span style="text-decoration: underline;">56</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> m1_species_intercept    0.902 0.005<span style="text-decoration: underline;">44</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> m0_global               0.862 0.012<span style="text-decoration: underline;">1</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> m0_global               0.862 0.012<span style="text-decoration: underline;">0</span></span></span></code></pre></div>
 <p>The effort curve below is drawn for the global model
 (<code>m0_global</code>, a single logistic regression on the logit of
 the score) and for the hierarchical <code>m4_species_x_site</code>
@@ -485,7 +485,9 @@ same recording are not independent. <code><a href="../reference/threshold_bootst
 resamples whole recordings (or nights, <code>cluster = "night"</code>)
 within each cell and recomputes the threshold: its upper quantile,
 <code>threshold_conservative</code>, meets the target in about
-<code>conf</code> of the replicates. A wide interval means the precision
+<code>conf</code> of the replicates. The unit must vary within the cell,
+so <code>cluster = "site"</code> is refused, and a cell reviewed in a
+single recording gets no interval. A wide interval means the precision
 curve is flat near the target, and a new round of review near the
 threshold (another round of <code><a href="../reference/select_clips.html">select_clips()</a></code>, combined with
 <code><a href="../reference/combine_rounds.html">combine_rounds()</a></code>) narrows it.
@@ -545,13 +547,16 @@ ecological model: a low recall ceiling (sign 1, from
 positives (sign 2), false-positive rates that vary between sites or
 months (sign 6, with the main confusing identity when the clips have
 identities), a threshold that misses the target in some group (sign 7,
-from <code><a href="../reference/threshold_by_group.html">threshold_by_group()</a></code>) and a logistic curve wrong near
-the threshold (sign 8, from <code><a href="../reference/compare_calibration_curves.html">compare_calibration_curves()</a></code>).
-Each species gets a verdict: <code>"trustworthy_with_care"</code>,
-<code>"use_with_caveats"</code> or <code>"not_trustworthy"</code>. Signs
-3 to 5 (occupied sites lost, detected days that do not track the true
-activity, false negatives that vary by site) need recordings annotated
-in full and are not checked.</p>
+from <code><a href="../reference/threshold_by_group.html">threshold_by_group()</a></code>), a logistic curve wrong near the
+threshold (sign 8, from <code><a href="../reference/compare_calibration_curves.html">compare_calibration_curves()</a></code>) and
+false positives that cluster in a few recordings (sign 9, the design
+effect by recording). Each species gets a verdict:
+<code>"trustworthy_with_care"</code>, <code>"use_with_caveats"</code> or
+<code>"not_trustworthy"</code>. The verdict is a list of what to look
+at, not a probability that the threshold fails: larger samples tend to
+raise more signs. Signs 3 to 5 (occupied sites lost, detected days that
+do not track the true activity, false negatives that vary by site) need
+recordings annotated in full and are not checked.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/warning_signs.html">warning_signs</a></span><span class="op">(</span><span class="va">val</span>, <span class="va">thr</span>, groups <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"month"</span><span class="op">)</span>,</span>
 <span>              curves <span class="op">=</span> <span class="fu"><a href="../reference/compare_calibration_curves.html">compare_calibration_curves</a></span><span class="op">(</span><span class="va">val</span><span class="op">)</span>,</span>

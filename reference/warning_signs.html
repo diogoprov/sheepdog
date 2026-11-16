@@ -99,6 +99,8 @@ can show:</p>
 <span>  max_fp_spread <span class="op">=</span> <span class="fl">0.3</span>,</span>
 <span>  min_ceiling <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>  threshold_column <span class="op">=</span> <span class="st">"threshold"</span>,</span>
+<span>  cluster <span class="op">=</span> <span class="st">"source_audio"</span>,</span>
+<span>  max_deff <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  file <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -164,6 +166,16 @@ this.</p></dd>
 <dd><p>Column of <code>thresholds</code> with the threshold.</p></dd>
 
 
+<dt id="arg-cluster">cluster<a class="anchor" aria-label="anchor" href="#arg-cluster"></a></dt>
+<dd><p>Column of <code>validation</code> with the recording (or other unit)
+of each clip, for sign 9. A missing column leaves sign 9 <code>NA</code>.</p></dd>
+
+
+<dt id="arg-max-deff">max_deff<a class="anchor" aria-label="anchor" href="#arg-max-deff"></a></dt>
+<dd><p>Sign 9 is raised when the design effect of the false
+positives above the threshold is above this.</p></dd>
+
+
 <dt id="arg-file">file<a class="anchor" aria-label="anchor" href="#arg-file"></a></dt>
 <dd><p>Optional path of a Markdown file to write the report to.</p></dd>
 
@@ -174,24 +186,41 @@ this.</p></dd>
 <code>threshold</code> (the median over its cells), <code>sign1_ceiling</code>,
 <code>sign1</code>, <code>sign2_tp_kept</code>, <code>sign2</code>, <code>sign6_fp_spread</code>, <code>sign6</code>,
 <code>sign6_detail</code>, <code>sign7_share_below</code>, <code>sign7</code>, <code>sign7_detail</code>,
-<code>sign8_verdict</code>, <code>sign8</code>, <code>n_checked</code>, <code>n_raised</code> and <code>verdict</code>. The
+<code>sign8_verdict</code>, <code>sign8</code>, <code>sign9_deff</code>, <code>sign9</code>, <code>n_checked</code>,
+<code>n_raised</code> and <code>verdict</code>. The
 <code>signN</code> columns are <code>TRUE</code> (raised), <code>FALSE</code> (clear) or <code>NA</code> (not
 checked).</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
 
-<table class="table table"><tr><td>sign</td><td>what it says</td><td>from</td></tr><tr><td>1</td><td>low recall ceiling: in many occasions with the species, the classifier gave it no score at all</td><td><code>recall</code>, the output of <code><a href="recall_ceiling.html">recall_ceiling()</a></code> (needs <code>"random_recordings"</code> occasions annotated by ear)</td></tr><tr><td>2</td><td>the threshold discards most true positives</td><td>the reviewed clips: share of the positive clips at or above the threshold, weighted by <code>1 / inclusion_prob</code></td></tr><tr><td>6</td><td>false positives vary by site or season</td><td>the reviewed clips: range of the false-positive rate among the levels of each <code>groups</code> column; the most frequent identity of the negative clips, when <code>validation</code> has <code>identity</code></td></tr><tr><td>7</td><td>the threshold is not stable across groups</td><td><code><a href="threshold_by_group.html">threshold_by_group()</a></code> for each <code>groups</code> column</td></tr><tr><td>8</td><td>the logistic curve is wrong near the threshold</td><td><code>curves</code>, the output of <code><a href="compare_calibration_curves.html">compare_calibration_curves()</a></code></td></tr></table><p>Signs 3, 4 and 5 (occupied sites lost, detected days that do not track
+<table class="table table"><tr><td>sign</td><td>what it says</td><td>from</td></tr><tr><td>1</td><td>low recall ceiling: in many occasions with the species, the classifier gave it no score at all</td><td><code>recall</code>, the output of <code><a href="recall_ceiling.html">recall_ceiling()</a></code> (needs <code>"random_recordings"</code> occasions annotated by ear)</td></tr><tr><td>2</td><td>the threshold discards most true positives</td><td>the reviewed clips: share of the positive clips at or above the threshold, weighted by <code>1 / inclusion_prob</code></td></tr><tr><td>6</td><td>false positives vary by site or season</td><td>the reviewed clips: range of the false-positive rate among the levels of each <code>groups</code> column; the most frequent identity of the negative clips, when <code>validation</code> has <code>identity</code></td></tr><tr><td>7</td><td>the threshold is not stable across groups</td><td><code><a href="threshold_by_group.html">threshold_by_group()</a></code> for each <code>groups</code> column</td></tr><tr><td>8</td><td>the logistic curve is wrong near the threshold</td><td><code>curves</code>, the output of <code><a href="compare_calibration_curves.html">compare_calibration_curves()</a></code></td></tr><tr><td>9</td><td>false positives cluster in recordings</td><td>the reviewed clips at or above the threshold: design effect of the false positives by <code>cluster</code></td></tr></table><p>Signs 3, 4 and 5 (occupied sites lost, detected days that do not track
 the true activity, false negatives that vary by site) need site-days
 whose true activity is known, that is recordings annotated in full, and
 are not computed here. A sign whose input is missing is <code>NA</code>, not
 <code>FALSE</code>: it was not checked.</p>
+<p><strong>Sign 9.</strong> Among the reviewed clips at or above the threshold of their
+cell (all cells of the species together, unweighted), the false
+positives may concentrate in a few recordings, for instance a recording
+with an insect chorus or a similar species calling all night. The sign
+gives the design effect of the false-positive indicator by <code>cluster</code>,
+\(1 + (\bar m - 1)\rho\), where \(\rho\) is the intraclass
+correlation (ANOVA estimator, truncated at 0) and \(\bar m =
+\sum m_i^2 / \sum m_i\) the mean cluster size weighted by size. A design
+effect of 3 means that the precision above the threshold is as uncertain
+as with a third of the clips: intervals that treat clips as independent
+are too narrow (<code><a href="threshold_bootstrap.html">threshold_bootstrap()</a></code> resamples whole recordings and
+does not have this problem), and false positives that cluster in
+recordings can turn into false occupied sites. It needs several reviewed
+clips per recording, as in designs that review whole occasions; with one
+clip per recording it is <code>NA</code>. With no false positive (or no true
+positive) above the threshold, the design effect is 1.</p>
 <p><strong>Verdict.</strong> A heuristic summary, not a test:</p><ul><li><p><code>"not_trustworthy"</code>: the species has no threshold (no score reaches
 the target), no calibration curve reaches the target (sign 8), or three
 or more signs are raised;</p></li>
 <li><p><code>"use_with_caveats"</code>: one or two signs are raised;</p></li>
 <li><p><code>"trustworthy_with_care"</code>: every sign checked is clear. The signs not
-checked (<code>n_checked</code> &lt; 5) and signs 3 to 5 may still be raised;</p></li>
+checked (<code>n_checked</code> &lt; 6) and signs 3 to 5 may still be raised;</p></li>
 <li><p><code>"not_assessed"</code>: no sign could be checked.</p></li>
 </ul><p><strong>The verdict is not a probability that the threshold fails.</strong> The
 signs are checks whose reach grows with the sample: with more reviewed

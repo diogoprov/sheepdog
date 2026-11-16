@@ -21,6 +21,8 @@ warning_signs(
   max_fp_spread = 0.3,
   min_ceiling = 0.5,
   threshold_column = "threshold",
+  cluster = "source_audio",
+  max_deff = 2,
   file = NULL
 )
 ```
@@ -86,6 +88,16 @@ warning_signs(
 
   Column of `thresholds` with the threshold.
 
+- cluster:
+
+  Column of `validation` with the recording (or other unit) of each
+  clip, for sign 9. A missing column leaves sign 9 `NA`.
+
+- max_deff:
+
+  Sign 9 is raised when the design effect of the false positives above
+  the threshold is above this.
+
 - file:
 
   Optional path of a Markdown file to write the report to.
@@ -96,8 +108,9 @@ A tibble with one row per species: `species_folder`, `threshold` (the
 median over its cells), `sign1_ceiling`, `sign1`, `sign2_tp_kept`,
 `sign2`, `sign6_fp_spread`, `sign6`, `sign6_detail`,
 `sign7_share_below`, `sign7`, `sign7_detail`, `sign8_verdict`, `sign8`,
-`n_checked`, `n_raised` and `verdict`. The `signN` columns are `TRUE`
-(raised), `FALSE` (clear) or `NA` (not checked).
+`sign9_deff`, `sign9`, `n_checked`, `n_raised` and `verdict`. The
+`signN` columns are `TRUE` (raised), `FALSE` (clear) or `NA` (not
+checked).
 
 ## Details
 
@@ -109,12 +122,31 @@ median over its cells), `sign1_ceiling`, `sign1`, `sign2_tp_kept`,
 | 6 | false positives vary by site or season | the reviewed clips: range of the false-positive rate among the levels of each `groups` column; the most frequent identity of the negative clips, when `validation` has `identity` |
 | 7 | the threshold is not stable across groups | [`threshold_by_group()`](https://provetelab.org/sheepdog/reference/threshold_by_group.md) for each `groups` column |
 | 8 | the logistic curve is wrong near the threshold | `curves`, the output of [`compare_calibration_curves()`](https://provetelab.org/sheepdog/reference/compare_calibration_curves.md) |
+| 9 | false positives cluster in recordings | the reviewed clips at or above the threshold: design effect of the false positives by `cluster` |
 
 Signs 3, 4 and 5 (occupied sites lost, detected days that do not track
 the true activity, false negatives that vary by site) need site-days
 whose true activity is known, that is recordings annotated in full, and
 are not computed here. A sign whose input is missing is `NA`, not
 `FALSE`: it was not checked.
+
+**Sign 9.** Among the reviewed clips at or above the threshold of their
+cell (all cells of the species together, unweighted), the false
+positives may concentrate in a few recordings, for instance a recording
+with an insect chorus or a similar species calling all night. The sign
+gives the design effect of the false-positive indicator by `cluster`,
+\\1 + (\bar m - 1)\rho\\, where \\\rho\\ is the intraclass correlation
+(ANOVA estimator, truncated at 0) and \\\bar m = \sum m_i^2 / \sum m_i\\
+the mean cluster size weighted by size. A design effect of 3 means that
+the precision above the threshold is as uncertain as with a third of the
+clips: intervals that treat clips as independent are too narrow
+([`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md)
+resamples whole recordings and does not have this problem), and false
+positives that cluster in recordings can turn into false occupied sites.
+It needs several reviewed clips per recording, as in designs that review
+whole occasions; with one clip per recording it is `NA`. With no false
+positive (or no true positive) above the threshold, the design effect is
+1.
 
 **Verdict.** A heuristic summary, not a test:
 
@@ -125,7 +157,7 @@ are not computed here. A sign whose input is missing is `NA`, not
 - `"use_with_caveats"`: one or two signs are raised;
 
 - `"trustworthy_with_care"`: every sign checked is clear. The signs not
-  checked (`n_checked` \< 5) and signs 3 to 5 may still be raised;
+  checked (`n_checked` \< 6) and signs 3 to 5 may still be raised;
 
 - `"not_assessed"`: no sign could be checked.
 
