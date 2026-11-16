@@ -176,7 +176,9 @@ confidence at which the precision among the clips at or above it reaches
 `target_precision`, with at least `min_n` clips. `NA` means that no cut
 reached the target with the clips reviewed. With at most `r n_max` clips per site x
 species, many cells lack the support to reach the target;
-`vignette("validation-effort")` discusses how many clips are needed.
+`vignette("validation-effort")` discusses how many clips are needed. This
+point threshold is an estimate; the threshold to apply is the conservative
+one of `threshold_bootstrap()`, which resamples whole recordings.
 
 ```{r}
 suggest_thresholds(val, target_precision = 0.90, min_n = 15)

@@ -187,6 +187,14 @@ precision_by_bin <- function(validation, bins = seq(0.1, 1, by = 0.1),
 #' the true precision of the cuts from 0.888 to 0.896
 #' (`dev/sustained-threshold-rule.R`).
 #'
+#' **Point or conservative threshold.** The threshold is an estimate from a
+#' sample of clips. It is nearly unbiased, but its sampling variation is
+#' large: a new sample of the same size would often give a lower cut, whose
+#' true precision misses the target. For the threshold that is actually
+#' applied, use `threshold_conservative` of [threshold_bootstrap()], which
+#' meets the target in about `conf` of the bootstrap replicates, at the cost
+#' of a higher cut and some recall.
+#'
 #' The precision is computed from the reviewed clips of each cell alone, so
 #' it is reliable only when the clips were drawn at random within the cell
 #' and are numerous. [calibrated_thresholds()] derives the thresholds from
@@ -228,8 +236,8 @@ precision_by_bin <- function(validation, bins = seq(0.1, 1, by = 0.1),
 #'   size at the threshold) and `precision_used` (`"weighted"` or
 #'   `"unweighted"`, the precision that chose the cut). Without any
 #'   reviewed clip with a confidence, the tibble has no rows.
-#' @seealso [calibrated_thresholds()] for thresholds from the calibration
-#'   model.
+#' @seealso [threshold_bootstrap()] for the conservative threshold to apply;
+#'   [calibrated_thresholds()] for thresholds from the calibration model.
 #' @export
 suggest_thresholds <- function(validation, target_precision = 0.90,
                                min_n = 15, by = NULL, weighted = NULL,

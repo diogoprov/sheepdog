@@ -28,7 +28,8 @@ warning_signs(
 number, or a table with \code{species_folder} (and optionally \code{site}) and a
 \code{threshold} column, such as the output of \code{\link[=suggest_thresholds]{suggest_thresholds()}}
 (\code{threshold_column} picks another column, such as
-\code{"threshold_conservative"} of \code{\link[=threshold_bootstrap]{threshold_bootstrap()}}).}
+\code{"threshold_conservative"} of \code{\link[=threshold_bootstrap]{threshold_bootstrap()}}, the threshold
+to apply).}
 
 \item{groups}{Columns of \code{validation} for signs 6 and 7, such as
 \code{"site"} or a month column. \code{NULL} uses \code{"site"} when there is more
@@ -148,11 +149,14 @@ then only indicative.
 }
 \examples{
 \dontrun{
-thr <- suggest_thresholds(val, target_precision = 0.95, sustained = TRUE)
+thr <- threshold_bootstrap(val, target_precision = 0.95)
 warning_signs(val, thr, groups = c("site", "month"),
+              threshold_column = "threshold_conservative",
               curves = compare_calibration_curves(val),
               recall = recall_ceiling(rr, det, thresholds = thr,
-                                      by = c("site", "species_folder")),
+                                      by = c("site", "species_folder"),
+                                      threshold_column =
+                                        "threshold_conservative"),
               file = "warning_signs.md")
 }
 }
