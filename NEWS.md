@@ -1,5 +1,15 @@
 # sheepdog (development version)
 
+- The help page of `warning_signs()` now presents the verdict as a
+  diagnosis of the heterogeneity of the data (what the ecological model has
+  to account for), not of the reliability of the threshold. In resamples of
+  a real data set and in simulations, the verdict did not tell apart the
+  samples whose threshold missed the target, and no change of its rule
+  that was tried fixed that; the reliability of the threshold is left to
+  `threshold_conservative`. The rule and the labels of the verdict did not
+  change. The Markdown report says the same in its header
+  (`dev/verdict-6c.md`).
+
 - Larissa S. M. Sugai and Liliana Piatti are now copyright holders with
   Diogo B. Provete (`LICENSE`, `LICENSE.md` and the `cph` role in
   `DESCRIPTION`).

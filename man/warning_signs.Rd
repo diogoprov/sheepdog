@@ -78,10 +78,14 @@ checked).
 }
 \description{
 Gathers, for each species, the warning signs that the detections left
-after a threshold are not a reliable input for an ecological model, and
-gives a verdict. The signs follow the threshold workflow (Larissa S. M.
-Sugai, ACAD pilot); this function computes those that a review sample
-can show:
+after a threshold carry problems an ecological model has to deal with
+(recall that is low or uneven, false positives that change between
+sites or seasons or cluster in recordings, a calibration curve of the
+wrong shape), and sums them up in a verdict. The signs describe the
+heterogeneity of the data, not whether the threshold reaches its target
+precision (see "What the verdict says" below). They follow the
+threshold workflow (Larissa S. M. Sugai, ACAD pilot); this function
+computes those that a review sample can show:
 }
 \details{
 \tabular{lll}{
@@ -118,7 +122,7 @@ clips per recording, as in designs that review whole occasions; with one
 clip per recording it is \code{NA}. With no false positive (or no true
 positive) above the threshold, the design effect is 1.
 
-\strong{Verdict.} A heuristic summary, not a test:
+\strong{Verdict.} A heuristic summary of the signs, not a test:
 \itemize{
 \item \code{"not_trustworthy"}: the species has no threshold (no score reaches
 the target), no calibration curve reaches the target (sign 8), or three
@@ -129,16 +133,33 @@ checked (\code{n_checked} < 6) and signs 3 to 5 may still be raised;
 \item \code{"not_assessed"}: no sign could be checked.
 }
 
-\strong{The verdict is not a probability that the threshold fails.} The
-signs are checks whose reach grows with the sample: with more reviewed
-clips, more groups reach \code{min_n} and enter signs 6 and 7, and smaller
-differences are seen. A large sample therefore tends to raise more signs
-even when its threshold is more precise, and a small one can clear every
-sign with a threshold that misses the target. Read the verdict as a list
-of what to look at, together with the value of each sign (the
-\code{sign1_ceiling}, \code{sign2_tp_kept}, \code{sign6_fp_spread} and
-\code{sign7_share_below} columns), and judge the uncertainty of the threshold
-itself with \code{\link[=threshold_bootstrap]{threshold_bootstrap()}} (\code{threshold_conservative}).
+\strong{What the verdict says.} The verdict is a diagnosis of the
+heterogeneity of the data, not of the reliability of the threshold, and
+it is not a probability that the threshold misses its target. Two
+reasons:
+\itemize{
+\item the signs are checks whose reach grows with the sample: with more
+reviewed clips, more groups reach \code{min_n} and enter signs 6 and 7, and
+smaller differences are seen. A large sample therefore tends to raise
+more signs even when its threshold is more precise, and a small one can
+clear every sign with a threshold that misses the target;
+\item a threshold taken from a review sample misses its target mostly
+through sampling variation, which no sign computed from the same
+sample tells apart. In resamples of a real data set, samples with every
+sign clear missed the target more often than samples judged
+\code{"not_trustworthy"}, and in simulations a clear verdict was reassuring
+only in a small share of the samples. Changing the rule of the verdict
+(more signs required, intervals for signs 6 and 7) did not reorder it.
+}
+
+Read the verdict as a list of what to look at, and of what the
+ecological model should account for (false positives by site or season,
+clustered false positives, a low recall ceiling), together with the
+value of each sign (the \code{sign1_ceiling}, \code{sign2_tp_kept},
+\code{sign6_fp_spread}, \code{sign7_share_below} and \code{sign9_deff} columns). For
+the reliability of the threshold, apply the conservative threshold of
+\code{\link[=threshold_bootstrap]{threshold_bootstrap()}} (\code{threshold_conservative}), whatever the
+verdict.
 
 \strong{Which clips.} Signs 2 and 6 are rates of the predictions, so they use
 the clips with an inclusion probability (\code{"random_detections"},
