@@ -193,7 +193,17 @@ or more signs are raised;</p></li>
 <li><p><code>"trustworthy_with_care"</code>: every sign checked is clear. The signs not
 checked (<code>n_checked</code> &lt; 5) and signs 3 to 5 may still be raised;</p></li>
 <li><p><code>"not_assessed"</code>: no sign could be checked.</p></li>
-</ul><p><strong>Which clips.</strong> Signs 2 and 6 are rates of the predictions, so they use
+</ul><p><strong>The verdict is not a probability that the threshold fails.</strong> The
+signs are checks whose reach grows with the sample: with more reviewed
+clips, more groups reach <code>min_n</code> and enter signs 6 and 7, and smaller
+differences are seen. A large sample therefore tends to raise more signs
+even when its threshold is more precise, and a small one can clear every
+sign with a threshold that misses the target. Read the verdict as a list
+of what to look at, together with the value of each sign (the
+<code>sign1_ceiling</code>, <code>sign2_tp_kept</code>, <code>sign6_fp_spread</code> and
+<code>sign7_share_below</code> columns), and judge the uncertainty of the threshold
+itself with <code><a href="threshold_bootstrap.html">threshold_bootstrap()</a></code> (<code>threshold_conservative</code>).</p>
+<p><strong>Which clips.</strong> Signs 2 and 6 are rates of the predictions, so they use
 the clips with an inclusion probability (<code>"random_detections"</code>,
 <code>"score_bands"</code>, <code>"directed_pps"</code>), weighted by <code>1 / inclusion_prob</code>.
 Without any such clip they use every reviewed clip, unweighted, with a

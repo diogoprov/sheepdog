@@ -266,7 +266,16 @@ from the threshold.</p></li>
 thresholds that disagree; take the threshold from the monotone GAM or
 from the weighted precision (<code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>,
 <code><a href="threshold_bootstrap.html">threshold_bootstrap()</a></code>).</p></li>
-</ul><p><strong>Which clips.</strong> Clips of any probability design can be used:
+</ul><p><strong>What the verdict detects.</strong> The verdict is built to detect a drop of
+the precision at the top of the scores, that is false positives with
+high scores (for instance, a sound similar to the species), where the
+logistic overestimates the precision near the threshold. It is not a
+general choice of the best curve: when the shape departs from the
+logistic in other ways, neither <code>"keep_logistic"</code> nor
+<code>"use_monotone_or_weighted"</code> says which threshold has the smaller error,
+and <code>cv_logloss</code> is a weak guide to that choice (see above). For the
+uncertainty of the threshold, use <code><a href="threshold_bootstrap.html">threshold_bootstrap()</a></code>.</p>
+<p><strong>Which clips.</strong> Clips of any probability design can be used:
 <code>"random_detections"</code> and <code>"score_bands"</code> clips carry <code>inclusion_prob</code>,
 and are weighted by <code>1 / inclusion_prob</code> in the fits and in the
 precision (<code>weighted = NULL</code> does so when every clip of the group has

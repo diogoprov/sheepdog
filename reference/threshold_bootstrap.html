@@ -145,7 +145,13 @@ least <code>min_n</code> clips? See Sustained target.</p></dd>
 
 <dt id="arg-cluster">cluster<a class="anchor" aria-label="anchor" href="#arg-cluster"></a></dt>
 <dd><p>Column of <code>validation</code> that defines the resampling unit:
-<code>"source_audio"</code> (the recording, the default) or <code>"night"</code>.</p></dd>
+<code>"source_audio"</code> (the recording, the default), <code>"night"</code> or any other
+column. Resampling is done within each site x species cell (and <code>by</code>
+group), so the unit must vary within it: <code>"site"</code> is not a valid unit
+here. A cell with a single unit gets <code>NA</code> in <code>threshold_median</code>,
+<code>threshold_conservative</code> and <code>share_reached</code>, with a warning, since
+resampling it gives no information on the uncertainty. With few units (say, fewer than 10),
+the quantiles of the replicates are rough.</p></dd>
 
 
 <dt id="arg-conf">conf<a class="anchor" aria-label="anchor" href="#arg-conf"></a></dt>

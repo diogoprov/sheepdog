@@ -68,7 +68,13 @@ threshold_bootstrap(
 - cluster:
 
   Column of `validation` that defines the resampling unit:
-  `"source_audio"` (the recording, the default) or `"night"`.
+  `"source_audio"` (the recording, the default), `"night"` or any other
+  column. Resampling is done within each site x species cell (and `by`
+  group), so the unit must vary within it: `"site"` is not a valid unit
+  here. A cell with a single unit gets `NA` in `threshold_median`,
+  `threshold_conservative` and `share_reached`, with a warning, since
+  resampling it gives no information on the uncertainty. With few units
+  (say, fewer than 10), the quantiles of the replicates are rough.
 
 - conf:
 

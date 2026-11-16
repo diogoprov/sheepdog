@@ -6,6 +6,24 @@
   Diogo B. Provete (`LICENSE`, `LICENSE.md` and the `cph` role in
   `DESCRIPTION`).
 
+- [`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md)
+  stops with an error when `cluster` is constant within the cells
+  (`"site"`, `"species_folder"` or a `by` column), and gives `NA` in
+  `threshold_median`, `threshold_conservative` and `share_reached`, with
+  a warning, for a cell with a single resampling unit. Before, such
+  cells got an interval of zero width.
+
+- The documentation of
+  [`warning_signs()`](https://provetelab.org/sheepdog/reference/warning_signs.md)
+  states that its verdict is not a probability that the threshold fails:
+  the signs reach further with larger samples, so a large sample tends
+  to raise more of them even when its threshold is more precise. The
+  documentation of
+  [`compare_calibration_curves()`](https://provetelab.org/sheepdog/reference/compare_calibration_curves.md)
+  states that its verdict detects a drop of the precision at the top of
+  the scores (false positives with high scores), and is not a general
+  choice of the best curve.
+
 - [`compare_calibration_curves()`](https://provetelab.org/sheepdog/reference/compare_calibration_curves.md)
   takes several targets in one call (`target = c(0.90, 0.95)`): the
   curves and the cross-validation are fitted once per group, and the
