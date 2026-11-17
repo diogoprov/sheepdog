@@ -568,3 +568,66 @@ R-hat ≤ 1,02, ESS bulk ≥ 458 e ESS tail ≥ 350 em cada uma.
   Propagar a incerteza das emissões não corrige a falta de ajuste.
 - Para reduzir a incerteza, mais verificados positivos, sobretudo de
   score baixo, parecem render mais do que mais réplicas.
+
+## Curiango: mecanismo de inclusão dos verificados (17/11/2026)
+
+A Liliana descreveu como o conjunto verificado foi montado (resumo do
+mecanismo, sem citar a conversa):
+
+- foi um conjunto de teste de ~1% dos minutos, escolhido antes de rodar
+  qualquer modelo (portanto sem score) e anotado à mão para presença e
+  ausência;
+- a estratificação foi só por localidade, proporcional ao áudio disponível
+  em cada uma, nas mesmas horas;
+- ela pode ter complementado localidades com poucas presenças ou ausências.
+  O script está no computador da faculdade e ela vai conferir.
+
+Os verificados por faixa do score próprio (`curiango_v0("custom")`):
+
+| score | minutos | verificados | positivos | inclusão | esperado a 1,05% | excesso |
+|---|---|---|---|---|---|---|
+| < 0,3 | 95.176 | 1.002 | 72 | 1,05% | 1.002 | 0 |
+| 0,3 a 0,5 | 1.226 | 35 | 26 | 2,85% | 13 | 22 |
+| ≥ 0,5 | 1.404 | 162 | 159 | 11,5% | 15 | 147 |
+
+O esperado usa a taxa da faixa baixa, então o excesso zero nela vale por
+construção. Por sítio, a inclusão vai de 0,80% a 1,62% e os positivos de
+24 a 43. Há também efeito da hora mesmo com score baixo (cerca de 1,5 a
+1,9% entre 18 e 22 h, cerca de 0,9% entre 0 e 5 h, 0,11% às 6 h), coerente
+com o sorteio restrito a certas horas.
+
+**Leitura (interpretação, não teste):**
+
+- O sorteio de ~1% bate com o relato dela na faixa baixa.
+- Sobram ~169 minutos verificados de score alto, quase todos positivos.
+  Isso é coerente com uma complementação dirigida a presenças, ou seja, uma
+  seleção que depende do estado real.
+- Se a complementação tivesse sido feita só de ouvido, sem score, os extras
+  cairiam na maior parte abaixo de 0,3 (onde estão 72 dos ~98 positivos
+  sorteados) e a inclusão nessa faixa passaria de 1%. Não passou. Isso
+  sugere que os extras foram escolhidos com ajuda do score.
+
+**Consequências para o estágio 1:**
+
+- Se, dentro da faixa alta, os minutos complementados foram sorteados ao
+  acaso, os pesos 1/inclusão por faixa de score corrigem o essencial.
+- Se ela ficou com minutos que já sabia serem presenças, os falsos
+  positivos de score alto ficam sub-representados (só 3 negativos acima de
+  0,5): f₀ no topo fica subestimada, f₁ distorcida, e a precisão de ~98%
+  acima de 0,5 fica inflada. Nesse caso os minutos complementados precisam
+  ser identificados e tirados (ou tratados à parte) antes de refazer o
+  estágio 1, e a comparação com 0,107 deixa de valer.
+- ψθ̄ depende sobretudo de f₁ (r = −0,89 com mu_a de f₁), então o segundo
+  caso mexe no resultado principal.
+
+**Perguntas para o script:**
+
+1. Os minutos complementados vieram das detecções do modelo ou de áudio
+   ouvido sem score?
+2. Dentro do complementado, foi sorteio ou escolha de presenças conhecidas?
+3. Em quais localidades houve complementação, e com quantos minutos? Dá
+   para marcar quais minutos entraram por ela?
+
+Até a resposta, os resultados do estágio 1 e do estágio 2 ficam
+provisórios. A sensibilidade (estágio 1 sem pesos, ou sem os minutos
+complementados) fica para depois de saber como foi a complementação.
