@@ -736,3 +736,41 @@ para o ct03. Não dá para testar se a escolha dependeu ainda do estado real
 **[decidir]** se o estágio 1 usa o ct03 com esses pesos, com sensibilidade
 sem ele. A frase da prova do JAV precisa dizer que a complementação usou o
 BirdNET e, em um sítio, o classificador custom.
+
+### Diário e planejamento da Liliana (19/11/2026)
+
+O Diogo trouxe do NAS o `Diário.docx`, o `Planejamento.docx` e o material da
+fase piloto de 2024 (`Curiango/Analises`). O diário diz, em resumo:
+
+- de `Audios_Clima` (97.456 áudios), 6 pastas com 5% cada, sorteadas;
+- da pasta 1, 975 áudios (1% do total), filtrando de julho a fevereiro e de
+  18 h a 4h45;
+- como esse conjunto tinha pouco curiango, ela tentou filtrar as 6 pastas
+  por mês 7 a 11 e hora 18 a 3 h antes de sortear 975, e "só deu 258";
+- por fim, passou o BirdNET nos conjuntos de teste "para achar mais
+  ocorrência de curiango onde ainda tenho pouco" (o ct03).
+
+**Confronto com os dados:**
+
+- ct01+ct02 têm 967 arquivos, perto dos 975 do diário. Mas 309 deles estão
+  fora da janela julho–fevereiro × 18h–4h45. A inclusão é 1,45% dentro da
+  janela e 0,59% fora: parece uma parte sorteada sem filtro somada a uma
+  parte filtrada (interpretação).
+- A janela agosto–janeiro ajusta melhor que julho–fevereiro (julho e
+  fevereiro ficam com a taxa de fora), e a hora 23 fica baixa mesmo dentro
+  da janela. Nenhuma janela simples explica tudo (LRT de ano-mês + hora além
+  da janela ≈ 200, 29 gl). As π de ct01+ct02 seguem do modelo empírico com
+  ano-mês, hora e sítio, que já se mostrou ignorável em relação aos scores.
+- A tentativa das "258" não aparece nos conjuntos.
+- O diário diz que a complementação veio dos conjuntos de teste (as 6
+  pastas, 30%), mas a rodada `Clima_noite` cobre todos os 97.806 minutos. Se
+  o quadro do ct03 foi só os 30%, as π do ct03 levam um fator 0,3 a mais,
+  sem mudar a forma do modelo. **[confirmar com a Liliana]**
+
+**Treino do custom.** O `Planejamento.docx` registra os clipes de treino em
+`D:/art-cur/IA/01_training`: 377 de curiango (42 a 59 por sítio, inclusive
+Mimosa) e 342 de ruído, tirados das gravações do próprio levantamento
+(prefixo `DIVSPTS01`). Ainda não foi checado se algum arquivo dos conjuntos
+de teste também deu clipe de treino; para isso falta a lista de nomes de
+`art-cur/IA/01_training`. O material de `Curiango/Analises` é da fase piloto
+(gravações de 2023 do Arara), anterior ao levantamento.
