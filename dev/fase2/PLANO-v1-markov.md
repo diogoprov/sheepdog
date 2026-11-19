@@ -646,6 +646,11 @@ depósito estão todas em algum conjunto; sobram 7 arquivos sem verificado, e
 gravações sorteadas (43 positivas) e 239 só da complementação (214
 positivas), 257 positivos no total.
 
+Os 7 arquivos sem verificado estão todos em ct01/ct02 e no `Evaluation/`
+com uma única janela de 3 s (áudio truncado, provavelmente), por isso
+ficaram fora. O `Evaluation/` cobre só ct01+ct02 (967 arquivos) e concorda
+100% com o `y` do depósito nos 962 em comum; a anotação do ct03 não está nele.
+
 | Conjunto | n | positivos | BirdNET > 0 | custom ≥ 0,4 |
 |---|---|---|---|---|
 | ct01 | 477 | 3,8% (18) | 5,5% | 1,5% |
