@@ -782,3 +782,42 @@ foi só as 6 pastas); as de ct01+ct02 vêm do modelo do sorteio (ano-mês, hora
 e sítio). Fica registrada a ressalva de que a dependência da seleção no
 estado real não é testável. A rodada `Clima_noite` precisa entrar no
 depósito ou no compêndio. O estágio 1 refeito com essas π ainda não rodou.
+
+### π do ct03 e teste da ignorabilidade (19/11/2026)
+
+Scripts: `dev/fase2/curiango_pi_ct03.R` (π, pesos, sensibilidades) e
+`dev/fase2/curiango_treino_sobreposicao.R` (clipes de treino × verificados,
+aguardando a lista completa de `01_training/compau` e `noise`).
+
+π1 = glm(inc ~ ano-mês + hora + sítio) nos 97.806 minutos; π3 = glm(sel ~
+sítio + ano-mês + hora + Clima_noite + [Clima_noite = 0] + custom) no quadro
+fora do ct01+ct02; π = π1 + (1 − π1) π3.
+
+- Pesos 1/π: ct01+ct02 vão de 26 a 1.742 (mediana 75, soma 97.452); ct03
+  vão de 1 a 215 (mediana 7, soma 3.337). Os 10 maiores pesos somam 6% do
+  total. Os pesos extremos estão no sorteio, não no ct03.
+- Prevalência (Hájek): 0,026 só ct01+ct02; 0,046 com todos e π; 0,050 com
+  truncagem no p95; 0,075 com o fator 0,3; 0,214 sem peso.
+- P(y = 1 | BirdNET 0,1–0,3): 0,24 só ct01+ct02; 0,42 com todos e π; 0,55
+  com o fator 0,3. Nas faixas do custom a diferença é pequena acima de 0,5.
+
+**Teste parcial do pressuposto.** Se a escolha do ct03 é ignorável dado os
+scores, y ⟂ estágio | x entre os verificados. Não é:
+
+- glm(y ~ Clima_noite + [= 0] + custom + sítio + mês + hora): acrescentar o
+  indicador do ct03 dá LRT 27,8 (1 gl), coeficiente 6,0 (EP 1,5).
+- Com o número de janelas do Clima_noite por minuto (todas e ≥ 0,3) no
+  modelo, o LRT fica em 21,9 e o coeficiente em 5,7 (EP 1,5).
+- Bruto, com custom < 0,3 e BirdNET > 0,1: ct03 tem 49 positivos em 57
+  (86%), ct01+ct02 tem 8 em 39 (21%). Dos 220 do ct03 com detecção do
+  BirdNET, só 10 são negativos.
+
+Leitura (interpretação): a escolha do ct03 usou informação sobre o estado
+real além dos scores, provavelmente a escuta ou a inspeção do espectrograma
+antes de incluir o arquivo. Outra possibilidade é critério de anotação
+diferente no ct03. Nos dois casos as π estimadas não corrigem o viés, e a
+curva P(y | score) com o ct03 sai inflada nos scores baixos.
+**[decidir: o Diogo precisa rever a decisão de 19/11; o estágio 1 não
+roda até lá. Opções: (a) estágio 1 só com ct01+ct02 (960, 43 positivos) e o
+ct03 como checagem externa; (b) ct03 só para a sensibilidade/especificidade
+condicional ao positivo, não para a prevalência nem a curva.]**
