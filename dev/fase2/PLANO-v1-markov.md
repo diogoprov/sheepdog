@@ -642,7 +642,9 @@ repositório.
 
 **Composição.** 484, 483 e 241 arquivos (1.208). As 1.199 verificadas do
 depósito estão todas em algum conjunto; sobram 7 arquivos sem verificado, e
-2 aparecem em dois conjuntos.
+2 positivos aparecem em ct03 e também em ct01 ou ct02. Sem repetição: 960
+gravações sorteadas (43 positivas) e 239 só da complementação (214
+positivas), 257 positivos no total.
 
 | Conjunto | n | positivos | BirdNET > 0 | custom ≥ 0,4 |
 |---|---|---|---|---|
@@ -669,7 +671,9 @@ depósito estão todas em algum conjunto; sobram 7 arquivos sem verificado, e
 
 **ct03 é a complementação.** 241 gravações, 90% positivas, nenhuma de Mimosa,
 muitas de junho, escolhidas pelo BirdNET. A probabilidade de inclusão não é
-recuperável. Tem 216 dos 259 positivos verificados.
+recuperável. Fora as 2 repetidas, são 239 gravações e 214 dos 257 positivos
+verificados, cerca de 40 por sítio (ARA 29, BEP 50), sem proporção ao
+esforço.
 
 **BirdNET da Liliana ≠ BirdNET do depósito.** O máximo por minuto das
 saídas dela (divisão em 600 s, sem sobreposição, filtro 0 a 4 kHz) bate com
