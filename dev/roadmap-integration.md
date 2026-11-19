@@ -62,6 +62,15 @@ verdadeiros e dos falsos positivos sem depender do classificador.
 
 ## Estado (11/11/2026)
 
+- 19/11/2026: **Fase 3, camada dirigida.** A linha `select_clips(sampling_mode
+  = "targeted")` da tabela da Fase 3 estava desatualizada: o
+  `select_directed()` (sheepdog#124) já faz a camada dirigida, com
+  probabilidade de inclusão conhecida, o que um modo determinístico não
+  daria. O lado do sheepdog do item 4 do plano do crywolf está pronto. Falta,
+  no crywolf, o `fp_review_priority()` devolver a tabela `units` (colunas da
+  unidade mais `size`) e o `fp_read_sheepdog()` usar `inclusion_prob` nos
+  clipes `directed_pps`. O item 3 continua esperando a conferência do script
+  pela Liliana.
 - 19/11/2026: **respostas à sessão do crywolf** (status do `fp_occu_ms()` e
   plano de integração de 19/11). As decisões continuam com o Diogo; isto é o
   estado do lado do sheepdog.
@@ -726,8 +735,8 @@ papel de cada uma:
 
 | Passo | Pacote | Pronto quando |
 |---|---|---|
-| `select_clips(sampling_mode = "targeted", priority = )`: aceita uma tabela de prioridade por ocasião (gerada fora do sheepdog) e registra `sampling_mode` e a ordem de escolha | sheepdog | o manifesto marca a camada de cada clipe; `inclusion_prob` = `NA` na camada dirigida |
-| `fp_review_priority(fit)`: prioridade por ocasião (variância de w_ij ponderada pela influência em β) | crywolf | em simulação, recupera β com menos revisões que a amostra aleatória, com a mesma cobertura |
+| ~~`select_clips(sampling_mode = "targeted", priority = )`~~ substituído por `select_directed()` (`sampling_mode = "directed_pps"`, sheepdog#124): sorteio PPS de unidades pelo `size`, uma ocasião ao acaso por unidade, com `floor` | sheepdog | **feito**: o manifesto marca `directed_pps`, e `inclusion_prob` é conhecida (π_u / N_u), em vez de `NA` |
+| `fp_review_priority(fit)`: tamanho por unidade (variância de w_ij ponderada pela influência em β), devolvido como a tabela `units` do `select_directed()` (colunas da unidade, como `site`, `species_code` e `month`, mais `size` ≥ 0) | crywolf | em simulação, recupera β com menos revisões que a amostra aleatória, com a mesma cobertura; o `fp_read_sheepdog()` usa `inclusion_prob` dos clipes `directed_pps` |
 | `select_clips(sampling_mode = "uncertain")`: clipes de score perto de 0,5 por local × espécie, com `inclusion_prob` = `NA` e o mesmo aviso do `"top"`; o `build_training_set()` os aceita | sheepdog | teste de que o modo não entra em `read_validations()` sem aviso; exemplo na vinheta `retraining` |
 | Divisão do orçamento: fração aleatória mínima | dev | simulação com orçamentos de 100 a 1.000 clipes; recomendação documentada |
 | Comparar com o ACORN | dev | mesmos dados simulados; diferença documentada |
