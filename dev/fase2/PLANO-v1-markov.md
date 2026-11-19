@@ -700,3 +700,39 @@ depósito.
 - **[decidir]** (Diogo): ct03 como camada não probabilística no modelo, ou
   só como sensibilidade; e se vale pedir à Liliana as listas das 6 pastas
   para tornar π de ct01+ct02 exato.
+
+### Rodada do BirdNET usada pela Liliana e critério do ct03 (19/11/2026)
+
+O Diogo trouxe do NAS a rodada `03_output_Birdnet-Clima_noite` (consolidado,
+lista e parâmetros). Cruzamento em `curiango_rodada_clima.R`.
+
+- A rodada cobre os 97.806 minutos do depósito, com os mesmos parâmetros das
+  pastas dos conjuntos (divisão em 600 s, sem sobreposição, filtro 0 a
+  4 kHz). O máximo por minuto é **idêntico** ao das pastas ct01 a ct03 em
+  100% dos arquivos, e difere do `conf_birdnet` do depósito em 3% dos
+  minutos (correlação 0,90). O `conf_birdnet` do depósito vem de outra
+  rodada.
+- Dos 239 do ct03, 220 têm detecção nessa rodada. A chance de escolha sobe
+  com o score: 0,5% entre 0,1 e 0,2, 2,9% entre 0,3 e 0,7, 7,9% acima de
+  0,7 (entre os 7.046 minutos com detecção fora do sorteio).
+- Os outros 19 são todos de BEP, de nov/2023 a abr/2024, com custom entre
+  0,10 e 0,75 (4 positivos). BEP tem só 131 minutos com detecção do BirdNET:
+  parece que a cota de BEP foi completada com o custom.
+- Cota de cerca de 40 por sítio (ARA 29, BEP 50), nenhum de Mimosa. Nenhum
+  escolhido em jan–fev/2024, ago–set/2024 e de nov/2024 em diante, que são
+  justamente os meses mais representados no sorteio; 110 dos 239 são de
+  junho/2024. Parece uma complementação dirigida aos meses pouco cobertos
+  (interpretação).
+- Dado o score dessa rodada, sítio, ano-mês e hora, o BirdNET do depósito
+  quase não acrescenta (LRT 3,8, p = 0,05), mas o custom ainda prediz a
+  escolha (LRT 73). Ou seja: a escolha usou os dois classificadores, e não um
+  BirdNET diferente do depósito.
+
+**Consequência.** Com a rodada `Clima_noite` e o custom, todas as variáveis
+que guiaram a escolha do ct03 parecem observadas, então um modelo de
+seleção com os dois scores, sítio, ano-mês e hora dá π aproximadas também
+para o ct03. Não dá para testar se a escolha dependeu ainda do estado real
+(se ela ouviu antes de escolher), porque `y` só existe nos escolhidos. Fica
+**[decidir]** se o estágio 1 usa o ct03 com esses pesos, com sensibilidade
+sem ele. A frase da prova do JAV precisa dizer que a complementação usou o
+BirdNET e, em um sítio, o classificador custom.
