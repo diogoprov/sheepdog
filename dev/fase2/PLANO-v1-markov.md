@@ -821,3 +821,55 @@ curva P(y | score) com o ct03 sai inflada nos scores baixos.
 roda até lá. Opções: (a) estágio 1 só com ct01+ct02 (960, 43 positivos) e o
 ct03 como checagem externa; (b) ct03 só para a sensibilidade/especificidade
 condicional ao positivo, não para a prevalência nem a curva.]**
+
+**Decisão do Diogo (19/11/2026, revista):** opção (a), estágio 1 só com
+ct01+ct02 e pesos 1/π1; (c) como sensibilidade. Substitui a decisão
+anterior do mesmo dia. Rascunho no Gmail para a Liliana com três
+perguntas: ela ouviu antes de incluir no ct03? mesmo critério de anotação?
+quadro do ct03 = 6 pastas?
+
+### Estágio 1 refeito (19/11/2026)
+
+`emissions_ct12_curiango.R` (π de `results/curiango_v1/pi_verificados.csv`,
+gerado por `curiango_pi_ct03.R`). `emis_2stage()` ganhou `use`, `w` e
+`min_sd`, com defaults que mantêm o comportamento antigo.
+
+- (a) ct01+ct02, pesos 1/π1. Com 43 positivos (n efetivo 29), a mistura de
+  f₁ colapsava num pico (sd 0,03) em três scores de peso alto; `min_sd =
+  0,2` nos dois ajustes novos.
+- (c) os 1.199, com π do ct03 corrigida pela seleção no estado real:
+  π3 · P(y | x, ct03) / P(y | x, população), x = (Clima_noite, [= 0],
+  custom), ajustes com `brglm2` (o glm comum separa). Supõe deslocamento
+  constante no log-odds, o que o teste da interação não sustenta.
+- Bootstrap de 200 réplicas por noite, com os pesos fixos.
+
+| | f₁: peso do comp. baixo | f₁: comp. baixo | f₁: comp. alto | P(s > logit 0,4 \| y = 1) | n efetivo f₁ |
+|---|---|---|---|---|---|
+| (a) ct01+ct02 | 0,38 (0,23 a 0,69) | N(−1,67; 0,37) | N(0,49; 1,05) | 0,50 | 29 |
+| (c) com ct03 corrigido | 0,26 (0,16 a 0,42) | N(−1,63; 0,38) | N(0,67; 1,10) | 0,62 | 65 |
+| antigo (estratos do custom) | 0,78 (0,73 a 0,83) | N(−1,45; 0,42) | N(0,91; 1,48) | 0,18 | 120 |
+
+f₀ quase não muda (P(s > logit 0,4 | y = 0) de 0,0003 a 0,0015).
+
+Leitura: o peso alto do componente baixo de f₁ no estágio 1 antigo vinha
+do ct03 (positivos de custom baixo escolhidos pelo BirdNET e pela escuta).
+Sem ele, f₁ põe metade da massa acima de logit 0,4. Como ψθ̄ depende
+sobretudo de f₁ (r = −0,89 com mu_a), o estágio 2 deve mudar: espera-se
+fração de minutos com canto menor que 0,102 (interpretação; a referência
+ponderada agora é 0,026 só com ct01+ct02).
+
+### Plano do estágio 2 (a confirmar com o Diogo)
+
+`run_curiango_2stage.R` com as emissões novas, 4 cadeias, 1.000 + 1.000,
+semente 2026, ~30 min por ajuste no Mac (4 núcleos cada, 2 ajustes em
+paralelo = 8 núcleos):
+
+1. (a) com Markov (principal) e (a) sem Markov.
+2. (c) com Markov (sensibilidade).
+3. PPC (`ppc_curiango_2stage.R`) dos três, segundos cada.
+
+Total ~1 h local (abaixo das 2 h; sem AWS). Diagnósticos: divergências,
+treedepth, E-BFMI, R-hat, ESS. A incerteza do estágio 1 continua fora do
+estágio 2; com n efetivo 29 em f₁ isso pesa mais que antes, e a saída
+seria repetir o estágio 2 com algumas réplicas do bootstrap (fica para
+depois).
