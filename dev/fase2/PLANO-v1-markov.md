@@ -631,3 +631,63 @@ com o sorteio restrito a certas horas.
 Até a resposta, os resultados do estágio 1 e do estágio 2 ficam
 provisórios. A sensibilidade (estágio 1 sem pesos, ou sem os minutos
 complementados) fica para depois de saber como foi a complementação.
+
+## Curiango: conjuntos de teste reconstruídos (19/11/2026)
+
+O script de seleção da Liliana se perdeu. Ela guardou no NAS as saídas do
+BirdNET e do custom (`Compau_DiverSons`) de cada conjunto de teste
+(`Cjto-Teste_01` a `_03`) e a anotação por janela de 3 s (`Evaluation/`).
+Cruzamento em `curiango_conjuntos_teste.R`; os arquivos ficam fora do
+repositório.
+
+**Composição.** 484, 483 e 241 arquivos (1.208). As 1.199 verificadas do
+depósito estão todas em algum conjunto; sobram 7 arquivos sem verificado, e
+2 aparecem em dois conjuntos.
+
+| Conjunto | n | positivos | BirdNET > 0 | custom ≥ 0,4 |
+|---|---|---|---|---|
+| ct01 | 477 | 3,8% (18) | 5,5% | 1,5% |
+| ct02 | 483 | 5,2% (25) | 6,8% | 2,7% |
+| ct03 | 241 | 89,6% (216) | 92% | 64% |
+| população | 97.806 | — | 7,3% | 1,8% |
+
+**ct01 e ct02 são o sorteio.**
+
+- Contagens por sítio quase iguais nos dois, cerca de 1% de cada sítio (XAR
+  0,76%).
+- A inclusão varia com o mês: 1,5 a 2% em dez/2023–jan/2024 e em
+  ago/2024–jan/2025, cerca de 0,6% de fev a jul/2024. Também varia com a
+  hora: 18 a 22 h acima, 16, 17 e 23 h abaixo. É coerente com uma base
+  aleatória somada às pastas filtradas por janela do relato dela.
+- Dados ano-mês, hora e sítio, os scores quase não predizem a inclusão
+  (LRT = 5,3, 2 gl, p = 0,07; coeficiente do custom levemente negativo). A
+  seleção desses 960 é ignorável dadas covariáveis do depósito; π sai de um
+  modelo logístico com esses três termos (aproximado, não exato como as
+  listas das 6 pastas dariam).
+- Com esses pesos: Kish n_eff = 494 de 960; prevalência de Hájek 0,026
+  (0,045 sem peso).
+
+**ct03 é a complementação.** 241 gravações, 90% positivas, nenhuma de Mimosa,
+muitas de junho, escolhidas pelo BirdNET. A probabilidade de inclusão não é
+recuperável. Tem 216 dos 259 positivos verificados.
+
+**BirdNET da Liliana ≠ BirdNET do depósito.** O máximo por minuto das
+saídas dela (divisão em 600 s, sem sobreposição, filtro 0 a 4 kHz) bate com
+`conf_birdnet` do depósito em 82% dos 1.208 minutos (correlação 0,88),
+em geral maior na versão dela. Existem pelo menos duas rodadas do BirdNET;
+não dá para saber qual guiou a escolha do ct03. A tabela completa do
+levantamento que ela guardou (`var+detc.csv`) tem os mesmos scores do
+depósito.
+
+**Leitura (interpretação, não teste):**
+
+- A referência de prevalência cai para 0,026 nos conjuntos sorteados, contra
+  0,107 (pesos por faixa do custom, seção anterior) e 0,059 (Hájek da sessão
+  do crywolf, com ct03). O ψθ̄ = 0,114 do modelo de três estados fica longe
+  da referência.
+- Estágio 1 só com ct01+ct02: sem viés de seleção, mas 43 positivos
+  identificam mal o f₁. Com ct03: os positivos voltam, mas o f₁ é puxado
+  para scores altos, porque a escolha foi pelo score.
+- **[decidir]** (Diogo): ct03 como camada não probabilística no modelo, ou
+  só como sensibilidade; e se vale pedir à Liliana as listas das 6 pastas
+  para tornar π de ct01+ct02 exato.
