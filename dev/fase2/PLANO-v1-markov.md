@@ -774,3 +774,11 @@ Mimosa) e 342 de ruído, tirados das gravações do próprio levantamento
 de teste também deu clipe de treino; para isso falta a lista de nomes de
 `art-cur/IA/01_training`. O material de `Curiango/Analises` é da fase piloto
 (gravações de 2023 do Arara), anterior ao levantamento.
+
+**Decisão do Diogo (19/11/2026):** o ct03 entra no estágio verificado com π
+estimadas. As π do ct03 vêm de um modelo de seleção com o score da rodada
+`Clima_noite`, o custom, sítio, ano-mês e hora (com o fator 0,3 se o quadro
+foi só as 6 pastas); as de ct01+ct02 vêm do modelo do sorteio (ano-mês, hora
+e sítio). Fica registrada a ressalva de que a dependência da seleção no
+estado real não é testável. A rodada `Clima_noite` precisa entrar no
+depósito ou no compêndio. O estágio 1 refeito com essas π ainda não rodou.
