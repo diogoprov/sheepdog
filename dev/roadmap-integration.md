@@ -62,6 +62,64 @@ verdadeiros e dos falsos positivos sem depender do classificador.
 
 ## Estado (11/11/2026)
 
+- 19/11/2026: **respostas à sessão do crywolf** (status do `fp_occu_ms()` e
+  plano de integração de 19/11). As decisões continuam com o Diogo; isto é o
+  estado do lado do sheepdog.
+  - **Diagnóstico de ρ no Curiango (item 3 do plano).** Detalhes em
+    `dev/fase2/PLANO-v1-markov.md`:
+    - o ajuste implausível vinha da **mistura**, não do Markov. Sem o Markov,
+      a fração de minutos com canto ficou em 0,36, contra cerca de 0,107 pela
+      estimativa ponderada dos verificados. O componente baixo de f₁ cobre a
+      faixa dos negativos logo acima de c. O Markov só piora (0,55), porque
+      junta essas sequências em "canto";
+    - com emissões em dois estágios (f₀ e f₁ estimadas nos verificados com
+      pesos 1/π e fixadas) e três estados (componente de f₁ persistente na
+      sequência), ψ θ̄ = 0,114. Não há divergências e o resultado fica perto
+      da referência. ρ continua alto (≈ 4,5), mas agora descreve a
+      persistência do canto, e não absorve o ruído;
+    - o PPC ainda reprova a autocorrelação (0,44 a 0,50 contra 0,39) e a
+      variância por noite. ρ por componente não resolveu;
+    - propagando a incerteza do estágio 1 (20 réplicas do bootstrap por
+      noite), as emissões respondem por 91% da variância de ψ θ̄;
+    - em aberto: o mecanismo de inclusão dos verificados. Há indício de
+      complementação dirigida a presenças nos scores altos. A Liliana vai
+      conferir o script, e só então o estágio 1 é refeito.
+
+    Para o `fp_occu_score()`, isso sugere começar com emissões estimadas nos
+    verificados e uma forma de dependência entre minutos. f₁ flexível
+    estimada junto com a ocupação, só com os não verificados, falhou nos dados
+    reais. É interpretação, não teste.
+  - **Fixture `export-1.3-ms`.** Fica como está: as fixtures são versões
+    gravadas do esquema e não são reescritas (`export-1.1` a `export-1.3`
+    continuam nos testes). O esquema atual é o 1.4, que só acrescenta campos:
+    `n_windows` em `occasions.csv`; `round`, `stratum`, `n_candidates`,
+    `n_drawn` e `review_scope` em `validation.csv`; `window_step` e
+    `validation_design` no `schema.json`. Se o multiespécies do modelo de
+    score precisar desses campos, o caminho é uma fixture nova
+    (`export-1.4-ms`). **[decidir]** quando gerá-la.
+  - **O que falta no esquema para o multiespécies.** A lista de espécies já
+    está em `schema.json` (`species`). `n_windows` é propriedade da ocasião e
+    é o mesmo para todas as espécies, porque o classificador avalia as
+    mesmas janelas. Só seria preciso por espécie com classificadores
+    diferentes por espécie, o que o export não prevê. Não vejo outro campo
+    faltando. O aviso `min_verified` do export já nomeia as espécies com
+    poucos verificados.
+  - **Calibração `(logit_conf | species) + (1 | site:species)`.** Continua
+    sendo o padrão, e é a fórmula da fixture (com `temp_z`). Não há evidência
+    nova contra. Ressalvas:
+    - quando o classificador foi treinado com gravações dos mesmos sítios, o
+      termo `site:species` é necessário;
+    - nas espécies raras, a inclinação vem quase toda da comunidade;
+    - o estudo do desenho da revisão (`review-design-sim`) ainda vai dizer
+      quanto o desenho da revisão muda essa calibração.
+  - **Export do FrogNet.** Sem data. Depende do fim da rodada de revisão
+    aleatória, de um piloto e do depósito dos dados. Os dados seguem
+    privados.
+  - **Custo.** A sessão do crywolf mediu 9,5 h por ajuste multiespécies do
+    tamanho do Curiango. Com isso, o item 2 do plano (`fp_occu_mc()` sobre o
+    `fp_occu_ms()`) precisa de poucas versões e da AWS. **[decidir]** o
+    critério de quantas versões bastam.
+
 - 11/11/2026: **o que entrou na `main` desde 07/11** (todos para a 3.4.0,
   lista completa no `NEWS.md`):
   - o `run_app()` dá um erro claro quando o manifesto está vazio ou falta
