@@ -1,16 +1,20 @@
 ## Resubmission
 
-This is a resubmission of sheepdog 3.3.2 (version 3.3.3). In response to
-the review by Uwe Ligges:
+This is a resubmission of sheepdog 3.3.3 (version 3.4.0). In response to
+the review by Leonore Hochhauser:
 
-- https://stan-dev.r-universe.dev was removed from
-  Additional_repositories; sheepdog does not need it. Only
-  https://diogoprov.r-universe.dev (for crywolf, in Suggests) remains.
-- The Description field now cites the methods the package implements, in
-  the form Authors (year) <doi:...>: Miller et al. (2011), Chambert et al.
-  (2015) and Wood and Kahl (2024).
+- The Description no longer starts with "Tools to"; it now starts with
+  "Checks whether automated detections ...".
+- No example uses \dontrun{} any more. The examples of
+  calibrated_thresholds(), compare_calibration_curves(),
+  compare_thresholds(), extract_validation_clips(), recall_ceiling(),
+  select_directed() and warning_signs() now run on the example data shipped
+  in inst/extdata/example (each in under 5 s), so they are unwrapped.
+  run_app() starts a 'shiny' app, so its example is wrapped in
+  if (interactive()).
 
-The package code is unchanged from 3.3.2.
+Since 3.3.3 the package also gained read_pamdp() and documentation
+changes (see NEWS.md), hence the minor version.
 
 ## Test environment
 
@@ -33,7 +37,7 @@ The package code is unchanged from 3.3.2.
 - The local HTML Tidy is too old to validate the HTML manual; this NOTE
   is local only.
 
-Tests: 1585 passed; one optional test skipped (Stan integration).
+Tests: 3036 passed, 0 failed; 3 optional tests skipped (Stan integration and optional dependencies).
 
 ## Optional repositories
 

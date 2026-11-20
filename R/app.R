@@ -101,15 +101,15 @@
 #' @seealso [app_verdicts()], `vignette("review-app")`.
 #' @export
 #' @examples
-#' \dontrun{
-#' # Review only
-#' run_app("validation/clip_manifest.csv", "validation/clips",
-#'         reviewer = "liliana")
+#' if (interactive()) {
+#'   # Review only
+#'   run_app("validation/clip_manifest.csv", "validation/clips",
+#'           reviewer = "liliana")
 #'
-#' # Sample, cut, review and export
-#' run_app(selection_dir = "N:/Arara", output_dir = "validation",
-#'         recordings = "recordings.csv", reviewer = "liliana",
-#'         max_freq = 8)
+#'   # Sample, cut, review and export
+#'   run_app(selection_dir = "N:/Arara", output_dir = "validation",
+#'           recordings = "recordings.csv", reviewer = "liliana",
+#'           max_freq = 8)
 #' }
 run_app <- function(manifest = NULL, clips_dir = NULL, verdicts_file = NULL,
                     reviewer = NULL, max_freq = 12, selection_dir = NULL,

@@ -118,16 +118,19 @@ threshold this is what is wanted: the precision at a site depends on
 both. It is not a measure of the classifier alone.
 }
 \examples{
-\dontrun{
-val <- read_validations(validation_files)
-fit <- fit_calibration(val, calibration_models()$m4_species_x_site)
+ex <- system.file("extdata", "example", package = "sheepdog")
+files <- list.files(file.path(ex, "validation"), full.names = TRUE)
+sites <- c("ARA", "BAI", "NHE", "XAR")
+tables <- setNames(file.path(ex, "birdnet", sites,
+                             "BirdNET_SelectionTable.txt"), sites)
+fit <- fit_calibration(read_validations(files),
+                       calibration_models()$m2_species_slope)
+scored <- score_detections(tables, fit)
 calibrated_thresholds(fit, target = 0.95)
 
 # expected precision of the detections kept, from the selection tables
-scored <- score_detections(tables, fit)
 calibrated_thresholds(fit, target = 0.90, rule = "precision",
                       scored = scored)
-}
 }
 \seealso{
 \code{\link[=suggest_thresholds]{suggest_thresholds()}} for thresholds from the reviewed clips of

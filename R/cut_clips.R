@@ -136,12 +136,12 @@ pack_clips <- function(manifest, output_dir) {
 #' @return The manifest written to `clip_manifest.csv`, invisibly.
 #' @export
 #' @examples
-#' \dontrun{
-#' # Check the selection first, then cut
-#' extract_validation_clips("N:/Arara", "N:/Arara/validation",
-#'                          remap_from = "N:/", remap_to = "/Volumes/Arara/",
-#'                          simulate = TRUE)
-#' }
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' # Check the selection first (no audio is read), then cut
+#' man <- extract_validation_clips(file.path(ex, "birdnet"),
+#'                                 file.path(tempdir(), "validation"),
+#'                                 simulate = TRUE)
+#' table(man$status)
 extract_validation_clips <- function(data_dir, output_dir, ...,
                                      table_pattern = "^BirdNET_SelectionTable\\.txt$",
                                      per_audio_pattern = "\\.BirdNET\\.selection\\.table\\.txt$",

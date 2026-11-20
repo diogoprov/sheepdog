@@ -205,12 +205,13 @@ Fitting with and without weights (\code{weighted = TRUE} and \code{FALSE}) is al
 a check of the shape: similar thresholds mean the shape is right.
 }
 \examples{
-\dontrun{
+ex <- system.file("extdata", "example", package = "sheepdog")
+validation <- read_validation_tables(list.files(file.path(ex, "validation"),
+                                                full.names = TRUE))
 cmp <- compare_calibration_curves(validation, target = 0.95)
 cmp[c("species_folder", "curve", "top_error", "threshold_precision",
       "threshold_weighted", "verdict")]
-plot_calibration_curves(cmp)
-}
+if (requireNamespace("ggplot2", quietly = TRUE)) plot_calibration_curves(cmp)
 }
 \references{
 Wood, C. M. & Kahl, S. (2024). Guidelines for appropriate use of

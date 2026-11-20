@@ -1,4 +1,9 @@
-# sheepdog (development version)
+# sheepdog 3.4.0
+
+- CRAN review: the Description no longer starts with "Tools to", and the
+  examples that were in `\dontrun{}` now run on the example data of
+  `inst/extdata/example` (or, for `run_app()`, only in interactive
+  sessions).
 
 - New `read_pamdp()` reads a pamDP data package (the format of pamflow,
   adapted from Camtrap DP): the machine predictions of `observations.csv`

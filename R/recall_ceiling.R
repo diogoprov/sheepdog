@@ -75,16 +75,21 @@
 #'   [threshold_bootstrap()], [threshold_record()].
 #' @export
 #' @examples
-#' \dontrun{
-#' det <- read_selection_tables("birdnet")
-#' val <- read_validation_tables(files)
-#' recall_ceiling(val, det, thresholds = c(0.5, 0.7, 0.9))
-#'
-#' # at the threshold of each cell
-#' thr <- suggest_thresholds(val, target_precision = 0.95)
-#' recall_ceiling(val, det, thresholds = thr,
-#'                by = c("site", "species_folder"))
-#' }
+#' # six occasions annotated by ear at one site; the species is in four
+#' sp <- "Boana raniceps_boa-ran"
+#' val <- data.frame(
+#'   site = "S1", species_code = sp,
+#'   occasion_id = paste0("S1_2024010", 1:6, "_200000"),
+#'   source_audio = paste0("/r/S1_2024010", 1:6, "_200000.wav"),
+#'   sampling_mode = "random_recordings",
+#'   verdict = rep(c("positive", "negative"), c(4, 2)),
+#'   inclusion_prob = c(0.5, 0.5, 0.5, 0.25, 0.5, 0.5))
+#' det <- data.frame(
+#'   site = "S1", species_code = sp,
+#'   begin_path = paste0("/r/S1_2024010", c(1, 1, 2, 4, 5), "_200000.wav"),
+#'   file_offset = c(0, 3, 6, 0, 9),
+#'   confidence = c(0.9, 0.3, 0.4, 0.6, 0.8))
+#' recall_ceiling(val, det, thresholds = c(0.5, 0.7, 0.9), n_boot = 0)
 recall_ceiling <- function(validation, detections, thresholds = NULL,
                            by = "species_folder", min_confidence = 0.1,
                            occasion_unit = c("file", "minute"),
