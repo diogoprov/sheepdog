@@ -923,3 +923,26 @@ Leitura:
 estágio 2 com réplicas do bootstrap (20 réplicas × ~10 min, 2 em paralelo
 ≈ 1h40 local; com mais réplicas, AWS), ou levar o bootstrap como priors
 informativos para f₁ no ajuste conjunto.
+
+### Respostas da Liliana sobre o ct03 (19/11/2026)
+
+De memória, sem documentação:
+
+1. Ouvia ou olhava o espectrograma antes de incluir no ct03? "Provavelmente".
+2. Mesmo critério de anotação nos três conjuntos? Sim, todos anotados por
+   ela.
+3. Quadro do ct03: só as 6 pastas de 5%, e talvez só as 3 primeiras.
+
+Consequências:
+
+- A resposta 2 descarta a explicação por critério de anotação diferente. A
+  resposta 1 é coerente com o teste (y ⟂ estágio | x falha): a escolha do
+  ct03 dependeu do estado real. A opção (a) fica justificada.
+- O quadro do ct03 seria 30% (fator 0,3) ou 15% (fator 0,15) do levantamento.
+  Isso só afeta a sensibilidade (c), não a (a). A (c) já supõe deslocamento
+  constante no log-odds, o que os dados não sustentam, então o fator não
+  muda o que concluímos dela.
+- Para o artigo do JAV, a frase "The supplementary files were inspected
+  before inclusion" passa a ser verdadeira. A prova já foi devolvida; a
+  inclusão é uma correção opcional ao editor de produção (decisão do Diogo
+  e da Liliana).
