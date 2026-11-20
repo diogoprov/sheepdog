@@ -162,14 +162,54 @@ which writes these thresholds to `thresholds.csv`.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-val <- read_validations(validation_files)
-fit <- fit_calibration(val, calibration_models()$m4_species_x_site)
+ex <- system.file("extdata", "example", package = "sheepdog")
+files <- list.files(file.path(ex, "validation"), full.names = TRUE)
+sites <- c("ARA", "BAI", "NHE", "XAR")
+tables <- setNames(file.path(ex, "birdnet", sites,
+                             "BirdNET_SelectionTable.txt"), sites)
+fit <- fit_calibration(read_validations(files),
+                       calibration_models()$m2_species_slope)
+#> lme4: 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.
+scored <- score_detections(tables, fit)
+#> Scoring ARA (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA/BirdNET_SelectionTable.txt)...
+#>   1753 detections of calibrated species (0 of species NOT calibrated were dropped).
+#> Scoring BAI (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI/BirdNET_SelectionTable.txt)...
+#>   1427 detections of calibrated species (0 of species NOT calibrated were dropped).
+#> Scoring NHE (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE/BirdNET_SelectionTable.txt)...
+#>   2507 detections of calibrated species (0 of species NOT calibrated were dropped).
+#> Scoring XAR (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR/BirdNET_SelectionTable.txt)...
+#>   1866 detections of calibrated species (0 of species NOT calibrated were dropped).
 calibrated_thresholds(fit, target = 0.95)
+#> # A tibble: 32 × 4
+#>    site  species threshold p_tp_at_threshold
+#>    <chr> <chr>       <dbl>             <dbl>
+#>  1 ARA   boa_ran      0.74             0.951
+#>  2 ARA   den_nan      0.95             0.958
+#>  3 ARA   ela_bic      0.6              0.959
+#>  4 ARA   lep_fus      0.92             0.954
+#>  5 ARA   lep_pod      0.65             0.955
+#>  6 ARA   phy_cuv      0.68             0.957
+#>  7 ARA   pse_pla     NA               NA    
+#>  8 ARA   sci_nas      0.97             0.955
+#>  9 BAI   boa_ran      0.74             0.951
+#> 10 BAI   den_nan      0.95             0.958
+#> # ℹ 22 more rows
 
 # expected precision of the detections kept, from the selection tables
-scored <- score_detections(tables, fit)
 calibrated_thresholds(fit, target = 0.90, rule = "precision",
                       scored = scored)
-} # }
+#> # A tibble: 32 × 6
+#>    site  species threshold precision_at_threshold n_above n_detections
+#>    <chr> <chr>       <dbl>                  <dbl>   <int>        <int>
+#>  1 ARA   boa_ran      0.49                  0.903     280          346
+#>  2 ARA   den_nan      0.88                  0.905      15          384
+#>  3 ARA   ela_bic      0.19                  0.902     162          168
+#>  4 ARA   lep_fus     NA                    NA          NA           33
+#>  5 ARA   lep_pod      0.13                  0.904     164          168
+#>  6 ARA   phy_cuv      0.19                  0.909     191          196
+#>  7 ARA   pse_pla     NA                    NA          NA          225
+#>  8 ARA   sci_nas      0.9                   0.905      13          233
+#>  9 BAI   boa_ran      0.55                  0.904     120          175
+#> 10 BAI   den_nan      0.84                  0.904      18          236
+#> # ℹ 22 more rows
 ```

@@ -29,7 +29,7 @@ of select_clips()."><meta property="og:image" content="https://provetelab.org/sh
 
     <a class="navbar-brand me-2" href="../index.html">sheepdog</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.3.3.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -216,15 +216,32 @@ above <code>threshold</code>) is dropped with a message before the draw.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_selection_tables.html">read_selection_tables</a></span><span class="op">(</span><span class="st">"N:/Arara"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">units</span> <span class="op">&lt;-</span> <span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span><span class="st">"expected_gain.csv"</span><span class="op">)</span> <span class="co"># site, month, species_code, size</span></span></span>
-<span class="r-in"><span><span class="va">sel</span> <span class="op">&lt;-</span> <span class="fu">select_directed</span><span class="op">(</span><span class="va">pred</span>, <span class="va">units</span>, n_units <span class="op">=</span> <span class="fl">40</span>, threshold <span class="op">=</span> <span class="fl">0.5</span>,</span></span>
-<span class="r-in"><span>                       previous <span class="op">=</span> <span class="st">"validation_r1/clip_manifest.csv"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">man</span> <span class="op">&lt;-</span> <span class="fu"><a href="cut_clips.html">cut_clips</a></span><span class="op">(</span><span class="va">sel</span>, <span class="st">"validation_directed"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/write_delim.html" class="external-link">write_csv</a></span><span class="op">(</span><span class="va">man</span>, <span class="st">"validation_directed/clip_manifest.csv"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/write_delim.html" class="external-link">write_csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">sel</span>, <span class="st">"units"</span><span class="op">)</span>, <span class="st">"validation_directed/units.csv"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example"</span>, package <span class="op">=</span> <span class="st">"sheepdog"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_selection_tables.html">read_selection_tables</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"birdnet"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 4 combined table(s) and 0 per-audio table(s) found in 4 folder(s):</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA: BirdNET_SelectionTable.txt</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI: BirdNET_SelectionTable.txt</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE: BirdNET_SelectionTable.txt</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR: BirdNET_SelectionTable.txt</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 7553 predictions read from 4 site(s).</span>
+<span class="r-in"><span><span class="co"># units and their size, for instance the expected gain from a model</span></span></span>
+<span class="r-in"><span><span class="va">units</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>site <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ARA"</span>, <span class="st">"BAI"</span>, <span class="st">"NHE"</span>, <span class="st">"XAR"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                    species_code <span class="op">=</span> <span class="st">"Boana raniceps_boa-ran"</span>,</span></span>
+<span class="r-in"><span>                    month <span class="op">=</span> <span class="st">"2021-11"</span>, size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">sel</span> <span class="op">&lt;-</span> <span class="fu">select_directed</span><span class="op">(</span><span class="va">pred</span>, <span class="va">units</span>, n_units <span class="op">=</span> <span class="fl">2</span>, threshold <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 3 clips from 2 unit(s) drawn of 4 (round 1).</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">sel</span>, <span class="st">"units"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   site           species_code   month size n_occasions size_used</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  XAR Boana raniceps_boa-ran 2021-11    4          15     4.125</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  NHE Boana raniceps_boa-ran 2021-11    3          15     3.125</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  BAI Boana raniceps_boa-ran 2021-11    2           2     2.125</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  ARA Boana raniceps_boa-ran 2021-11    1          14     1.125</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   inclusion_prob_unit drawn</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           0.7857143  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           0.5952381  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           0.4047619 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           0.2142857 FALSE</span>
+<span class="r-in"><span><span class="co"># then cut_clips(sel, "validation_directed") with the audio at hand</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

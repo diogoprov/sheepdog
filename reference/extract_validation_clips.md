@@ -103,10 +103,26 @@ reads it, so keep it with the manifest.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-# Check the selection first, then cut
-extract_validation_clips("N:/Arara", "N:/Arara/validation",
-                         remap_from = "N:/", remap_to = "/Volumes/Arara/",
-                         simulate = TRUE)
-} # }
+ex <- system.file("extdata", "example", package = "sheepdog")
+# Check the selection first (no audio is read), then cut
+man <- extract_validation_clips(file.path(ex, "birdnet"),
+                                file.path(tempdir(), "validation"),
+                                simulate = TRUE)
+#> Sampling mode: top (occasion = file).
+#> 4 combined table(s) and 0 per-audio table(s) found in 4 folder(s):
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR: BirdNET_SelectionTable.txt
+#> 7553 predictions read from 4 site(s).
+#> 4099 clips selected (top 2 per site x species x night x hour) of 8 species.
+#> Simulating the cut of 4099 clips...
+#>   audio_not_found: 4099
+#> Warning: Some clips were not created - check the `status` column of the manifest and the path remapping (remap_from/remap_to).
+#> Manifest written to /tmp/RtmpG6KYOE/validation/clip_manifest.csv
+#> Done! The clips in /tmp/RtmpG6KYOE/validation/clips are ready for validation in the BirdNET GUI (review).
+table(man$status)
+#> 
+#> audio_not_found 
+#>            4099 
 ```

@@ -1,6 +1,12 @@
 # Changelog
 
-## sheepdog (development version)
+## sheepdog 3.4.0
+
+- CRAN review: the Description no longer starts with “Tools to”, and the
+  examples that were in `\dontrun{}` now run on the example data of
+  `inst/extdata/example` (or, for
+  [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md),
+  only in interactive sessions).
 
 - New
   [`read_pamdp()`](https://provetelab.org/sheepdog/reference/read_pamdp.md)

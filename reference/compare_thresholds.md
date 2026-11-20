@@ -151,10 +151,39 @@ which writes this table with `fit`.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+ex <- system.file("extdata", "example", package = "sheepdog")
+files <- list.files(file.path(ex, "validation"), full.names = TRUE)
+sites <- c("ARA", "BAI", "NHE", "XAR")
+tables <- setNames(file.path(ex, "birdnet", sites,
+                             "BirdNET_SelectionTable.txt"), sites)
 fit <- fit_calibration(read_validations(files),
-                       calibration_models()$m4_species_x_site)
+                       calibration_models()$m2_species_slope)
+#> lme4: 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.
 scored <- score_detections(tables, fit)
+#> Scoring ARA (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA/BirdNET_SelectionTable.txt)...
+#>   1753 detections of calibrated species (0 of species NOT calibrated were dropped).
+#> Scoring BAI (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI/BirdNET_SelectionTable.txt)...
+#>   1427 detections of calibrated species (0 of species NOT calibrated were dropped).
+#> Scoring NHE (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE/BirdNET_SelectionTable.txt)...
+#>   2507 detections of calibrated species (0 of species NOT calibrated were dropped).
+#> Scoring XAR (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR/BirdNET_SelectionTable.txt)...
+#>   1866 detections of calibrated species (0 of species NOT calibrated were dropped).
 compare_thresholds(read_validation_tables(files), fit, scored)
-} # }
+#> # A tibble: 32 × 12
+#>    site  species thr_empirical prec_empirical n_support thr_model_precision
+#>    <chr> <chr>           <dbl>          <dbl>     <int>               <dbl>
+#>  1 ARA   boa_ran          0.36          0.975        80                0.49
+#>  2 BAI   boa_ran          0.39          0.912        68                0.55
+#>  3 NHE   boa_ran          0.55          0.917        36                0.54
+#>  4 XAR   boa_ran          0.58          0.917        60                0.52
+#>  5 ARA   den_nan          0.56          0.911        56                0.88
+#>  6 BAI   den_nan         NA            NA            NA                0.84
+#>  7 NHE   den_nan          0.77          0.941        17                0.86
+#>  8 XAR   den_nan         NA            NA            NA                0.84
+#>  9 ARA   ela_bic          0.13          0.924        79                0.19
+#> 10 BAI   ela_bic          0.23          0.949        79                0.27
+#> # ℹ 22 more rows
+#> # ℹ 6 more variables: thr_p_tp <dbl>, p_tp_at_threshold <dbl>,
+#> #   model_precision_at_empirical <dbl>, max_reviewed <dbl>,
+#> #   above_reviewed <lgl>, flag <chr>
 ```

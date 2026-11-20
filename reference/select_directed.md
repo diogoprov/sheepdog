@@ -133,13 +133,30 @@ above `threshold`) is dropped with a message before the draw.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-pred <- read_selection_tables("N:/Arara")
-units <- readr::read_csv("expected_gain.csv") # site, month, species_code, size
-sel <- select_directed(pred, units, n_units = 40, threshold = 0.5,
-                       previous = "validation_r1/clip_manifest.csv")
-man <- cut_clips(sel, "validation_directed")
-readr::write_csv(man, "validation_directed/clip_manifest.csv")
-readr::write_csv(attr(sel, "units"), "validation_directed/units.csv")
-} # }
+ex <- system.file("extdata", "example", package = "sheepdog")
+pred <- read_selection_tables(file.path(ex, "birdnet"))
+#> 4 combined table(s) and 0 per-audio table(s) found in 4 folder(s):
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR: BirdNET_SelectionTable.txt
+#> 7553 predictions read from 4 site(s).
+# units and their size, for instance the expected gain from a model
+units <- data.frame(site = c("ARA", "BAI", "NHE", "XAR"),
+                    species_code = "Boana raniceps_boa-ran",
+                    month = "2021-11", size = c(1, 2, 3, 4))
+sel <- select_directed(pred, units, n_units = 2, threshold = 0.5)
+#> 3 clips from 2 unit(s) drawn of 4 (round 1).
+attr(sel, "units")
+#>   site           species_code   month size n_occasions size_used
+#> 1  XAR Boana raniceps_boa-ran 2021-11    4          15     4.125
+#> 2  NHE Boana raniceps_boa-ran 2021-11    3          15     3.125
+#> 3  BAI Boana raniceps_boa-ran 2021-11    2           2     2.125
+#> 4  ARA Boana raniceps_boa-ran 2021-11    1          14     1.125
+#>   inclusion_prob_unit drawn
+#> 1           0.7857143  TRUE
+#> 2           0.5952381  TRUE
+#> 3           0.4047619 FALSE
+#> 4           0.2142857 FALSE
+# then cut_clips(sel, "validation_directed") with the audio at hand
 ```
