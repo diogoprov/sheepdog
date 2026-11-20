@@ -873,3 +873,53 @@ treedepth, E-BFMI, R-hat, ESS. A incerteza do estágio 1 continua fora do
 estágio 2; com n efetivo 29 em f₁ isso pesa mais que antes, e a saída
 seria repetir o estágio 2 com algumas réplicas do bootstrap (fica para
 depois).
+
+### Estágio 2 com as emissões novas (19/11/2026)
+
+`run_curiango_2stage.R`, 4 cadeias, 1.000 + 1.000, semente 2026, ~10 min
+por ajuste no Mac. Saídas em `results/curiango_v1/ct12_m1/`, `ct12_m0/` e
+`ct03r_m1/` (fit e PPC). Os três ajustes: sem divergências, sem treedepth
+máximo, E-BFMI ≥ 0,92, R-hat ≤ 1,004, ESS bulk ≥ 2.400.
+
+| Quantidade | (a) v1 | (a) sem Markov | (c) v1 | antigo v1 | antigo sem Markov |
+|---|---|---|---|---|---|
+| ψ no centro | 0,42 (0,39 a 0,45) | 0,29 | 0,35 | 0,48 | 0,35 |
+| θ₀ | 0,036 | 0,144 | 0,033 | 0,047 | 0,204 |
+| θ̄ | 0,152 | 0,144 | 0,118 | 0,211 | 0,204 |
+| ρ | 4,66 (4,54 a 4,79) | | 4,50 | 4,54 | |
+| ψ θ̄ | **0,064 (0,058 a 0,070)** | 0,041 | 0,041 (0,037 a 0,045) | 0,102 | 0,071 |
+
+Intervalos de 90%. Referência ponderada só com ct01+ct02: 0,026 (Hájek).
+
+PPC (y = 1 quando o score passa de logit 0,4; intervalo de 90% das réplicas):
+
+| Estatística | Observado | (a) v1 | (a) sem Markov | (c) v1 | antigo v1 |
+|---|---|---|---|---|---|
+| Fração de minutos com y = 1 | 0,018 | 0,030 a 0,036 | 0,024 a 0,030 | 0,026 a 0,034 | 0,017 a 0,021 |
+| P(y = 1 \| y = 1 antes) | 0,39 | 0,39 a 0,43 | 0,11 a 0,14 | 0,45 a 0,49 | 0,13 a 0,17 |
+| Noites com alguma detecção | 0,25 | 0,31 a 0,36 | 0,25 a 0,31 | 0,30 a 0,35 | 0,34 a 0,41 |
+| Variância de detecções por noite | 10,3 | 10,6 a 14,2 | 7,2 a 9,4 | 10,3 a 14,5 | 2,8 a 3,6 |
+
+(As estatísticas t do PPC usam todos os positivos verificados sem peso,
+inclusive o ct03, e por isso não servem para julgar a (a).)
+
+Leitura:
+
+- ψθ̄ cai de 0,102 para 0,064 na (a) e 0,041 na (c), na direção esperada
+  (f₁ com mais massa nos scores altos). Ainda fica acima da referência
+  ponderada (0,026), que também é incerta (43 positivos).
+- O PPC troca de falha: a dependência entre minutos e a variância por noite
+  agora batem (antes reprovavam por larga margem), mas a fração de minutos
+  com y = 1 passa a sair alta (0,030 a 0,036 contra 0,018). Leitura
+  (interpretação): f₁ com 29 positivos efetivos põe massa demais acima de
+  logit 0,4, ou ψθ̄ ainda está alto; os dois juntos explicam o excesso.
+- A incerteza do estágio 1 (peso do componente baixo de f₁ de 0,23 a 0,69)
+  não entra nos intervalos acima, que estão estreitos demais. Com n
+  efetivo 29, isso agora é o limite principal.
+- (c) dá ψθ̄ menor que (a); as duas ficam bem abaixo do antigo, então a
+  conclusão "o antigo superestimava" não depende da sensibilidade.
+
+**[decidir] próximo passo:** propagar a incerteza do estágio 1 repetindo o
+estágio 2 com réplicas do bootstrap (20 réplicas × ~10 min, 2 em paralelo
+≈ 1h40 local; com mais réplicas, AWS), ou levar o bootstrap como priors
+informativos para f₁ no ajuste conjunto.
