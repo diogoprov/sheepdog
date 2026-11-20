@@ -6,17 +6,20 @@
 # spread of the estimates. Returns the per-minute log densities for stage 2.
 #   Rscript dev/fase2/emissions_2stage_curiango.R OUT_FILE [n_boot]
 source("dev/fase2/curiango_v1.R")
-emis_2stage <- function(d, n_boot = 0L, seed = 2026L) {
+# `use` (logical over minutes) and `w` (weights over minutes) override the
+# default: all verified minutes, weighted by stratum of the custom score.
+# `min_sd` floors the component sds (0 keeps the original parametrisation).
+emis_2stage <- function(d, n_boot = 0L, seed = 2026L, use = NULL, w = NULL, min_sd = 0) {
   st <- d$stan; m <- d$minutes
-  ver <- st$v >= 0L
+  ver <- if (is.null(use)) st$v >= 0L else use & st$v >= 0L
   stratum <- cut(m$conf_custom, c(-1, 0.3, 0.5, 1), right = FALSE)
   rate <- tapply(ver, stratum, mean)
-  w <- as.numeric(1 / rate[stratum])
+  if (is.null(w)) w <- as.numeric(1 / rate[stratum])
   one <- function(s, cens, mu, sd) ifelse(cens == 0L, dnorm(s, mu, sd),
     ifelse(cens == 1L, pnorm(st$c_lo, mu, sd), pnorm(st$c_hi, mu, sd, lower.tail = FALSE)))
   # p = (logit weight of component a, mean a, log sd a, log gap to mean b, log sd b)
-  dens <- function(p, s, cens) plogis(p[1]) * one(s, cens, p[2], exp(p[3])) +
-    (1 - plogis(p[1])) * one(s, cens, p[2] + exp(p[4]), exp(p[5]))
+  dens <- function(p, s, cens) plogis(p[1]) * one(s, cens, p[2], min_sd + exp(p[3])) +
+    (1 - plogis(p[1])) * one(s, cens, p[2] + exp(p[4]), min_sd + exp(p[5]))
   fit <- function(k) {
     s <- st$s[k]; ce <- st$cens[k]; wk <- w[k]
     q <- quantile(s[ce == 0L], c(.25, .75), names = FALSE)
@@ -26,8 +29,8 @@ emis_2stage <- function(d, n_boot = 0L, seed = 2026L) {
                                      method = "BFGS", control = list(maxit = 1000)))
     fs[[which.min(vapply(fs, `[[`, 0, "value"))]]$par
   }
-  nat <- \(p) c(pi = plogis(p[1]), mu_a = p[2], sd_a = exp(p[3]),
-                mu_b = p[2] + exp(p[4]), sd_b = exp(p[5]))
+  nat <- \(p) c(pi = plogis(p[1]), mu_a = p[2], sd_a = min_sd + exp(p[3]),
+                mu_b = p[2] + exp(p[4]), sd_b = min_sd + exp(p[5]))
   p0 <- fit(ver & st$v == 0L); p1 <- fit(ver & st$v == 1L)
   boot <- NULL
   if (n_boot > 0L) {

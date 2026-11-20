@@ -631,3 +631,353 @@ com o sorteio restrito a certas horas.
 Até a resposta, os resultados do estágio 1 e do estágio 2 ficam
 provisórios. A sensibilidade (estágio 1 sem pesos, ou sem os minutos
 complementados) fica para depois de saber como foi a complementação.
+
+## Curiango: conjuntos de teste reconstruídos (19/11/2026)
+
+O script de seleção da Liliana se perdeu. Ela guardou no NAS as saídas do
+BirdNET e do custom (`Compau_DiverSons`) de cada conjunto de teste
+(`Cjto-Teste_01` a `_03`) e a anotação por janela de 3 s (`Evaluation/`).
+Cruzamento em `curiango_conjuntos_teste.R`; os arquivos ficam fora do
+repositório.
+
+**Composição.** 484, 483 e 241 arquivos (1.208). As 1.199 verificadas do
+depósito estão todas em algum conjunto; sobram 7 arquivos sem verificado, e
+2 positivos aparecem em ct03 e também em ct01 ou ct02. Sem repetição: 960
+gravações sorteadas (43 positivas) e 239 só da complementação (214
+positivas), 257 positivos no total.
+
+Os 7 arquivos sem verificado estão todos em ct01/ct02 e no `Evaluation/`
+com uma única janela de 3 s (áudio truncado, provavelmente), por isso
+ficaram fora. O `Evaluation/` cobre só ct01+ct02 (967 arquivos) e concorda
+100% com o `y` do depósito nos 962 em comum; a anotação do ct03 não está nele.
+
+| Conjunto | n | positivos | BirdNET > 0 | custom ≥ 0,4 |
+|---|---|---|---|---|
+| ct01 | 477 | 3,8% (18) | 5,5% | 1,5% |
+| ct02 | 483 | 5,2% (25) | 6,8% | 2,7% |
+| ct03 | 241 | 89,6% (216) | 92% | 64% |
+| população | 97.806 | — | 7,3% | 1,8% |
+
+**ct01 e ct02 são o sorteio.**
+
+- Contagens por sítio quase iguais nos dois, cerca de 1% de cada sítio (XAR
+  0,76%).
+- A inclusão varia com o mês: 1,5 a 2% em dez/2023–jan/2024 e em
+  ago/2024–jan/2025, cerca de 0,6% de fev a jul/2024. Também varia com a
+  hora: 18 a 22 h acima, 16, 17 e 23 h abaixo. É coerente com uma base
+  aleatória somada às pastas filtradas por janela do relato dela.
+- Dados ano-mês, hora e sítio, os scores quase não predizem a inclusão
+  (LRT = 5,3, 2 gl, p = 0,07; coeficiente do custom levemente negativo). A
+  seleção desses 960 é ignorável dadas covariáveis do depósito; π sai de um
+  modelo logístico com esses três termos (aproximado, não exato como as
+  listas das 6 pastas dariam).
+- Com esses pesos: Kish n_eff = 494 de 960; prevalência de Hájek 0,026
+  (0,045 sem peso).
+
+**ct03 é a complementação.** 241 gravações, 90% positivas, nenhuma de Mimosa,
+muitas de junho, escolhidas pelo BirdNET. A probabilidade de inclusão não é
+recuperável. Fora as 2 repetidas, são 239 gravações e 214 dos 257 positivos
+verificados, cerca de 40 por sítio (ARA 29, BEP 50), sem proporção ao
+esforço.
+
+**BirdNET da Liliana ≠ BirdNET do depósito.** O máximo por minuto das
+saídas dela (divisão em 600 s, sem sobreposição, filtro 0 a 4 kHz) bate com
+`conf_birdnet` do depósito em 82% dos 1.208 minutos (correlação 0,88),
+em geral maior na versão dela. Existem pelo menos duas rodadas do BirdNET;
+não dá para saber qual guiou a escolha do ct03. A tabela completa do
+levantamento que ela guardou (`var+detc.csv`) tem os mesmos scores do
+depósito.
+
+**Leitura (interpretação, não teste):**
+
+- A referência de prevalência cai para 0,026 nos conjuntos sorteados, contra
+  0,107 (pesos por faixa do custom, seção anterior) e 0,059 (Hájek da sessão
+  do crywolf, com ct03). O ψθ̄ = 0,114 do modelo de três estados fica longe
+  da referência.
+- Estágio 1 só com ct01+ct02: sem viés de seleção, mas 43 positivos
+  identificam mal o f₁. Com ct03: os positivos voltam, mas o f₁ é puxado
+  para scores altos, porque a escolha foi pelo score.
+- **[decidir]** (Diogo): ct03 como camada não probabilística no modelo, ou
+  só como sensibilidade; e se vale pedir à Liliana as listas das 6 pastas
+  para tornar π de ct01+ct02 exato.
+
+### Rodada do BirdNET usada pela Liliana e critério do ct03 (19/11/2026)
+
+O Diogo trouxe do NAS a rodada `03_output_Birdnet-Clima_noite` (consolidado,
+lista e parâmetros). Cruzamento em `curiango_rodada_clima.R`.
+
+- A rodada cobre os 97.806 minutos do depósito, com os mesmos parâmetros das
+  pastas dos conjuntos (divisão em 600 s, sem sobreposição, filtro 0 a
+  4 kHz). O máximo por minuto é **idêntico** ao das pastas ct01 a ct03 em
+  100% dos arquivos, e difere do `conf_birdnet` do depósito em 3% dos
+  minutos (correlação 0,90). O `conf_birdnet` do depósito vem de outra
+  rodada.
+- Dos 239 do ct03, 220 têm detecção nessa rodada. A chance de escolha sobe
+  com o score: 0,5% entre 0,1 e 0,2, 2,9% entre 0,3 e 0,7, 7,9% acima de
+  0,7 (entre os 7.046 minutos com detecção fora do sorteio).
+- Os outros 19 são todos de BEP, de nov/2023 a abr/2024, com custom entre
+  0,10 e 0,75 (4 positivos). BEP tem só 131 minutos com detecção do BirdNET:
+  parece que a cota de BEP foi completada com o custom.
+- Cota de cerca de 40 por sítio (ARA 29, BEP 50), nenhum de Mimosa. Nenhum
+  escolhido em jan–fev/2024, ago–set/2024 e de nov/2024 em diante, que são
+  justamente os meses mais representados no sorteio; 110 dos 239 são de
+  junho/2024. Parece uma complementação dirigida aos meses pouco cobertos
+  (interpretação).
+- Dado o score dessa rodada, sítio, ano-mês e hora, o BirdNET do depósito
+  quase não acrescenta (LRT 3,8, p = 0,05), mas o custom ainda prediz a
+  escolha (LRT 73). Ou seja: a escolha usou os dois classificadores, e não um
+  BirdNET diferente do depósito.
+
+**Consequência.** Com a rodada `Clima_noite` e o custom, todas as variáveis
+que guiaram a escolha do ct03 parecem observadas, então um modelo de
+seleção com os dois scores, sítio, ano-mês e hora dá π aproximadas também
+para o ct03. Não dá para testar se a escolha dependeu ainda do estado real
+(se ela ouviu antes de escolher), porque `y` só existe nos escolhidos. Fica
+**[decidir]** se o estágio 1 usa o ct03 com esses pesos, com sensibilidade
+sem ele. A frase da prova do JAV precisa dizer que a complementação usou o
+BirdNET e, em um sítio, o classificador custom.
+
+### Diário e planejamento da Liliana (19/11/2026)
+
+O Diogo trouxe do NAS o `Diário.docx`, o `Planejamento.docx` e o material da
+fase piloto de 2024 (`Curiango/Analises`). O diário diz, em resumo:
+
+- de `Audios_Clima` (97.456 áudios), 6 pastas com 5% cada, sorteadas;
+- da pasta 1, 975 áudios (1% do total), filtrando de julho a fevereiro e de
+  18 h a 4h45;
+- como esse conjunto tinha pouco curiango, ela tentou filtrar as 6 pastas
+  por mês 7 a 11 e hora 18 a 3 h antes de sortear 975, e "só deu 258";
+- por fim, passou o BirdNET nos conjuntos de teste "para achar mais
+  ocorrência de curiango onde ainda tenho pouco" (o ct03).
+
+**Confronto com os dados:**
+
+- ct01+ct02 têm 967 arquivos, perto dos 975 do diário. Mas 309 deles estão
+  fora da janela julho–fevereiro × 18h–4h45. A inclusão é 1,45% dentro da
+  janela e 0,59% fora: parece uma parte sorteada sem filtro somada a uma
+  parte filtrada (interpretação).
+- A janela agosto–janeiro ajusta melhor que julho–fevereiro (julho e
+  fevereiro ficam com a taxa de fora), e a hora 23 fica baixa mesmo dentro
+  da janela. Nenhuma janela simples explica tudo (LRT de ano-mês + hora além
+  da janela ≈ 200, 29 gl). As π de ct01+ct02 seguem do modelo empírico com
+  ano-mês, hora e sítio, que já se mostrou ignorável em relação aos scores.
+- A tentativa das "258" não aparece nos conjuntos.
+- O diário diz que a complementação veio dos conjuntos de teste (as 6
+  pastas, 30%), mas a rodada `Clima_noite` cobre todos os 97.806 minutos. Se
+  o quadro do ct03 foi só os 30%, as π do ct03 levam um fator 0,3 a mais,
+  sem mudar a forma do modelo. **[confirmar com a Liliana]**
+
+**Treino do custom.** O `Planejamento.docx` registra os clipes de treino em
+`D:/art-cur/IA/01_training`: 377 de curiango (42 a 59 por sítio, inclusive
+Mimosa) e 342 de ruído, tirados das gravações do próprio levantamento
+(prefixo `DIVSPTS01`). Ainda não foi checado se algum arquivo dos conjuntos
+de teste também deu clipe de treino; para isso falta a lista de nomes de
+`art-cur/IA/01_training`. O material de `Curiango/Analises` é da fase piloto
+(gravações de 2023 do Arara), anterior ao levantamento.
+
+**Decisão do Diogo (19/11/2026):** o ct03 entra no estágio verificado com π
+estimadas. As π do ct03 vêm de um modelo de seleção com o score da rodada
+`Clima_noite`, o custom, sítio, ano-mês e hora (com o fator 0,3 se o quadro
+foi só as 6 pastas); as de ct01+ct02 vêm do modelo do sorteio (ano-mês, hora
+e sítio). Fica registrada a ressalva de que a dependência da seleção no
+estado real não é testável. A rodada `Clima_noite` precisa entrar no
+depósito ou no compêndio. O estágio 1 refeito com essas π ainda não rodou.
+
+### π do ct03 e teste da ignorabilidade (19/11/2026)
+
+Scripts: `dev/fase2/curiango_pi_ct03.R` (π, pesos, sensibilidades) e
+`dev/fase2/curiango_treino_sobreposicao.R` (clipes de treino × verificados,
+aguardando a lista completa de `01_training/compau` e `noise`).
+
+π1 = glm(inc ~ ano-mês + hora + sítio) nos 97.806 minutos; π3 = glm(sel ~
+sítio + ano-mês + hora + Clima_noite + [Clima_noite = 0] + custom) no quadro
+fora do ct01+ct02; π = π1 + (1 − π1) π3.
+
+- Pesos 1/π: ct01+ct02 vão de 26 a 1.742 (mediana 75, soma 97.452); ct03
+  vão de 1 a 215 (mediana 7, soma 3.337). Os 10 maiores pesos somam 6% do
+  total. Os pesos extremos estão no sorteio, não no ct03.
+- Prevalência (Hájek): 0,026 só ct01+ct02; 0,046 com todos e π; 0,050 com
+  truncagem no p95; 0,075 com o fator 0,3; 0,214 sem peso.
+- P(y = 1 | BirdNET 0,1–0,3): 0,24 só ct01+ct02; 0,42 com todos e π; 0,55
+  com o fator 0,3. Nas faixas do custom a diferença é pequena acima de 0,5.
+
+**Teste parcial do pressuposto.** Se a escolha do ct03 é ignorável dado os
+scores, y ⟂ estágio | x entre os verificados. Não é:
+
+- glm(y ~ Clima_noite + [= 0] + custom + sítio + mês + hora): acrescentar o
+  indicador do ct03 dá LRT 27,8 (1 gl), coeficiente 6,0 (EP 1,5).
+- Com o número de janelas do Clima_noite por minuto (todas e ≥ 0,3) no
+  modelo, o LRT fica em 21,9 e o coeficiente em 5,7 (EP 1,5).
+- Bruto, com custom < 0,3 e BirdNET > 0,1: ct03 tem 49 positivos em 57
+  (86%), ct01+ct02 tem 8 em 39 (21%). Dos 220 do ct03 com detecção do
+  BirdNET, só 10 são negativos.
+
+Leitura (interpretação): a escolha do ct03 usou informação sobre o estado
+real além dos scores, provavelmente a escuta ou a inspeção do espectrograma
+antes de incluir o arquivo. Outra possibilidade é critério de anotação
+diferente no ct03. Nos dois casos as π estimadas não corrigem o viés, e a
+curva P(y | score) com o ct03 sai inflada nos scores baixos.
+**[decidir: o Diogo precisa rever a decisão de 19/11; o estágio 1 não
+roda até lá. Opções: (a) estágio 1 só com ct01+ct02 (960, 43 positivos) e o
+ct03 como checagem externa; (b) ct03 só para a sensibilidade/especificidade
+condicional ao positivo, não para a prevalência nem a curva.]**
+
+**Decisão do Diogo (19/11/2026, revista):** opção (a), estágio 1 só com
+ct01+ct02 e pesos 1/π1; (c) como sensibilidade. Substitui a decisão
+anterior do mesmo dia. Rascunho no Gmail para a Liliana com três
+perguntas: ela ouviu antes de incluir no ct03? mesmo critério de anotação?
+quadro do ct03 = 6 pastas?
+
+### Estágio 1 refeito (19/11/2026)
+
+`emissions_ct12_curiango.R` (π de `results/curiango_v1/pi_verificados.csv`,
+gerado por `curiango_pi_ct03.R`). `emis_2stage()` ganhou `use`, `w` e
+`min_sd`, com defaults que mantêm o comportamento antigo.
+
+- (a) ct01+ct02, pesos 1/π1. Com 43 positivos (n efetivo 29), a mistura de
+  f₁ colapsava num pico (sd 0,03) em três scores de peso alto; `min_sd =
+  0,2` nos dois ajustes novos.
+- (c) os 1.199, com π do ct03 corrigida pela seleção no estado real:
+  π3 · P(y | x, ct03) / P(y | x, população), x = (Clima_noite, [= 0],
+  custom), ajustes com `brglm2` (o glm comum separa). Supõe deslocamento
+  constante no log-odds, o que o teste da interação não sustenta.
+- Bootstrap de 200 réplicas por noite, com os pesos fixos.
+
+| | f₁: peso do comp. baixo | f₁: comp. baixo | f₁: comp. alto | P(s > logit 0,4 \| y = 1) | n efetivo f₁ |
+|---|---|---|---|---|---|
+| (a) ct01+ct02 | 0,38 (0,23 a 0,69) | N(−1,67; 0,37) | N(0,49; 1,05) | 0,50 | 29 |
+| (c) com ct03 corrigido | 0,26 (0,16 a 0,42) | N(−1,63; 0,38) | N(0,67; 1,10) | 0,62 | 65 |
+| antigo (estratos do custom) | 0,78 (0,73 a 0,83) | N(−1,45; 0,42) | N(0,91; 1,48) | 0,18 | 120 |
+
+f₀ quase não muda (P(s > logit 0,4 | y = 0) de 0,0003 a 0,0015).
+
+Leitura: o peso alto do componente baixo de f₁ no estágio 1 antigo vinha
+do ct03 (positivos de custom baixo escolhidos pelo BirdNET e pela escuta).
+Sem ele, f₁ põe metade da massa acima de logit 0,4. Como ψθ̄ depende
+sobretudo de f₁ (r = −0,89 com mu_a), o estágio 2 deve mudar: espera-se
+fração de minutos com canto menor que 0,102 (interpretação; a referência
+ponderada agora é 0,026 só com ct01+ct02).
+
+### Plano do estágio 2 (a confirmar com o Diogo)
+
+`run_curiango_2stage.R` com as emissões novas, 4 cadeias, 1.000 + 1.000,
+semente 2026, ~30 min por ajuste no Mac (4 núcleos cada, 2 ajustes em
+paralelo = 8 núcleos):
+
+1. (a) com Markov (principal) e (a) sem Markov.
+2. (c) com Markov (sensibilidade).
+3. PPC (`ppc_curiango_2stage.R`) dos três, segundos cada.
+
+Total ~1 h local (abaixo das 2 h; sem AWS). Diagnósticos: divergências,
+treedepth, E-BFMI, R-hat, ESS. A incerteza do estágio 1 continua fora do
+estágio 2; com n efetivo 29 em f₁ isso pesa mais que antes, e a saída
+seria repetir o estágio 2 com algumas réplicas do bootstrap (fica para
+depois).
+
+### Estágio 2 com as emissões novas (19/11/2026)
+
+`run_curiango_2stage.R`, 4 cadeias, 1.000 + 1.000, semente 2026, ~10 min
+por ajuste no Mac. Saídas em `results/curiango_v1/ct12_m1/`, `ct12_m0/` e
+`ct03r_m1/` (fit e PPC). Os três ajustes: sem divergências, sem treedepth
+máximo, E-BFMI ≥ 0,92, R-hat ≤ 1,004, ESS bulk ≥ 2.400.
+
+| Quantidade | (a) v1 | (a) sem Markov | (c) v1 | antigo v1 | antigo sem Markov |
+|---|---|---|---|---|---|
+| ψ no centro | 0,42 (0,39 a 0,45) | 0,29 | 0,35 | 0,48 | 0,35 |
+| θ₀ | 0,036 | 0,144 | 0,033 | 0,047 | 0,204 |
+| θ̄ | 0,152 | 0,144 | 0,118 | 0,211 | 0,204 |
+| ρ | 4,66 (4,54 a 4,79) | | 4,50 | 4,54 | |
+| ψ θ̄ | **0,064 (0,058 a 0,070)** | 0,041 | 0,041 (0,037 a 0,045) | 0,102 | 0,071 |
+
+Intervalos de 90%. Referência ponderada só com ct01+ct02: 0,026 (Hájek).
+
+PPC (y = 1 quando o score passa de logit 0,4; intervalo de 90% das réplicas):
+
+| Estatística | Observado | (a) v1 | (a) sem Markov | (c) v1 | antigo v1 |
+|---|---|---|---|---|---|
+| Fração de minutos com y = 1 | 0,018 | 0,030 a 0,036 | 0,024 a 0,030 | 0,026 a 0,034 | 0,017 a 0,021 |
+| P(y = 1 \| y = 1 antes) | 0,39 | 0,39 a 0,43 | 0,11 a 0,14 | 0,45 a 0,49 | 0,13 a 0,17 |
+| Noites com alguma detecção | 0,25 | 0,31 a 0,36 | 0,25 a 0,31 | 0,30 a 0,35 | 0,34 a 0,41 |
+| Variância de detecções por noite | 10,3 | 10,6 a 14,2 | 7,2 a 9,4 | 10,3 a 14,5 | 2,8 a 3,6 |
+
+(As estatísticas t do PPC usam todos os positivos verificados sem peso,
+inclusive o ct03, e por isso não servem para julgar a (a).)
+
+Leitura:
+
+- ψθ̄ cai de 0,102 para 0,064 na (a) e 0,041 na (c), na direção esperada
+  (f₁ com mais massa nos scores altos). Ainda fica acima da referência
+  ponderada (0,026), que também é incerta (43 positivos).
+- O PPC troca de falha: a dependência entre minutos e a variância por noite
+  agora batem (antes reprovavam por larga margem), mas a fração de minutos
+  com y = 1 passa a sair alta (0,030 a 0,036 contra 0,018). Leitura
+  (interpretação): f₁ com 29 positivos efetivos põe massa demais acima de
+  logit 0,4, ou ψθ̄ ainda está alto; os dois juntos explicam o excesso.
+- A incerteza do estágio 1 (peso do componente baixo de f₁ de 0,23 a 0,69)
+  não entra nos intervalos acima, que estão estreitos demais. Com n
+  efetivo 29, isso agora é o limite principal.
+- (c) dá ψθ̄ menor que (a); as duas ficam bem abaixo do antigo, então a
+  conclusão "o antigo superestimava" não depende da sensibilidade.
+
+**[decidir] próximo passo:** propagar a incerteza do estágio 1 repetindo o
+estágio 2 com réplicas do bootstrap (20 réplicas × ~10 min, 2 em paralelo
+≈ 1h40 local; com mais réplicas, AWS), ou levar o bootstrap como priors
+informativos para f₁ no ajuste conjunto.
+
+### Respostas da Liliana sobre o ct03 (19/11/2026)
+
+De memória, sem documentação:
+
+1. Ouvia ou olhava o espectrograma antes de incluir no ct03? "Provavelmente".
+2. Mesmo critério de anotação nos três conjuntos? Sim, todos anotados por
+   ela.
+3. Quadro do ct03: só as 6 pastas de 5%, e talvez só as 3 primeiras.
+
+Consequências:
+
+- A resposta 2 descarta a explicação por critério de anotação diferente. A
+  resposta 1 é coerente com o teste (y ⟂ estágio | x falha): a escolha do
+  ct03 dependeu do estado real. A opção (a) fica justificada.
+- O quadro do ct03 seria 30% (fator 0,3) ou 15% (fator 0,15) do levantamento.
+  Isso só afeta a sensibilidade (c), não a (a). A (c) já supõe deslocamento
+  constante no log-odds, o que os dados não sustentam, então o fator não
+  muda o que concluímos dela.
+- Para o artigo do JAV, a frase "The supplementary files were inspected
+  before inclusion" passa a ser verdadeira. A prova já foi devolvida; a
+  inclusão é uma correção opcional ao editor de produção (decisão do Diogo
+  e da Liliana).
+
+### Ajuste conjunto com prior na f₁ (19/11/2026)
+
+Decisão do Diogo: levar o bootstrap como prior em vez de repetir o estágio
+2. `model_v1_prior1.stan` e `run_curiango_v1prior.R`: f₁ parametrizada como
+u = (logit π₁, μ₁a, log gap, log σ₁a, log σ₁b), u ~ MVN com média e
+covariância das 200 réplicas do bootstrap da (a); todos os minutos entram
+como não verificados (os rótulos só pelo prior). 4 cadeias, 1.000 + 1.000,
+~65 min. Saída em `results/curiango_v1/v1prior_ct12/`.
+
+Convergência boa (sem divergências, R-hat ≤ 1,003, ESS bulk ≥ 2.000), mas
+o posterior foge do prior e repete a falha do v1 conjunto antigo:
+
+| Parâmetro de f₁ | prior (média) | posterior (mediana) |
+|---|---|---|
+| π₁ (peso do comp. baixo) | 0,44 | 0,867 |
+| μ₁a | −1,58 | −1,945 |
+| σ₁a | 0,38 | 0,253 |
+
+O componente baixo de f₁ vai para cima de f₀ (λ₀ = −2,35), e o modelo passa a
+chamar de canto a massa de minutos de score baixo: ψ = 0,92, θ̄ = 0,71,
+ψθ̄ = 0,66 (0,64 a 0,67). PPC reprova em tudo (fração com y = 1: 0,026 a
+0,029 contra 0,018; P(y | y antes): 0,04 a 0,06 contra 0,39; noites com
+detecção: 0,68 a 0,73 contra 0,25; variância por noite: 1,9 a 2,2 contra
+10,3).
+
+Leitura: com ~97 mil minutos não rotulados, a verossimilhança da mistura
+domina um prior tirado de 29 positivos efetivos; a não identificação entre
+o componente baixo de f₁ e f₀ volta. O prior do bootstrap não basta. O
+caminho viável continua sendo o de dois estágios (emissões fixadas pelos
+verificados), e a incerteza do estágio 1 teria de entrar por réplicas do
+bootstrap no estágio 2.
+**[decidir]** repetir o estágio 2 com réplicas do bootstrap (20 réplicas ×
+~10 min, 2 em paralelo ≈ 1h40 local) ou parar nos intervalos atuais com a
+ressalva.
