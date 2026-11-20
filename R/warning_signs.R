@@ -132,7 +132,7 @@
 #' ex <- system.file("extdata", "example", package = "sheepdog")
 #' val <- read_validation_tables(list.files(file.path(ex, "validation"),
 #'                                          full.names = TRUE))
-#' thr <- threshold_bootstrap(val, target_precision = 0.95, n_boot = 100)
+#' thr <- threshold_bootstrap(val, target_precision = 0.95, n_boot = 30)
 #' warning_signs(val, thr, groups = "site",
 #'               threshold_column = "threshold_conservative",
 #'               file = tempfile(fileext = ".md"))

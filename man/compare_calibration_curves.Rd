@@ -208,7 +208,10 @@ a check of the shape: similar thresholds mean the shape is right.
 ex <- system.file("extdata", "example", package = "sheepdog")
 validation <- read_validation_tables(list.files(file.path(ex, "validation"),
                                                 full.names = TRUE))
-cmp <- compare_calibration_curves(validation, target = 0.95)
+# Two fast curves; "gam" and "monotone_gam" can be added but are slower
+cmp <- compare_calibration_curves(validation, target = 0.95,
+                                  curves = c("logistic", "quadratic"),
+                                  k_folds = 3)
 cmp[c("species_folder", "curve", "top_error", "threshold_precision",
       "threshold_weighted", "verdict")]
 if (requireNamespace("ggplot2", quietly = TRUE)) plot_calibration_curves(cmp)
