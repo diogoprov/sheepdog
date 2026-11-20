@@ -51,3 +51,8 @@ dev/benchmarks/results/
 manuscript/
 AI_INTERACTION_LOG.md
 data-raw/intro-figure/intro.svg
+
+# manuscrito MEE em revisao double-anonymous: so os scripts entram no git
+dev/manuscript-mee/*
+!dev/manuscript-mee/fig2-curiango.R
+!dev/manuscript-mee/appS2-subsampling.R
