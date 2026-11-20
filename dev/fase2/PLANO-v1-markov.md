@@ -946,3 +946,38 @@ Consequências:
   before inclusion" passa a ser verdadeira. A prova já foi devolvida; a
   inclusão é uma correção opcional ao editor de produção (decisão do Diogo
   e da Liliana).
+
+### Ajuste conjunto com prior na f₁ (19/11/2026)
+
+Decisão do Diogo: levar o bootstrap como prior em vez de repetir o estágio
+2. `model_v1_prior1.stan` e `run_curiango_v1prior.R`: f₁ parametrizada como
+u = (logit π₁, μ₁a, log gap, log σ₁a, log σ₁b), u ~ MVN com média e
+covariância das 200 réplicas do bootstrap da (a); todos os minutos entram
+como não verificados (os rótulos só pelo prior). 4 cadeias, 1.000 + 1.000,
+~65 min. Saída em `results/curiango_v1/v1prior_ct12/`.
+
+Convergência boa (sem divergências, R-hat ≤ 1,003, ESS bulk ≥ 2.000), mas
+o posterior foge do prior e repete a falha do v1 conjunto antigo:
+
+| Parâmetro de f₁ | prior (média) | posterior (mediana) |
+|---|---|---|
+| π₁ (peso do comp. baixo) | 0,44 | 0,867 |
+| μ₁a | −1,58 | −1,945 |
+| σ₁a | 0,38 | 0,253 |
+
+O componente baixo de f₁ vai para cima de f₀ (λ₀ = −2,35), e o modelo passa a
+chamar de canto a massa de minutos de score baixo: ψ = 0,92, θ̄ = 0,71,
+ψθ̄ = 0,66 (0,64 a 0,67). PPC reprova em tudo (fração com y = 1: 0,026 a
+0,029 contra 0,018; P(y | y antes): 0,04 a 0,06 contra 0,39; noites com
+detecção: 0,68 a 0,73 contra 0,25; variância por noite: 1,9 a 2,2 contra
+10,3).
+
+Leitura: com ~97 mil minutos não rotulados, a verossimilhança da mistura
+domina um prior tirado de 29 positivos efetivos; a não identificação entre
+o componente baixo de f₁ e f₀ volta. O prior do bootstrap não basta. O
+caminho viável continua sendo o de dois estágios (emissões fixadas pelos
+verificados), e a incerteza do estágio 1 teria de entrar por réplicas do
+bootstrap no estágio 2.
+**[decidir]** repetir o estágio 2 com réplicas do bootstrap (20 réplicas ×
+~10 min, 2 em paralelo ≈ 1h40 local) ou parar nos intervalos atuais com a
+ressalva.
