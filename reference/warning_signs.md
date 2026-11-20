@@ -220,7 +220,7 @@ warning_signs(val, thr, groups = "site",
               threshold_column = "threshold_conservative",
               file = tempfile(fileext = ".md"))
 #> No reviewed clip has `inclusion_prob`: signs 2 and 6 use every clip, unweighted, and are only indicative.
-#> Warning signs written to /tmp/RtmpG6KYOE/file19151167cfb6.md
+#> Warning signs written to /tmp/Rtmp2rblcP/file196052f11f30.md
 #> # A tibble: 8 × 19
 #>   species_folder threshold sign1_ceiling sign1 sign2_tp_kept sign2
 #>   <chr>              <dbl>         <dbl> <lgl>         <dbl> <lgl>
