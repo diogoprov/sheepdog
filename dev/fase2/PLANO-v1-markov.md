@@ -981,3 +981,38 @@ bootstrap no estágio 2.
 **[decidir]** repetir o estágio 2 com réplicas do bootstrap (20 réplicas ×
 ~10 min, 2 em paralelo ≈ 1h40 local) ou parar nos intervalos atuais com a
 ressalva.
+
+### Estágio 2 com réplicas do bootstrap do estágio 1 (20/11/2026)
+
+`emissions_boot_curiango.R` gera as densidades por minuto das 20 primeiras
+réplicas do bootstrap por noite da (a). As densidades nas estimativas
+pontuais batem com as do estágio 1 (diferença máxima 0). Cada réplica foi
+ajustada com `run_curiango_2stage.R` (Markov, 4 cadeias, 1.000 + 1.000,
+~24 min por par de réplicas em paralelo, ~3h50 no total), e
+`pool_2stage_boot.R` empilha os draws das 20 com peso igual. Saídas em
+`results/curiango_v1/boot_ct12/` (`b01` a `b20`, `pool.rds`).
+
+Os 20 ajustes: sem divergências, sem treedepth máximo, E-BFMI ≥ 0,91,
+R-hat ≤ 1,006, ESS bulk ≥ 2.480.
+
+| Quantidade | emissões pontuais | agrupado (20 réplicas) |
+|---|---|---|
+| ψ no centro | 0,42 (0,39 a 0,45) | 0,42 (0,37 a 0,47) |
+| θ₀ | 0,036 (0,033 a 0,039) | 0,037 (0,030 a 0,048) |
+| θ̄ | 0,152 (0,139 a 0,165) | 0,140 (0,101 a 0,190) |
+| ρ | 4,66 (4,54 a 4,79) | 4,47 (3,85 a 4,80) |
+| ψ θ̄ | 0,064 (0,058 a 0,070) | **0,059 (0,038 a 0,088)** |
+
+Intervalos de 90%. As medianas de ψθ̄ por réplica vão de 0,035 a 0,093;
+correlação de 0,48 com o peso do componente baixo de f₁ na réplica.
+
+Leitura:
+
+- A incerteza do estágio 1 domina: o intervalo de ψθ̄ fica cerca de 4×
+  mais largo. ψ quase não muda; quem absorve a incerteza é θ̄.
+- A referência ponderada só com ct01+ct02 (0,026) continua abaixo do
+  intervalo agrupado. A distância diminuiu, mas não some. Com 43 positivos,
+  a referência também tem incerteza grande (não calculada aqui).
+- Este é o resultado a reportar para o v1 de dois estágios no Curiango:
+  ψθ̄ = 0,059 (0,038 a 0,088), com a ressalva de que 20 réplicas dão
+  extremos do intervalo imprecisos.
