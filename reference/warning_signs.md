@@ -215,21 +215,21 @@ then only indicative.
 ex <- system.file("extdata", "example", package = "sheepdog")
 val <- read_validation_tables(list.files(file.path(ex, "validation"),
                                          full.names = TRUE))
-thr <- threshold_bootstrap(val, target_precision = 0.95, n_boot = 100)
+thr <- threshold_bootstrap(val, target_precision = 0.95, n_boot = 30)
 warning_signs(val, thr, groups = "site",
               threshold_column = "threshold_conservative",
               file = tempfile(fileext = ".md"))
 #> No reviewed clip has `inclusion_prob`: signs 2 and 6 use every clip, unweighted, and are only indicative.
-#> Warning signs written to /tmp/Rtmp2rblcP/file196052f11f30.md
+#> Warning signs written to /tmp/RtmpJJ0GBp/file19316b877a2d.md
 #> # A tibble: 8 × 19
 #>   species_folder threshold sign1_ceiling sign1 sign2_tp_kept sign2
 #>   <chr>              <dbl>         <dbl> <lgl>         <dbl> <lgl>
-#> 1 boa_ran            0.72             NA NA            0.810 FALSE
-#> 2 den_nan            0.78             NA NA            0.333 FALSE
-#> 3 ela_bic            0.395            NA NA            0.986 FALSE
-#> 4 lep_fus            0.695            NA NA            0.306 FALSE
+#> 1 boa_ran            0.674            NA NA            0.858 FALSE
+#> 2 den_nan            0.77             NA NA            0.290 FALSE
+#> 3 ela_bic            0.417            NA NA            0.997 FALSE
+#> 4 lep_fus            0.716            NA NA            0.276 FALSE
 #> 5 lep_pod            0.46             NA NA            0.976 FALSE
-#> 6 phy_cuv            0.5              NA NA            0.924 FALSE
+#> 6 phy_cuv            0.536            NA NA            0.913 FALSE
 #> 7 pse_pla            0.81             NA NA            0.245 TRUE 
 #> 8 sci_nas            0.805            NA NA            0.311 FALSE
 #> # ℹ 13 more variables: sign6_fp_spread <dbl>, sign6 <lgl>, sign6_detail <chr>,

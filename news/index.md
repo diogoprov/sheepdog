@@ -1,5 +1,13 @@
 # Changelog
 
+## sheepdog 3.4.1
+
+- CRAN incoming checks: the examples of
+  [`compare_calibration_curves()`](https://provetelab.org/sheepdog/reference/compare_calibration_curves.md)
+  (now the logistic and quadratic curves with three folds) and
+  [`warning_signs()`](https://provetelab.org/sheepdog/reference/warning_signs.md)
+  (30 bootstrap replicates) run faster.
+
 ## sheepdog 3.4.0
 
 - CRAN review: the Description no longer starts with “Tools to”, and the
