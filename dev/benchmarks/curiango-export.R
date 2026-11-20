@@ -121,6 +121,25 @@ if (nzchar(calib_cov)) {
 }
 n_versions <- as.integer(Sys.getenv("N_VERSIONS", "20"))
 
+# Conjunto de teste (PI_FILE, TEST_SET): o arquivo pi_verificados.csv de
+# dev/fase2/curiango_pi_ct03.R tem, por minuto verificado, o conjunto
+# (stage: "ct12" = sorteio ct01+ct02, "ct03" = complementacao) e as
+# probabilidades de inclusao estimadas (pi1 do sorteio; pi do conjunto todo).
+# TEST_SET = "ct12" (padrao com PI_FILE) usa so o sorteio, com pi1;
+# TEST_SET = "all" usa os 1.199 minutos, com pi. Sem PI_FILE, o
+# comportamento antigo (todos os minutos, inclusao = fracao do local).
+pi_file <- Sys.getenv("PI_FILE")
+if (nzchar(pi_file)) {
+  test_set <- Sys.getenv("TEST_SET", "ct12")
+  pis <- read_csv(pi_file, show_col_types = FALSE,
+                  col_types = cols(time = "c")) |>
+    mutate(key = format(as.POSIXct(time, tz = "UTC"), "%Y%m%d_%H%M%S"))
+  if (test_set != "all") pis <- filter(pis, stage == test_set)
+  pis <- transmute(pis, site, key,
+                   pi_minute = if (test_set == "all") pi else pi1)
+  message("Test set ", test_set, ": ", nrow(pis), " minutes")
+}
+
 # mes da gravacao (YYYYMM), a partir do nome do arquivo
 month_of <- function(path) {
   substr(regmatches(path, regexpr("[0-9]{8}_[0-9]{6}", path)), 1, 6)
@@ -160,10 +179,22 @@ for (cl in names(classifiers)) {
     count(site, name = "n_test") |>
     left_join(count(recordings, site, name = "n_total"), by = "site") |>
     mutate(inclusion_prob = n_test / n_total)
+  if (nzchar(pi_file)) {
+    # conjuntos de teste reconstruidos (dev/fase2/PLANO-v1-markov.md,
+    # 19/11/2026): so os minutos do conjunto pedido, com a probabilidade de
+    # inclusao estimada de cada minuto
+    cm <- cm |>
+      inner_join(pis, by = c("site", "key")) |>
+      mutate(inclusion_prob = pi_minute)
+    inclusion <- distinct(cm, site, key, inclusion_prob)
+  }
   annotated <- cm |>
     group_by(site, occasion_id, source_audio) |>
     summarise(present = any(compau_annotation == 1), .groups = "drop") |>
-    left_join(select(inclusion, site, inclusion_prob), by = "site") |>
+    left_join(if (nzchar(pi_file)) {
+      cm |> distinct(site, occasion_id, inclusion_prob)
+    } else select(inclusion, site, inclusion_prob),
+    by = if (nzchar(pi_file)) c("site", "occasion_id") else "site") |>
     transmute(site, species_code = species_code, occasion_id, source_audio,
               clip_start = 0, clip_end = 60, confidence = NA_real_,
               sampling_mode = "random_recordings", inclusion_prob,
