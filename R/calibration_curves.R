@@ -166,12 +166,13 @@
 #'   [threshold_bootstrap()].
 #' @export
 #' @examples
-#' \dontrun{
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' validation <- read_validation_tables(list.files(file.path(ex, "validation"),
+#'                                                 full.names = TRUE))
 #' cmp <- compare_calibration_curves(validation, target = 0.95)
 #' cmp[c("species_folder", "curve", "top_error", "threshold_precision",
 #'       "threshold_weighted", "verdict")]
-#' plot_calibration_curves(cmp)
-#' }
+#' if (requireNamespace("ggplot2", quietly = TRUE)) plot_calibration_curves(cmp)
 compare_calibration_curves <- function(validation, target = 0.95,
                                        by = "species_folder",
                                        curves = c("logistic", "quadratic",

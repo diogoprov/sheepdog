@@ -129,17 +129,13 @@
 #'   [threshold_by_group()], [threshold_record()], [confuser_summary()].
 #' @export
 #' @examples
-#' \dontrun{
-#' thr <- threshold_bootstrap(val, target_precision = 0.95)
-#' warning_signs(val, thr, groups = c("site", "month"),
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validation_tables(list.files(file.path(ex, "validation"),
+#'                                          full.names = TRUE))
+#' thr <- threshold_bootstrap(val, target_precision = 0.95, n_boot = 100)
+#' warning_signs(val, thr, groups = "site",
 #'               threshold_column = "threshold_conservative",
-#'               curves = compare_calibration_curves(val),
-#'               recall = recall_ceiling(rr, det, thresholds = thr,
-#'                                       by = c("site", "species_folder"),
-#'                                       threshold_column =
-#'                                         "threshold_conservative"),
-#'               file = "warning_signs.md")
-#' }
+#'               file = tempfile(fileext = ".md"))
 warning_signs <- function(validation, thresholds, groups = NULL,
                           curves = NULL, recall = NULL,
                           target_precision = 0.95, min_n = 15,

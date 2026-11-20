@@ -80,10 +80,10 @@ with their stratum: later rounds draw from it and \code{\link[=combine_rounds]{c
 reads it, so keep it with the manifest.
 }
 \examples{
-\dontrun{
-# Check the selection first, then cut
-extract_validation_clips("N:/Arara", "N:/Arara/validation",
-                         remap_from = "N:/", remap_to = "/Volumes/Arara/",
-                         simulate = TRUE)
-}
+ex <- system.file("extdata", "example", package = "sheepdog")
+# Check the selection first (no audio is read), then cut
+man <- extract_validation_clips(file.path(ex, "birdnet"),
+                                file.path(tempdir(), "validation"),
+                                simulate = TRUE)
+table(man$status)
 }

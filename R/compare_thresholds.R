@@ -56,12 +56,15 @@
 #' @seealso [post_validation()], which writes this table with `fit`.
 #' @export
 #' @examples
-#' \dontrun{
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' files <- list.files(file.path(ex, "validation"), full.names = TRUE)
+#' sites <- c("ARA", "BAI", "NHE", "XAR")
+#' tables <- setNames(file.path(ex, "birdnet", sites,
+#'                              "BirdNET_SelectionTable.txt"), sites)
 #' fit <- fit_calibration(read_validations(files),
-#'                        calibration_models()$m4_species_x_site)
+#'                        calibration_models()$m2_species_slope)
 #' scored <- score_detections(tables, fit)
 #' compare_thresholds(read_validation_tables(files), fit, scored)
-#' }
 compare_thresholds <- function(validation, fit, scored = NULL,
                                target_p = 0.95, target_precision = 0.90,
                                min_n = 15, tolerance = 0.05, quality = NULL,

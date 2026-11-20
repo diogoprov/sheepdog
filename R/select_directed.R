@@ -67,15 +67,15 @@
 #' @seealso [select_clips()], [cut_clips()], [export_occupancy_data()].
 #' @export
 #' @examples
-#' \dontrun{
-#' pred <- read_selection_tables("N:/Arara")
-#' units <- readr::read_csv("expected_gain.csv") # site, month, species_code, size
-#' sel <- select_directed(pred, units, n_units = 40, threshold = 0.5,
-#'                        previous = "validation_r1/clip_manifest.csv")
-#' man <- cut_clips(sel, "validation_directed")
-#' readr::write_csv(man, "validation_directed/clip_manifest.csv")
-#' readr::write_csv(attr(sel, "units"), "validation_directed/units.csv")
-#' }
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' pred <- read_selection_tables(file.path(ex, "birdnet"))
+#' # units and their size, for instance the expected gain from a model
+#' units <- data.frame(site = c("ARA", "BAI", "NHE", "XAR"),
+#'                     species_code = "Boana raniceps_boa-ran",
+#'                     month = "2021-11", size = c(1, 2, 3, 4))
+#' sel <- select_directed(pred, units, n_units = 2, threshold = 0.5)
+#' attr(sel, "units")
+#' # then cut_clips(sel, "validation_directed") with the audio at hand
 select_directed <- function(detections, units, n_units, threshold,
                             size_col = "size", floor = 0.05,
                             occasion_unit = c("file", "minute"),
