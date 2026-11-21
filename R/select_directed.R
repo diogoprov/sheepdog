@@ -82,7 +82,7 @@ select_directed <- function(detections, units, n_units, threshold,
                             previous = NULL, seed = 2026,
                             remap_from = NULL, remap_to = NULL) {
   unidade <- match.arg(occasion_unit)
-  if (!is.data.frame(units)) stop("`units` must be a data frame.", call. = FALSE)
+  check_data_frame(units, "units")
   if (!size_col %in% names(units)) {
     stop("`units` lacks the size column `", size_col, "`.", call. = FALSE)
   }
@@ -135,11 +135,7 @@ select_directed <- function(detections, units, n_units, threshold,
     anteriores <- read_previous(previous)
     dirigidas <- filter(anteriores, sampling_mode == "directed_pps")
     if (nrow(dirigidas) > 0) rodada <- max(dirigidas$round) + 1L
-    faltam <- setdiff(c("source_audio", "clip_start"), names(anteriores))
-    if (length(faltam) > 0) {
-      stop("Earlier rounds without column(s): ",
-           paste(faltam, collapse = ", "), ".", call. = FALSE)
-    }
+    check_columns(anteriores, c("source_audio", "clip_start"), "previous")
     # o clipe e casado pelo arquivo e pelo inicio, que nao dependem da
     # unidade de ocasiao nem do remapeamento dos caminhos de cada rodada
     vistos <- transmute(anteriores, site, species_code,

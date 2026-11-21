@@ -36,17 +36,9 @@ join_identities <- function(validation, identities, clip_col = "clip",
     identities <- read_csv(identities, show_col_types = FALSE,
                            col_types = cols(.default = col_character()))
   }
-  faltam <- setdiff(c(clip_col, identity_col, certainty_col),
-                    names(identities))
-  if (length(faltam) > 0) {
-    stop("`identities` lacks the column(s): ", paste(faltam, collapse = ", "),
-         call. = FALSE)
-  }
-  faltam <- setdiff(c("clip_file", "verdict"), names(validation))
-  if (length(faltam) > 0) {
-    stop("`validation` lacks the column(s): ", paste(faltam, collapse = ", "),
-         call. = FALSE)
-  }
+  check_columns(identities, c(clip_col, identity_col, certainty_col),
+                "identities")
+  check_columns(validation, c("clip_file", "verdict"), "validation")
   ext <- tibble(
     clip_file = basename(as.character(identities[[clip_col]])),
     .id = vapply(as.character(identities[[identity_col]]), clean_identity,
@@ -142,12 +134,8 @@ join_identities <- function(validation, identities, clip_col = "clip",
 #' @export
 confuser_summary <- function(validation, verdicts = "negative",
                              classes = NULL) {
-  faltam <- setdiff(c("species_code", "verdict", "identity"),
-                    names(validation))
-  if (length(faltam) > 0) {
-    stop("`validation` lacks the column(s): ", paste(faltam, collapse = ", "),
-         call. = FALSE)
-  }
+  check_columns(validation, c("species_code", "verdict", "identity"),
+                "validation")
   if (is.null(classes)) {
     classes <- unique(stats::na.omit(as.character(validation$species_code)))
   }

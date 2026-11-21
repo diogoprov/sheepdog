@@ -98,21 +98,15 @@ recall_ceiling <- function(validation, detections, thresholds = NULL,
                            cluster = "source_audio", conf = 0.95,
                            seed = 2026) {
   unidade <- match.arg(occasion_unit)
-  if (!is.numeric(conf) || length(conf) != 1 || conf <= 0 || conf >= 1) {
-    stop("`conf` must be a single number between 0 and 1.", call. = FALSE)
-  }
-  faltam <- setdiff(c("site", "species_code", "occasion_id",
-                      "sampling_mode", "verdict"), names(validation))
-  if (length(faltam) > 0) {
-    stop("`validation` lacks column(s): ", paste(faltam, collapse = ", "),
-         ".", call. = FALSE)
-  }
-  faltam <- setdiff(c("site", "species_code", "confidence", "begin_path",
-                      "file_offset"), names(detections))
-  if (length(faltam) > 0) {
-    stop("`detections` lacks column(s): ", paste(faltam, collapse = ", "),
-         ". Read it with read_selection_tables().", call. = FALSE)
-  }
+  check_prob(conf, "conf", open = TRUE)
+  check_columns(validation,
+                c("site", "species_code", "occasion_id", "sampling_mode",
+                  "verdict"),
+                "validation")
+  check_columns(detections,
+                c("site", "species_code", "confidence", "begin_path",
+                  "file_offset"),
+                "detections", hint = "Read it with read_selection_tables().")
   gravacoes <- validation |>
     filter(sampling_mode %in% "random_recordings",
            verdict %in% c("positive", "negative")) |>
@@ -127,9 +121,8 @@ recall_ceiling <- function(validation, detections, thresholds = NULL,
          call. = FALSE)
   }
   check_by(gravacoes, by)
-  if (n_boot > 0 && !cluster %in% names(gravacoes)) {
-    stop("`cluster` (", cluster, ") is not a column of `validation`.",
-         call. = FALSE)
+  if (n_boot > 0) {
+    check_columns(gravacoes, cluster, "validation", hint = "See `cluster`.")
   }
   if (!"inclusion_prob" %in% names(gravacoes) ||
       anyNA(gravacoes$inclusion_prob)) {
@@ -239,11 +232,7 @@ thresholds_by_group <- function(thresholds, gravacoes, by, coluna) {
   if (!is.data.frame(thresholds)) {
     stop("`thresholds` must be a numeric vector or a table.", call. = FALSE)
   }
-  faltam <- setdiff(c(by, coluna), names(thresholds))
-  if (length(faltam) > 0) {
-    stop("`thresholds` lacks column(s): ", paste(faltam, collapse = ", "),
-         ".", call. = FALSE)
-  }
+  check_columns(thresholds, c(by, coluna), "thresholds")
   out <- thresholds |>
     mutate(across(all_of(by), as.character)) |>
     select(all_of(by), threshold = all_of(coluna)) |>

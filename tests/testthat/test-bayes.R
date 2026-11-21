@@ -56,12 +56,11 @@ test_that("calibration_prior() matches the classes of the formula", {
   expect_true(all(is.na(b$lb)))
 })
 
-# O ajuste com Stan leva ~1 min (compilacao): roda so com
-# SHEEPDOG_TEST_BRMS=true
+# O ajuste com Stan leva ~1 min (compilacao): teste estendido
+# (SHEEPDOG_EXTENDED_TESTS=true)
 test_that("the brms backend scores, builds histories and propagates draws", {
   skip_if_not_installed("brms")
-  skip_if_not(identical(Sys.getenv("SHEEPDOG_TEST_BRMS"), "true"),
-              "set SHEEPDOG_TEST_BRMS=true to fit the Stan model")
+  skip_if_not_extended()
   ex <- system.file("extdata", "example", package = "sheepdog")
   val <- suppressMessages(read_validations(list.files(
     file.path(ex, "validation"), full.names = TRUE)))
@@ -134,4 +133,65 @@ test_that("calibrate() gives its seed to the brms refit unless brms_args has one
   expect_identical(brms_args_with_seed(list(chains = 2), 2026)$seed, 2026)
   expect_identical(brms_args_with_seed(list(seed = 1), 2026)$seed, 1)
   expect_identical(brms_args_with_seed(list(), 5), list(seed = 5))
+})
+
+#' @srrstats {BS2.1a} The pre-processing of the input before `brms::brm()`
+#'   (classes standardised, rows with missing values dropped with a
+#'   message) is tested with a mocked `brm()`.
+#' @srrstats {BS2.13} Progress output of Stan is switched off with
+#'   `refresh = 0`, passed on to `brms::brm()`; messages can be suppressed
+#'   while the convergence warning is kept.
+#' @srrstats {BS2.14} The convergence warning can be suppressed with
+#'   `suppressWarnings()`, and the fit is still returned.
+test_that("fit_calibration(engine = 'brms') pre-processes the data it passes on", {
+  skip_if_not_installed("brms")
+  args <- NULL
+  local_mocked_bindings(
+    brm = function(...) {
+      args <<- list(...)
+      structure(list(), class = "brmsfit")
+    },
+    .package = "brms")
+  local_mocked_bindings(calibration_diagnostics = function(fit, ...) {
+    tibble::tibble(max_rhat = 1, min_ess_bulk = 1000, min_ess_tail = 1000,
+                   n_divergent = 0L, ok = TRUE)
+  })
+  d <- sim_calibration(n = 300, seed = 1)
+  pr <- calibration_prior(tp ~ logit_conf, d)
+  bruto <- as.data.frame(d)
+  bruto$site <- as.character(bruto$site)
+  bruto$tp <- bruto$tp == 1L
+  bruto$logit_conf[1:2] <- NA
+  expect_message(fit_calibration(bruto, tp ~ logit_conf, engine = "brms",
+                                 prior = pr, refresh = 0, seed = 1),
+                 "2 row\\(s\\) of `validations`")
+  expect_s3_class(args$data, "tbl_df")
+  expect_identical(nrow(args$data), nrow(d) - 2L)
+  expect_true(is.factor(args$data$site))
+  expect_type(args$data$tp, "integer")
+  expect_identical(args$refresh, 0)
+})
+
+test_that("brms messages and warnings can be suppressed separately", {
+  skip_if_not_installed("brms")
+  local_mocked_bindings(
+    brm = function(...) {
+      message("Compiling Stan program...")
+      structure(list(), class = "brmsfit")
+    },
+    .package = "brms")
+  local_mocked_bindings(calibration_diagnostics = function(fit, ...) {
+    tibble::tibble(max_rhat = 1.2, min_ess_bulk = 50, min_ess_tail = 40,
+                   n_divergent = 3L, ok = FALSE)
+  })
+  d <- sim_calibration(n = 300, seed = 2)
+  pr <- calibration_prior(tp ~ logit_conf, d)
+  ajustar <- function() {
+    fit_calibration(d, tp ~ logit_conf, engine = "brms", prior = pr,
+                    seed = 1)
+  }
+  expect_warning(suppressMessages(ajustar()), "did not pass the convergence")
+  expect_message(suppressWarnings(ajustar()), "Compiling Stan program")
+  expect_silent(fit <- suppressWarnings(suppressMessages(ajustar())))
+  expect_s3_class(fit, "brmsfit")
 })

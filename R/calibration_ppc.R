@@ -49,9 +49,7 @@
 calibration_ppc <- function(fit, validations = NULL, group = NULL,
                             bin_width = 0.1, min_n = 15, prob = 0.9,
                             flag = 0.05, n_draws = NULL, seed = 2026) {
-  if (!inherits(fit, "brmsfit")) {
-    stop("`fit` must be a model fitted with engine = \"brms\".", call. = FALSE)
-  }
+  check_brmsfit(fit)
   require_suggested("brms", "for the posterior predictive checks")
   check_number(bin_width, "bin_width", 0, 1, open = TRUE)
   check_number(min_n, "min_n", lower = 1, integer = TRUE)

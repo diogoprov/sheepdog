@@ -516,11 +516,7 @@ select_clips <- function(detections,
       filter(!is.na(score_band)) |>
       add_period_columns(estrato1) |>
       join_covariates(covariates, estrato1)
-    faltam <- setdiff(estrato1, names(candidatas))
-    if (length(faltam) > 0) {
-      stop("Column(s) of `strata` not in `detections`: ",
-           paste(faltam, collapse = ", "), call. = FALSE)
-    }
+    check_strata_columns(candidatas, estrato1)
     if (nrow(candidatas) == 0) {
       stop("No prediction within `score_breaks`.", call. = FALSE)
     }
@@ -549,11 +545,7 @@ select_clips <- function(detections,
     deteccoes <- filter(selecao, confidence >= threshold) |>
       add_period_columns(estrato1) |>
       join_covariates(covariates, estrato1)
-    faltam <- setdiff(estrato1, names(deteccoes))
-    if (length(faltam) > 0) {
-      stop("Column(s) of `strata` not in `detections`: ",
-           paste(faltam, collapse = ", "), call. = FALSE)
-    }
+    check_strata_columns(deteccoes, estrato1)
     chave <- unique(c("site", "species_code", "occasion_id",
                       "recording_date", "night", "recording_hour", estrato1))
     ocasioes <- distinct(deteccoes, across(all_of(chave)))
@@ -827,7 +819,7 @@ get_recordings <- function(selecao, recordings, audio_pattern,
                          parse_date_hour(basename(gravacoes$source_audio))) |>
     mutate(hour_int = suppressWarnings(as.integer(recording_hour)),
            night    = recording_date)
-  message(nrow(gravacoes), " recordings listed at ",
+  message(nrow(gravacoes), " recordings found at ",
           n_distinct(gravacoes$site), " site(s).")
   gravacoes
 }
@@ -997,9 +989,7 @@ resolve_strata <- function(strata, modo = NULL) {
 # colunas de identificacao que elas compartilham com as predicoes
 join_covariates <- function(df, covariates, estratos) {
   if (is.null(covariates)) return(df)
-  if (!is.data.frame(covariates)) {
-    stop("`covariates` must be a data frame.", call. = FALSE)
-  }
+  check_data_frame(covariates, "covariates")
   ids <- c("site", "night", "recording_date", "recording_hour",
            "source_audio", "occasion_id")
   chave <- intersect(ids, names(covariates))
@@ -1052,4 +1042,14 @@ add_period_columns <- function(df, cols) {
     df$week <- format(data_noite(), "%G-W%V")
   }
   df
+}
+
+# The columns named by `strata` must exist in the predictions
+check_strata_columns <- function(df, strata) {
+  faltam <- setdiff(strata, names(df))
+  if (length(faltam) > 0) {
+    stop("Column(s) of `strata` not in `detections`: ",
+         paste(faltam, collapse = ", "), call. = FALSE)
+  }
+  invisible(df)
 }

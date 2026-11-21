@@ -13,11 +13,7 @@ read_previous <- function(previous) {
       stop("Not found: ", x, call. = FALSE)
     }
     tab <- read_manifest(x)
-    faltam <- setdiff(c(ocasiao_chave, "sampling_mode"), names(tab))
-    if (length(faltam) > 0) {
-      stop("Earlier round without column(s): ",
-           paste(faltam, collapse = ", "), ".", call. = FALSE)
-    }
+    check_columns(tab, c(ocasiao_chave, "sampling_mode"), "previous")
     if (!"round" %in% names(tab)) tab$round <- i
     tab$.entrada <- i
     mutate(tab, across(any_of(c("site", "occasion_id", "night",
@@ -58,12 +54,9 @@ read_candidates <- function(candidates, perto = NULL) {
     candidates <- read_csv(candidates, show_col_types = FALSE,
                            col_types = readr::cols(.default = "c"))
   }
-  faltam <- setdiff(c(ocasiao_chave, "stratum", "n_candidates"),
-                    names(candidates))
-  if (length(faltam) > 0) {
-    stop("`candidates` lacks column(s): ", paste(faltam, collapse = ", "),
-         ". Use the candidates.csv of the first round.", call. = FALSE)
-  }
+  check_columns(candidates, c(ocasiao_chave, "stratum", "n_candidates"),
+                "candidates",
+                hint = "Use the candidates.csv of the first round.")
   mutate(candidates, n_candidates = as.integer(n_candidates),
          across(any_of("threshold"), as.numeric),
          across(any_of("capped"), as.logical))

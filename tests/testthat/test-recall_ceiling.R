@@ -85,7 +85,7 @@ test_that("recall_ceiling() checks its inputs", {
   x <- teto_dados()
   expect_error(recall_ceiling(dplyr::mutate(x$val, sampling_mode = "top"),
                               x$det), "No occasion of \"random_recordings\"")
-  expect_error(recall_ceiling(x$val[, -1], x$det), "lacks column")
+  expect_error(recall_ceiling(x$val[, -1], x$det), "lacks the column")
   expect_error(recall_ceiling(x$val, x$det[, -4]), "read_selection_tables")
   expect_error(recall_ceiling(x$val, x$det, thresholds = 1.5),
                "between 0 and 1")
@@ -94,10 +94,10 @@ test_that("recall_ceiling() checks its inputs", {
   expect_error(recall_ceiling(x$val, x$det, conf = 2), "between 0 and 1")
   expect_error(recall_ceiling(x$val, x$det, by = "month"), "month")
   expect_error(recall_ceiling(x$val, x$det, cluster = "night"),
-               "not a column")
+               "lacks the column\\(s\\): night")
   expect_error(recall_ceiling(x$val, x$det,
                               thresholds = data.frame(species_folder = "a")),
-               "lacks column")
+               "lacks the column")
   sem <- x$val
   sem$inclusion_prob <- NULL
   expect_message(r <- recall_ceiling(sem, x$det, n_boot = 0),

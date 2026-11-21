@@ -323,7 +323,7 @@ test_that("bad inputs of the rounds stop with a clear message", {
   expect_error(draw(pred, previous = dplyr::select(r1, -occasion_id)),
                "occasion_id")
   expect_error(draw(pred, previous = r1, candidates = lista["site"]),
-               "lacks column")
+               "lacks the column")
   expect_error(draw(pred, previous = r1, candidates = lista, cells = "A"),
                "`cells` must be")
   expect_error(combine_rounds(r1), "give `candidates`")

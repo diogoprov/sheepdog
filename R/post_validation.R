@@ -253,8 +253,7 @@ suggest_thresholds <- function(validation, target_precision = 0.90,
   warn_uncombined(validados)
   pesos <- has_inclusion_prob(validados)
   if (isTRUE(weighted) && nrow(validados) > 0 && !pesos) {
-    stop("`weighted = TRUE` needs `inclusion_prob`, which no reviewed clip ",
-         "has.", call. = FALSE)
+    stop_without_inclusion_prob()
   }
   # sem clipes com confidence, group_modify() criaria uma linha toda NA
   # (era o que a v1.2.0 escrevia)
@@ -349,12 +348,10 @@ review_support <- function(validation, detections, conf_high = 0.7,
                            remap_from = NULL, remap_to = NULL,
                            weighted = NULL) {
   unidade <- match.arg(occasion_unit)
-  faltam <- setdiff(c("site", "species_code", "confidence", "begin_path",
-                      "file_offset"), names(detections))
-  if (length(faltam) > 0) {
-    stop("`detections` lacks column(s): ", paste(faltam, collapse = ", "),
-         ". Read it with read_selection_tables().", call. = FALSE)
-  }
+  check_columns(detections,
+                c("site", "species_code", "confidence", "begin_path",
+                  "file_offset"),
+                "detections", hint = "Read it with read_selection_tables().")
   # as predicoes ganham as colunas de identificacao das ocasioes, como no
   # select_clips()
   det <- detections |>

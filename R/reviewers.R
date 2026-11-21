@@ -64,9 +64,8 @@ assign_reviewers <- function(manifest, reviewers, overlap = 0.1,
 #'   invisibly.
 #' @export
 split_by_reviewer <- function(manifest, clips_dir, output_dir) {
-  if (!all(c("reviewer", "second_reviewer") %in% names(manifest))) {
-    stop("`manifest` needs the columns of assign_reviewers().")
-  }
+  check_columns(manifest, c("reviewer", "second_reviewer"), "manifest",
+                hint = "Use the manifest of assign_reviewers().")
   copias <- bind_rows(
     select(manifest, reviewer, species_folder, clip_file),
     manifest |>

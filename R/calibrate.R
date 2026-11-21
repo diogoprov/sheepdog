@@ -52,7 +52,9 @@ read_validations <- function(files, site_map = NULL, keep = NULL) {
     tab
   }) |>
     list_rbind()
-  if (is.null(val) || nrow(val) == 0) stop("No reviewed clip found.")
+  if (is.null(val) || nrow(val) == 0) {
+    stop("No reviewed clip found in `files`.", call. = FALSE)
+  }
   check_confidence(val$confidence)
   julgados <- val$verdict %in% c("positive", "negative")
   sem_score <- sum(julgados & is.na(val$confidence))
@@ -80,7 +82,10 @@ read_validations <- function(files, site_map = NULL, keep = NULL) {
     ) |>
     mutate(across(c(site, species), as.factor))
 
-  if (nrow(val) == 0) stop("No reviewed clip found.")
+  if (nrow(val) == 0) {
+    stop("No clip of `files` has a verdict (positive or negative) and a ",
+         "confidence score.", call. = FALSE)
+  }
   message(nrow(val), " reviewed clips (", sum(val$tp), " TP / ",
           sum(val$tp == 0), " FP) of ", n_distinct(val$species),
           " species at ", n_distinct(val$site), " sites.")
