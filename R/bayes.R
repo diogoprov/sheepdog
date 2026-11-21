@@ -17,7 +17,9 @@
 #'   occasion (`tp ~ logit_conf + temp`): `normal(0, 1)`, which suits a
 #'   standardised covariate. 'brms' bounds a whole class, not a single
 #'   coefficient, so with such terms the slope of `logit_conf` keeps
-#'   `normal(1, 1)` without the truncation at 0;
+#'   `normal(1, 1)` without the truncation at 0. A warning is raised when
+#'   such a numeric covariate is not standardised (absolute mean above
+#'   0.25 or standard deviation outside 0.5 to 2);
 #' * `sd` (standard deviations of the random effects): `exponential(1)`;
 #' * `cor` (correlations between random effects): `lkj(2)`, which pulls
 #'   the correlations away from +-1 (the singular fits of m4 with 'lme4').
@@ -58,6 +60,19 @@ calibration_prior <- function(formula, validations) {
   classes <- unique(tab$class)
   coefs_b <- setdiff(tab$coef[tab$class == "b"], "")
   m <- round(mean(validations$logit_conf), 3)
+  outras <- intersect(setdiff(coefs_b, "logit_conf"), names(validations))
+  nao_padr <- outras[map_lgl(outras, function(v) {
+    x <- validations[[v]]
+    is.numeric(x) && (abs(mean(x, na.rm = TRUE)) > 0.25 ||
+                        !dplyr::between(stats::sd(x, na.rm = TRUE), 0.5, 2))
+  })]
+  if (length(nao_padr) > 0) {
+    warning("The normal(0, 1) prior on the other population-level terms ",
+            "assumes standardised covariates, but ",
+            paste(nao_padr, collapse = ", "), " are not (mean far from 0 ",
+            "or standard deviation far from 1). Standardise them, e.g. ",
+            "with scale(), or set their prior by hand.", call. = FALSE)
+  }
   # com outros termos fixos (ex. uma covariavel), o limite em 0 nao pode
   # ficar so na inclinacao do score: o brms limita a classe inteira
   b <- if (all(coefs_b %in% "logit_conf")) {
@@ -116,6 +131,8 @@ calibration_diagnostics <- function(fit, rhat_max = 1.01, ess_min = 400) {
   if (!inherits(fit, "brmsfit")) {
     stop("`fit` must be a model fitted with engine = \"brms\".")
   }
+  check_number(rhat_max, "rhat_max", lower = 1)
+  check_number(ess_min, "ess_min", lower = 0)
   require_suggested("posterior", "for the convergence diagnostics")
   resumo <- posterior::summarise_draws(posterior::as_draws_df(fit),
                                        "rhat", "ess_bulk", "ess_tail")
@@ -265,6 +282,13 @@ history_draws <- function(fit, scored, p_min = 0.95, n_draws = 200,
   if (!inherits(fit, "brmsfit")) {
     stop("`fit` must be a model fitted with engine = \"brms\".")
   }
+  check_prob(p_min, "p_min")
+  check_number(n_draws, "n_draws", lower = 1, integer = TRUE)
+  check_number(min_detections_night, "min_detections_night", lower = 1,
+               integer = TRUE)
+  check_prob(min_confidence, "min_confidence")
+  check_number(grid_step, "grid_step", 0, 0.5, open = TRUE)
+  check_number(seed, "seed", integer = TRUE)
   n_total <- brms::ndraws(fit)
   ids <- withr::with_seed(seed, sort(sample.int(n_total, min(n_draws, n_total))))
   scored <- mutate(scored, species = as.character(species),
@@ -367,6 +391,9 @@ plot_calibration_draws <- function(fit, n_draws = 100, p_min = 0.95,
   if (!inherits(fit, "brmsfit")) {
     stop("`fit` must be a model fitted with engine = \"brms\".")
   }
+  check_number(n_draws, "n_draws", lower = 1, integer = TRUE)
+  check_prob(p_min, "p_min")
+  check_number(seed, "seed", integer = TRUE)
   ids <- withr::with_seed(seed, sample.int(brms::ndraws(fit),
                                            min(n_draws, brms::ndraws(fit))))
   grade <- tibble(confidence = seq(0.01, 0.99, by = 0.01)) |>

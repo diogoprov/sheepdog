@@ -202,7 +202,7 @@ cohen_kappa <- function(df) {
   if (length(a) == 0) return(NA_real_)
   p_o <- mean(a == b)
   p_e <- mean(a) * mean(b) + (1 - mean(a)) * (1 - mean(b))
-  if (p_e == 1) return(NA_real_)
+  if (near(p_e, 1)) return(NA_real_)
   (p_o - p_e) / (1 - p_e)
 }
 
@@ -217,6 +217,6 @@ fleiss_kappa <- function(n_pos, n_neg) {
   p_bar <- mean(p_i)
   p_pos <- sum(n_pos) / sum(n)
   p_e <- p_pos^2 + (1 - p_pos)^2
-  if (p_e == 1) return(NA_real_)
+  if (near(p_e, 1)) return(NA_real_)
   (p_bar - p_e) / (1 - p_e)
 }

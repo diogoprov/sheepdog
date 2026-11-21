@@ -77,6 +77,25 @@ used nor stored in the fitted object. The species and site levels are
 stored in the attribute \code{sheepdog_levels}.
 }
 
+\section{Input checks and missing values}{
+
+\code{validations} must be a data frame (a tibble, \code{data.frame} or
+\code{data.table}; it is converted to a tibble) with the columns \code{site} and
+\code{species} (factors or character vectors; ordered factors are used as
+unordered), \code{tp} (0/1, or logical) and every variable of \code{formula},
+usually \code{logit_conf} (numeric, without NaN or infinite values; extra
+classes such as 'units' are dropped). The response of \code{formula} must be
+\code{tp}. Rows with a missing value in a variable of the formula are left
+out with a message; this policy is fixed, the same in both engines,
+and no missing value reaches the fitting function. Before the fit, an
+error is raised when all the clips have the same verdict or when the
+fixed effects are collinear (rank-deficient model matrix), a warning
+when the verdicts are completely separated by the score (the maximum
+likelihood slope is then infinite), and a message lists species with a
+single verdict class or separated verdicts. With \code{engine = "brms"},
+\code{prior} must be a \code{brmsprior} object.
+}
+
 \section{Maximum likelihood fit}{
 
 Models with random effects are fitted by \code{lme4::glmer()} with

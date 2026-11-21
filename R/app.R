@@ -118,6 +118,9 @@ run_app <- function(manifest = NULL, clips_dir = NULL, verdicts_file = NULL,
                     launch.browser = interactive(), ...) {
   require_suggested("shiny", "to run the review app")
   require_suggested("av", "to draw the spectrograms")
+  if (!is.null(verdicts_file)) {
+    verdicts_file <- check_file_ext(verdicts_file, "csv", "verdicts_file")
+  }
   if (!is.null(manifest) && is.null(clips_dir) && is.null(output_dir)) {
     stop("Give `clips_dir` with `manifest`, or `output_dir`.", call. = FALSE)
   }
