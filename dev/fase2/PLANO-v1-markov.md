@@ -1432,6 +1432,53 @@ emissões por faixa × contexto. Usando só o minuto anterior como contexto,
 p(sₙ | wₙ, sₙ₋₁), a verossimilhança continua própria (HMM autorregressivo);
 usando os dois lados, vira verossimilhança composta.
 
+### Estágio 1 por faixa × minuto anterior (21/11/2026)
+
+`emissions_binsctx_curiango.R`: emissões p(bₙ | wₙ, cₙ), com cₙ = 1 quando o
+minuto anterior (contíguo) tem score ≥ 0,4. A verossimilhança continua
+própria (HMM autorregressivo) e o Stan não muda. A precisão por faixa ×
+contexto vem de uma regressão logística ponderada (1/π₁) nos verificados do
+ct12 de faixa média, y ~ faixa + contexto (contexto: +4,2 no logito, EP
+0,95); 0 abaixo de 0,1 e 1 a partir de 0,4. As emissões implicam 3.456
+minutos com canto (0,035). A razão f₁/f₀ nas faixas médias fica 0,69 a 0,79
+vez menor depois de um minuto ≥ 0,4.
+
+Estágio 2 (`binsctx_m1`, Markov, 4 cadeias de 1.000 + 1.000, 10 min): sem
+divergências, sem treedepth máximo, E-BFMI ≥ 0,93, R-hat ≤ 1,002, ESS bulk
+≥ 2.859. ρ = 4,06, ψ_c = 0,41, θ̄ = 0,104. `prev_marg_curiango.R` calcula a
+prevalência marginal de qualquer ajuste; o PPC aceita as emissões novas.
+
+| | `bins_m1` | `binsctx_m1` | Referência |
+|---|---|---|---|
+| Prevalência marginal (90%) | 0,047 (0,043 a 0,050) | 0,049 (0,046 a 0,052) | 0,033 (0,027 a 0,039) |
+| Canto no depósito, 0,1 a 0,4 | ~3.000 | 3.170 | 1.348 (Hájek por faixa) |
+| Canto nos vizinhos de surto | 1.427 | 1.335 | ~630 |
+| LOO, vizinho de surto (obs. 0,19) | 0,39 | 0,36 | |
+| LOO, longe (obs. 0,0063) | 0,0097 | 0,0112 | |
+| PPC y_rate (obs. 0,018) | 0,022 a 0,028 | 0,021 a 0,028 | |
+| PPC P(y \| anterior) (obs. 0,39) | 0,38 a 0,42 | 0,41 a 0,45 | |
+
+O contexto pelo minuto anterior não fecha nada: a prevalência sobe um pouco,
+o excesso nas faixas médias e perto dos surtos fica, e o PPC piora em P(y |
+anterior).
+
+Leitura (interpretação): a correção no estágio 1 é fraca (razão 0,7 a 0,8
+contra os 0,4 do teste com os dois lados), porque o minuto anterior vê só
+metade da vizinhança e porque a regressão aditiva põe o efeito do contexto
+na precisão, que o estágio 2 já reproduz pela cadeia. O problema parece
+estar na conta do estágio 2: para gerar o agrupamento observado dos scores
+altos (98,7% com vizinho alto, P(y | anterior) = 0,39) com f₁(≥ 0,4) ≈ 0,5
+independente entre minutos, o modelo precisa de sequências de canto longas
+(ρ ≈ 4: P(canto | canto anterior) ≈ 0,86, contra ~0,68 pela precisão do
+ct12 nos minutos depois de um score alto), e essas sequências passam pelos
+minutos de score médio em volta. No dado, o agrupamento dos scores altos
+parece vir em parte da persistência do próprio score dentro do canto (o
+nível do score se mantém de um minuto para o outro), não só da duração do
+canto. A simulação não tinha isso. Um modelo que separe as duas coisas
+precisaria de emissões com dependência dentro do canto, por exemplo f₁(b |
+faixa anterior) só para minutos com canto, o que exige rótulos de minutos
+vizinhos que o ct12 quase não tem (sorteio aleatório).
+
 ## Critério para levar o v1 de dois estágios ao crywolf (20/11/2026)
 
 Decidido com o Diogo: o v1 fica em `dev/fase2` até cumprir os três
