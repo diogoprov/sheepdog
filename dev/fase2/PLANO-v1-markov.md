@@ -1016,3 +1016,254 @@ Leitura:
 - Este é o resultado a reportar para o v1 de dois estágios no Curiango:
   ψθ̄ = 0,059 (0,038 a 0,088), com a ressalva de que 20 réplicas dão
   extremos do intervalo imprecisos.
+
+### Sobreposição treino/teste do classificador custom (20/11/2026)
+
+Listas de `01_training/compau` (377 clipes) e `noise` (342) da máquina da
+Liliana, em `results/curiango_v1/treino/` (fora do git). Rodado com
+`curiango_treino_sobreposicao.R`.
+
+- Os clipes vêm de 414 gravações de origem, de set/2021 a jul/2024:
+  curiango 6 em 2021, 180 em 2022, 191 em 2023; ruído 157 em 2022, 175 em
+  2023, 10 em 2024. O depósito vai de 26/11/2023 a 27/02/2025.
+- Só 1 gravação de curiango e 5 de ruído caem no período e no depósito.
+  **Nenhuma está entre os 1.199 minutos verificados.** Logo, não há
+  sobreposição treino/teste, e as métricas do custom não estão otimistas
+  por esse motivo.
+- 269 dos 377 nomes de `compau` começam com "teste.". É prefixo de nome de
+  arquivo; nenhum desses clipes casa com um minuto verificado.
+
+### Item 4: prevalência marginal do modelo × referência por desenho (20/11/2026)
+
+`curiango_prevalencia_marginal.R`. O ψθ̄ = 0,059 é a prevalência de uma
+noite típica (ψ com as covariáveis no centro, θ̄ na noite mediana). A
+referência de Hájek é a média sobre todos os minutos. Para comparar a mesma
+grandeza, calculei a prevalência marginal do modelo: para cada draw, a média
+de ψᵢ · P(wₙ = 1 | zᵢ = 1) sobre os 97.806 minutos, com P(w = 1 | z = 1)
+dada pela recursão de Markov sem as emissões. Foram 100 draws de cada uma
+das 20 réplicas. A referência ganhou um bootstrap por sítio-noite (696
+sítio-noites com verificados de ct01+ct02, π1 fixo, 2.000 réplicas).
+Saída em `results/curiango_v1/boot_ct12/prevalencia_marginal.rds`.
+
+| Quantidade | Mediana | 90% |
+|---|---|---|
+| Modelo, ψθ̄ (noite típica) | 0,059 | 0,038 a 0,088 |
+| Modelo, prevalência marginal nos minutos | **0,062** | 0,043 a 0,086 |
+| Referência de Hájek (ct01+ct02, n = 960, 43 positivos) | **0,026** | 0,019 a 0,035 |
+| Proporção sem pesos | 0,045 | |
+
+**Os intervalos não se sobrepõem.** Em todos os draws, a prevalência
+marginal fica acima da referência. Corrigir a grandeza não fecha a
+diferença: a média sobre os minutos sobe um pouco em relação à noite
+típica.
+
+Onde está o excesso. Minutos com canto por faixa do score custom: o modelo
+dá prevalência × massa de f₁ na faixa × N; a referência dá a soma de
+y / π1 em ct01+ct02.
+
+| Faixa | Modelo (90%) | Referência HT | Positivos | Minutos no depósito |
+|---|---|---|---|---|
+| < 0,1 (censurado) | 193 (68 a 430) | 0 | 0 | 39.956 |
+| 0,1 a 0,4 | 2.928 (1.489 a 4.917) | 1.343 | 23 | 56.094 |
+| 0,4 a 0,7 | 1.572 (970 a 1.957) | 412 | 8 | 858 |
+| ≥ 0,7 | 1.399 (859 a 1.816) | 817 | 12 | 898 |
+
+- Nas faixas altas, o modelo prevê mais minutos com canto do que o
+  depósito inteiro tem minutos (1.572 contra 858; 1.399 contra 898). É o
+  mesmo excesso que o PPC de 19/11 mostrou (fração acima de logit 0,4:
+  0,030 a 0,036 previsto, 0,018 observado), agora na escala da
+  prevalência.
+- A forma de f₁ concorda com a referência. A massa da referência por faixa
+  (0,52 / 0,16 / 0,32 dos positivos ponderados acima de 0,1) se parece com
+  a f₁ do estágio 1 (0,47 / 0,28 / 0,23).
+- Estimativa só com as emissões, sem a estrutura dinâmica: dada a fração
+  observada de minutos acima de 0,4 (0,018) e a massa de f₀ e f₁ acima
+  desse corte, a prevalência implícita é 0,035 (0,029 a 0,051); com o corte
+  em 0,7, 0,040 (0,030 a 0,067). Esse intervalo encosta no da referência e
+  fica abaixo do modelo. (A mesma conta na fração censurada dá 0,13; ali
+  f₀ põe 0,46 de massa e o depósito tem 0,41, de modo que as emissões
+  também não fecham entre si na cauda baixa.)
+
+Leitura (interpretação): o excesso vem do estágio 2, não da referência. Com
+as emissões fixas, a estrutura latente (ψ por sítio-noite, θ com
+covariáveis, ρ comum) parece não reproduzir ao mesmo tempo as sequências de
+minutos e a contagem de scores altos. O ajuste fecha as sequências
+(ρ ≈ 4,5) à custa de chamar de canto minutos de score baixo e médio:
+2.928 na faixa de 0,1 a 0,4, contra 1.343 da referência. A incerteza de f₁
+(29 positivos efetivos) agrava, mas não explica tudo: a estimativa só pelas
+emissões já fica abaixo do modelo. Os falsos negativos da anotadora
+puxariam a referência para baixo, mas teriam de ser mais da metade dos
+cantos para fechar a diferença.
+
+**Critério 1 do item 8 não cumprido.**
+
+### Atacando o desajuste do estágio 2 (21/11/2026)
+
+Duas tentativas, as duas com 4 cadeias de 1000 + 1000, sem divergências,
+sem treedepth máximo, E-BFMI > 0,9 e R-hat ≤ 1,004.
+
+1. **Estágio 1 pelo censo** (`emissions_census_curiango.R`). f₀ e a fração
+   p de minutos com canto são ajustadas por verossimilhança composta sobre
+   os verificados de ct01+ct02 (só os negativos, com pesos 1/π₁) e todos os
+   outros minutos do depósito. f₁ fica fixa pelos positivos: livre, ela não
+   é identificada (p sobe a 0,129 e f₁ escorrega para os scores baixos). A
+   massa censurada de f₀ cai de 0,46 para 0,427 (depósito: 0,409), e p =
+   0,037.
+2. **Estrutura de 3 estados** (`model_v1_3state.stan`, rho_comp = 0). Os
+   componentes de f₁ persistem; com rho_comp = 0 o canto segue a mesma
+   cadeia do v1, então a prevalência marginal se calcula do mesmo jeito.
+
+| Ajuste | ψ_c · θ̄ | Prevalência marginal (90%) | y_rate do PPC (obs. 0,018) |
+|---|---|---|---|
+| v1, réplicas do bootstrap ct12 | 0,059 | 0,062 (0,043 a 0,086) | acima |
+| v1, f₀ do censo (`census_m1`) | 0,054 | 0,057 (0,053 a 0,061) | 0,025 a 0,032 |
+| 3 estados, emissões ct12 (`s3_ct12`) | 0,19 | 0,169 (0,161 a 0,177) | 0,017 a 0,021 |
+| 3 estados, f₀ do censo (`s3_census`) | 0,17 | 0,155 (0,148 a 0,163) | 0,017 a 0,021 |
+| Referência de Hájek | | 0,026 (0,019 a 0,035) | |
+
+O censo tira pouco (0,062 → 0,057) e estreita o intervalo, mas não fecha.
+O de 3 estados acerta a fração de minutos com score alto e triplica a
+prevalência: ρ ≈ 4,95, θ̄ ≈ 0,32, componente baixo de f₁ com p_h ≈ 0,19.
+Nos dois de 3 estados o PPC continua reprovando a variância entre noites
+(obs. 10,3 contra 3,3 a 5,1), a fração de noites com algum score alto (obs.
+0,25 contra 0,31 a 0,37) e P(y | anterior) (obs. 0,39 contra 0,44 a 0,51).
+
+Dois fatos do dado:
+* entre os verificados de ct12, os 20 minutos com score ≥ 0,4 são todos
+  positivos; os 23 positivos restantes estão na faixa de 0,1 a 0,4
+  (precisão ponderada 0,026), e nenhum abaixo de 0,1;
+* dos 1.756 minutos com score ≥ 0,4 no depósito (1,8%), 98,7% têm um
+  vizinho imediato também ≥ 0,4.
+
+Leitura (interpretação): os scores altos vêm em surtos curtos, concentrados
+em poucas noites. O modelo só consegue produzir esse agrupamento pela cadeia
+de canto, e a persistência que fecha os surtos (ρ alto) estende as
+sequências de canto para os minutos de score baixo em volta. Dar mais
+liberdade às emissões dentro do canto (3 estados) piora, porque o
+componente baixo de f₁ se confunde com f₀ e vira um estado latente que o
+modelo usa para qualquer agrupamento de scores. O que falta parece ser
+heterogeneidade entre noites na intensidade e na duração dos surtos, não a
+forma das emissões. **Critério 1 continua não cumprido.**
+
+### Onde o modelo põe canto a mais: leave-one-out e ct03 (21/11/2026)
+
+`curiango_teste_ct03.R`: forward-backward do ajuste com f₀ do censo
+(`census_m1`) e do ajuste com emissões ct12 (`ct12_m1`), 200 draws. Calcula
+P(canto | scores, rótulos) por minuto. Nos verificados do ct12, a posterior
+é calculada sem o próprio rótulo (leave-one-out) e comparada com ele, com
+pesos 1/π₁. O ct03 foi escolhido ouvindo o áudio, então a fração de
+positivos nele não é estimável; entra só como descrição.
+
+**Referência melhor.** O Hájek simples erra as faixas altas (20 verificados,
+todos positivos, estimam 1.234 minutos onde há 1.756). Pós-estratificada em
+três faixas de score (< 0,1; 0,1 a 0,4; ≥ 0,4), com os totais conhecidos do
+depósito: **0,033 (90%: 0,027 a 0,039)**, bootstrap por sítio-noite. Passa a
+ser a referência do critério 1.
+
+Minutos com canto no depósito (posterior do `census_m1`):
+
+| Faixa | Minutos | Modelo | Precisão do ct12 × minutos |
+|---|---|---|---|
+| < 0,1 | 39.956 | 71 | 0 |
+| 0,1 a 0,4 | 56.094 | 4.040 | 1.442 |
+| ≥ 0,4 | 1.756 | 1.708 | 1.756 |
+| total | 97.806 | 5.819 (0,059) | 3.198 (0,033) |
+
+Leave-one-out no ct12 (média ponderada; obs. contra pred.):
+
+| Grupo | n | Positivos | Obs. | `census_m1` | `ct12_m1` |
+|---|---|---|---|---|---|
+| 0,1 a 0,2 | 460 | 14 | 0,013 | 0,042 | 0,049 |
+| 0,2 a 0,3 | 32 | 6 | 0,155 | 0,337 | 0,394 |
+| 0,3 a 0,4 | 9 | 3 | 0,290 | 0,416 | 0,487 |
+| ≥ 0,4 | 20 | 20 | 1 | 1,000 | 1,000 |
+| < 0,4, longe de surto | 899 | 11 | 0,0063 | 0,0166 | 0,0220 |
+| < 0,4, vizinho de surto (≤ 2 min de um ≥ 0,4) | 41 | 12 | 0,193 | 0,487 | 0,511 |
+
+* Todo o excesso está na faixa de 0,1 a 0,4: o modelo põe 2,8 vezes o canto
+  da referência ali, e acerta as faixas acima de 0,4.
+* O excesso é um fator quase constante (2,5 a 3 vezes) em todas as
+  subfaixas e **tanto perto quanto longe dos surtos**. A razão vizinho/longe
+  é a mesma no dado (31 vezes) e no modelo (29 vezes): a estrutura temporal
+  reproduz o padrão relativo; o que está errado é o nível.
+* ct03: nos minutos de 0,1 a 0,4, o modelo dá 0,35 a 0,74 onde a anotadora,
+  que escolheu ouvindo, achou 0,65 a 0,88. A escolha enviesa para cima, então
+  isso não contradiz o excesso; só mostra que os scores médios carregam
+  pouca informação minuto a minuto (5 positivos do ct12 com posterior < 0,1).
+
+Leitura (interpretação): um fator constante nas chances de canto, igual
+perto e longe dos surtos, é o que se espera de uma razão f₁/f₀ inflada na
+faixa de 0,1 a 0,4, não de estrutura temporal errada. Essa razão vem de 23
+positivos nessa faixa (14 entre 0,1 e 0,2, onde f₀ é densa) e da forma
+paramétrica (duas normais) das emissões. **Um HMM hierárquico de surtos não
+ataca isso**: mexeria no padrão temporal, que já está certo, e manteria a
+razão de emissões. O próximo teste é no estágio 1: emissões menos rígidas na
+faixa média, por exemplo por faixas de score, com a razão f₁/f₀ por faixa
+ancorada na precisão ponderada do ct12.
+
+### Estágio 1 por faixas de score (21/11/2026)
+
+`emissions_bins_curiango.R`: f₀ e f₁ constantes por faixa (< 0,1
+censurado; 0,1–0,2; 0,2–0,3; 0,3–0,4; ≥ 0,4). No estágio 2 só a razão
+f₁/f₀ por faixa importa. Os minutos com canto de cada faixa são a precisão
+ponderada do ct12 na faixa vezes os minutos da faixa no depósito (a
+referência pós-estratificada, faixa a faixa); f₁ sai desses minutos e f₀ do
+resto do censo, com 0,5 por faixa. Uma primeira versão tirou f₁ da fração
+ponderada dos positivos (`emissions_bins_pos.rds`, ajuste `binspos_m1`):
+os 20 positivos ≥ 0,4 dão 0,45 de f₁ nessa faixa, onde os 1.756 minutos
+(precisão 1) dão 0,53.
+
+Estágio 2 (`run_curiango_2stage.R`, Markov, 4 cadeias de 1.000 + 1.000,
+12 min): sem divergências, sem treedepth máximo, E-BFMI ≥ 0,96, R-hat
+1,00, ESS bulk ≥ 2.500. `ppc_curiango_2stage.R` passou a aceitar emissões
+por faixa: sorteia a faixa por f_w e reamostra o score entre os minutos do
+depósito naquela faixa.
+
+| Ajuste | ψ_c | θ̄ | ρ | Prevalência marginal (90%) |
+|---|---|---|---|---|
+| f₀ do censo, paramétrico (`census_m1`) | 0,39 | 0,138 | 4,67 | 0,057 (0,053 a 0,061) |
+| faixas, f₁ dos positivos (`binspos_m1`) | 0,42 | 0,116 | 4,49 | 0,053 (0,049 a 0,057) |
+| faixas, f₁ do censo (`bins_m1`) | 0,41 | 0,102 | 4,28 | **0,047 (0,043 a 0,050)** |
+| Referência pós-estratificada | | | | 0,033 (0,027 a 0,039) |
+
+Leave-one-out no ct12 com `bins_m1` (obs. contra pred.): 0,1–0,2: 0,013
+contra 0,023; 0,2–0,3: 0,155 contra 0,332 (6 positivos em 32); 0,3–0,4:
+0,29 contra 0,44 (3 em 9); longe de surto: 0,0063 contra 0,0097; vizinho de
+surto: 0,19 contra 0,39. No depósito, o modelo põe 4.742 minutos com canto
+contra 3.198 da referência; 1.427 deles nos 3.264 vizinhos de surto, onde a
+precisão do ct12 indica cerca de 630.
+
+PPC: P(y | anterior) passa (0,39 contra 0,38 a 0,42), a variância por noite
+quase passa (10,3 contra 6,7 a 10,0); y_rate (0,018 contra 0,022 a 0,028)
+e noites com algum score alto (0,25 contra 0,27 a 0,32) ainda acima.
+
+Leitura (interpretação): as emissões por faixa tiram cerca de 40% do
+excesso (de 0,057 para 0,047) e melhoram o agrupamento entre noites. O que
+sobra (1,4 vez a referência) está sobretudo nos vizinhos de surto e nas
+faixas de 0,2 a 0,4, onde a precisão do ct12 se apoia em 9 positivos. Este
+ajuste usa emissões pontuais; a incerteza do estágio 1 (29 positivos
+efetivos) ainda não foi propagada, e nas réplicas do bootstrap paramétrico
+ela alargou o intervalo de 0,053–0,061 para 0,043–0,086. Próximo passo:
+réplicas do bootstrap por noite do estágio 1 por faixas, como em
+`boot_ct12`. Se o intervalo agrupado não alcançar a referência, o excesso
+nos vizinhos de surto e o y_rate acima são o alvo de um HMM com surtos.
+
+## Critério para levar o v1 de dois estágios ao crywolf (20/11/2026)
+
+Decidido com o Diogo: o v1 fica em `dev/fase2` até cumprir os três
+critérios abaixo. Cumpridos, o pedido vai à sessão do crywolf como
+`fp_occu_score()` experimental. Não se mexe no `~/GitHub/crywolf` daqui.
+
+1. **Concordância com a referência por desenho:** a prevalência marginal do
+   modelo e a referência de Hájek (com bootstrap por sítio-noite) têm
+   intervalos de 90% que se sobrepõem, no Curiango ct01+ct02. *Situação em
+   20/11: reprova (0,043 a 0,086 contra 0,019 a 0,035). Em 21/11, com
+   f₀ do censo e com 3 estados, continua reprovando. A referência passa a
+   ser a pós-estratificada por faixa de score, 0,033 (0,027 a 0,039); o
+   modelo com f₀ do censo dá 0,057 (0,053 a 0,061), e com emissões por
+   faixa 0,047 (0,043 a 0,050), ainda fora, sem propagar o estágio 1.*
+2. **Cobertura do procedimento em dois estágios:** uma simulação com o
+   estágio 1 ponderado, o bootstrap por noite e o estágio 2 com réplicas
+   cobre ψ, θ̄ e ψθ̄, pelas regras V1/V2 da validação do v1.
+3. **Segundo conjunto:** o procedimento funciona na rodada aleatória do
+   FrogNet (com o Massao), com convergência, PPC e o critério 1.

@@ -16,10 +16,11 @@ given.}
 data frame. \code{NULL} looks for it in the folders of \code{validation}.}
 }
 \value{
-The stacked table, with \code{stratum}, \code{n_candidates}, \code{n_drawn},
-the cumulative \code{inclusion_prob} and \code{n_rounds}, the number of rounds
-with clips of the site x species. Clips of other sampling modes are
-kept as they are, with these columns \code{NA}.
+The stacked table, in the order of the input, with \code{stratum},
+\code{n_candidates}, \code{n_drawn}, the cumulative \code{inclusion_prob} and
+\code{n_rounds}, the number of rounds with clips of the site x species.
+Clips of other sampling modes keep their \code{inclusion_prob},
+\code{n_candidates} and \code{n_drawn}, with \code{stratum} and \code{n_rounds} \code{NA}.
 }
 \description{
 Stacks the tables of the rounds of a \code{"random_detections"} design and
@@ -37,6 +38,23 @@ the rounds of a cell go on until it reaches a target, the decision to
 stop depends on the verdicts, and the precision tends to be too high;
 see \code{vignette("validation-effort")}.
 }
+\section{Rounds of other designs}{
+
+The tables may also hold clips of other designs, such as a
+\code{"score_bands"} round drawn after the random rounds to add clips near the
+threshold (\code{previous} of the other design in \code{\link[=select_clips]{select_clips()}}). Only the
+\code{"random_detections"} clips form the cumulative sample: the clips of the
+other designs are independent draws and keep their own \code{inclusion_prob},
+\code{n_candidates} and \code{n_drawn}, and an occasion drawn by both designs is
+not taken as a repeated round. Weighted by \code{1 / inclusion_prob}, the
+pooled table adds the Horvitz-Thompson totals of the draws, so the
+weighted precision of \code{\link[=suggest_thresholds]{suggest_thresholds()}}, \code{\link[=precision_by_bin]{precision_by_bin()}} and
+\code{\link[=compare_calibration_curves]{compare_calibration_curves()}} is still a ratio estimate. Clips of
+\code{"score_bands"} are chosen by their score and are not for occupancy
+models (\code{\link[=export_occupancy_data]{export_occupancy_data()}} warns about them). See
+\code{vignette("validation-effort")}.
+}
+
 \seealso{
 \code{\link[=select_clips]{select_clips()}}, \code{\link[=read_validation_tables]{read_validation_tables()}}.
 }

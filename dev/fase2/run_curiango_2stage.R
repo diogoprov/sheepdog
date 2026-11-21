@@ -29,7 +29,7 @@ secs <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
 pars <- c("beta", "alpha", if (mk == 1) "rho", if (re == 1) c("sigma_night", "u_night"),
           "psi_c", "theta0", "theta_bar")
 saveRDS(list(markov = mk, night_re = re, chains = ch, warmup = wu, sampling = sa, seconds = secs,
-             emissions = em[c("rate", "f0", "f1", "n_eff")],
+             emissions = em[intersect(c("type", "breaks", "rate", "f0", "f1", "n_eff"), names(em))],
              summary = as.data.frame(fit$summary(pars)),
              diag = fit$diagnostic_summary(quiet = TRUE),
              draws = posterior::as_draws_matrix(fit$draws(pars))),
