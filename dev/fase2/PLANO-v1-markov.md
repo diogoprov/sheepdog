@@ -1145,6 +1145,62 @@ modelo usa para qualquer agrupamento de scores. O que falta parece ser
 heterogeneidade entre noites na intensidade e na duração dos surtos, não a
 forma das emissões. **Critério 1 continua não cumprido.**
 
+### Onde o modelo põe canto a mais: leave-one-out e ct03 (21/11/2026)
+
+`curiango_teste_ct03.R`: forward-backward do ajuste com f₀ do censo
+(`census_m1`) e do ajuste com emissões ct12 (`ct12_m1`), 200 draws. Calcula
+P(canto | scores, rótulos) por minuto. Nos verificados do ct12, a posterior
+é calculada sem o próprio rótulo (leave-one-out) e comparada com ele, com
+pesos 1/π₁. O ct03 foi escolhido ouvindo o áudio, então a fração de
+positivos nele não é estimável; entra só como descrição.
+
+**Referência melhor.** O Hájek simples erra as faixas altas (20 verificados,
+todos positivos, estimam 1.234 minutos onde há 1.756). Pós-estratificada em
+três faixas de score (< 0,1; 0,1 a 0,4; ≥ 0,4), com os totais conhecidos do
+depósito: **0,033 (90%: 0,027 a 0,039)**, bootstrap por sítio-noite. Passa a
+ser a referência do critério 1.
+
+Minutos com canto no depósito (posterior do `census_m1`):
+
+| Faixa | Minutos | Modelo | Precisão do ct12 × minutos |
+|---|---|---|---|
+| < 0,1 | 39.956 | 71 | 0 |
+| 0,1 a 0,4 | 56.094 | 4.040 | 1.442 |
+| ≥ 0,4 | 1.756 | 1.708 | 1.756 |
+| total | 97.806 | 5.819 (0,059) | 3.198 (0,033) |
+
+Leave-one-out no ct12 (média ponderada; obs. contra pred.):
+
+| Grupo | n | Positivos | Obs. | `census_m1` | `ct12_m1` |
+|---|---|---|---|---|---|
+| 0,1 a 0,2 | 460 | 14 | 0,013 | 0,042 | 0,049 |
+| 0,2 a 0,3 | 32 | 6 | 0,155 | 0,337 | 0,394 |
+| 0,3 a 0,4 | 9 | 3 | 0,290 | 0,416 | 0,487 |
+| ≥ 0,4 | 20 | 20 | 1 | 1,000 | 1,000 |
+| < 0,4, longe de surto | 899 | 11 | 0,0063 | 0,0166 | 0,0220 |
+| < 0,4, vizinho de surto (≤ 2 min de um ≥ 0,4) | 41 | 12 | 0,193 | 0,487 | 0,511 |
+
+* Todo o excesso está na faixa de 0,1 a 0,4: o modelo põe 2,8 vezes o canto
+  da referência ali, e acerta as faixas acima de 0,4.
+* O excesso é um fator quase constante (2,5 a 3 vezes) em todas as
+  subfaixas e **tanto perto quanto longe dos surtos**. A razão vizinho/longe
+  é a mesma no dado (31 vezes) e no modelo (29 vezes): a estrutura temporal
+  reproduz o padrão relativo; o que está errado é o nível.
+* ct03: nos minutos de 0,1 a 0,4, o modelo dá 0,35 a 0,74 onde a anotadora,
+  que escolheu ouvindo, achou 0,65 a 0,88. A escolha enviesa para cima, então
+  isso não contradiz o excesso; só mostra que os scores médios carregam
+  pouca informação minuto a minuto (5 positivos do ct12 com posterior < 0,1).
+
+Leitura (interpretação): um fator constante nas chances de canto, igual
+perto e longe dos surtos, é o que se espera de uma razão f₁/f₀ inflada na
+faixa de 0,1 a 0,4, não de estrutura temporal errada. Essa razão vem de 23
+positivos nessa faixa (14 entre 0,1 e 0,2, onde f₀ é densa) e da forma
+paramétrica (duas normais) das emissões. **Um HMM hierárquico de surtos não
+ataca isso**: mexeria no padrão temporal, que já está certo, e manteria a
+razão de emissões. O próximo teste é no estágio 1: emissões menos rígidas na
+faixa média, por exemplo por faixas de score, com a razão f₁/f₀ por faixa
+ancorada na precisão ponderada do ct12.
+
 ## Critério para levar o v1 de dois estágios ao crywolf (20/11/2026)
 
 Decidido com o Diogo: o v1 fica em `dev/fase2` até cumprir os três
@@ -1155,7 +1211,9 @@ critérios abaixo. Cumpridos, o pedido vai à sessão do crywolf como
    modelo e a referência de Hájek (com bootstrap por sítio-noite) têm
    intervalos de 90% que se sobrepõem, no Curiango ct01+ct02. *Situação em
    20/11: reprova (0,043 a 0,086 contra 0,019 a 0,035). Em 21/11, com
-   f₀ do censo e com 3 estados, continua reprovando (seção acima).*
+   f₀ do censo e com 3 estados, continua reprovando. A referência passa a
+   ser a pós-estratificada por faixa de score, 0,033 (0,027 a 0,039); o
+   modelo com f₀ do censo dá 0,057 (0,053 a 0,061), ainda fora.*
 2. **Cobertura do procedimento em dois estágios:** uma simulação com o
    estágio 1 ponderado, o bootstrap por noite e o estágio 2 com réplicas
    cobre ψ, θ̄ e ψθ̄, pelas regras V1/V2 da validação do v1.
