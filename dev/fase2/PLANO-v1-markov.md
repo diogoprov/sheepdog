@@ -1347,6 +1347,43 @@ dois cenários calibrados também na variância por noite: `het2` (σ da
 persistência livre) e `hett` (ρ comum e efeito de sítio-noite em θ,
 N(0, σ)), 6 conjuntos cada. Total: 36 ajustes, ~2 h no Mac.
 
+### Simulação com surtos: resultados (21/11/2026)
+
+36 ajustes (4 cadeias de 500 + 500, ~6 min cada, dois por vez no Mac): sem
+divergências, R-hat ≤ 1,011, ESS bulk ≥ 820. `sim_surtos_curiango.R resumo`.
+
+| Cenário | Conjuntos | Viés relativo, modelo | Cobertura 90%, modelo | Viés relativo, referência | Cobertura 90%, referência |
+|---|---|---|---|---|---|
+| `v1` (controle) | 8 | 0,000 | 7/8 | +0,013 | 8/8 |
+| `het` | 8 | +0,039 | 7/8 | +0,045 | 8/8 |
+| `semi` | 8 | −0,013 | 8/8 | −0,032 | 8/8 |
+| `het2` | 6 | +0,054 | 4/6 | +0,078 | 6/6 |
+| `hett` | 6 | −0,010 | 6/6 | +0,011 | 6/6 |
+
+* Nenhum cenário chega perto dos +40% do Curiango. Por conjunto, o viés do
+  modelo vai de −9% a +13%.
+* Razão modelo/referência pós-estratificada nos 36 conjuntos: 0,89 a 1,14
+  (média 1,00). No Curiango é 1,42, fora do que qualquer conjunto simulado
+  produziu. O erro do modelo acompanha o da referência (correlação 0,81),
+  porque os dois se apoiam nos mesmos rótulos do ct12.
+* O intervalo do modelo sem o bootstrap do estágio 1 é estreito (largura
+  ~15% da verdade, contra ~40% da referência). Isso explica as coberturas
+  de 4/6 a 7/8: o critério 2 vai precisar do bootstrap do estágio 1, como
+  já previsto.
+
+Leitura (interpretação): caiu o terceiro caso do desenho. Com as emissões
+certas, o procedimento em dois estágios não infla a prevalência, e as
+formas de desajuste latente testadas também não: surtos de duração menos
+dispersa, persistência heterogênea e θ heterogêneo entre sítio-noites. Um
+HMM de surtos ou com mais heterogeneidade entre noites provavelmente não
+fecharia a diferença. O que todas as simulações mantêm certo, e o Curiango
+pode violar, é o modelo de emissões: scores independentes dado w e f₁ igual
+em todos os minutos com canto. O ajuste real prevê mais minutos ≥ 0,4 do
+que os observados (PPC: 0,022 a 0,028 contra 0,018), o que nunca acontece
+nas simulações. Isso é compatível com cantos de score mais baixo
+concentrados perto dos surtos (f₁ que depende da posição no surto) ou com
+scores dependentes entre minutos vizinhos dado w.
+
 ## Critério para levar o v1 de dois estágios ao crywolf (20/11/2026)
 
 Decidido com o Diogo: o v1 fica em `dev/fase2` até cumprir os três
