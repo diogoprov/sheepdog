@@ -212,10 +212,26 @@ draw_round <- function(snap, rodadas, n_top, seed, rodada, cells) {
 #' @param candidates The `candidates.csv` of the first round, as a path or a
 #'   data frame. `NULL` looks for it in the folders of `validation`.
 #'
-#' @return The stacked table, with `stratum`, `n_candidates`, `n_drawn`,
-#'   the cumulative `inclusion_prob` and `n_rounds`, the number of rounds
-#'   with clips of the site x species. Clips of other sampling modes are
-#'   kept as they are, with these columns `NA`.
+#' @section Rounds of other designs:
+#' The tables may also hold clips of other designs, such as a
+#' `"score_bands"` round drawn after the random rounds to add clips near the
+#' threshold (`previous` of the other design in [select_clips()]). Only the
+#' `"random_detections"` clips form the cumulative sample: the clips of the
+#' other designs are independent draws and keep their own `inclusion_prob`,
+#' `n_candidates` and `n_drawn`, and an occasion drawn by both designs is
+#' not taken as a repeated round. Weighted by `1 / inclusion_prob`, the
+#' pooled table adds the Horvitz-Thompson totals of the draws, so the
+#' weighted precision of [suggest_thresholds()], [precision_by_bin()] and
+#' [compare_calibration_curves()] is still a ratio estimate. Clips of
+#' `"score_bands"` are chosen by their score and are not for occupancy
+#' models ([export_occupancy_data()] warns about them). See
+#' `vignette("validation-effort")`.
+#'
+#' @return The stacked table, in the order of the input, with `stratum`,
+#'   `n_candidates`, `n_drawn`, the cumulative `inclusion_prob` and
+#'   `n_rounds`, the number of rounds with clips of the site x species.
+#'   Clips of other sampling modes keep their `inclusion_prob`,
+#'   `n_candidates` and `n_drawn`, with `stratum` and `n_rounds` `NA`.
 #' @seealso [select_clips()], [read_validation_tables()].
 #' @export
 combine_rounds <- function(validation, candidates = NULL) {
@@ -224,7 +240,15 @@ combine_rounds <- function(validation, candidates = NULL) {
   if (is.null(snap)) {
     stop("No candidates.csv found: give `candidates`.", call. = FALSE)
   }
-  repetidas <- tab |>
+  # So as rodadas de "random_detections" formam a amostra acumulada; os
+  # clipes de outros desenhos (score_bands, random_recordings, top,
+  # directed_pps) sao sorteios independentes e ficam como estao, com a sua
+  # inclusion_prob, n_candidates e n_drawn. Uma ocasiao sorteada nos dois
+  # desenhos e legitima e nao conta como repeticao de rodada
+  aleatorio <- tab$sampling_mode %in% "random_detections"
+  rd <- tab[aleatorio, ]
+  outros <- tab[!aleatorio, ]
+  repetidas <- rd |>
     distinct(across(all_of(ocasiao_chave)), round) |>
     count(across(all_of(ocasiao_chave))) |>
     filter(n > 1)
@@ -232,8 +256,7 @@ combine_rounds <- function(validation, candidates = NULL) {
     stop(nrow(repetidas), " occasion(s) are in more than one round. Rounds ",
          "drawn without `previous` are not a single sample.", call. = FALSE)
   }
-  mesma_rodada <- tab |>
-    filter(sampling_mode == "random_detections") |>
+  mesma_rodada <- rd |>
     inner_join(distinct(snap, across(all_of(ocasiao_chave)), .estrato = stratum),
                by = ocasiao_chave) |>
     distinct(.estrato, round, .entrada) |>
@@ -243,32 +266,31 @@ combine_rounds <- function(validation, candidates = NULL) {
     stop("Two tables have the same round of a stratum: they were drawn ",
          "without `previous`, so they are not a single sample.", call. = FALSE)
   }
-  tab$.entrada <- NULL
-  aleatorio <- tab$sampling_mode == "random_detections"
-  fora <- tab[aleatorio, ] |>
-    anti_join(snap, by = ocasiao_chave) |>
-    nrow()
+  fora <- nrow(anti_join(rd, snap, by = ocasiao_chave))
   if (fora > 0) {
     stop(fora, " clip(s) are from occasions outside `candidates`.",
          call. = FALSE)
   }
-  tab <- select(tab, -any_of(c("stratum", "n_candidates", "n_drawn",
-                               "n_rounds"))) |>
+  rd <- select(rd, -any_of(c(".entrada", "stratum", "n_candidates",
+                             "n_drawn", "n_rounds"))) |>
     left_join(distinct(snap, across(all_of(ocasiao_chave)), stratum,
                        n_candidates), by = ocasiao_chave)
-  sorteios <- tab |>
-    filter(sampling_mode == "random_detections") |>
+  sorteios <- rd |>
     distinct(across(all_of(ocasiao_chave)), stratum) |>
     count(stratum, name = "n_drawn")
-  rodadas <- tab |>
-    filter(sampling_mode == "random_detections") |>
+  rodadas <- rd |>
     group_by(site, species_code) |>
     summarise(n_rounds = n_distinct(round), .groups = "drop")
-  tab |>
+  rd <- rd |>
     left_join(sorteios, by = "stratum") |>
     left_join(rodadas, by = c("site", "species_code")) |>
-    mutate(inclusion_prob = if_else(sampling_mode == "random_detections",
-                                    n_drawn / n_candidates, inclusion_prob))
+    mutate(inclusion_prob = n_drawn / n_candidates)
+  outros <- select(outros, -any_of(c(".entrada", "stratum", "n_rounds")))
+  outros$stratum <- rep(NA_character_, nrow(outros))
+  outros$n_rounds <- rep(NA_integer_, nrow(outros))
+  # mesma ordem de linhas da entrada
+  ordem <- order(c(which(aleatorio), which(!aleatorio)))
+  bind_rows(rd, outros)[ordem, , drop = FALSE]
 }
 
 # Tabela com varias rodadas e inclusion_prob de cada rodada?

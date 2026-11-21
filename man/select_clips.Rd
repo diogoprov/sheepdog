@@ -293,7 +293,12 @@ round. Round \code{k} uses the seed \code{seed + k - 1}.
 The tables of earlier rounds keep the probability of their own round:
 use \code{\link[=combine_rounds]{combine_rounds()}} to stack them. In \code{"top"}, there is no inclusion
 probability, and \code{previous} only leaves out the clips already reviewed.
-\code{previous} is not available for \code{"random_recordings"}.
+\code{previous} is not available for \code{"random_recordings"}, and a
+\code{"score_bands"} round has no later rounds of its own; to add clips near
+the threshold after \code{"random_detections"} rounds, draw a \code{"score_bands"}
+round with those rounds as \code{previous} of the other design, and stack all
+of them with \code{\link[=combine_rounds]{combine_rounds()}}, which keeps the \code{inclusion_prob} of the
+\code{"score_bands"} clips.
 
 Choosing the cells of a round from their verdicts, and stopping when a
 cell reaches a target, makes the stopping depend on the results; see

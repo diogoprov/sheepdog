@@ -1,3 +1,13 @@
+# sheepdog (development version)
+
+- `combine_rounds()` keeps the clips of a `"score_bands"` round (or of any
+  other design) as they are: their `inclusion_prob`, `n_candidates` and
+  `n_drawn` are no longer overwritten by those of the `"random_detections"`
+  stratum, and an occasion drawn by both designs no longer stops it as a
+  repeated round. `post_validation(previous = )` of a `"score_bands"` round
+  drawn after random rounds now works. Documented in `combine_rounds()`,
+  `select_clips()` and `vignette("validation-effort")`.
+
 # sheepdog 3.4.1
 
 - CRAN incoming checks: the examples of `compare_calibration_curves()`
