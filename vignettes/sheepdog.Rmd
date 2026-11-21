@@ -227,4 +227,4 @@ verdicts from the review folders of the BirdNET GUI or, with
 - `vignette("crywolf-integration")`: the clip manifest and validation
   tables as input to occupancy models with false positives.
 - `vignette("diversons-workflow")`: the complete workflow as used in the
-  DiverSons project.
+  [DiverSons project](https://provetelab.org/projects.html#diversons-acoustic-monitoring-of-frogs).

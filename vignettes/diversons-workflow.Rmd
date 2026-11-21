@@ -12,7 +12,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
 This vignette walks through the three stages of sheepdog as used in the
-DiverSons project (anurans of the Pantanal and Cerrado, Mato Grosso do Sul,
+[DiverSons project](https://provetelab.org/projects.html#diversons-acoustic-monitoring-of-frogs) (anurans of the Pantanal and Cerrado, Mato Grosso do Sul,
 Brazil). Paths, site names and the core species come from the DiverSons
 scripts of v1.2.0; settings marked "example" are illustrative. The DiverSons
 data are not distributed with the package, so the chunks that read them are

@@ -9,7 +9,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 > **Tradução.** Este artigo é uma tradução da versão em inglês, que é a referência: [The DiverSons workflow](../diversons-workflow.html). Traduzido da versão 3.2.1 do pacote; se as duas divergirem, vale a versão em inglês.
 
 Este artigo percorre as três etapas do sheepdog tal como usadas no projeto
-DiverSons (anuros do Pantanal e do Cerrado, Mato Grosso do Sul, Brasil). Os
+[DiverSons](https://provetelab.org/projects.html#diversons-acoustic-monitoring-of-frogs) (anuros do Pantanal e do Cerrado, Mato Grosso do Sul, Brasil). Os
 caminhos, os nomes dos locais e as espécies-núcleo vêm dos scripts do
 DiverSons da v1.2.0; as configurações marcadas como "example" são ilustrativas.
 Os dados do DiverSons não são distribuídos com o pacote, de modo que os chunks

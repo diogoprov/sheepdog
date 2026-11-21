@@ -226,4 +226,4 @@ figura.
   validação como entrada para modelos de ocupação (*occupancy models*) com
   falsos positivos.
 - `vignette("diversons-workflow")`: o fluxo de trabalho completo, tal como usado
-  no projeto DiverSons.
+  no projeto [DiverSons](https://provetelab.org/projects.html#diversons-acoustic-monitoring-of-frogs).
