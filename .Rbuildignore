@@ -19,3 +19,4 @@
 ^manuscript$
 ^AI_INTERACTION_LOG\.md$
 ^codecov\.yml$
+^codemeta\.json$

@@ -1,3 +1,13 @@
+# sheepdog (development version)
+
+- Infrastructure following the rOpenSci packaging guide: `inst/CITATION`
+  (so that `citation("sheepdog")` works), `codemeta.json`, a contributing
+  guide and a code of conduct (in `.github/`), and repostatus and
+  R-CMD-check badges in the README.
+- `CITATION.cff` and the README now point to the Zenodo concept DOI
+  (10.5281/zenodo.22696209), which always resolves to the latest version;
+  they pointed to the DOI of version 1.0.0.
+
 # sheepdog 3.4.1
 
 - CRAN incoming checks: the examples of `compare_calibration_curves()`

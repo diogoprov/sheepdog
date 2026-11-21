@@ -1,0 +1,24 @@
+year <- c(meta$`Date/Publication`, meta$Packaged)
+year <- year[!is.na(year)]
+year <- if (length(year) > 0) substr(year[1], 1, 4) else "2026"
+
+bibentry(
+  bibtype = "Manual",
+  title = "{sheepdog}: Sample, Validate and Calibrate {BirdNET} Detections",
+  author = c(
+    person("Diogo B.", "Provete", comment = c(ORCID = "0000-0002-0097-0651")),
+    person("Larissa Sayuri Moreira", "Sugai",
+           comment = c(ORCID = "0000-0002-6248-291X")),
+    person("Liliana", "Piatti", comment = c(ORCID = "0000-0001-6324-1723"))
+  ),
+  year = year,
+  note = paste("R package version", meta$Version),
+  doi = "10.5281/zenodo.22696209",
+  url = "https://github.com/diogoprov/sheepdog",
+  textVersion = paste0(
+    "Provete, D. B., Sugai, L. S. M. & Piatti, L. (", year, "). ",
+    "sheepdog: Sample, Validate and Calibrate BirdNET Detections. ",
+    "R package version ", meta$Version, ". ",
+    "https://doi.org/10.5281/zenodo.22696209"
+  )
+)
