@@ -25,9 +25,11 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           # Optional engines are exercised in R-CMD-check; coverage uses
-          # the packages needed by the frequentist and plotting tests.
+          # the packages needed by the frequentist and plotting tests, plus
+          # brms and posterior for the brms code paths tested with a mocked
+          # brms::brm() (no Stan model is compiled).
           dependencies: '"hard"'
-          extra-packages: any::covr, any::xml2, any::DT, any::htmltools, any::testthat, any::lme4, any::ggplot2
+          extra-packages: any::covr, any::xml2, any::DT, any::htmltools, any::testthat, any::lme4, any::ggplot2, any::brms, any::posterior
       - name: Measure coverage
         shell: Rscript {0}
         run: |

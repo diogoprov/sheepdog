@@ -81,7 +81,10 @@ one, e.g. \code{calibration_prior} (whose classes then match the selected
 model). Required with \code{"brms"}.}
 
 \item{brms_args}{\code{engine = "brms"}: list of further arguments for
-\code{brms::brm()} (e.g. \code{list(chains = 4, cores = 4, backend = "cmdstanr")}).}
+\code{brms::brm()} (e.g. \code{list(chains = 4, cores = 4, backend = "cmdstanr")}).
+Without \code{seed} in this list, \code{seed} is also the seed of the Bayesian
+refit, so the whole run is reproducible; it is written to
+\code{calibration_model.txt}.}
 
 \item{rule}{When a detection is reliable: \code{"mean"}, its calibrated
 probability (the posterior mean with \code{engine = "brms"}) is >= \code{p_min};

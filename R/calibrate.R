@@ -409,11 +409,15 @@ select_calibration_model <- function(comparison,
 #' @param prior `engine = "brms"`: the prior (a `brmsprior` object), e.g.
 #'   from [calibration_prior()]. Required.
 #' @param ... `engine = "brms"`: further arguments for `brms::brm()` (e.g.
-#'   `chains`, `iter`, `cores`, `backend`, `seed`).
+#'   `chains`, `iter`, `cores`, `backend`, `seed`). Without `seed`, one is
+#'   drawn from R's random number generator (so `set.seed()` before the
+#'   call makes the fit reproducible) and passed to `brms::brm()`.
 #'
 #' @return A `glm`, `glmerMod` or `brmsfit` model, with the attribute
 #'   `sheepdog_levels` (the species and site levels), used by
-#'   [score_detections()] and [plot_calibration()].
+#'   [score_detections()] and [plot_calibration()]. A `brmsfit` also
+#'   carries the attribute `sheepdog_seed`, the seed given to Stan, so that
+#'   the fit can be repeated.
 #' @export
 fit_calibration <- function(validations, formula,
                             engine = c("lme4", "brms"), prior = NULL, ...) {
@@ -425,8 +429,14 @@ fit_calibration <- function(validations, formula,
            "calibration_prior() builds an example centred on an already ",
            "calibrated score.", call. = FALSE)
     }
-    fit <- brms::brm(formula, data = validations,
-                     family = brms::bernoulli(), prior = prior, ...)
+    dots <- list(...)
+    if (is.null(dots$seed) || is.na(dots$seed)) {
+      dots$seed <- sample.int(.Machine$integer.max, 1)
+    }
+    fit <- do.call(brms::brm,
+                   c(list(formula, data = validations,
+                          family = brms::bernoulli(), prior = prior), dots))
+    attr(fit, "sheepdog_seed") <- dots$seed
     attr(fit, "sheepdog_levels") <- list(
       species = levels(validations$species), site = levels(validations$site))
     diag <- calibration_diagnostics(fit)
@@ -450,6 +460,13 @@ fit_calibration <- function(validations, formula,
   attr(fit, "sheepdog_levels") <- list(species = levels(validations$species),
                                        site    = levels(validations$site))
   fit
+}
+
+# Argumentos do brms no calibrate(): o seed do calibrate() vale para o refit
+# Bayesiano quando brms_args nao traz um proprio
+brms_args_with_seed <- function(brms_args, seed) {
+  if (is.null(brms_args$seed)) brms_args$seed <- seed
+  brms_args
 }
 
 # Formula com efeitos aleatorios? (barra "|" da sintaxe do lme4; o lme4
@@ -907,6 +924,9 @@ plot_calibration <- function(fit, validations, min_confidence = 0.1,
 #'   model). Required with `"brms"`.
 #' @param brms_args `engine = "brms"`: list of further arguments for
 #'   `brms::brm()` (e.g. `list(chains = 4, cores = 4, backend = "cmdstanr")`).
+#'   Without `seed` in this list, `seed` is also the seed of the Bayesian
+#'   refit, so the whole run is reproducible; it is written to
+#'   `calibration_model.txt`.
 #' @inheritParams detection_history
 #' @param uncorrelated Include the m4 variant without the species
 #'   intercept-slope correlation among the candidates; see
@@ -981,7 +1001,8 @@ calibrate <- function(validation_files, prediction_tables, output_dir,
     prior_final <- if (is.function(prior)) prior(modelos[[melhor]], val) else prior
     fit_final <- do.call(fit_calibration,
                          c(list(val, modelos[[melhor]], engine = "brms",
-                                prior = prior_final), brms_args))
+                                prior = prior_final),
+                           brms_args_with_seed(brms_args, seed)))
     write_csv(calibration_diagnostics(fit_final),
               file.path(output_dir, "calibration_diagnostics.csv"))
   } else {
@@ -991,6 +1012,10 @@ calibrate <- function(validation_files, prediction_tables, output_dir,
   utils::capture.output(summary(fit_final),
                         file = file.path(output_dir, "calibration_model.txt"))
   # mensagens do ajuste (lme4) no fim do resumo do modelo
+  if (!is.null(attr(fit_final, "sheepdog_seed"))) {
+    cat("\nStan seed: ", attr(fit_final, "sheepdog_seed"), "\n", sep = "",
+        file = file.path(output_dir, "calibration_model.txt"), append = TRUE)
+  }
   msgs <- attr(fit_final, "sheepdog_messages")
   if (length(msgs) > 0) {
     cat("\nMessages of the fit:\n", paste0("  ", msgs, "\n"), sep = "",

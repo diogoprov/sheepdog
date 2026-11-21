@@ -83,6 +83,7 @@ test_that("a global model scores without lme4-specific levels", {
   expect_true(stats::cor(sc$confidence, sc$p_tp, method = "spearman") > 0.99)
 })
 
+#' @srrstats {G5.5} Random steps in tests are seeded with `withr::with_seed()` or a `seed` argument, and tests check that calibration and bootstrap functions leave the global RNG state untouched.
 test_that("calibration functions leave the global RNG untouched", {
   skip_if_not_installed("lme4")
   val <- suppressMessages(read_validations(
@@ -323,4 +324,31 @@ test_that("calibrate() goes on when the thresholds cannot be computed", {
   expect_null(res$thresholds)
   expect_false(file.exists(file.path(saida, "thresholds.csv")))
   expect_true(file.exists(file.path(saida, "nightly_detection_history.csv")))
+})
+
+test_that("calibrate() passes its seed to the brms refit and records it", {
+  skip_if_not_installed("lme4")
+  saida <- withr::local_tempdir()
+  real_fit <- fit_calibration
+  args <- NULL
+  # refit "brms" simulado: ajuste lme4 com o seed recebido, sem Stan
+  local_mocked_bindings(
+    fit_calibration = function(validations, formula, engine = "lme4",
+                               prior = NULL, ...) {
+      args <<- list(...)
+      fit <- real_fit(validations, formula)
+      if (engine == "brms") attr(fit, "sheepdog_seed") <- args$seed
+      fit
+    },
+    calibration_diagnostics = function(fit, ...) {
+      tibble::tibble(max_rhat = 1, min_ess_bulk = 1000, min_ess_tail = 1000,
+                     n_divergent = 0L, ok = TRUE)
+    })
+  suppressWarnings(rodar_calibracao(saida, engine = "brms", prior = "p",
+                                    brms_args = list(chains = 2), seed = 11))
+  expect_identical(args$seed, 11)
+  expect_identical(args$chains, 2)
+  expect_true(any(grepl("Stan seed: 11",
+                        readLines(file.path(saida, "calibration_model.txt")))))
+  expect_true(file.exists(file.path(saida, "calibration_diagnostics.csv")))
 })

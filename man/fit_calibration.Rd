@@ -24,12 +24,16 @@ fit_calibration(
 from \code{\link[=calibration_prior]{calibration_prior()}}. Required.}
 
 \item{...}{\code{engine = "brms"}: further arguments for \code{brms::brm()} (e.g.
-\code{chains}, \code{iter}, \code{cores}, \code{backend}, \code{seed}).}
+\code{chains}, \code{iter}, \code{cores}, \code{backend}, \code{seed}). Without \code{seed}, one is
+drawn from R's random number generator (so \code{set.seed()} before the
+call makes the fit reproducible) and passed to \code{brms::brm()}.}
 }
 \value{
 A \code{glm}, \code{glmerMod} or \code{brmsfit} model, with the attribute
 \code{sheepdog_levels} (the species and site levels), used by
-\code{\link[=score_detections]{score_detections()}} and \code{\link[=plot_calibration]{plot_calibration()}}.
+\code{\link[=score_detections]{score_detections()}} and \code{\link[=plot_calibration]{plot_calibration()}}. A \code{brmsfit} also
+carries the attribute \code{sheepdog_seed}, the seed given to Stan, so that
+the fit can be repeated.
 }
 \description{
 Fits a calibration model to all the reviewed clips. The species and

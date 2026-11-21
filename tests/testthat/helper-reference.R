@@ -1,6 +1,8 @@
 # Acesso as saidas de referencia da v1.2.0 (fixtures/ref_v1.2.0), geradas
 # por data-raw/make_reference_v1.2.0.R
 
+#' @srrstats {G5.4} Outputs are tested against stored reference outputs of the v1.2.0 script implementation (`tests/testthat/helper-reference.R`, `tests/testthat/fixtures/`), and the probability-rule threshold is tested against the analytic inversion of a logistic calibration.
+#' @srrstats {G5.4b} Results are compared with the previous implementation (v1.2.0) through stored outputs; see G5.4.
 ref_path <- function(...) test_path("fixtures", "ref_v1.2.0", ...)
 
 # Raiz simulada (a mesma de make_reference_v1.2.0.R), criada uma vez por
