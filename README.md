@@ -1,6 +1,8 @@
 # sheepdog <img src="man/figures/logo.png" align="right" height="139" alt="sheepdog hex logo" />
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22696210.svg)](https://doi.org/10.5281/zenodo.22696210)
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![R-CMD-check](https://github.com/diogoprov/sheepdog/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/diogoprov/sheepdog/actions/workflows/R-CMD-check.yaml)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22696209.svg)](https://doi.org/10.5281/zenodo.22696209)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
 [![r-universe](https://diogoprov.r-universe.dev/sheepdog/badges/version)](https://diogoprov.r-universe.dev/sheepdog)
 [![Codecov](https://codecov.io/gh/diogoprov/sheepdog/graph/badge.svg)](https://app.codecov.io/gh/diogoprov/sheepdog)
@@ -249,7 +251,8 @@ Ornithology) and **Liliana Piatti** (UFMS), within the FrogNet project. Code
 written with AI assistance (Claude, Anthropic), with human review and tests.
 
 If sheepdog is useful in your work, please cite it (GitHub's "Cite this
-repository" button uses `CITATION.cff`):
+repository" button uses `CITATION.cff`, and `citation("sheepdog")` gives the
+same reference in R):
 
 > Provete, D. B., Sugai, L. S. M., & Piatti, L. (2026). *sheepdog: sample,
 > validate and calibrate BirdNET detections for passive acoustic monitoring*.
@@ -258,6 +261,13 @@ repository" button uses `CITATION.cff`):
 The hex sticker uses a dog silhouette by Mozillian from
 [PhyloPic](https://www.phylopic.org/images/d3e8133c-e669-4881-9111-b44145f94212)
 (CC0 1.0).
+
+## Contributing
+
+Bug reports, questions and pull requests are welcome; see the
+[contributing guide](https://github.com/diogoprov/sheepdog/blob/main/.github/CONTRIBUTING.md). Please note that sheepdog is
+released with a [Contributor Code of Conduct](https://github.com/diogoprov/sheepdog/blob/main/.github/CODE_OF_CONDUCT.md). By
+contributing to this project, you agree to abide by its terms.
 
 ## License
 
