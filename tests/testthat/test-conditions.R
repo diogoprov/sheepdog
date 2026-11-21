@@ -129,3 +129,22 @@ test_that("review and sampling helpers stop on empty or incomplete input", {
     cluster = c("a", "b")),
     "`cluster` must be the name of one column")
 })
+
+test_that("read_validations() tells empty files from clips without a verdict", {
+  d <- withr::local_tempdir()
+  expect_error(suppressWarnings(read_validations(file.path(d, "nada.csv"))),
+               "No reviewed clip found in `files`")
+  ex <- system.file("extdata", "example", "validation", package = "sheepdog")
+  tab <- readr::read_csv(list.files(ex, full.names = TRUE)[1],
+                         show_col_types = FALSE)
+  tab$verdict <- "uncertain"
+  f <- file.path(d, "v.csv")
+  readr::write_csv(tab, f)
+  expect_error(suppressMessages(read_validations(f)),
+               "No clip of `files` has a verdict \\(positive or negative\\)")
+})
+
+test_that("calibration_sensitivity() needs a brms fit", {
+  expect_error(calibration_sensitivity(stats::lm(1 ~ 1)),
+               "must be a model fitted with engine")
+})

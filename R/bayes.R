@@ -198,8 +198,8 @@ prior_predictive_calibration <- function(formula, validations, prior, ...) {
 #' @return The table of `priorsense::powerscale_sensitivity()`.
 #' @export
 calibration_sensitivity <- function(fit, variable = NULL, ...) {
-  require_suggested("priorsense", "for the prior sensitivity analysis")
   check_brmsfit(fit)
+  require_suggested("priorsense", "for the prior sensitivity analysis")
   if (is.null(variable)) {
     todas <- posterior::variables(fit)
     variable <- grep("^(b|sd|cor)_", todas, value = TRUE)
