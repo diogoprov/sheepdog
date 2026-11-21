@@ -52,19 +52,31 @@ score_detections(
   Models fitted with `engine = "brms"`: step of the grid of scores on
   which the posterior is computed.
 
-  With a model fitted with `engine = "brms"`, the posterior of P(TP) is
-  computed once on a grid of scores (step `grid_step`) for each site x
-  species and assigned to the detections by their score rounded to the
-  grid, so that the cost does not depend on the number of detections;
-  the rounding error is small next to the uncertainty of the
-  calibration. Each detection then gets the posterior mean (`p_tp`), a
-  lower quantile (`p_tp_lower`) and the posterior probability that P(TP)
-  \>= `p_min` (`pr_reliable`).
-  [`detection_history()`](https://provetelab.org/sheepdog/reference/detection_history.md)
-  can use either rule.
-
 ## Value
 
 A tibble with `site`, `species`, `date`, `night`, `hour`, `confidence`,
 `p_tp`, `begin_path` and `file_offset`; with a model fitted with
 `engine = "brms"`, also `p_tp_lower` and `pr_reliable`.
+
+## Details
+
+With a model fitted with `engine = "brms"`, the posterior of P(TP) is
+computed once on a grid of scores (step `grid_step`) for each site x
+species and assigned to the detections by their score rounded to the
+grid, so that the cost does not depend on the number of detections; the
+rounding error is small next to the uncertainty of the calibration. Each
+detection then gets the posterior mean (`p_tp`), a lower quantile
+(`p_tp_lower`) and the posterior probability that P(TP) \>= `p_min`
+(`pr_reliable`).
+[`detection_history()`](https://provetelab.org/sheepdog/reference/detection_history.md)
+can use either rule.
+
+Sites or species levels absent from the calibration are new levels for
+the model. Detections of species that were not calibrated are dropped
+(with a message giving their number). Detections at a site that was not
+in the calibration are scored with a warning. With a `glm` or `glmerMod`
+model (`allow.new.levels = TRUE` of 'lme4'), the effects of the new site
+are set to zero, so P(TP) comes from the fixed and species effects only.
+With a `brmsfit` (`allow_new_levels = TRUE` of 'brms'), the effects of
+the new site are drawn from the fitted random-effects distribution,
+which widens the posterior of P(TP).

@@ -38,3 +38,17 @@ A tibble with `site` and `species` (factors; `species` is the species
 folder code), `confidence`, `logit_conf` (logit of the confidence,
 bounded at 1e-4 and 1 - 1e-4) and `tp` (1 = true positive, 0 = false
 positive), plus the columns requested in `keep`.
+
+## Transformations
+
+The confidence is bounded at 1e-4 and 1 - 1e-4 before the logit
+([`stats::qlogis()`](https://rdrr.io/r/stats/Logistic.html)), so that
+scores of 0 or 1 give finite values; `stats::plogis(logit_conf)` returns
+the bounded confidence. The verdict becomes the binary response `tp`,
+and `site` and `species` become factors whose levels (in alphabetical
+order) are stored by
+[`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
+with the model. These transformations are always applied, because the
+calibration models and
+[`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md)
+expect them; the original `confidence` is kept alongside `logit_conf`.

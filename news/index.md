@@ -23,6 +23,34 @@
   `attr(fit, "sheepdog_seed")`;
   [`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md)
   writes it to `calibration_model.txt`.
+- Documentation for the rOpenSci statistical standards:
+  [`?fit_calibration`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
+  now describes how the formula becomes a model matrix, the fixed ‘lme4’
+  optimiser settings, the computational defaults of the Bayesian fit
+  (NUTS through ‘brms’ and Stan, with references), initial values,
+  verbosity, and the intervals and residuals of the fitted models. The
+  convergence diagnostics are documented with their reference and with
+  trace plots.
+  [`calibration_prior()`](https://provetelab.org/sheepdog/reference/calibration_prior.md),
+  [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
+  and
+  [`prior_predictive_calibration()`](https://provetelab.org/sheepdog/reference/prior_predictive_calibration.md)
+  have examples.
+  [`?sheepdog`](https://provetelab.org/sheepdog/reference/sheepdog-package.md)
+  has a glossary and documents that option arguments are case-sensitive;
+  the README shows how to set the prior and how sheepdog relates to a
+  per-species [`glm()`](https://rdrr.io/r/stats/glm.html) calibration;
+  the contributing guide has a life cycle statement and explains how to
+  run the tests that fit Stan models.
+- The description of the posterior grid in
+  [`?score_detections`](https://provetelab.org/sheepdog/reference/score_detections.md)
+  had slipped into the documentation of the argument `grid_step` (also
+  inherited by
+  [`history_draws()`](https://provetelab.org/sheepdog/reference/history_draws.md),
+  [`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md)
+  and
+  [`compare_thresholds()`](https://provetelab.org/sheepdog/reference/compare_thresholds.md));
+  it is now in the Details.
 
 ## sheepdog 3.4.1
 

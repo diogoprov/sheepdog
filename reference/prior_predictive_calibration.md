@@ -38,3 +38,19 @@ prior_predictive_calibration(formula, validations, prior, ...)
 
 A `brmsfit` sampled from the prior, usable in
 [`plot_calibration()`](https://provetelab.org/sheepdog/reference/plot_calibration.md).
+
+## Examples
+
+``` r
+# Sampling from the prior compiles a Stan model, which takes minutes
+if (FALSE) { # \dontrun{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+f <- tp ~ logit_conf + (1 | species)
+prior_fit <- prior_predictive_calibration(f, val, calibration_prior(f, val),
+                                          chains = 2, seed = 1,
+                                          refresh = 0)
+plot_calibration_draws(prior_fit)
+} # }
+```

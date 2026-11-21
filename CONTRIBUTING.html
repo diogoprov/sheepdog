@@ -89,6 +89,18 @@
 <li>Open a pull request against <code>main</code>. Continuous integration runs <code>R CMD check</code> on Windows, macOS and Linux and reports test coverage.</li>
 </ol></div>
 <div class="section level2">
+<h2 id="tests-that-fit-stan-models">Tests that fit Stan models<a class="anchor" aria-label="anchor" href="#tests-that-fit-stan-models"></a></h2>
+<p>The default test run (<code>devtools::test()</code>, <code>R CMD check</code>) never compiles a Stan model: the code paths of <code>engine = "brms"</code> are tested with a mocked <code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code>. The tests that fit real Bayesian models are switched on by an environment variable:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span>SHEEPDOG_TEST_BRMS <span class="op">=</span> <span class="st">"true"</span><span class="op">)</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">test</span><span class="op">(</span>filter <span class="op">=</span> <span class="st">"bayes|calibrated_thresholds"</span><span class="op">)</span></span></code></pre></div>
+<p>They need ‘brms’ with a working Stan backend (‘rstan’ or ‘cmdstanr’ with CmdStan installed) and the suggested packages ‘posterior’ and ‘lme4’. They fit small models to the example data in <code>system.file("extdata", "example", package = "sheepdog")</code>; compilation dominates the run time, a few minutes on a laptop, and memory use is that of a normal Stan compilation. Run them before changing <code><a href="reference/fit_calibration.html">fit_calibration()</a></code>, <code><a href="reference/score_detections.html">score_detections()</a></code>, <code><a href="reference/history_draws.html">history_draws()</a></code> or any other function that handles a <code>brmsfit</code>.</p>
+</div>
+<div class="section level2">
+<h2 id="life-cycle">Life cycle<a class="anchor" aria-label="anchor" href="#life-cycle"></a></h2>
+<p>sheepdog is stable and actively maintained. Its version numbers follow <a href="https://semver.org" class="external-link">semantic versioning</a>: a change in the major version (as in 2.x to 3.0.0) may break existing code, and is documented in <code>NEWS.md</code> and, when it changes results, in a migration article such as <code><a href="articles/migration-3.0.0.html">vignette("migration-3.0.0")</a></code>. Changes to defaults that alter results are announced with a warning before they take effect. Files written by earlier versions (clip manifests, validation tables and detection histories, back to the scripts of v1.2.0) remain readable. Planned work is tracked in the <a href="https://github.com/diogoprov/sheepdog/issues" class="external-link">issues</a>, including the alignment with the rOpenSci standards for statistical software.</p>
+</div>
+<div class="section level2">
 <h2 id="code-style">Code style<a class="anchor" aria-label="anchor" href="#code-style"></a></h2>
 <ul><li>Follow the <a href="https://style.tidyverse.org" class="external-link">tidyverse style guide</a> and use the native pipe <code>|&gt;</code>.</li>
 <li>Exported functions use <code>snake_case</code> names in the object_verb or verb_object pattern already used in the package.</li>

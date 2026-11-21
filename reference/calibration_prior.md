@@ -61,3 +61,28 @@ On weakly informative priors and prior predictive checks see McElreath
 (2020,
 [doi:10.1201/9780429029608](https://doi.org/10.1201/9780429029608) ) and
 Gelman et al. (2026, *Bayesian Workflow*, Chapman & Hall).
+
+## Examples
+
+``` r
+if (requireNamespace("brms", quietly = TRUE)) {
+  ex <- system.file("extdata", "example", package = "sheepdog")
+  val <- read_validations(list.files(file.path(ex, "validation"),
+                                     full.names = TRUE))
+  f <- tp ~ logit_conf + (1 | species)
+  prior <- calibration_prior(f, val)
+  print(prior)
+  # Any brmsprior can replace it, e.g. a narrower prior on the slope
+  prior[prior$class == "b", "prior"] <- "normal(1, 0.5)"
+  prior
+}
+#> 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.
+#>               prior     class coef group resp dpar nlpar   lb   ub tag source
+#>  normal(0.913, 1.5) Intercept                            <NA> <NA>       user
+#>        normal(1, 1)         b                               0 <NA>       user
+#>      exponential(1)        sd                            <NA> <NA>       user
+#>               prior     class coef group resp dpar nlpar   lb   ub tag source
+#>  normal(0.913, 1.5) Intercept                            <NA> <NA>       user
+#>      normal(1, 0.5)         b                               0 <NA>       user
+#>      exponential(1)        sd                            <NA> <NA>       user
+```

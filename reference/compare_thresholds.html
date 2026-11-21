@@ -156,15 +156,7 @@ columns <code>site</code> and <code>species</code> that it has.</p></dd>
 
 <dt id="arg-grid-step">grid_step<a class="anchor" aria-label="anchor" href="#arg-grid-step"></a></dt>
 <dd><p>Models fitted with <code>engine = "brms"</code>: step of the grid
-of scores on which the posterior is computed.</p>
-<p>With a model fitted with <code>engine = "brms"</code>, the posterior of P(TP) is
-computed once on a grid of scores (step <code>grid_step</code>) for each site x
-species and assigned to the detections by their score rounded to the
-grid, so that the cost does not depend on the number of detections;
-the rounding error is small next to the uncertainty of the calibration.
-Each detection then gets the posterior mean (<code>p_tp</code>), a lower quantile
-(<code>p_tp_lower</code>) and the posterior probability that P(TP) &gt;= <code>p_min</code>
-(<code>pr_reliable</code>). <code><a href="detection_history.html">detection_history()</a></code> can use either rule.</p></dd>
+of scores on which the posterior is computed.</p></dd>
 
 
 <dt id="arg-lower-prob">lower_prob<a class="anchor" aria-label="anchor" href="#arg-lower-prob"></a></dt>

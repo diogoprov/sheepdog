@@ -299,4 +299,4 @@ threshold.
 
 - [`sheepdog`](https://provetelab.org/sheepdog/reference/sheepdog-package.md)
   [`sheepdog-package`](https://provetelab.org/sheepdog/reference/sheepdog-package.md)
-  : sheepdog: Sample, Validate and Calibrate 'BirdNET' Detections
+  : sheepdog: sample, validate and calibrate BirdNET detections

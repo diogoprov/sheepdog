@@ -117,6 +117,19 @@ species folder code), <code>confidence</code>, <code>logit_conf</code> (logit of
 confidence, bounded at 1e-4 and 1 - 1e-4) and <code>tp</code> (1 = true
 positive, 0 = false positive), plus the columns requested in <code>keep</code>.</p>
     </div>
+    <div class="section level2">
+    <h2 id="transformations">Transformations<a class="anchor" aria-label="anchor" href="#transformations"></a></h2>
+
+
+<p>The confidence is bounded at 1e-4 and 1 - 1e-4 before the logit
+(<code><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">stats::qlogis()</a></code>), so that scores of 0 or 1 give finite values;
+<code>stats::plogis(logit_conf)</code> returns the bounded confidence. The verdict
+becomes the binary response <code>tp</code>, and <code>site</code> and <code>species</code> become
+factors whose levels (in alphabetical order) are stored by
+<code><a href="fit_calibration.html">fit_calibration()</a></code> with the model. These transformations are always
+applied, because the calibration models and <code><a href="score_detections.html">score_detections()</a></code>
+expect them; the original <code>confidence</code> is kept alongside <code>logit_conf</code>.</p>
+    </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

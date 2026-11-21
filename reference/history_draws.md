@@ -57,17 +57,6 @@ history_draws(
   Models fitted with `engine = "brms"`: step of the grid of scores on
   which the posterior is computed.
 
-  With a model fitted with `engine = "brms"`, the posterior of P(TP) is
-  computed once on a grid of scores (step `grid_step`) for each site x
-  species and assigned to the detections by their score rounded to the
-  grid, so that the cost does not depend on the number of detections;
-  the rounding error is small next to the uncertainty of the
-  calibration. Each detection then gets the posterior mean (`p_tp`), a
-  lower quantile (`p_tp_lower`) and the posterior probability that P(TP)
-  \>= `p_min` (`pr_reliable`).
-  [`detection_history()`](https://provetelab.org/sheepdog/reference/detection_history.md)
-  can use either rule.
-
 - seed:
 
   Seed of the choice of draws. The global random number generator is

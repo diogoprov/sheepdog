@@ -40,6 +40,46 @@ model, please open an issue first so that we can agree on the approach.
 6.  Open a pull request against `main`. Continuous integration runs
     `R CMD check` on Windows, macOS and Linux and reports test coverage.
 
+## Tests that fit Stan models
+
+The default test run (`devtools::test()`, `R CMD check`) never compiles
+a Stan model: the code paths of `engine = "brms"` are tested with a
+mocked
+[`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html). The
+tests that fit real Bayesian models are switched on by an environment
+variable:
+
+``` r
+
+Sys.setenv(SHEEPDOG_TEST_BRMS = "true")
+devtools::test(filter = "bayes|calibrated_thresholds")
+```
+
+They need ‘brms’ with a working Stan backend (‘rstan’ or ‘cmdstanr’ with
+CmdStan installed) and the suggested packages ‘posterior’ and ‘lme4’.
+They fit small models to the example data in
+`system.file("extdata", "example", package = "sheepdog")`; compilation
+dominates the run time, a few minutes on a laptop, and memory use is
+that of a normal Stan compilation. Run them before changing
+[`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md),
+[`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md),
+[`history_draws()`](https://provetelab.org/sheepdog/reference/history_draws.md)
+or any other function that handles a `brmsfit`.
+
+## Life cycle
+
+sheepdog is stable and actively maintained. Its version numbers follow
+[semantic versioning](https://semver.org): a change in the major version
+(as in 2.x to 3.0.0) may break existing code, and is documented in
+`NEWS.md` and, when it changes results, in a migration article such as
+[`vignette("migration-3.0.0")`](https://provetelab.org/sheepdog/articles/migration-3.0.0.md).
+Changes to defaults that alter results are announced with a warning
+before they take effect. Files written by earlier versions (clip
+manifests, validation tables and detection histories, back to the
+scripts of v1.2.0) remain readable. Planned work is tracked in the
+[issues](https://github.com/diogoprov/sheepdog/issues), including the
+alignment with the rOpenSci standards for statistical software.
+
 ## Code style
 
 - Follow the [tidyverse style guide](https://style.tidyverse.org) and

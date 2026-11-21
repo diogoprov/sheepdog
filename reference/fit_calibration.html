@@ -148,7 +148,117 @@ the divergent transitions fail the usual limits. Check the prior with
 <code><a href="prior_predictive_calibration.html">prior_predictive_calibration()</a></code>, the fit with <code><a href="https://mc-stan.org/bayesplot/reference/pp_check.html" class="external-link">brms::pp_check()</a></code> and
 the sensitivity to the prior with <code><a href="calibration_sensitivity.html">calibration_sensitivity()</a></code>.</p>
     </div>
+    <div class="section level2">
+    <h2 id="formula-and-model-matrix">Formula and model matrix<a class="anchor" aria-label="anchor" href="#formula-and-model-matrix"></a></h2>
 
+
+<p>The formula uses the syntax of 'lme4' for random effects (<code>(term | group)</code>) and is turned into model matrices by the fitting function
+itself: <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">stats::glm()</a></code> for a formula without random effects,
+<code><a href="https://rdrr.io/pkg/lme4/man/glmer.html" class="external-link">lme4::glmer()</a></code> otherwise, or <code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code>. sheepdog does not build
+the matrices. The response is <code>tp</code> (1 = true positive, 0 = false
+positive) and the predictor of the score is <code>logit_conf</code>, the logit of
+the BirdNET confidence bounded at 1e-4 and 1 - 1e-4 (see
+<code><a href="read_validations.html">read_validations()</a></code>); the inverse transform, from the linear
+predictor to P(TP), is <code><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">stats::plogis()</a></code>. Only the columns named in the
+formula enter the model: the other columns of <code>validations</code> (for
+example those kept with <code>keep</code> in <code><a href="read_validations.html">read_validations()</a></code>) are neither
+used nor stored in the fitted object. The species and site levels are
+stored in the attribute <code>sheepdog_levels</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="maximum-likelihood-fit">Maximum likelihood fit<a class="anchor" aria-label="anchor" href="#maximum-likelihood-fit"></a></h2>
+
+
+<p>Models with random effects are fitted by <code><a href="https://rdrr.io/pkg/lme4/man/glmer.html" class="external-link">lme4::glmer()</a></code> with
+<code>lme4::glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))</code>: the bound optimisation by quadratic approximation, with up to
+100000 function evaluations, a larger budget than the 'lme4' default,
+for the correlated random slopes of the larger calibration models. The
+convergence tolerances are those of 'lme4' and
+cannot be changed from sheepdog; convergence warnings of 'lme4' are
+passed on. Models without random effects use the iteratively
+reweighted least squares of <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">stats::glm()</a></code> with its default control.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="bayesian-computation">Bayesian computation<a class="anchor" aria-label="anchor" href="#bayesian-computation"></a></h2>
+
+
+<p>With <code>engine = "brms"</code>, the posterior is sampled with the No-U-Turn
+Sampler (NUTS) of Stan (Carpenter et al. 2017,
+<a href="https://doi.org/10.18637/jss.v076.i01" class="external-link">doi:10.18637/jss.v076.i01</a>
+) through 'brms' (Bürkner 2017,
+<a href="https://doi.org/10.18637/jss.v080.i01" class="external-link">doi:10.18637/jss.v080.i01</a>
+). The computational settings are those of
+<code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code> unless they are given in <code>...</code>: 4 chains of 2000
+iterations each, of which the first half (<code>warmup = floor(iter / 2)</code>)
+is warmup, without thinning (<code>thin = 1</code>), and random initial values
+(<code>init = NULL</code>). Initial values can be set with <code>init</code>, passed on to
+<code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code>; to start from a previous fit, pass its posterior means
+as <code>init</code> or refit the model. <code><a href="https://rdrr.io/r/stats/update.html" class="external-link">stats::update()</a></code> on the returned
+<code>brmsfit</code> runs the sampler again but returns an object without the
+attributes <code>sheepdog_levels</code> and <code>sheepdog_seed</code>, so a model refitted
+that way cannot be passed to <code><a href="score_detections.html">score_detections()</a></code>; call
+<code>fit_calibration()</code> again instead.</p>
+<p>Only NUTS is supported. Other algorithms of <code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code> (<code>algorithm = "meanfield"</code>, for instance) can be passed through <code>...</code>, but
+<code><a href="calibration_diagnostics.html">calibration_diagnostics()</a></code>, which reads the NUTS parameters, then
+fails. The convergence checks of <code><a href="calibration_diagnostics.html">calibration_diagnostics()</a></code> always run
+after the fit and cannot be switched off; a model that fails them
+raises a warning, which <code><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings()</a></code> silences. sheepdog has no
+verbosity argument of its own: the progress output of Stan is
+controlled by <code>refresh</code> (e.g. <code>refresh = 0</code>, passed on to the Stan
+backend) and <code>silent</code> (e.g. <code>silent = 2</code>) of <code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code>, and the
+messages of sheepdog by <code><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages()</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="methods-for-the-fitted-model">Methods for the fitted model<a class="anchor" aria-label="anchor" href="#methods-for-the-fitted-model"></a></h2>
+
+
+<p>The returned object keeps the class of the fitting function, so the
+methods of <code>stats</code>, 'lme4' and 'brms' apply. Confidence intervals of
+the coefficients come from <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">stats::confint()</a></code> for <code>glm</code> and <code>glmerMod</code>
+models (profile likelihood by default; <code>method = "Wald"</code> for a
+faster approximation of a <code>glmerMod</code>), and credible intervals from
+<code><a href="https://mc-stan.org/rstantools/reference/posterior_interval.html" class="external-link">brms::posterior_interval()</a></code> or <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> for a <code>brmsfit</code>.
+<code><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">stats::residuals()</a></code> returns deviance residuals for <code>glm</code> and
+<code>glmerMod</code> models and, for a <code>brmsfit</code>, the posterior summary of the
+response residuals (observed minus fitted probability). With a binary response, residuals take
+two values for each fitted probability and say little one by one; check
+the fit with the calibration intercept and slope of
+<code><a href="compare_calibration_models.html">compare_calibration_models()</a></code>, with <code><a href="calibration_quality.html">calibration_quality()</a></code>, or with the
+binned posterior predictive check of <code><a href="calibration_ppc.html">calibration_ppc()</a></code> for a
+<code>brmsfit</code>.</p>
+    </div>
+
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example"</span>, package <span class="op">=</span> <span class="st">"sheepdog"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">val</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_validations.html">read_validations</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"validation"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                                   full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.</span>
+<span class="r-in"><span><span class="co"># Maximum likelihood, one species-level random intercept</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"lme4"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">fit_calibration</span><span class="op">(</span><span class="va">val</span>, <span class="va">tp</span> <span class="op">~</span> <span class="va">logit_conf</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">species</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/nlme/man/fixed.effects.html" class="external-link">fixef</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">fit</span>, method <span class="op">=</span> <span class="st">"Wald"</span>, parm <span class="op">=</span> <span class="st">"beta_"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  logit_conf </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.2060523   1.6030183 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  2.5 %    97.5 %</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept) -0.9305499 0.5184454</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> logit_conf   1.4584248 1.7476119</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Bayesian fit: the prior is always given explicitly. Fitting compiles a</span></span></span>
+<span class="r-in"><span><span class="co"># Stan model, which takes minutes, so this part is not run here.</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="va">tp</span> <span class="op">~</span> <span class="va">logit_conf</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">species</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="calibration_prior.html">calibration_prior</a></span><span class="op">(</span><span class="va">f</span>, <span class="va">val</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fit_b</span> <span class="op">&lt;-</span> <span class="fu">fit_calibration</span><span class="op">(</span><span class="va">val</span>, <span class="va">f</span>, engine <span class="op">=</span> <span class="st">"brms"</span>, prior <span class="op">=</span> <span class="va">prior</span>,</span></span>
+<span class="r-in"><span>                         chains <span class="op">=</span> <span class="fl">4</span>, iter <span class="op">=</span> <span class="fl">2000</span>, seed <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>                         refresh <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="calibration_diagnostics.html">calibration_diagnostics</a></span><span class="op">(</span><span class="va">fit_b</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">brms</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstantools/reference/posterior_interval.html" class="external-link">posterior_interval</a></span><span class="op">(</span><span class="va">fit_b</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

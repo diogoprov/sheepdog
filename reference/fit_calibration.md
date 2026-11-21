@@ -89,3 +89,132 @@ the fit with
 [`brms::pp_check()`](https://mc-stan.org/bayesplot/reference/pp_check.html)
 and the sensitivity to the prior with
 [`calibration_sensitivity()`](https://provetelab.org/sheepdog/reference/calibration_sensitivity.md).
+
+## Formula and model matrix
+
+The formula uses the syntax of 'lme4' for random effects
+(`(term | group)`) and is turned into model matrices by the fitting
+function itself: [`stats::glm()`](https://rdrr.io/r/stats/glm.html) for
+a formula without random effects,
+[`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) otherwise, or
+[`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html).
+sheepdog does not build the matrices. The response is `tp` (1 = true
+positive, 0 = false positive) and the predictor of the score is
+`logit_conf`, the logit of the BirdNET confidence bounded at 1e-4 and
+1 - 1e-4 (see
+[`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md));
+the inverse transform, from the linear predictor to P(TP), is
+[`stats::plogis()`](https://rdrr.io/r/stats/Logistic.html). Only the
+columns named in the formula enter the model: the other columns of
+`validations` (for example those kept with `keep` in
+[`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md))
+are neither used nor stored in the fitted object. The species and site
+levels are stored in the attribute `sheepdog_levels`.
+
+## Maximum likelihood fit
+
+Models with random effects are fitted by
+[`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) with
+`lme4::glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))`:
+the bound optimisation by quadratic approximation, with up to 100000
+function evaluations, a larger budget than the 'lme4' default, for the
+correlated random slopes of the larger calibration models. The
+convergence tolerances are those of 'lme4' and cannot be changed from
+sheepdog; convergence warnings of 'lme4' are passed on. Models without
+random effects use the iteratively reweighted least squares of
+[`stats::glm()`](https://rdrr.io/r/stats/glm.html) with its default
+control.
+
+## Bayesian computation
+
+With `engine = "brms"`, the posterior is sampled with the No-U-Turn
+Sampler (NUTS) of Stan (Carpenter et al. 2017,
+[doi:10.18637/jss.v076.i01](https://doi.org/10.18637/jss.v076.i01) )
+through 'brms' (Bürkner 2017,
+[doi:10.18637/jss.v080.i01](https://doi.org/10.18637/jss.v080.i01) ).
+The computational settings are those of
+[`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) unless
+they are given in `...`: 4 chains of 2000 iterations each, of which the
+first half (`warmup = floor(iter / 2)`) is warmup, without thinning
+(`thin = 1`), and random initial values (`init = NULL`). Initial values
+can be set with `init`, passed on to
+[`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html); to
+start from a previous fit, pass its posterior means as `init` or refit
+the model. [`stats::update()`](https://rdrr.io/r/stats/update.html) on
+the returned `brmsfit` runs the sampler again but returns an object
+without the attributes `sheepdog_levels` and `sheepdog_seed`, so a model
+refitted that way cannot be passed to
+[`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md);
+call `fit_calibration()` again instead.
+
+Only NUTS is supported. Other algorithms of
+[`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html)
+(`algorithm = "meanfield"`, for instance) can be passed through `...`,
+but
+[`calibration_diagnostics()`](https://provetelab.org/sheepdog/reference/calibration_diagnostics.md),
+which reads the NUTS parameters, then fails. The convergence checks of
+[`calibration_diagnostics()`](https://provetelab.org/sheepdog/reference/calibration_diagnostics.md)
+always run after the fit and cannot be switched off; a model that fails
+them raises a warning, which
+[`suppressWarnings()`](https://rdrr.io/r/base/warning.html) silences.
+sheepdog has no verbosity argument of its own: the progress output of
+Stan is controlled by `refresh` (e.g. `refresh = 0`, passed on to the
+Stan backend) and `silent` (e.g. `silent = 2`) of
+[`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html), and
+the messages of sheepdog by
+[`suppressMessages()`](https://rdrr.io/r/base/message.html).
+
+## Methods for the fitted model
+
+The returned object keeps the class of the fitting function, so the
+methods of `stats`, 'lme4' and 'brms' apply. Confidence intervals of the
+coefficients come from
+[`stats::confint()`](https://rdrr.io/r/stats/confint.html) for `glm` and
+`glmerMod` models (profile likelihood by default; `method = "Wald"` for
+a faster approximation of a `glmerMod`), and credible intervals from
+[`brms::posterior_interval()`](https://mc-stan.org/rstantools/reference/posterior_interval.html)
+or [`summary()`](https://rdrr.io/r/base/summary.html) for a `brmsfit`.
+[`stats::residuals()`](https://rdrr.io/r/stats/residuals.html) returns
+deviance residuals for `glm` and `glmerMod` models and, for a `brmsfit`,
+the posterior summary of the response residuals (observed minus fitted
+probability). With a binary response, residuals take two values for each
+fitted probability and say little one by one; check the fit with the
+calibration intercept and slope of
+[`compare_calibration_models()`](https://provetelab.org/sheepdog/reference/compare_calibration_models.md),
+with
+[`calibration_quality()`](https://provetelab.org/sheepdog/reference/calibration_quality.md),
+or with the binned posterior predictive check of
+[`calibration_ppc()`](https://provetelab.org/sheepdog/reference/calibration_ppc.md)
+for a `brmsfit`.
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+#> 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.
+# Maximum likelihood, one species-level random intercept
+if (requireNamespace("lme4", quietly = TRUE)) {
+  fit <- fit_calibration(val, tp ~ logit_conf + (1 | species))
+  print(lme4::fixef(fit))
+  confint(fit, method = "Wald", parm = "beta_")
+}
+#> (Intercept)  logit_conf 
+#>  -0.2060523   1.6030183 
+#>                  2.5 %    97.5 %
+#> (Intercept) -0.9305499 0.5184454
+#> logit_conf   1.4584248 1.7476119
+
+# Bayesian fit: the prior is always given explicitly. Fitting compiles a
+# Stan model, which takes minutes, so this part is not run here.
+if (FALSE) { # \dontrun{
+f <- tp ~ logit_conf + (1 | species)
+prior <- calibration_prior(f, val)
+fit_b <- fit_calibration(val, f, engine = "brms", prior = prior,
+                         chains = 4, iter = 2000, seed = 1,
+                         refresh = 0)
+calibration_diagnostics(fit_b)
+brms::posterior_interval(fit_b)
+} # }
+```

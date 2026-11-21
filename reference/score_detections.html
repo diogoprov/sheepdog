@@ -130,15 +130,7 @@ threshold of <code>pr_reliable</code> and the probability of the lower quantile
 
 <dt id="arg-grid-step">grid_step<a class="anchor" aria-label="anchor" href="#arg-grid-step"></a></dt>
 <dd><p>Models fitted with <code>engine = "brms"</code>: step of the grid
-of scores on which the posterior is computed.</p>
-<p>With a model fitted with <code>engine = "brms"</code>, the posterior of P(TP) is
-computed once on a grid of scores (step <code>grid_step</code>) for each site x
-species and assigned to the detections by their score rounded to the
-grid, so that the cost does not depend on the number of detections;
-the rounding error is small next to the uncertainty of the calibration.
-Each detection then gets the posterior mean (<code>p_tp</code>), a lower quantile
-(<code>p_tp_lower</code>) and the posterior probability that P(TP) &gt;= <code>p_min</code>
-(<code>pr_reliable</code>). <code><a href="detection_history.html">detection_history()</a></code> can use either rule.</p></dd>
+of scores on which the posterior is computed.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -146,6 +138,26 @@ Each detection then gets the posterior mean (<code>p_tp</code>), a lower quantil
     <p>A tibble with <code>site</code>, <code>species</code>, <code>date</code>, <code>night</code>, <code>hour</code>,
 <code>confidence</code>, <code>p_tp</code>, <code>begin_path</code> and <code>file_offset</code>; with a model
 fitted with <code>engine = "brms"</code>, also <code>p_tp_lower</code> and <code>pr_reliable</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>With a model fitted with <code>engine = "brms"</code>, the posterior of P(TP) is
+computed once on a grid of scores (step <code>grid_step</code>) for each site x
+species and assigned to the detections by their score rounded to the
+grid, so that the cost does not depend on the number of detections;
+the rounding error is small next to the uncertainty of the calibration.
+Each detection then gets the posterior mean (<code>p_tp</code>), a lower quantile
+(<code>p_tp_lower</code>) and the posterior probability that P(TP) &gt;= <code>p_min</code>
+(<code>pr_reliable</code>). <code><a href="detection_history.html">detection_history()</a></code> can use either rule.</p>
+<p>Sites or species levels absent from the calibration are new levels for
+the model. Detections of species that were not calibrated are dropped
+(with a message giving their number). Detections at a site that was not
+in the calibration are scored with a warning. With a <code>glm</code> or
+<code>glmerMod</code> model (<code>allow.new.levels = TRUE</code> of 'lme4'), the effects of
+the new site are set to zero, so P(TP) comes from the fixed and
+species effects only. With a <code>brmsfit</code> (<code>allow_new_levels = TRUE</code> of
+'brms'), the effects of the new site are drawn from the fitted
+random-effects distribution, which widens the posterior of P(TP).</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
