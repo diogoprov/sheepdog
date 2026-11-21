@@ -250,6 +250,9 @@ from the protocol design of **Larissa S. M. Sugai** (Cornell Lab of
 Ornithology) and **Liliana Piatti** (UFMS), within the [DiverSons project](https://provetelab.org/projects.html#diversons-acoustic-monitoring-of-frogs). Code
 written with AI assistance (Claude, Anthropic), with human review and tests.
 
+The DiverSons project (principal investigator: Liliana Piatti) was funded by
+FUNDECT (Termo de Outorga 95/2023) from July 2023 to July 2026.
+
 If sheepdog is useful in your work, please cite it (GitHub's "Cite this
 repository" button uses `CITATION.cff`, and `citation("sheepdog")` gives the
 same reference in R):
