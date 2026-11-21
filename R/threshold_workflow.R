@@ -55,6 +55,13 @@ threshold_bootstrap <- function(validation, target_precision = 0.90,
                                 cluster = "source_audio", conf = 0.95,
                                 seed = 2026) {
   check_by(validation, by)
+  check_prob(target_precision, "target_precision", open = TRUE)
+  check_number(min_n, "min_n", lower = 1, integer = TRUE)
+  check_flag(sustained, "sustained")
+  check_number(n_boot, "n_boot", lower = 1, integer = TRUE)
+  if (!is.character(cluster) || length(cluster) != 1L) {
+    stop("`cluster` must be the name of one column.", call. = FALSE)
+  }
   if (!cluster %in% names(validation)) {
     stop("`cluster` (", cluster, ") is not a column of `validation`.",
          call. = FALSE)
@@ -202,6 +209,7 @@ threshold_by_group <- function(validation, thresholds, by,
 threshold_record <- function(thresholds, bootstrap = NULL, groups = NULL,
                              extraction_info = NULL, target_precision = 0.90,
                              file = NULL) {
+  if (!is.null(file)) file <- check_file_ext(file, "md")
   faltam <- setdiff(c("site", "species_folder", "threshold"),
                     names(thresholds))
   if (length(faltam) > 0) {

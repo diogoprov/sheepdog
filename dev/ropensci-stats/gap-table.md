@@ -7,13 +7,14 @@ statistical software track. The tags themselves are in
 
 | Category | Met | Not applicable | To do |
 |---|---|---|---|
-| G | 22 | 7 | 39 |
-| RE | 27 | 7 | 14 |
-| BS | 29 | 14 | 13 |
-| Total | 78 | 28 | 66 |
+| G | 30 | 7 | 31 |
+| RE | 32 | 7 | 9 |
+| BS | 35 | 14 | 7 |
+| Total | 97 | 28 | 47 |
 
-Partially met standards are counted as to do. Counts updated after phase 2
-(documentation); they were 51 met and 93 to do after phase 1.
+Partially met standards are counted as to do. Counts updated after phase 3
+(input checks); they were 51 met and 93 to do after phase 1, and 78 met and
+66 to do after phase 2.
 
 ## Phase 2: documentation
 
@@ -31,39 +32,25 @@ Still to do:
 
 ## Phase 3: input checks
 
+Done in phase 3: G2.0, G2.1, G2.2, G2.5, G2.9, G2.16, G3.0, G4.0, RE1.2,
+RE2.1, RE2.4, RE2.4a, RE2.4b, BS2.1, BS2.2, BS2.6, BS3.0, BS3.1, BS7.4a.
+Shared helpers in `R/checks.R` (`check_number()`, `check_prob()`,
+`check_flag()`, `check_confidence()`, `check_validations()`,
+`drop_missing()`, `check_calibration_data()`, `check_file_ext()`) are used
+by `fit_calibration()`, `compare_calibration_models()`,
+`read_validations()`, `read_selection_tables()`, `score_detections()`,
+`history_draws()`, `calibration_diagnostics()`, `calibration_ppc()`,
+`plot_calibration_draws()`, `calibration_prior()`, `select_clips()`,
+`suggest_thresholds()`, `threshold_bootstrap()` and the functions that
+write files. Tests are in `tests/testthat/test-checks.R`.
+
+Still to do (partly done for the calibration functions only):
+
 | Standard | Gap |
 |---|---|
-| G2.0 | length assertions exist for some arguments (`k_folds`, `conf`, `window_step`, `n_versions`, `seed`, `score_breaks`) but not for scalar arguments of `select_clips()`, `suggest_thresholds()`, `threshold_bootstrap()` and `calibration_ppc()`. Planned: shared `check_*()` helpers. |
-| G2.1 | data inputs of `fit_calibration()`, `compare_calibration_models()`, `suggest_thresholds()` and `select_clips()` are not checked for class or required columns. |
-| G2.2 | unchecked scalar arguments (`threshold`, `n_top`, `target_precision`, `min_confidence`, `p_min`) accept vectors silently. |
-| G2.3 | See G2.3a (met) and G2.3b (gap). |
-| G2.5 | `fit_calibration()` relies on `levels(validations$species)` without checking that `site` and `species` are unordered factors. |
-| G2.6 | one-dimensional arguments are not stripped of extra classes before use. |
-| G2.7 | `data.frame` and tibble inputs work through dplyr, but inputs are not coerced at entry and `data.table` is untested. |
-| G2.8 | no single entry routine coerces tabular inputs to one class. Planned: an internal `as_sheepdog_table()`. |
-| G2.9 | rows dropped for missing confidence and values clamped by the bounded logit are not reported with a message. |
-| G2.11 | columns with non-standard classes (e.g. `units`) are neither handled nor tested. |
-| G2.12 | list columns are not handled. |
-| G2.13 | missing-data checks exist in `calibration_folds()`, `calibration_quality()` and `read_pamdp()`, but not in `fit_calibration()`, `select_clips()` or `suggest_thresholds()`. |
-| G2.14 | there is no option for how missing data are handled; either add an `na_action` argument or document a fixed per-function policy. |
-| G2.14a | only `calibration_folds()` and `calibration_quality()` error on missing data. |
-| G2.14b | rows with missing data are dropped, mostly without a message. |
-| G2.15 | audit summaries reachable with missing inputs, or guarantee removal at entry (G2.13). |
-| G2.16 | `confidence` is not checked for NaN, Inf or values outside [0, 1] at entry; the bounded logit clamps Inf silently. |
-| G3.0 | grid lookups use integer indices and thresholds use rounded scores, but four floating-point `==` comparisons remain (`reviewers.R`, `select_clips.R`, `recall_ceiling.R`). |
-| G4.0 | user-supplied file names in `list_recordings()`, `threshold_record()`, `warning_signs()` and `run_app()` are written without checking the extension. |
-| RE1.2 | document the columns required by `fit_calibration()` and check them (formula class, columns present, `tp` in 0/1, factor `site` and `species`). |
-| RE2.1 | `fit_calibration()` leaves missing values to the default `na.omit` of the fitting engine without a message. |
-| RE2.3 | the default predictor `logit_conf` is centred internally by brms, but extra covariates receive a normal(0, 1) prior that assumes standardisation, which is neither checked nor documented in `fit_calibration()`. |
-| RE2.4 | no pre-check for collinearity or separation in `fit_calibration()`. |
-| RE2.4a | check the rank of the fixed-effects model matrix. |
-| RE2.4b | check for complete separation of `tp` by `logit_conf`, globally and by species. |
-| BS2.1 | input is a single data frame, but `fit_calibration()` does not check its columns. |
-| BS2.2 | a prior is required for brms, but its class (`brmsprior`) is not checked. |
-| BS2.6 | `chains` and `iter` are validated by brms, but the package's own `rhat_max`, `ess_min`, `n_draws`, `grid_step` and `lower_prob` are not checked. |
-| BS3.0 | missing-value handling in the fit is not documented (see RE2.1). |
-| BS3.1 | see RE2.4. |
-| BS7.4a | the normal(0, 1) prior for extra covariates assumes standardisation, which is neither tested nor warned. |
+| G2.6, G2.7, G2.8, G2.11, G2.12 | calibration tables go through `check_validations()` (tibble conversion, extra classes dropped, list columns refused); the sampling and threshold functions have no entry routine. |
+| G2.13, G2.14, G2.14a, G2.14b, G2.15 | the calibration functions drop rows with missing values with a message (a documented fixed policy); `select_clips()`, `suggest_thresholds()` and the summaries of the threshold functions have no explicit policy. |
+| RE2.3 | covariates are not centred or scaled by an argument; `calibration_prior()` warns when they are not standardised. |
 
 ## Phase 4: tests
 

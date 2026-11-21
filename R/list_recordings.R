@@ -59,6 +59,7 @@ list_recordings <- function(audio_dir,
                             site = NULL, site_pattern = NULL,
                             remap_from = NULL, remap_to = NULL,
                             predictions = NULL, file = NULL) {
+  if (!is.null(file)) file <- check_file_ext(file, "csv")
   if (!is.character(audio_dir) || length(audio_dir) != 1 ||
       !dir.exists(audio_dir)) {
     stop("`audio_dir` must be an existing folder.", call. = FALSE)

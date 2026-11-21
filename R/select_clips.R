@@ -291,6 +291,23 @@ select_clips <- function(detections,
   estrato1 <- resolve_strata(strata, modo)
   rotulo1  <- paste(estrato1, collapse = " x ")
   unidade <- match.arg(occasion_unit)
+  check_prob(threshold, "threshold", null_ok = TRUE)
+  check_number(n_top, "n_top", lower = 1, integer = TRUE)
+  check_prob(recording_fraction, "recording_fraction")
+  check_number(n_recordings_per_site, "n_recordings_per_site", lower = 1,
+               integer = TRUE, null_ok = TRUE)
+  check_prob(min_confidence, "min_confidence", null_ok = TRUE)
+  check_number(hour_start, "hour_start", 0, 23, integer = TRUE,
+               null_ok = TRUE)
+  check_number(hour_end, "hour_end", 0, 23, integer = TRUE, null_ok = TRUE)
+  check_flag(alternate_days, "alternate_days")
+  check_number(target_total, "target_total", lower = 1, integer = TRUE,
+               null_ok = TRUE)
+  check_flag(balance_by_hour, "balance_by_hour")
+  check_number(max_per_species, "max_per_species", lower = 1,
+               integer = TRUE, null_ok = TRUE)
+  check_number(seed, "seed", integer = TRUE)
+  check_flag(inherit, "inherit")
   janela  <- list(hour_start = hour_start, hour_end = hour_end,
                   alternate_days = alternate_days,
                   date_start = date_start, date_end = date_end)
@@ -736,7 +753,7 @@ select_clips <- function(detections,
                                              "occasion_id")]),
             " occasions drawn).")
     if (nrow(selecao) > 0 && is.null(rodadas) &&
-        all(selecao$inclusion_prob == 1)) {
+        all(near(selecao$inclusion_prob, 1))) {
       message("Every candidate occasion was taken (inclusion_prob = 1): this ",
               "is a census of them, not a random draw. For a sample, use ",
               "wider `strata` or a smaller `n_top`.")

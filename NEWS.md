@@ -33,6 +33,29 @@
   into the documentation of the argument `grid_step` (also inherited by
   `history_draws()`, `calibrated_thresholds()` and `compare_thresholds()`);
   it is now in the Details.
+- Input checks (rOpenSci standards, phase 3). `fit_calibration()` and
+  `compare_calibration_models()` check that `validations` is a data frame
+  with the needed columns, that `tp` is 0/1 and the formula's response,
+  and convert the table to a tibble; rows with missing values in the
+  formula's variables are left out with a message. Before a fit,
+  `fit_calibration()` stops when all verdicts are equal or the fixed
+  effects are collinear, warns when the verdicts are completely separated
+  by the score, and reports species with one verdict class; with
+  `engine = "brms"`, `prior` must be a `brmsprior`. `read_validations()`
+  and `read_selection_tables()` stop on confidence scores that are NaN,
+  infinite or outside 0 to 1, and `read_validations()` reports the clips
+  left out for a missing score and the scores bounded before the logit.
+  Scalar arguments of `select_clips()`, `suggest_thresholds()`,
+  `threshold_bootstrap()`, `score_detections()`, `history_draws()`,
+  `calibration_diagnostics()`, `calibration_ppc()` and
+  `plot_calibration_draws()` are checked for length and range.
+  `calibration_prior()` warns when a covariate given the normal(0, 1)
+  prior is not standardised. Output files of `list_recordings()`,
+  `threshold_record()`, `warning_signs()` and `run_app()` get their
+  extension when it is missing.
+- `compare_calibration_models()` now stops when a model uses a column that
+  `validations` lacks, instead of warning that the fit failed in every
+  fold.
 
 # sheepdog 3.4.1
 

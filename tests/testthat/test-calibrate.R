@@ -139,8 +139,14 @@ test_that("compare_calibration_models() counts and warns about failed folds", {
   val <- suppressMessages(read_validations(
     ref_path("cal", paste0("validacao_por_clipe_", c("ARA", "XAR2", "BAI"),
                            ".csv")), site_map = c(XAR2 = "XAR")))
-  # uma formula com variavel inexistente falha em todos os folds
-  modelos <- list(ok = tp ~ logit_conf, ruim = tp ~ logit_conf + nao_existe)
+  # uma variavel inexistente e recusada antes da validacao cruzada
+  expect_error(
+    compare_calibration_models(val, list(ok = tp ~ logit_conf,
+                                         ruim = tp ~ logit_conf + nao_existe)),
+    "lacks the column\\(s\\) nao_existe")
+  # um fator de um so nivel falha no ajuste, em todos os folds
+  val$constante <- factor("a")
+  modelos <- list(ok = tp ~ logit_conf, ruim = tp ~ logit_conf + constante)
   expect_warning(
     cv <- suppressMessages(compare_calibration_models(val, modelos,
                                                       k_folds = 3)),

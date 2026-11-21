@@ -53,6 +53,12 @@ calibration_ppc <- function(fit, validations = NULL, group = NULL,
     stop("`fit` must be a model fitted with engine = \"brms\".", call. = FALSE)
   }
   require_suggested("brms", "for the posterior predictive checks")
+  check_number(bin_width, "bin_width", 0, 1, open = TRUE)
+  check_number(min_n, "min_n", lower = 1, integer = TRUE)
+  check_prob(prob, "prob", open = TRUE)
+  check_prob(flag, "flag", open = TRUE)
+  check_number(n_draws, "n_draws", lower = 1, integer = TRUE, null_ok = TRUE)
+  check_number(seed, "seed", integer = TRUE)
   dados <- if (is.null(validations)) fit$data else validations
   if (nrow(dados) != nrow(fit$data)) {
     stop("`validations` has ", nrow(dados), " rows but the model was fitted ",

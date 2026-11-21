@@ -51,7 +51,22 @@ read_validations <- function(files, site_map = NULL, keep = NULL) {
     }
     tab
   }) |>
-    list_rbind() |>
+    list_rbind()
+  if (is.null(val) || nrow(val) == 0) stop("No reviewed clip found.")
+  check_confidence(val$confidence)
+  julgados <- val$verdict %in% c("positive", "negative")
+  sem_score <- sum(julgados & is.na(val$confidence))
+  if (sem_score > 0) {
+    message(sem_score, " reviewed clip(s) without a confidence score ",
+            "(whole recordings of \"random_recordings\") were left out.")
+  }
+  limitados <- sum(julgados & !is.na(val$confidence) &
+                     (val$confidence < 1e-4 | val$confidence > 1 - 1e-4))
+  if (limitados > 0) {
+    message(limitados, " confidence score(s) below 1e-4 or above 1 - 1e-4 ",
+            "were bounded before the logit.")
+  }
+  val <- val |>
     # gravacoes sorteadas (modo "random_recordings") nao tem confidence
     filter(verdict %in% c("positive", "negative"), !is.na(confidence)) |>
     transmute(
@@ -277,6 +292,17 @@ compare_calibration_models <- function(validations,
                                        models = NULL,
                                        k_folds = 5, seed = 2026,
                                        fold_group = NULL) {
+  if (!is.null(models) &&
+      (!is.list(models) || length(models) == 0L || is.null(names(models)) ||
+       any(!nzchar(names(models))) ||
+       !all(map_lgl(models, inherits, "formula")))) {
+    stop("`models` must be a named list of formulas, e.g. from ",
+         "calibration_models().", call. = FALSE)
+  }
+  vars <- unique(c("site", "species", "logit_conf", "tp",
+                   unlist(map(models, all.vars))))
+  validations <- check_validations(validations, cols = vars) |>
+    drop_missing(vars)
   if (is.null(models)) models <- calibration_candidates(validations)
   need_lme4(models)
   val <- validations
@@ -432,6 +458,23 @@ select_calibration_model <- function(comparison,
 #' used nor stored in the fitted object. The species and site levels are
 #' stored in the attribute `sheepdog_levels`.
 #'
+#' @section Input checks and missing values:
+#' `validations` must be a data frame (a tibble, `data.frame` or
+#' `data.table`; it is converted to a tibble) with the columns `site` and
+#' `species` (factors or character vectors; ordered factors are used as
+#' unordered), `tp` (0/1, or logical) and every variable of `formula`,
+#' usually `logit_conf` (numeric, without NaN or infinite values; extra
+#' classes such as 'units' are dropped). The response of `formula` must be
+#' `tp`. Rows with a missing value in a variable of the formula are left
+#' out with a message; this policy is fixed, the same in both engines,
+#' and no missing value reaches the fitting function. Before the fit, an
+#' error is raised when all the clips have the same verdict or when the
+#' fixed effects are collinear (rank-deficient model matrix), a warning
+#' when the verdicts are completely separated by the score (the maximum
+#' likelihood slope is then infinite), and a message lists species with a
+#' single verdict class or separated verdicts. With `engine = "brms"`,
+#' `prior` must be a `brmsprior` object.
+#'
 #' @section Maximum likelihood fit:
 #' Models with random effects are fitted by `lme4::glmer()` with
 #' `lme4::glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun =
@@ -486,6 +529,14 @@ select_calibration_model <- function(comparison,
 #' binned posterior predictive check of [calibration_ppc()] for a
 #' `brmsfit`.
 #'
+#' @srrstats {G2.1, G2.5, RE1.2, RE2.1, BS2.1, BS3.0} The section "Input checks and missing values" documents the
+#'   expected classes and columns, checked by `check_validations()`, and
+#'   the fixed missing-value policy (rows left out with a message before
+#'   the fit).
+#' @srrstats {RE2.4, RE2.4a, RE2.4b, BS3.1} `check_calibration_data()`
+#'   checks the rank of the fixed-effects model matrix and the separation
+#'   of `tp` by `logit_conf`, globally and by species, before the fit.
+#' @srrstats {BS2.2} The class of `prior` is checked.
 #' @srrstats {RE1.1} The section "Formula and model matrix" states that
 #'   the matrices are built by `stats::glm()`, `lme4::glmer()` or
 #'   `brms::brm()`.
@@ -564,6 +615,11 @@ fit_calibration <- function(validations, formula,
            "calibration_prior() builds an example centred on an already ",
            "calibrated score.", call. = FALSE)
     }
+    if (!inherits(prior, "brmsprior")) {
+      stop("`prior` must be a brmsprior object, e.g. from ",
+           "calibration_prior() or brms::prior().", call. = FALSE)
+    }
+    validations <- check_calibration_input(validations, formula)
     dots <- list(...)
     if (is.null(dots$seed) || is.na(dots$seed)) {
       dots$seed <- sample.int(.Machine$integer.max, 1)
@@ -585,6 +641,7 @@ fit_calibration <- function(validations, formula,
     }
     return(fit)
   }
+  validations <- check_calibration_input(validations, formula)
   fit <- fit_model(formula, validations, quiet = FALSE)
   if (inherits(fit, "merMod") && lme4::isSingular(fit)) {
     warning("Singular fit (boundary) of the calibration model ",
@@ -602,6 +659,26 @@ fit_calibration <- function(validations, formula,
 brms_args_with_seed <- function(brms_args, seed) {
   if (is.null(brms_args$seed)) brms_args$seed <- seed
   brms_args
+}
+
+# Checks of the input of fit_calibration(): a formula with response `tp`,
+# the columns it uses, rows with missing values dropped with a message,
+# then collinearity, a single verdict class and separation
+check_calibration_input <- function(validations, formula) {
+  if (!inherits(formula, "formula") || length(formula) != 3L) {
+    stop("`formula` must be a two-sided formula, e.g. one of ",
+         "calibration_models().", call. = FALSE)
+  }
+  if (!identical(all.vars(formula[[2]]), "tp")) {
+    stop("The response of `formula` must be `tp` (1 = true positive, ",
+         "0 = false positive).", call. = FALSE)
+  }
+  vars <- all.vars(formula)
+  val <- check_validations(validations,
+                           cols = unique(c("site", "species", vars)))
+  val <- drop_missing(val, vars)
+  check_calibration_data(val, formula)
+  val
 }
 
 # Formula com efeitos aleatorios? (barra "|" da sintaxe do lme4; o lme4
@@ -788,6 +865,16 @@ calibration_effort <- function(validations, formula,
 score_detections <- function(tables, fit, min_confidence = 0.1,
                              dawn_hour = 12, p_min = 0.95, lower_prob = 0.05,
                              grid_step = 0.01) {
+  if (!is.character(tables) || length(tables) == 0L ||
+      is.null(names(tables)) || any(!nzchar(names(tables)))) {
+    stop("`tables` must be a character vector of paths named by site.",
+         call. = FALSE)
+  }
+  check_prob(min_confidence, "min_confidence")
+  check_number(dawn_hour, "dawn_hour", 0, 24)
+  check_prob(p_min, "p_min")
+  check_prob(lower_prob, "lower_prob", open = TRUE)
+  check_number(grid_step, "grid_step", 0, 0.5, open = TRUE)
   bayes <- inherits(fit, "brmsfit")
   niveis <- fit_levels(fit)
   novos <- setdiff(names(tables), niveis$site)

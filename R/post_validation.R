@@ -243,6 +243,9 @@ suggest_thresholds <- function(validation, target_precision = 0.90,
                                min_n = 15, by = NULL, weighted = NULL,
                                sustained = FALSE) {
   check_by(validation, by)
+  check_prob(target_precision, "target_precision", open = TRUE)
+  check_number(min_n, "min_n", lower = 1, integer = TRUE)
+  check_flag(sustained, "sustained")
   if (!is.null(weighted) && !(isTRUE(weighted) || isFALSE(weighted))) {
     stop("`weighted` must be NULL, TRUE or FALSE.", call. = FALSE)
   }

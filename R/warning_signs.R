@@ -143,6 +143,7 @@ warning_signs <- function(validation, thresholds, groups = NULL,
                           min_ceiling = 0.5, threshold_column = "threshold",
                           cluster = "source_audio", max_deff = 2,
                           file = NULL) {
+  if (!is.null(file)) file <- check_file_ext(file, "md")
   validados <- reviewed_with_confidence(validation)
   if (nrow(validados) == 0) {
     stop("No reviewed clip with a confidence in `validation`.",
