@@ -1280,6 +1280,73 @@ Leitura (interpretação): a sobreposição vem do alargamento do intervalo, nã
 de concordância no centro. O critério 1 passa no limite; o viés de cerca de
 +40% na prevalência de minutos parece real e se concentra perto dos surtos.
 
+### Simulação com surtos: desenho (21/11/2026, fixado antes de rodar)
+
+Pergunta: o excesso de cerca de +40% do v1 no Curiango vem do procedimento em
+dois estágios (aconteceria mesmo com o modelo certo) ou de estrutura latente
+que o v1 não tem (surtos)? Decidido com o Diogo testar isso por simulação
+antes de construir um HMM com surtos. `sim_surtos_curiango.R`.
+
+* **Estrutura fixa do Curiango:** os mesmos 1.753 sítio-noites, passos,
+  lacunas (`adj`) e covariáveis de ψ e θ.
+* **Emissões verdadeiras:** as do estágio 1 por faixas (`emissions_bins.rds`);
+  dado w, a faixa de score de cada minuto é sorteada de f₁ ou f₀,
+  independente entre minutos. Assim o v1 está certo nas emissões e só a
+  estrutura latente pode estar errada.
+* **Cenários (8 conjuntos cada):**
+  - `v1`: gerado pelo próprio v1, com as medianas de `bins_m1` (controle do
+    procedimento; também é uma parte do critério 2);
+  - `het`: Markov com persistência variando entre sítio-noites,
+    ρᵢ = ρ̄ + σuᵢ, uᵢ ~ N(0, 1), σ = 2 (noites de coro longo e noites de canto
+    isolado);
+  - `semi`: surtos com duração menos dispersa que a geométrica (1 + Poisson
+    de média L − 1 passos), com pelo menos um passo sem canto entre surtos.
+  `het` e `semi` são calibrados (Nelder–Mead, números aleatórios comuns)
+  para reproduzir no score ≥ 0,4 do Curiango a taxa por minuto, P(y | y
+  anterior), a fração de noites com algum y e a prevalência de 0,033 da
+  referência pós-estratificada. A variância por noite fica como checagem.
+  O v1 também é calibrado do mesmo jeito, só como diagnóstico: se não
+  consegue reproduzir essas estatísticas com prevalência 0,033, isso já
+  indica desajuste.
+* **Rótulos:** sorteio estratificado por faixa com os tamanhos do ct12
+  (439, 460, 32, 9, 20), pesos N_b/n_b; mais um conjunto que imita o ct03
+  (43, 28, 16, 152 minutos nas faixas ≥ 0,1, com seleção que favorece canto
+  na razão de 30 para 1). Os dois entram em v no estágio 2, como no
+  Curiango; só o primeiro entra no estágio 1.
+* **Procedimento:** estágio 1 por faixas (`emis_bins`) em cada conjunto,
+  estágio 2 Markov com 4 cadeias de 500 + 500.
+* **Alvo:** prevalência realizada (média de w) de cada conjunto. Mede-se o
+  viés relativo da mediana da prevalência marginal, a cobertura do intervalo
+  de 90% e, para comparação, o mesmo para a referência pós-estratificada
+  calculada nos rótulos simulados.
+* **Leitura combinada antes de rodar:** se `v1` sai sem viés e `het` ou
+  `semi` reproduzem um excesso perto de +40%, o desajuste de surtos explica
+  o Curiango, e o HMM se justifica. Se `v1` já sai com excesso, o problema é
+  o procedimento, e o HMM não resolveria. Se nenhum cenário tem excesso, as
+  duas hipóteses perdem força.
+* **Custo:** 24 ajustes de ~6 min, dois por vez no Mac (8 núcleos), ~1,5 h.
+
+**Adição depois da calibração, antes dos ajustes.** Médias de 10 simulações,
+estatísticas do score ≥ 0,4:
+
+| Gerador | Taxa por minuto | P(y \| y anterior) | Noites com algum y | Variância por noite | Prevalência |
+|---|---|---|---|---|---|
+| Curiango (prev. = referência) | 0,0180 | 0,394 | 0,253 | 10,3 | 0,033 |
+| v1 com as medianas de `bins_m1` | 0,0247 | 0,405 | 0,294 | 8,2 | 0,047 |
+| v1 calibrado | 0,0177 | 0,398 | 0,251 | 5,3 | 0,033 |
+| `het` (σ = 2) | 0,0166 | 0,411 | 0,253 | 6,5 | 0,031 |
+| `semi` (L = 4,3) | 0,0185 | 0,418 | 0,261 | 4,7 | 0,035 |
+| `het2` (σ_ρ = 3,8) | 0,0177 | 0,425 | 0,235 | 8,9 | 0,033 |
+| `hett` (σ_θ = 0,95) | 0,0179 | 0,414 | 0,232 | 8,3 | 0,033 |
+
+O v1 calibrado reproduz taxa, dependência e noites com canto com prevalência
+0,033; o que nenhum dos geradores fixados antes reproduz é a variância por
+noite. O v1 ajustado ao Curiango chega a 8,2 subindo a prevalência para
+0,047 (interpretação: parece trocar nível por dispersão). Por isso entraram
+dois cenários calibrados também na variância por noite: `het2` (σ da
+persistência livre) e `hett` (ρ comum e efeito de sítio-noite em θ,
+N(0, σ)), 6 conjuntos cada. Total: 36 ajustes, ~2 h no Mac.
+
 ## Critério para levar o v1 de dois estágios ao crywolf (20/11/2026)
 
 Decidido com o Diogo: o v1 fica em `dev/fase2` até cumprir os três
