@@ -35,9 +35,11 @@ three stages:
     effort-standardised site x month matrices for multivariate
     ordinations.
 
-sheepdog was developed for the FrogNet project (anurans of the Pantanal
-and Cerrado, Mato Grosso do Sul, Brazil), but it works with the output
-of any BirdNET pretrained and custom classifier.
+sheepdog was developed for the [DiverSons
+project](https://provetelab.org/projects.html#diversons-acoustic-monitoring-of-frogs)
+(anurans of the Pantanal and Cerrado, Mato Grosso do Sul, Brazil), but
+it works with the output of any BirdNET pretrained and custom
+classifier.
 [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
 writes its validation and calibration outputs in a documented format for
 occupancy models with false positives, such as those fitted with
@@ -166,7 +168,7 @@ Each stage is also available as separate functions:
 
 The [articles](https://provetelab.org/sheepdog/articles/) cover each
 stage with runnable examples;
-[`vignette("frognet-workflow")`](https://provetelab.org/sheepdog/articles/frognet-workflow.md)
+[`vignette("diversons-workflow")`](https://provetelab.org/sheepdog/articles/diversons-workflow.md)
 shows the complete workflow.
 
 The selection tables must have the standard BirdNET/Raven columns
@@ -308,9 +310,14 @@ tag](https://github.com/diogoprov/sheepdog/tree/v1.2.0).
 
 Developed by **Diogo B. Provete** (Universidade Federal de Mato Grosso
 do Sul), from the protocol design of **Larissa S. M. Sugai** (Cornell
-Lab of Ornithology) and **Liliana Piatti** (UFMS), within the FrogNet
-project. Code written with AI assistance (Claude, Anthropic), with human
-review and tests.
+Lab of Ornithology) and **Liliana Piatti** (UFMS), within the [DiverSons
+project](https://provetelab.org/projects.html#diversons-acoustic-monitoring-of-frogs).
+Code written with AI assistance (Claude, Anthropic), with human review
+and tests.
+
+The DiverSons project (principal investigator: Liliana Piatti) was
+funded by FUNDECT (Termo de Outorga 95/2023) from July 2023 to July
+2026.
 
 If sheepdog is useful in your work, please cite it (GitHub’s “Cite this
 repository” button uses `CITATION.cff`, and `citation("sheepdog")` gives

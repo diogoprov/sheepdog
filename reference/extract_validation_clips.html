@@ -48,13 +48,13 @@ extrair_clipes_validacao.R."><meta property="og:image" content="https://provetel
     <li><a class="dropdown-item" href="../articles/retraining.html">Retraining the classifier with validated clips</a></li>
     <li><a class="dropdown-item" href="../articles/migration-3.0.0.html">Migrating from sheepdog 2.x to 3.0.0</a></li>
     <li><a class="dropdown-item" href="../articles/crywolf-integration.html">Integration with crywolf: clip manifest and validation tables</a></li>
-    <li><a class="dropdown-item" href="../articles/frognet-workflow.html">The FrogNet workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/diversons-workflow.html">The DiverSons workflow</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>🇧🇷 Português</h6></li>
     <li><a class="dropdown-item" href="../articles/pt/sheepdog.html">Primeiros passos com o sheepdog</a></li>
     <li><a class="dropdown-item" href="../articles/pt/reviewing-in-the-gui.html">Revisão dos clipes na GUI do BirdNET</a></li>
     <li><a class="dropdown-item" href="../articles/pt/sampling-designs.html">Escolha do desenho amostral</a></li>
-    <li><a class="dropdown-item" href="../articles/pt/frognet-workflow.html">O fluxo de trabalho do FrogNet</a></li>
+    <li><a class="dropdown-item" href="../articles/pt/diversons-workflow.html">O fluxo de trabalho do DiverSons</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul></li>
@@ -147,7 +147,7 @@ check a selection before cutting.</p></dd>
 
 <dt id="arg-classifier">classifier<a class="anchor" aria-label="anchor" href="#arg-classifier"></a></dt>
 <dd><p>Label of the classifier that produced the selection
-tables (e.g. <code>"FrogNet v2, BirdNET-Analyzer 2.4.0"</code>), recorded in
+tables (e.g. <code>"DiverSons v2, BirdNET-Analyzer 2.4.0"</code>), recorded in
 <code>extraction_info.csv</code>. <code>NULL</code> records <code>NA</code>.</p></dd>
 
 </dl></div>
@@ -192,8 +192,8 @@ reads it, so keep it with the manifest.</p>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Simulating the cut of 4099 clips...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   audio_not_found: 4099</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Some clips were not created - check the `status` column of the manifest and the path remapping (remap_from/remap_to).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Manifest written to /tmp/RtmpAVeITf/validation/clip_manifest.csv</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Done! The clips in /tmp/RtmpAVeITf/validation/clips are ready for validation in the BirdNET GUI (review).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Manifest written to /tmp/Rtmp0xzv4H/validation/clip_manifest.csv</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Done! The clips in /tmp/Rtmp0xzv4H/validation/clips are ready for validation in the BirdNET GUI (review).</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">man</span><span class="op">$</span><span class="va">status</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> audio_not_found </span>

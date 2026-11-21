@@ -56,13 +56,13 @@ goes to val, to be passed as --test_data (see Splits)."><meta property="og:image
     <li><a class="dropdown-item" href="../articles/retraining.html">Retraining the classifier with validated clips</a></li>
     <li><a class="dropdown-item" href="../articles/migration-3.0.0.html">Migrating from sheepdog 2.x to 3.0.0</a></li>
     <li><a class="dropdown-item" href="../articles/crywolf-integration.html">Integration with crywolf: clip manifest and validation tables</a></li>
-    <li><a class="dropdown-item" href="../articles/frognet-workflow.html">The FrogNet workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/diversons-workflow.html">The DiverSons workflow</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>🇧🇷 Português</h6></li>
     <li><a class="dropdown-item" href="../articles/pt/sheepdog.html">Primeiros passos com o sheepdog</a></li>
     <li><a class="dropdown-item" href="../articles/pt/reviewing-in-the-gui.html">Revisão dos clipes na GUI do BirdNET</a></li>
     <li><a class="dropdown-item" href="../articles/pt/sampling-designs.html">Escolha do desenho amostral</a></li>
-    <li><a class="dropdown-item" href="../articles/pt/frognet-workflow.html">O fluxo de trabalho do FrogNet</a></li>
+    <li><a class="dropdown-item" href="../articles/pt/diversons-workflow.html">O fluxo de trabalho do DiverSons</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul></li>
@@ -176,7 +176,7 @@ drawn for the validation set (<code>val/</code>); see Splits. <code>NULL</code> 
 <dt id="arg-val-seed">val_seed<a class="anchor" aria-label="anchor" href="#arg-val-seed"></a></dt>
 <dd><p>Seed of the validation draw. The default, <code>seed + 1</code>, is
 also the seed of <code>max_per_site_species</code>; the two draws are separate,
-and the default reproduces the training sets of the FrogNet project.</p></dd>
+and the default reproduces the training sets of the DiverSons project.</p></dd>
 
 
 <dt id="arg-negatives">negatives<a class="anchor" aria-label="anchor" href="#arg-negatives"></a></dt>
@@ -243,7 +243,7 @@ are drawn for the test set, for all species together, so that no
 recording is training data for one species and test data for another.</p></li>
 <li><p><code>"site_species_night"</code>: the nights are drawn within each site x
 species with at least two nights (the split of the 2.x scripts of the
-FrogNet project). The same night can then be in the training set for
+DiverSons project). The same night can then be in the training set for
 one species and in the test set for another, which breaks the
 independence of the test set; it is kept only to reproduce earlier
 training sets, and warns.</p></li>

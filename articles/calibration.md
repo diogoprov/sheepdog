@@ -294,7 +294,7 @@ coef(fit_global)
 #>  -0.5310926   1.5993695
 lme4::fixef(fit_full)
 #> (Intercept)  logit_conf 
-#>  -0.2818954   2.8003920
+#>   -0.281896    2.800392
 lme4::VarCorr(fit_full)
 #>  Groups       Name        Std.Dev. Corr  
 #>  site:species (Intercept) 1.19511        
@@ -1063,7 +1063,7 @@ list.files(out_dir)
 
 `nightly_detection_history.csv` is the input of the occupancy and
 community analyses (see
-[`vignette("frognet-workflow")`](https://provetelab.org/sheepdog/articles/frognet-workflow.md)).
+[`vignette("diversons-workflow")`](https://provetelab.org/sheepdog/articles/diversons-workflow.md)).
 Five folds and the example’s 2467 clips run in seconds; a project with
 thousands of clips and many species takes longer, and
 `effort_curve = TRUE` adds the effort curve.

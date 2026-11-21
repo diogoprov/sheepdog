@@ -118,9 +118,9 @@ rec
 #> # A tibble: 3 × 2
 #>   site  source_audio                                             
 #>   <chr> <chr>                                                    
-#> 1 ARA   /tmp/Rtmpw3F1RJ/audio/ARA/ARA01_20211001_190000.wav      
-#> 2 ARA   /tmp/Rtmpw3F1RJ/audio/ARA/ARA01_20211001_200000.wav      
-#> 3 BAI   /tmp/Rtmpw3F1RJ/audio/BAI/card1/BAI01_20211001_190000.wav
+#> 1 ARA   /tmp/RtmpetvEFN/audio/ARA/ARA01_20211001_190000.wav      
+#> 2 ARA   /tmp/RtmpetvEFN/audio/ARA/ARA01_20211001_200000.wav      
+#> 3 BAI   /tmp/RtmpetvEFN/audio/BAI/card1/BAI01_20211001_190000.wav
 ```
 
 The paths must match `Begin Path`. When the list is built on a computer
@@ -204,7 +204,7 @@ clips <- select_clips(pam$predictions, sampling_mode = "score_bands",
 See
 [`vignette("sheepdog")`](https://provetelab.org/sheepdog/articles/sheepdog.md)
 for the whole pipeline on the example data and
-[`vignette("frognet-workflow")`](https://provetelab.org/sheepdog/articles/frognet-workflow.md)
+[`vignette("diversons-workflow")`](https://provetelab.org/sheepdog/articles/diversons-workflow.md)
 for a project with a network drive mapped as `N:`.
 
 ## References

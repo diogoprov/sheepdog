@@ -111,7 +111,7 @@ select(cv, model, auc_mean, auc_sd)
 The effort curve below is drawn for the global model (`m0_global`, a
 single logistic regression on the logit of the score) and for the
 hierarchical `m4_species_x_site` (random slopes by species and a site x
-species intercept), the structure used by FrogNet.
+species intercept), the structure used by DiverSons.
 
 The vignette uses few repetitions so that it renders quickly. In real
 use keep the default of 50 repetitions (or more): the standard deviation
@@ -908,9 +908,9 @@ Read the two views together:
 - If a cell is `"exhausted"` (no high-score detections left to review)
   or `"unreliable"` (low precision even at high scores), more validation
   cannot help. Treat the species at that site as poorly calibrated, as
-  FrogNet did with the six species left out of the community matrices
+  DiverSons did with the six species left out of the community matrices
   (see
-  [`vignette("frognet-workflow")`](https://provetelab.org/sheepdog/articles/frognet-workflow.md)).
+  [`vignette("diversons-workflow")`](https://provetelab.org/sheepdog/articles/diversons-workflow.md)).
 
 Two caveats apply. First, the curve depends on the formula: a
 hierarchical formula needs ‘lme4’, and its curve can differ markedly

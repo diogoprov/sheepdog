@@ -133,7 +133,7 @@ benchmarks.
 
 No real multispecies validation dataset was available for this
 benchmark. The following results are **simulated**, not empirical
-FrogNet performance. There are 20 independent seeds per scenario
+DiverSons performance. There are 20 independent seeds per scenario
 (2026–2045), six sites, eight species, 36 nights and two candidate
 windows per site × species × night. For each replicate, 2,304 windows
 from the first 24 nights are training data; 1,152 windows from 12 later

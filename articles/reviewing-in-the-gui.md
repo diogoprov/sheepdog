@@ -7,8 +7,8 @@ folder of clips written by
 to the `Positive` and `Negative` folders that
 [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md)
 reads back. The screenshots were taken with GUI version 2.4.0 (model
-V2.4) on Windows, on clips of the FrogNet project; the layout may differ
-in other versions. The [GUI
+V2.4) on Windows, on clips of the DiverSons project; the layout may
+differ in other versions. The [GUI
 documentation](https://birdnet-team.github.io/BirdNET-Analyzer/stable/usage/gui.html)
 describes how to install and launch it, and states that the Review tab
 implements the workflow of Wood & Kahl (2024).

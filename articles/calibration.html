@@ -61,13 +61,13 @@
     <li><a class="dropdown-item" href="../articles/retraining.html">Retraining the classifier with validated clips</a></li>
     <li><a class="dropdown-item" href="../articles/migration-3.0.0.html">Migrating from sheepdog 2.x to 3.0.0</a></li>
     <li><a class="dropdown-item" href="../articles/crywolf-integration.html">Integration with crywolf: clip manifest and validation tables</a></li>
-    <li><a class="dropdown-item" href="../articles/frognet-workflow.html">The FrogNet workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/diversons-workflow.html">The DiverSons workflow</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>🇧🇷 Português</h6></li>
     <li><a class="dropdown-item" href="../articles/pt/sheepdog.html">Primeiros passos com o sheepdog</a></li>
     <li><a class="dropdown-item" href="../articles/pt/reviewing-in-the-gui.html">Revisão dos clipes na GUI do BirdNET</a></li>
     <li><a class="dropdown-item" href="../articles/pt/sampling-designs.html">Escolha do desenho amostral</a></li>
-    <li><a class="dropdown-item" href="../articles/pt/frognet-workflow.html">O fluxo de trabalho do FrogNet</a></li>
+    <li><a class="dropdown-item" href="../articles/pt/diversons-workflow.html">O fluxo de trabalho do DiverSons</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul>
@@ -363,7 +363,7 @@ choice:</p>
 <span><span class="co">#&gt;  -0.5310926   1.5993695</span></span>
 <span><span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/nlme/man/fixed.effects.html" class="external-link">fixef</a></span><span class="op">(</span><span class="va">fit_full</span><span class="op">)</span></span>
 <span><span class="co">#&gt; (Intercept)  logit_conf </span></span>
-<span><span class="co">#&gt;  -0.2818954   2.8003920</span></span>
+<span><span class="co">#&gt;   -0.281896    2.800392</span></span>
 <span><span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/nlme/man/VarCorr.html" class="external-link">VarCorr</a></span><span class="op">(</span><span class="va">fit_full</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Groups       Name        Std.Dev. Corr  </span></span>
 <span><span class="co">#&gt;  site:species (Intercept) 1.19511        </span></span>
@@ -1132,10 +1132,10 @@ output.</p>
 <span><span class="co">#&gt; [11] "nightly_detection_history.csv" "thresholds.csv"</span></span></code></pre></div>
 <p><code>nightly_detection_history.csv</code> is the input of the
 occupancy and community analyses (see
-<code><a href="../articles/frognet-workflow.html">vignette("frognet-workflow")</a></code>). Five folds and the example’s
-2467 clips run in seconds; a project with thousands of clips and many
-species takes longer, and <code>effort_curve = TRUE</code> adds the
-effort curve.</p>
+<code><a href="../articles/diversons-workflow.html">vignette("diversons-workflow")</a></code>). Five folds and the
+example’s 2467 clips run in seconds; a project with thousands of clips
+and many species takes longer, and <code>effort_curve = TRUE</code> adds
+the effort curve.</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>

@@ -30,8 +30,8 @@
   3.0.0](https://provetelab.org/sheepdog/articles/migration-3.0.0.md):
 - [Integration with crywolf: clip manifest and validation
   tables](https://provetelab.org/sheepdog/articles/crywolf-integration.md):
-- [The FrogNet
-  workflow](https://provetelab.org/sheepdog/articles/frognet-workflow.md):
+- [The DiverSons
+  workflow](https://provetelab.org/sheepdog/articles/diversons-workflow.md):
 
 ### 🇧🇷 Em português
 
@@ -44,4 +44,4 @@ Traduções de artigos selecionados. A versão em inglês é a referência.
 - [Escolha do desenho
   amostral](https://provetelab.org/sheepdog/articles/pt/sampling-designs.md):
 - [O fluxo de trabalho do
-  FrogNet](https://provetelab.org/sheepdog/articles/pt/frognet-workflow.md):
+  DiverSons](https://provetelab.org/sheepdog/articles/pt/diversons-workflow.md):

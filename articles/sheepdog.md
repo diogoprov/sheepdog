@@ -420,5 +420,6 @@ the review app
 - [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md):
   the clip manifest and validation tables as input to occupancy models
   with false positives.
-- [`vignette("frognet-workflow")`](https://provetelab.org/sheepdog/articles/frognet-workflow.md):
-  the complete workflow as used in the FrogNet project.
+- [`vignette("diversons-workflow")`](https://provetelab.org/sheepdog/articles/diversons-workflow.md):
+  the complete workflow as used in the [DiverSons
+  project](https://provetelab.org/projects.html#diversons-acoustic-monitoring-of-frogs).

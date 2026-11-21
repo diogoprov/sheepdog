@@ -64,13 +64,13 @@
     <li><a class="dropdown-item" href="articles/retraining.html">Retraining the classifier with validated clips</a></li>
     <li><a class="dropdown-item" href="articles/migration-3.0.0.html">Migrating from sheepdog 2.x to 3.0.0</a></li>
     <li><a class="dropdown-item" href="articles/crywolf-integration.html">Integration with crywolf: clip manifest and validation tables</a></li>
-    <li><a class="dropdown-item" href="articles/frognet-workflow.html">The FrogNet workflow</a></li>
+    <li><a class="dropdown-item" href="articles/diversons-workflow.html">The DiverSons workflow</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>🇧🇷 Português</h6></li>
     <li><a class="dropdown-item" href="articles/pt/sheepdog.html">Primeiros passos com o sheepdog</a></li>
     <li><a class="dropdown-item" href="articles/pt/reviewing-in-the-gui.html">Revisão dos clipes na GUI do BirdNET</a></li>
     <li><a class="dropdown-item" href="articles/pt/sampling-designs.html">Escolha do desenho amostral</a></li>
-    <li><a class="dropdown-item" href="articles/pt/frognet-workflow.html">O fluxo de trabalho do FrogNet</a></li>
+    <li><a class="dropdown-item" href="articles/pt/diversons-workflow.html">O fluxo de trabalho do DiverSons</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="articles/index.html">More articles...</a></li>
   </ul>
@@ -105,7 +105,7 @@
 <li>
 <strong>Community matrices.</strong> Turn the calibrated histories into effort-standardised site x month matrices for multivariate ordinations.</li>
 </ol>
-<p>sheepdog was developed for the FrogNet project (anurans of the Pantanal and Cerrado, Mato Grosso do Sul, Brazil), but it works with the output of any BirdNET pretrained and custom classifier. <code><a href="reference/export_occupancy_data.html">export_occupancy_data()</a></code> writes its validation and calibration outputs in a documented format for occupancy models with false positives, such as those fitted with <a href="https://github.com/diogoprov/crywolf" class="external-link">crywolf</a>. The two packages are independent: sheepdog does not depend on crywolf.</p>
+<p>sheepdog was developed for the <a href="https://provetelab.org/projects.html#diversons-acoustic-monitoring-of-frogs" class="external-link">DiverSons project</a> (anurans of the Pantanal and Cerrado, Mato Grosso do Sul, Brazil), but it works with the output of any BirdNET pretrained and custom classifier. <code><a href="reference/export_occupancy_data.html">export_occupancy_data()</a></code> writes its validation and calibration outputs in a documented format for occupancy models with false positives, such as those fitted with <a href="https://github.com/diogoprov/crywolf" class="external-link">crywolf</a>. The two packages are independent: sheepdog does not depend on crywolf.</p>
 <div class="float">
 <img src="reference/figures/pipeline.png" alt="The three stages of sheepdog"><div class="figcaption">The three stages of sheepdog</div>
 </div>
@@ -240,7 +240,7 @@
 </tr>
 </tbody>
 </table>
-<p>The <a href="https://provetelab.org/sheepdog/articles/">articles</a> cover each stage with runnable examples; <code><a href="articles/frognet-workflow.html">vignette("frognet-workflow")</a></code> shows the complete workflow.</p>
+<p>The <a href="https://provetelab.org/sheepdog/articles/">articles</a> cover each stage with runnable examples; <code><a href="articles/diversons-workflow.html">vignette("diversons-workflow")</a></code> shows the complete workflow.</p>
 <p>The selection tables must have the standard BirdNET/Raven columns <code>Begin Time (s)</code>, <code>End Time (s)</code>, <code>Species Code</code>, <code>Confidence</code>, <code>Begin Path</code> and <code>File Offset (s)</code>, and the recordings must be named <code>..._YYYYMMDD_HHMMSS</code>. The site is the name of the folder; when the files of several sites share a folder, <code>site_pattern</code> reads it from the file name.</p>
 </div>
 <div class="section level2">
@@ -292,7 +292,8 @@
 <div class="section level2">
 <h2 id="authorship-and-citation">Authorship and citation<a class="anchor" aria-label="anchor" href="#authorship-and-citation"></a>
 </h2>
-<p>Developed by <strong>Diogo B. Provete</strong> (Universidade Federal de Mato Grosso do Sul), from the protocol design of <strong>Larissa S. M. Sugai</strong> (Cornell Lab of Ornithology) and <strong>Liliana Piatti</strong> (UFMS), within the FrogNet project. Code written with AI assistance (Claude, Anthropic), with human review and tests.</p>
+<p>Developed by <strong>Diogo B. Provete</strong> (Universidade Federal de Mato Grosso do Sul), from the protocol design of <strong>Larissa S. M. Sugai</strong> (Cornell Lab of Ornithology) and <strong>Liliana Piatti</strong> (UFMS), within the <a href="https://provetelab.org/projects.html#diversons-acoustic-monitoring-of-frogs" class="external-link">DiverSons project</a>. Code written with AI assistance (Claude, Anthropic), with human review and tests.</p>
+<p>The DiverSons project (principal investigator: Liliana Piatti) was funded by FUNDECT (Termo de Outorga 95/2023) from July 2023 to July 2026.</p>
 <p>If sheepdog is useful in your work, please cite it (GitHub’s “Cite this repository” button uses <code>CITATION.cff</code>, and <code>citation("sheepdog")</code> gives the same reference in R):</p>
 <blockquote>
 <p>Provete, D. B., Sugai, L. S. M., &amp; Piatti, L. (2026). <em>sheepdog: sample, validate and calibrate BirdNET detections for passive acoustic monitoring</em>. Zenodo. <a href="https://doi.org/10.5281/zenodo.22696209" class="external-link uri">https://doi.org/10.5281/zenodo.22696209</a></p>

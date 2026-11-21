@@ -13,8 +13,8 @@ pasta de clipes gravada por
 até as pastas `Positive` e `Negative` que
 [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md)
 lê de volta. As capturas de tela foram feitas com a versão 2.4.0 da GUI
-(modelo V2.4) no Windows, com clipes do projeto FrogNet; o leiaute pode
-diferir em outras versões. A [documentação da
+(modelo V2.4) no Windows, com clipes do projeto DiverSons; o leiaute
+pode diferir em outras versões. A [documentação da
 GUI](https://birdnet-team.github.io/BirdNET-Analyzer/stable/usage/gui.html)
 descreve como instalá-la e iniciá-la, e informa que a aba Review
 (Revisão) implementa o fluxo de trabalho de Wood & Kahl (2024).

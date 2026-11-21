@@ -61,13 +61,13 @@
     <li><a class="dropdown-item" href="../articles/retraining.html">Retraining the classifier with validated clips</a></li>
     <li><a class="dropdown-item" href="../articles/migration-3.0.0.html">Migrating from sheepdog 2.x to 3.0.0</a></li>
     <li><a class="dropdown-item" href="../articles/crywolf-integration.html">Integration with crywolf: clip manifest and validation tables</a></li>
-    <li><a class="dropdown-item" href="../articles/frognet-workflow.html">The FrogNet workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/diversons-workflow.html">The DiverSons workflow</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>🇧🇷 Português</h6></li>
     <li><a class="dropdown-item" href="../articles/pt/sheepdog.html">Primeiros passos com o sheepdog</a></li>
     <li><a class="dropdown-item" href="../articles/pt/reviewing-in-the-gui.html">Revisão dos clipes na GUI do BirdNET</a></li>
     <li><a class="dropdown-item" href="../articles/pt/sampling-designs.html">Escolha do desenho amostral</a></li>
-    <li><a class="dropdown-item" href="../articles/pt/frognet-workflow.html">O fluxo de trabalho do FrogNet</a></li>
+    <li><a class="dropdown-item" href="../articles/pt/diversons-workflow.html">O fluxo de trabalho do DiverSons</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul>
@@ -198,7 +198,7 @@ cross-validation on all the clips (formulas with random effects need the
 (<code>m0_global</code>, a single logistic regression on the logit of
 the score) and for the hierarchical <code>m4_species_x_site</code>
 (random slopes by species and a site x species intercept), the structure
-used by FrogNet.</p>
+used by DiverSons.</p>
 <p>The vignette uses few repetitions so that it renders quickly. In real
 use keep the default of 50 repetitions (or more): the standard deviation
 is itself estimated from <code>n_reps</code> values and is unstable with
@@ -931,8 +931,9 @@ already well supported add little.</li>
 <li>If a cell is <code>"exhausted"</code> (no high-score detections left
 to review) or <code>"unreliable"</code> (low precision even at high
 scores), more validation cannot help. Treat the species at that site as
-poorly calibrated, as FrogNet did with the six species left out of the
-community matrices (see <code><a href="../articles/frognet-workflow.html">vignette("frognet-workflow")</a></code>).</li>
+poorly calibrated, as DiverSons did with the six species left out of the
+community matrices (see
+<code><a href="../articles/diversons-workflow.html">vignette("diversons-workflow")</a></code>).</li>
 </ul>
 <p>Two caveats apply. First, the curve depends on the formula: a
 hierarchical formula needs ‘lme4’, and its curve can differ markedly

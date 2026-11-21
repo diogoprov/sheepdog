@@ -35,7 +35,7 @@ tabs:
 library(sheepdog)
 run_app(selection_dir = "N:/Arara", output_dir = "validation",
         recordings = "recordings.csv", reviewer = "liliana",
-        max_freq = 8, classifier = "FrogNet v2")
+        max_freq = 8, classifier = "DiverSons v2")
 ```
 
 `recordings`, the table of every recording (`site`, `source_audio`), is

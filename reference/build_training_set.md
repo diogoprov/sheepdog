@@ -94,7 +94,7 @@ build_training_set(
 
   Seed of the validation draw. The default, `seed + 1`, is also the seed
   of `max_per_site_species`; the two draws are separate, and the default
-  reproduces the training sets of the FrogNet project.
+  reproduces the training sets of the DiverSons project.
 
 - negatives:
 
@@ -163,7 +163,7 @@ information from the training into the test set.
 
 - `"site_species_night"`: the nights are drawn within each site x
   species with at least two nights (the split of the 2.x scripts of the
-  FrogNet project). The same night can then be in the training set for
+  DiverSons project). The same night can then be in the training set for
   one species and in the test set for another, which breaks the
   independence of the test set; it is kept only to reproduce earlier
   training sets, and warns.

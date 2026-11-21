@@ -422,5 +422,6 @@ em um arquivo CSV, junto com a figura.
 - [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md):
   o manifesto de clipes e as tabelas de validação como entrada para
   modelos de ocupação (*occupancy models*) com falsos positivos.
-- [`vignette("frognet-workflow")`](https://provetelab.org/sheepdog/articles/frognet-workflow.md):
-  o fluxo de trabalho completo, tal como usado no projeto FrogNet.
+- [`vignette("diversons-workflow")`](https://provetelab.org/sheepdog/articles/diversons-workflow.md):
+  o fluxo de trabalho completo, tal como usado no projeto
+  [DiverSons](https://provetelab.org/projects.html#diversons-acoustic-monitoring-of-frogs).

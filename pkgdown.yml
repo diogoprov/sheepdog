@@ -8,8 +8,8 @@ articles:
   articles/choosing-a-route: choosing-a-route.html
   community-matrices: community-matrices.html
   crywolf-integration: crywolf-integration.html
-  articles/pt/frognet-workflow: pt/frognet-workflow.html
-  frognet-workflow: frognet-workflow.html
+  articles/pt/diversons-workflow: pt/diversons-workflow.html
+  diversons-workflow: diversons-workflow.html
   migration-3.0.0: migration-3.0.0.html
   organising-data: organising-data.html
   performance: performance.html
@@ -22,7 +22,7 @@ articles:
   articles/pt/sheepdog: pt/sheepdog.html
   sheepdog: sheepdog.html
   validation-effort: validation-effort.html
-last_built: 2026-11-21T21:36Z
+last_built: 2026-11-21T21:40Z
 urls:
   reference: https://provetelab.org/sheepdog/reference
   article: https://provetelab.org/sheepdog/articles
