@@ -10,6 +10,9 @@
 #       draws de todas as replicas do bootstrap do estagio 1, peso igual;
 #   (2) referencia de Hajek com bootstrap por noite (noites sorteadas com
 #       reposicao entre as que tem verificados de ct01+ct02; pi1 fixo).
+#   BOOT_DIR: pasta com b*/fit_2stage_*.rds, pasta com um fit_2stage_*.rds so,
+#   ou o caminho de um ajuste (serve o de 3 estados com rho_comp = 0, em que o
+#   canto segue a mesma cadeia de Markov do v1).
 #   Rscript dev/fase2/curiango_prevalencia_marginal.R BOOT_DIR PI_CSV [draws_por_replica] [n_boot] [OUT_RDS]
 source("dev/fase2/curiango_v1.R")
 a <- commandArgs(TRUE)
@@ -18,7 +21,8 @@ nb <- if (length(a) > 3) as.integer(a[4]) else 2000L
 d <- curiango_v1("custom", c_lo = qlogis(0.1)); st <- d$stan
 
 # (1) modelo
-fs <- sort(Sys.glob(file.path(a[1], "b*", "fit_2stage_*.rds")))
+fs <- if (file_test("-f", a[1])) a[1] else sort(Sys.glob(file.path(a[1], "b*", "fit_2stage_*.rds")))
+if (!length(fs)) fs <- sort(Sys.glob(file.path(a[1], "fit_2stage_*.rds")))  # ajuste unico
 dr <- do.call(rbind, lapply(fs, \(f) {
   x <- readRDS(f)$draws
   x[round(seq(1, nrow(x), length.out = nd)), , drop = FALSE]

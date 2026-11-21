@@ -1097,6 +1097,54 @@ cantos para fechar a diferença.
 
 **Critério 1 do item 8 não cumprido.**
 
+### Atacando o desajuste do estágio 2 (21/11/2026)
+
+Duas tentativas, as duas com 4 cadeias de 1000 + 1000, sem divergências,
+sem treedepth máximo, E-BFMI > 0,9 e R-hat ≤ 1,004.
+
+1. **Estágio 1 pelo censo** (`emissions_census_curiango.R`). f₀ e a fração
+   p de minutos com canto são ajustadas por verossimilhança composta sobre
+   os verificados de ct01+ct02 (só os negativos, com pesos 1/π₁) e todos os
+   outros minutos do depósito. f₁ fica fixa pelos positivos: livre, ela não
+   é identificada (p sobe a 0,129 e f₁ escorrega para os scores baixos). A
+   massa censurada de f₀ cai de 0,46 para 0,427 (depósito: 0,409), e p =
+   0,037.
+2. **Estrutura de 3 estados** (`model_v1_3state.stan`, rho_comp = 0). Os
+   componentes de f₁ persistem; com rho_comp = 0 o canto segue a mesma
+   cadeia do v1, então a prevalência marginal se calcula do mesmo jeito.
+
+| Ajuste | ψ_c · θ̄ | Prevalência marginal (90%) | y_rate do PPC (obs. 0,018) |
+|---|---|---|---|
+| v1, réplicas do bootstrap ct12 | 0,059 | 0,062 (0,043 a 0,086) | acima |
+| v1, f₀ do censo (`census_m1`) | 0,054 | 0,057 (0,053 a 0,061) | 0,025 a 0,032 |
+| 3 estados, emissões ct12 (`s3_ct12`) | 0,19 | 0,169 (0,161 a 0,177) | 0,017 a 0,021 |
+| 3 estados, f₀ do censo (`s3_census`) | 0,17 | 0,155 (0,148 a 0,163) | 0,017 a 0,021 |
+| Referência de Hájek | | 0,026 (0,019 a 0,035) | |
+
+O censo tira pouco (0,062 → 0,057) e estreita o intervalo, mas não fecha.
+O de 3 estados acerta a fração de minutos com score alto e triplica a
+prevalência: ρ ≈ 4,95, θ̄ ≈ 0,32, componente baixo de f₁ com p_h ≈ 0,19.
+Nos dois de 3 estados o PPC continua reprovando a variância entre noites
+(obs. 10,3 contra 3,3 a 5,1), a fração de noites com algum score alto (obs.
+0,25 contra 0,31 a 0,37) e P(y | anterior) (obs. 0,39 contra 0,44 a 0,51).
+
+Dois fatos do dado:
+* entre os verificados de ct12, os 20 minutos com score ≥ 0,4 são todos
+  positivos; os 23 positivos restantes estão na faixa de 0,1 a 0,4
+  (precisão ponderada 0,026), e nenhum abaixo de 0,1;
+* dos 1.756 minutos com score ≥ 0,4 no depósito (1,8%), 98,7% têm um
+  vizinho imediato também ≥ 0,4.
+
+Leitura (interpretação): os scores altos vêm em surtos curtos, concentrados
+em poucas noites. O modelo só consegue produzir esse agrupamento pela cadeia
+de canto, e a persistência que fecha os surtos (ρ alto) estende as
+sequências de canto para os minutos de score baixo em volta. Dar mais
+liberdade às emissões dentro do canto (3 estados) piora, porque o
+componente baixo de f₁ se confunde com f₀ e vira um estado latente que o
+modelo usa para qualquer agrupamento de scores. O que falta parece ser
+heterogeneidade entre noites na intensidade e na duração dos surtos, não a
+forma das emissões. **Critério 1 continua não cumprido.**
+
 ## Critério para levar o v1 de dois estágios ao crywolf (20/11/2026)
 
 Decidido com o Diogo: o v1 fica em `dev/fase2` até cumprir os três
@@ -1106,7 +1154,8 @@ critérios abaixo. Cumpridos, o pedido vai à sessão do crywolf como
 1. **Concordância com a referência por desenho:** a prevalência marginal do
    modelo e a referência de Hájek (com bootstrap por sítio-noite) têm
    intervalos de 90% que se sobrepõem, no Curiango ct01+ct02. *Situação em
-   20/11: reprova (0,043 a 0,086 contra 0,019 a 0,035).*
+   20/11: reprova (0,043 a 0,086 contra 0,019 a 0,035). Em 21/11, com
+   f₀ do censo e com 3 estados, continua reprovando (seção acima).*
 2. **Cobertura do procedimento em dois estágios:** uma simulação com o
    estágio 1 ponderado, o bootstrap por noite e o estágio 2 com réplicas
    cobre ψ, θ̄ e ψθ̄, pelas regras V1/V2 da validação do v1.
