@@ -19,6 +19,21 @@
 #'   species folder code), `confidence`, `logit_conf` (logit of the
 #'   confidence, bounded at 1e-4 and 1 - 1e-4) and `tp` (1 = true
 #'   positive, 0 = false positive), plus the columns requested in `keep`.
+#'
+#' @section Transformations:
+#' The confidence is bounded at 1e-4 and 1 - 1e-4 before the logit
+#' (`stats::qlogis()`), so that scores of 0 or 1 give finite values;
+#' `stats::plogis(logit_conf)` returns the bounded confidence. The verdict
+#' becomes the binary response `tp`, and `site` and `species` become
+#' factors whose levels (in alphabetical order) are stored by
+#' [fit_calibration()] with the model. These transformations are always
+#' applied, because the calibration models and [score_detections()]
+#' expect them; the original `confidence` is kept alongside `logit_conf`.
+#'
+#' @srrstats {RE2.0} The section "Transformations" documents the bounded
+#'   logit and the factor conversions and why they are always applied.
+#' @srrstats {RE4.12} The bounded logit and its inverse are documented in
+#'   the section "Transformations".
 #' @export
 read_validations <- function(files, site_map = NULL, keep = NULL) {
   if (!is.null(keep) && (!is.character(keep) || anyNA(keep) ||
@@ -402,6 +417,104 @@ select_calibration_model <- function(comparison,
 #' [prior_predictive_calibration()], the fit with `brms::pp_check()` and
 #' the sensitivity to the prior with [calibration_sensitivity()].
 #'
+#' @section Formula and model matrix:
+#' The formula uses the syntax of 'lme4' for random effects (`(term |
+#' group)`) and is turned into model matrices by the fitting function
+#' itself: `stats::glm()` for a formula without random effects,
+#' `lme4::glmer()` otherwise, or `brms::brm()`. sheepdog does not build
+#' the matrices. The response is `tp` (1 = true positive, 0 = false
+#' positive) and the predictor of the score is `logit_conf`, the logit of
+#' the BirdNET confidence bounded at 1e-4 and 1 - 1e-4 (see
+#' [read_validations()]); the inverse transform, from the linear
+#' predictor to P(TP), is `stats::plogis()`. Only the columns named in the
+#' formula enter the model: the other columns of `validations` (for
+#' example those kept with `keep` in [read_validations()]) are neither
+#' used nor stored in the fitted object. The species and site levels are
+#' stored in the attribute `sheepdog_levels`.
+#'
+#' @section Maximum likelihood fit:
+#' Models with random effects are fitted by `lme4::glmer()` with
+#' `lme4::glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun =
+#' 1e5))`: the bound optimisation by quadratic approximation, with up to
+#' 100000 function evaluations, a larger budget than the 'lme4' default,
+#' for the correlated random slopes of the larger calibration models. The
+#' convergence tolerances are those of 'lme4' and
+#' cannot be changed from sheepdog; convergence warnings of 'lme4' are
+#' passed on. Models without random effects use the iteratively
+#' reweighted least squares of `stats::glm()` with its default control.
+#'
+#' @section Bayesian computation:
+#' With `engine = "brms"`, the posterior is sampled with the No-U-Turn
+#' Sampler (NUTS) of Stan (Carpenter et al. 2017,
+#' \doi{10.18637/jss.v076.i01}) through 'brms' (Bürkner 2017,
+#' \doi{10.18637/jss.v080.i01}). The computational settings are those of
+#' `brms::brm()` unless they are given in `...`: 4 chains of 2000
+#' iterations each, of which the first half (`warmup = floor(iter / 2)`)
+#' is warmup, without thinning (`thin = 1`), and random initial values
+#' (`init = NULL`). Initial values can be set with `init`, passed on to
+#' `brms::brm()`; to start from a previous fit, pass its posterior means
+#' as `init` or refit the model. `stats::update()` on the returned
+#' `brmsfit` runs the sampler again but returns an object without the
+#' attributes `sheepdog_levels` and `sheepdog_seed`, so a model refitted
+#' that way cannot be passed to [score_detections()]; call
+#' `fit_calibration()` again instead.
+#'
+#' Only NUTS is supported. Other algorithms of `brms::brm()` (`algorithm =
+#' "meanfield"`, for instance) can be passed through `...`, but
+#' [calibration_diagnostics()], which reads the NUTS parameters, then
+#' fails. The convergence checks of [calibration_diagnostics()] always run
+#' after the fit and cannot be switched off; a model that fails them
+#' raises a warning, which `suppressWarnings()` silences. sheepdog has no
+#' verbosity argument of its own: the progress output of Stan is
+#' controlled by `refresh` (e.g. `refresh = 0`, passed on to the Stan
+#' backend) and `silent` (e.g. `silent = 2`) of `brms::brm()`, and the
+#' messages of sheepdog by `suppressMessages()`.
+#'
+#' @section Methods for the fitted model:
+#' The returned object keeps the class of the fitting function, so the
+#' methods of `stats`, 'lme4' and 'brms' apply. Confidence intervals of
+#' the coefficients come from `stats::confint()` for `glm` and `glmerMod`
+#' models (profile likelihood by default; `method = "Wald"` for a
+#' faster approximation of a `glmerMod`), and credible intervals from
+#' `brms::posterior_interval()` or `summary()` for a `brmsfit`.
+#' `stats::residuals()` returns deviance residuals for `glm` and
+#' `glmerMod` models and, for a `brmsfit`, the posterior summary of the
+#' response residuals (observed minus fitted probability). With a binary response, residuals take
+#' two values for each fitted probability and say little one by one; check
+#' the fit with the calibration intercept and slope of
+#' [compare_calibration_models()], with [calibration_quality()], or with the
+#' binned posterior predictive check of [calibration_ppc()] for a
+#' `brmsfit`.
+#'
+#' @srrstats {RE1.1} The section "Formula and model matrix" states that
+#'   the matrices are built by `stats::glm()`, `lme4::glmer()` or
+#'   `brms::brm()`.
+#' @srrstats {RE1.3, RE1.3a} The section "Formula and model matrix" states
+#'   which attributes are transferred (`sheepdog_levels`,
+#'   `sheepdog_seed`) and that columns outside the formula are not kept.
+#' @srrstats {RE3.2} The section "Maximum likelihood fit" documents the
+#'   fixed `glmerControl()` settings.
+#' @srrstats {RE4.3} The section "Methods for the fitted model" points to
+#'   `confint()` and `brms::posterior_interval()`.
+#' @srrstats {RE4.10} The section "Methods for the fitted model"
+#'   describes the residuals of each class and how to interpret them for
+#'   a binary response.
+#' @srrstats {RE4.12} The bounded logit of the score and its inverse
+#'   (`stats::plogis()`) are documented here and in [read_validations()].
+#' @srrstats {BS1.2c} The examples show how to specify the prior.
+#' @srrstats {BS1.3, BS1.3a, BS2.7, BS2.8} The section "Bayesian
+#'   computation" documents the defaults passed to `brms::brm()`, initial
+#'   values through `init`, and why `update()` should not be used to
+#'   continue a fit.
+#' @srrstats {BS1.3b} Only NUTS is supported; the section "Bayesian
+#'   computation" says what happens with other algorithms.
+#' @srrstats {BS1.4} The convergence checks always run; the section
+#'   "Bayesian computation" says how to silence the warning.
+#' @srrstats {BS2.12} Verbosity is controlled by the `refresh` and
+#'   `silent` arguments of `brms::brm()` and by `suppressMessages()`.
+#' @srrstats {BS4.0} The section "Bayesian computation" states that the
+#'   sampler is the NUTS of Stan through 'brms', with references.
+#'
 #' @inheritParams compare_calibration_models
 #' @param formula Model formula, usually the best one of
 #'   [compare_calibration_models()].
@@ -418,6 +531,28 @@ select_calibration_model <- function(comparison,
 #'   [score_detections()] and [plot_calibration()]. A `brmsfit` also
 #'   carries the attribute `sheepdog_seed`, the seed given to Stan, so that
 #'   the fit can be repeated.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                    full.names = TRUE))
+#' # Maximum likelihood, one species-level random intercept
+#' if (requireNamespace("lme4", quietly = TRUE)) {
+#'   fit <- fit_calibration(val, tp ~ logit_conf + (1 | species))
+#'   print(lme4::fixef(fit))
+#'   confint(fit, method = "Wald", parm = "beta_")
+#' }
+#'
+#' # Bayesian fit: the prior is always given explicitly. Fitting compiles a
+#' # Stan model, which takes minutes, so this part is not run here.
+#' \dontrun{
+#' f <- tp ~ logit_conf + (1 | species)
+#' prior <- calibration_prior(f, val)
+#' fit_b <- fit_calibration(val, f, engine = "brms", prior = prior,
+#'                          chains = 4, iter = 2000, seed = 1,
+#'                          refresh = 0)
+#' calibration_diagnostics(fit_b)
+#' brms::posterior_interval(fit_b)
+#' }
 #' @export
 fit_calibration <- function(validations, formula,
                             engine = c("lme4", "brms"), prior = NULL, ...) {
@@ -624,7 +759,7 @@ calibration_effort <- function(validations, formula,
 #' @param grid_step Models fitted with `engine = "brms"`: step of the grid
 #'   of scores on which the posterior is computed.
 #'
-#' With a model fitted with `engine = "brms"`, the posterior of P(TP) is
+#' @details With a model fitted with `engine = "brms"`, the posterior of P(TP) is
 #' computed once on a grid of scores (step `grid_step`) for each site x
 #' species and assigned to the detections by their score rounded to the
 #' grid, so that the cost does not depend on the number of detections;
@@ -632,6 +767,19 @@ calibration_effort <- function(validations, formula,
 #' Each detection then gets the posterior mean (`p_tp`), a lower quantile
 #' (`p_tp_lower`) and the posterior probability that P(TP) >= `p_min`
 #' (`pr_reliable`). [detection_history()] can use either rule.
+#'
+#' Sites or species levels absent from the calibration are new levels for
+#' the model. Detections of species that were not calibrated are dropped
+#' (with a message giving their number). Detections at a site that was not
+#' in the calibration are scored with a warning. With a `glm` or
+#' `glmerMod` model (`allow.new.levels = TRUE` of 'lme4'), the effects of
+#' the new site are set to zero, so P(TP) comes from the fixed and
+#' species effects only. With a `brmsfit` (`allow_new_levels = TRUE` of
+#' 'brms'), the effects of the new site are drawn from the fitted
+#' random-effects distribution, which widens the posterior of P(TP).
+#'
+#' @srrstats {RE4.16} New site levels are predicted from the fixed and
+#'   species effects, as documented here, with a warning.
 #'
 #' @return A tibble with `site`, `species`, `date`, `night`, `hour`,
 #'   `confidence`, `p_tp`, `begin_path` and `file_offset`; with a model

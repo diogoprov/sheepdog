@@ -49,3 +49,16 @@ priors and prior predictive checks see McElreath (2020,
 \doi{10.1201/9780429029608}) and Gelman et al. (2026, \emph{Bayesian
 Workflow}, Chapman & Hall).
 }
+\examples{
+if (requireNamespace("brms", quietly = TRUE)) {
+  ex <- system.file("extdata", "example", package = "sheepdog")
+  val <- read_validations(list.files(file.path(ex, "validation"),
+                                     full.names = TRUE))
+  f <- tp ~ logit_conf + (1 | species)
+  prior <- calibration_prior(f, val)
+  print(prior)
+  # Any brmsprior can replace it, e.g. a narrower prior on the slope
+  prior[prior$class == "b", "prior"] <- "normal(1, 0.5)"
+  prior
+}
+}

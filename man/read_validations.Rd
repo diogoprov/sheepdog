@@ -30,3 +30,15 @@ verdict and a confidence score. Tables written by v1.2.0
 (\code{validacao_por_clipe.csv}) are also read. Whole-recording clips of
 \code{"random_recordings"} have no confidence and are left out.
 }
+\section{Transformations}{
+
+The confidence is bounded at 1e-4 and 1 - 1e-4 before the logit
+(\code{stats::qlogis()}), so that scores of 0 or 1 give finite values;
+\code{stats::plogis(logit_conf)} returns the bounded confidence. The verdict
+becomes the binary response \code{tp}, and \code{site} and \code{species} become
+factors whose levels (in alphabetical order) are stored by
+\code{\link[=fit_calibration]{fit_calibration()}} with the model. These transformations are always
+applied, because the calibration models and \code{\link[=score_detections]{score_detections()}}
+expect them; the original \code{confidence} is kept alongside \code{logit_conf}.
+}
+

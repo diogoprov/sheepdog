@@ -17,6 +17,22 @@
   seed from R's generator when none is given (reproducible with
   `set.seed()`) and keeps it in `attr(fit, "sheepdog_seed")`; `calibrate()`
   writes it to `calibration_model.txt`.
+- Documentation for the rOpenSci statistical standards: `?fit_calibration`
+  now describes how the formula becomes a model matrix, the fixed 'lme4'
+  optimiser settings, the computational defaults of the Bayesian fit
+  (NUTS through 'brms' and Stan, with references), initial values,
+  verbosity, and the intervals and residuals of the fitted models. The
+  convergence diagnostics are documented with their reference and with
+  trace plots. `calibration_prior()`, `fit_calibration()` and
+  `prior_predictive_calibration()` have examples. `?sheepdog` has a
+  glossary and documents that option arguments are case-sensitive; the
+  README shows how to set the prior and how sheepdog relates to a
+  per-species `glm()` calibration; the contributing guide has a life cycle
+  statement and explains how to run the tests that fit Stan models.
+- The description of the posterior grid in `?score_detections` had slipped
+  into the documentation of the argument `grid_step` (also inherited by
+  `history_draws()`, `calibrated_thresholds()` and `compare_thresholds()`);
+  it is now in the Details.
 
 # sheepdog 3.4.1
 

@@ -7,47 +7,27 @@ statistical software track. The tags themselves are in
 
 | Category | Met | Not applicable | To do |
 |---|---|---|---|
-| G | 16 | 7 | 45 |
-| RE | 18 | 7 | 23 |
-| BS | 17 | 14 | 25 |
-| Total | 51 | 28 | 93 |
+| G | 22 | 7 | 39 |
+| RE | 27 | 7 | 14 |
+| BS | 29 | 14 | 13 |
+| Total | 78 | 28 | 66 |
 
-Partially met standards are counted as to do.
+Partially met standards are counted as to do. Counts updated after phase 2
+(documentation); they were 51 met and 93 to do after phase 1.
 
 ## Phase 2: documentation
 
+Done in phase 2: G1.1, G1.2, G1.3, G2.3b, G5.12, RE1.1, RE1.3a, RE2.0, RE3.2, RE4.3, RE4.10, RE4.12, RE4.16, BS1.2a, BS1.2c, BS1.3, BS1.3a, BS1.3b, BS1.4, BS2.7, BS2.8, BS2.12, BS4.0, BS4.3, BS6.2, plus RE1.3 and G2.3, which were waiting on RE1.3a and G2.3b. The documentation is in the help pages of `fit_calibration()` (sections on the model matrix, the maximum likelihood fit, the Bayesian computation and the methods for the fitted model), `read_validations()`, `score_detections()`, `calibration_prior()`, `prior_predictive_calibration()` and `calibration_diagnostics()`, in the package help page (glossary and option arguments), in the README (relation to existing implementations, prior, life cycle) and in `.github/CONTRIBUTING.md` (life cycle, tests that fit Stan models). The brms, Stan and R-hat references were checked against the CITATION files of the packages and Crossref.
+
+Still to do:
+
 | Standard | Gap |
 |---|---|
-| G1.1 | state in the README how the package relates to existing implementations (designs with known inclusion probabilities, hierarchical calibration and occupancy export are new; the per-species logistic calibration follows Wood and Kahl 2024). |
-| G1.2 | add a Life Cycle Statement (stability, deprecation policy for the legacy v1/v2 names, planned work) to CONTRIBUTING.md and the README. |
-| G1.3 | terms are defined where they are used in the vignettes, but there is no central glossary (precision, recall ceiling, inclusion probability, occasion, calibration intercept and slope, effective n, P(TP)). |
 | G1.4a | about 170 internal functions carry plain comments, many in Portuguese; they need English roxygen blocks marked noRd. |
 | G1.6 | no comparison with an alternative R implementation (e.g. a hand-coded per-species `stats::glm` calibration). |
 | G2.0a | standardise the argument documentation on expected lengths. |
 | G2.1a | standardise the argument documentation on expected types. |
-| G2.3b | option arguments are case-sensitive and this is not documented. |
-| G5.12 | the conditions for running extended tests (environment variable, brms with a Stan backend, run time) are not documented. |
-| RE1.1 | document that formulas are converted to model matrices by `stats::glm()`, `lme4::glmer()` or `brms::brm()`. |
-| RE1.3a | document in `fit_calibration()` that columns outside the formula are not kept. |
-| RE2.0 | the bounded logit and factor conversion in `read_validations()` are documented but cannot be switched off. |
-| RE3.2 | the fixed lme4 control (`bobyqa`, `maxfun = 1e5`) is not documented. |
-| RE4.3 | document `confint()` for glm and glmerMod and `brms::posterior_interval()` for brmsfit. |
-| RE4.10 | document residuals for binary responses and point to `calibration_ppc()`. |
-| RE4.12 | document the bounded logit transform and its inverse (`stats::plogis()`). |
-| RE4.16 | new levels are predicted from fixed effects, but this is neither documented in `score_detections()` nor tested for new sites. |
 | RE5.0 | `vignettes/performance.Rmd` gives absolute run times but not how they scale with the number of reviewed clips. |
-| BS1.2a | the README does not show how to specify the prior. |
-| BS1.2c | `calibration_prior()`, `fit_calibration()` and `prior_predictive_calibration()` have no examples. |
-| BS1.3 | document the computational defaults passed to `brms::brm()` (warmup, thinning). |
-| BS1.3a | document how to reuse a previous fit (`init` through `...`, or refit), noting that `update()` drops sheepdog attributes. |
-| BS1.3b | document that only NUTS is supported for the diagnostics, although `algorithm` can be passed to `brms::brm()`. |
-| BS1.4 | document that convergence checks always run after a brms fit and how to skip them. |
-| BS2.7 | document `init` passed through `...` to `brms::brm()`. |
-| BS2.8 | see BS1.3a. |
-| BS2.12 | no verbosity parameter of its own; document `refresh`/`silent` of brms and `suppressMessages()`. |
-| BS4.0 | document that sampling uses Stan's NUTS through brms, with verified references for brms and Stan. |
-| BS4.3 | `calibration_diagnostics()` uses rank-normalised R-hat and bulk and tail ESS from the posterior package, without a documented reference. |
-| BS6.2 | document trace plots with warmup distinguished. |
 
 ## Phase 3: input checks
 
@@ -184,3 +164,14 @@ rOpenSci packaging files were merged:
 - The goodpractice lints (long functions, cyclomatic complexity, long lines,
   `1:length()`, `any(is.na())` and others) are listed in the full report and
   are left for a later clean-up.
+
+## autotest
+
+`autotest::autotest_package()` (and a run function by function) stops on
+every function with "'\_' is an unrecognized escape in character string
+(test-rounds.R:230:136)". No file of the package contains `\_`, and line 230
+of `tests/testthat/test-rounds.R` has fewer than 136 characters, so the
+error comes from the code that autotest generates or parses, not from
+sheepdog. autotest gave no result to triage; it should be tried again with a
+newer version before submission.
+
