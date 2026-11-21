@@ -77,6 +77,7 @@ read_selection_tables <- function(data_dir,
   if (is.null(predicoes) || nrow(predicoes) == 0) {
     stop("No prediction read - were all the tables found empty?")
   }
+  check_confidence(predicoes$confidence, "Confidence")
   if (!is.null(site_pattern)) {
     predicoes$site <- site_from_name(predicoes$begin_path, site_pattern)
   }

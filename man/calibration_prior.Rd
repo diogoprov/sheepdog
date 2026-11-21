@@ -34,7 +34,9 @@ and assuming that a higher score never lowers P(TP);
 occasion (\code{tp ~ logit_conf + temp}): \code{normal(0, 1)}, which suits a
 standardised covariate. 'brms' bounds a whole class, not a single
 coefficient, so with such terms the slope of \code{logit_conf} keeps
-\code{normal(1, 1)} without the truncation at 0;
+\code{normal(1, 1)} without the truncation at 0. A warning is raised when
+such a numeric covariate is not standardised (absolute mean above
+0.25 or standard deviation outside 0.5 to 2);
 \item \code{sd} (standard deviations of the random effects): \code{exponential(1)};
 \item \code{cor} (correlations between random effects): \code{lkj(2)}, which pulls
 the correlations away from +-1 (the singular fits of m4 with 'lme4').

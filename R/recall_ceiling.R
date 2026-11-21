@@ -210,12 +210,12 @@ recall_estimates <- function(d, min_confidence, limiares) {
   detectada <- pres & !is.na(d$max_score) & d$max_score >= min_confidence
   teto <- if (peso_pres > 0) sum(d$w[detectada]) / peso_pres else NA_real_
   recall <- vapply(limiares, function(t) {
-    if (peso_pres == 0) return(NA_real_)
+    if (near(peso_pres, 0)) return(NA_real_)
     sum(d$w[detectada & d$max_score >= t]) / peso_pres
   }, numeric(1))
   share <- vapply(limiares, function(t) {
     pd <- sum(d$w[detectada])
-    if (pd == 0) return(NA_real_)
+    if (near(pd, 0)) return(NA_real_)
     sum(d$w[detectada & d$max_score >= t]) / pd
   }, numeric(1))
   list(ceiling = teto, recall = recall, share = share)
