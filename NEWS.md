@@ -1,5 +1,9 @@
 # sheepdog (development version)
 
+- The documentation now names the project DiverSons instead of FrogNet.
+  The vignette `frognet-workflow` is now `diversons-workflow` (also its
+  Portuguese translation); the old article addresses redirect to the new
+  ones.
 - Infrastructure following the rOpenSci packaging guide: `inst/CITATION`
   (so that `citation("sheepdog")` works), `codemeta.json`, a contributing
   guide and a code of conduct (in `.github/`), and repostatus and
@@ -473,7 +477,7 @@ splits and checks for retraining BirdNET-Analyzer.
   by night, drawn from the training nights left after the test draw and
   the cap, never from `exclude_from_test`, written to `val/` to be passed
   as `--test_data`. It gives the same split as a second call on the
-  training rows (checked on the FrogNet M3 training set: 288 nights and
+  training rows (checked on the DiverSons M3 training set: 288 nights and
   824 clips). The checks gain `val_nights_in_train` and
   `val_nights_excluded`.
 - `run_app()` gains the Sampling and Export tabs, opened with
@@ -507,7 +511,7 @@ splits and checks for retraining BirdNET-Analyzer.
   with `test_sites`), `"night"` (a proportion `test_prop` of the nights of
   each site goes to the test set, for all species together),
   `"site_species_night"` (nights drawn within site x species, as in the
-  2.x FrogNet scripts; warns, since a night can then be in both sets) and
+  2.x DiverSons scripts; warns, since a night can then be in both sets) and
   `"none"`. The draws use `seed` and leave the global random number
   generator as it was. New arguments: `max_per_site_species` (cap on the
   positive training clips of a site x species, taken from the nights in
@@ -516,7 +520,7 @@ splits and checks for retraining BirdNET-Analyzer.
   `remap_to` and `strict`. The result gains `night` and the attribute
   `"checks"`: test nights with training clips, test nights in
   `exclude_from_test` and test clips overlapping training clips. On the
-  FrogNet M3 data, the result is identical clip by clip to the reference
+  DiverSons M3 data, the result is identical clip by clip to the reference
   script for `split = "night"` and `"site_species_night"`.
 - New `training_nights()`: site, recording and night from the names of
   training clips (a configurable regular expression, folders listed

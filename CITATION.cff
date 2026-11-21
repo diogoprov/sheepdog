@@ -32,3 +32,17 @@ keywords:
   - occupancy models
   - R
   - R package
+references:
+  - type: grant
+    title: "DiverSons: acoustic monitoring of frogs"
+    authors:
+      - family-names: "Piatti"
+        given-names: "Liliana"
+        affiliation: "Universidade Federal de Mato Grosso do Sul"
+        orcid: "https://orcid.org/0000-0001-6324-1723"
+    institution:
+      name: "Fundação de Apoio ao Desenvolvimento do Ensino, Ciência e Tecnologia do Estado de Mato Grosso do Sul (FUNDECT)"
+    number: "Termo de Outorga 95/2023"
+    date-start: "2023-07-01"
+    date-end: "2026-07-31"
+    url: "https://provetelab.org/projects.html#diversons-acoustic-monitoring-of-frogs"

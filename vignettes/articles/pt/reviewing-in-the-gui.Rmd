@@ -13,7 +13,7 @@ GUI do BirdNET-Analyzer. Este artigo descreve essa revisão, desde a pasta
 de clipes gravada por `cut_clips()` até as pastas `Positive` e `Negative`
 que `classify_review()` lê de volta. As capturas de tela foram feitas com
 a versão 2.4.0 da GUI (modelo V2.4) no Windows, com clipes do projeto
-FrogNet; o leiaute pode diferir em outras versões. A
+DiverSons; o leiaute pode diferir em outras versões. A
 [documentação da GUI](https://birdnet-team.github.io/BirdNET-Analyzer/stable/usage/gui.html)
 descreve como instalá-la e iniciá-la, e informa que a aba Review (Revisão)
 implementa o fluxo de trabalho de Wood & Kahl (2024).

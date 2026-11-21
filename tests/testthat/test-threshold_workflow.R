@@ -91,7 +91,7 @@ test_that("threshold_record() joins the pieces and writes Markdown", {
   b <- threshold_bootstrap(val, 0.9, 10, n_boot = 50)
   g <- threshold_by_group(val, lim, by = "recording_hour", min_n = 5)
   info <- tibble::tibble(key = c("classifier", "sampling_mode"),
-                         value = c("FrogNet v2", "random_detections"))
+                         value = c("DiverSons v2", "random_detections"))
   f <- withr::local_tempfile(fileext = ".md")
   expect_message(ficha <- threshold_record(lim, b, g, info, file = f),
                  "written")
@@ -100,7 +100,7 @@ test_that("threshold_record() joins the pieces and writes Markdown", {
                     "worst_group_precision", "target_precision") %in%
                     names(ficha)))
   texto <- readLines(f)
-  expect_true(any(grepl("FrogNet v2", texto)))
+  expect_true(any(grepl("DiverSons v2", texto)))
   expect_true(any(grepl("^\\| site \\| species_folder", texto)))
   # sem arquivo, so a tabela
   expect_identical(nrow(threshold_record(lim)), 1L)

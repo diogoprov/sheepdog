@@ -28,7 +28,7 @@ in passive acoustic monitoring (PAM). It runs three stages:
 3. **Community matrices.** Turn the calibrated histories into
    effort-standardised site x month matrices for multivariate ordinations.
 
-sheepdog was developed for the FrogNet project (anurans of the Pantanal and
+sheepdog was developed for the [DiverSons project](https://provetelab.org/projects.html#diversons-acoustic-monitoring-of-frogs) (anurans of the Pantanal and
 Cerrado, Mato Grosso do Sul, Brazil), but it works with the output of any
 BirdNET pretrained and custom classifier. `export_occupancy_data()` writes its
 validation and calibration outputs in a documented format for occupancy models
@@ -146,7 +146,7 @@ Each stage is also available as separate functions:
 | 3. Community matrices | `cell_status()`, `suggest_core_species()`, `community_matrices()`, `community_matrices_draws()` |
 
 The [articles](https://provetelab.org/sheepdog/articles/) cover each stage
-with runnable examples; `vignette("frognet-workflow")` shows the complete
+with runnable examples; `vignette("diversons-workflow")` shows the complete
 workflow.
 
 The selection tables must have the standard BirdNET/Raven columns
@@ -269,8 +269,11 @@ scripts are preserved in the
 
 Developed by **Diogo B. Provete** (Universidade Federal de Mato Grosso do Sul),
 from the protocol design of **Larissa S. M. Sugai** (Cornell Lab of
-Ornithology) and **Liliana Piatti** (UFMS), within the FrogNet project. Code
+Ornithology) and **Liliana Piatti** (UFMS), within the [DiverSons project](https://provetelab.org/projects.html#diversons-acoustic-monitoring-of-frogs). Code
 written with AI assistance (Claude, Anthropic), with human review and tests.
+
+The DiverSons project (principal investigator: Liliana Piatti) was funded by
+FUNDECT (Termo de Outorga 95/2023) from July 2023 to July 2026.
 
 If sheepdog is useful in your work, please cite it (GitHub's "Cite this
 repository" button uses `CITATION.cff`, and `citation("sheepdog")` gives the
