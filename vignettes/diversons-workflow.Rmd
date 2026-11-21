@@ -1,8 +1,8 @@
 ---
-title: "The FrogNet workflow"
+title: "The DiverSons workflow"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{The FrogNet workflow}
+  %\VignetteIndexEntry{The DiverSons workflow}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -12,9 +12,9 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
 This vignette walks through the three stages of sheepdog as used in the
-FrogNet project (anurans of the Pantanal and Cerrado, Mato Grosso do Sul,
-Brazil). Paths, site names and the core species come from the FrogNet
-scripts of v1.2.0; settings marked "example" are illustrative. The FrogNet
+DiverSons project (anurans of the Pantanal and Cerrado, Mato Grosso do Sul,
+Brazil). Paths, site names and the core species come from the DiverSons
+scripts of v1.2.0; settings marked "example" are illustrative. The DiverSons
 data are not distributed with the package, so the chunks that read them are
 not run; the last section runs on the example files shipped with the
 package.
@@ -93,7 +93,7 @@ The reviewers classify the clips in the review tab of the BirdNET GUI, which
 moves each clip into `Positive/` or `Negative/` subfolders.
 
 ```{r, eval = FALSE}
-# a FrogNet run cut by v1.2.0: the old manifest is read as well
+# a DiverSons run cut by v1.2.0: the old manifest is read as well
 post_validation(
   review_dir    = "E:/validacao_UEMS_meta4000/clipes",
   manifest_path = "E:/validacao_UEMS_meta4000/manifesto_clipes.csv",
@@ -131,11 +131,11 @@ that precision chooses the suggested thresholds.
 ## Stage 2: calibration
 
 The reviewed clips of every site calibrate the confidence score into a
-probability of true detection. In FrogNet the manifest of site BEP came out
+probability of true detection. In DiverSons the manifest of site BEP came out
 as `BEP2` and UEMS is abbreviated UEM, so `site_map` fixes the names.
 
 ```{r, eval = FALSE}
-dir_proj <- "~/Library/CloudStorage/Box-Box/Meus Artigos/2026-codigo FrogNet"
+dir_proj <- "~/Library/CloudStorage/Box-Box/Meus Artigos/2026-codigo DiverSons"
 sites <- c("UEMS", "MIM", "ARA", "BAI", "XAR", "REF", "BEP")
 res <- calibrate(
   validation_files  = file.path(dir_proj,
@@ -148,7 +148,7 @@ res <- calibrate(
     XAR = file.path(dir_proj, "BirdNET_SelectionTable_XAR.txt"),
     REF = file.path(dir_proj, "BirdNET_SelectionTable_REF.txt"),
     BEP = file.path(dir_proj, "BirdNET_SelectionTable_BEP.txt")),
-  output_dir = "~/FrogNet_calibration",
+  output_dir = "~/DiverSons_calibration",
   site_map   = c(BEP2 = "BEP", UEMS = "UEM"),
   p_min = 0.95, min_detections_night = 1
 )
@@ -167,7 +167,7 @@ The calibrated detections of seven sites take about 700 MB, so keep
 number of detections with P(TP) >= `p_min`, and whether the night has a
 detection under the repetition rules k = 1, 2 and 3.
 
-In FrogNet (2026), 6,304 reviewed clips (16 species x 7 sites) gave an AUC
+In DiverSons (2026), 6,304 reviewed clips (16 species x 7 sites) gave an AUC
 of 0.93 for the hierarchical model against 0.82 for the score alone, and
 about 3.15 million detections were scored.
 
@@ -180,15 +180,15 @@ cells with at least five recorded nights.
 
 ```{r, eval = FALSE}
 build_community_matrices(
-  "~/FrogNet_calibration/nightly_detection_history.csv",
-  "~/FrogNet_community_matrices",
+  "~/DiverSons_calibration/nightly_detection_history.csv",
+  "~/DiverSons_community_matrices",
   core_species = c("boa_ran", "den_nan", "phy_alb", "rhi_dip", "sci_nas",
                    "lep_pod", "lep_fus", "pse_par", "pit_azu", "lys_lim"),
   k_min = 2, min_nights_month = 5
 )
 ```
 
-The six species with problematic calibration in FrogNet (`tra_typ`,
+The six species with problematic calibration in DiverSons (`tra_typ`,
 `boa_pun`, `den_min`, `sci_fuv`, `ade_dip`, `lep_ele`) stay out; use them at
 most in a sensitivity analysis.
 

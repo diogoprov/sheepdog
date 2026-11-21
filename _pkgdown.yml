@@ -181,7 +181,7 @@ articles:
       - retraining
       - migration-3.0.0
       - crywolf-integration
-      - frognet-workflow
+      - diversons-workflow
   - title: internal
     contents:
       - articles/cheatsheets
@@ -193,4 +193,8 @@ articles:
       - articles/pt/sheepdog
       - articles/pt/reviewing-in-the-gui
       - articles/pt/sampling-designs
-      - articles/pt/frognet-workflow
+      - articles/pt/diversons-workflow
+
+redirects:
+  - ["articles/frognet-workflow.html", "articles/diversons-workflow.html"]
+  - ["articles/pt/frognet-workflow.html", "articles/pt/diversons-workflow.html"]

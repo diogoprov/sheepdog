@@ -225,5 +225,5 @@ figura.
 - `vignette("crywolf-integration")`: o manifesto de clipes e as tabelas de
   validação como entrada para modelos de ocupação (*occupancy models*) com
   falsos positivos.
-- `vignette("frognet-workflow")`: o fluxo de trabalho completo, tal como usado
-  no projeto FrogNet.
+- `vignette("diversons-workflow")`: o fluxo de trabalho completo, tal como usado
+  no projeto DiverSons.

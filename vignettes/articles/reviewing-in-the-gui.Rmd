@@ -10,7 +10,7 @@ The manual review of stage 1 happens outside R, in the Review tab of the
 BirdNET-Analyzer GUI. This article walks through that review, from the
 folder of clips written by `cut_clips()` to the `Positive` and `Negative`
 folders that `classify_review()` reads back. The screenshots were taken
-with GUI version 2.4.0 (model V2.4) on Windows, on clips of the FrogNet
+with GUI version 2.4.0 (model V2.4) on Windows, on clips of the DiverSons
 project; the layout may differ in other versions. The
 [GUI documentation](https://birdnet-team.github.io/BirdNET-Analyzer/stable/usage/gui.html)
 describes how to install and launch it, and states that the Review tab

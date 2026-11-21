@@ -1,18 +1,18 @@
 ---
-title: "O fluxo de trabalho do FrogNet"
+title: "O fluxo de trabalho do DiverSons"
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
-> **Tradução.** Este artigo é uma tradução da versão em inglês, que é a referência: [The FrogNet workflow](../frognet-workflow.html). Traduzido da versão 3.2.1 do pacote; se as duas divergirem, vale a versão em inglês.
+> **Tradução.** Este artigo é uma tradução da versão em inglês, que é a referência: [The DiverSons workflow](../diversons-workflow.html). Traduzido da versão 3.2.1 do pacote; se as duas divergirem, vale a versão em inglês.
 
 Este artigo percorre as três etapas do sheepdog tal como usadas no projeto
-FrogNet (anuros do Pantanal e do Cerrado, Mato Grosso do Sul, Brasil). Os
+DiverSons (anuros do Pantanal e do Cerrado, Mato Grosso do Sul, Brasil). Os
 caminhos, os nomes dos locais e as espécies-núcleo vêm dos scripts do
-FrogNet da v1.2.0; as configurações marcadas como "example" são ilustrativas.
-Os dados do FrogNet não são distribuídos com o pacote, de modo que os chunks
+DiverSons da v1.2.0; as configurações marcadas como "example" são ilustrativas.
+Os dados do DiverSons não são distribuídos com o pacote, de modo que os chunks
 que os leem não são executados; a última seção roda com os arquivos de
 exemplo incluídos no pacote.
 
@@ -91,7 +91,7 @@ Os revisores classificam os clipes na aba de revisão da GUI do BirdNET, que
 move cada clipe para as subpastas `Positive/` ou `Negative/`.
 
 ```{r, eval = FALSE}
-# a FrogNet run cut by v1.2.0: the old manifest is read as well
+# a DiverSons run cut by v1.2.0: the old manifest is read as well
 post_validation(
   review_dir    = "E:/validacao_UEMS_meta4000/clipes",
   manifest_path = "E:/validacao_UEMS_meta4000/manifesto_clipes.csv",
@@ -107,12 +107,12 @@ espécie, a presença confirmada por noite e os clipes positivos para retreino.
 ## Etapa 2: calibração
 
 Os clipes revisados de todos os locais calibram o score de confiança em uma
-probabilidade de detecção verdadeira. No FrogNet, o manifesto do local BEP
+probabilidade de detecção verdadeira. No DiverSons, o manifesto do local BEP
 saiu como `BEP2` e UEMS é abreviado como UEM; por isso, `site_map` corrige os
 nomes.
 
 ```{r, eval = FALSE}
-dir_proj <- "~/Library/CloudStorage/Box-Box/Meus Artigos/2026-codigo FrogNet"
+dir_proj <- "~/Library/CloudStorage/Box-Box/Meus Artigos/2026-codigo DiverSons"
 sites <- c("UEMS", "MIM", "ARA", "BAI", "XAR", "REF", "BEP")
 res <- calibrate(
   validation_files  = file.path(dir_proj,
@@ -125,7 +125,7 @@ res <- calibrate(
     XAR = file.path(dir_proj, "BirdNET_SelectionTable_XAR.txt"),
     REF = file.path(dir_proj, "BirdNET_SelectionTable_REF.txt"),
     BEP = file.path(dir_proj, "BirdNET_SelectionTable_BEP.txt")),
-  output_dir = "~/FrogNet_calibration",
+  output_dir = "~/DiverSons_calibration",
   site_map   = c(BEP2 = "BEP", UEMS = "UEM"),
   p_min = 0.95, min_detections_night = 1
 )
@@ -145,7 +145,7 @@ calibradas de sete locais ocupam cerca de 700 MB; portanto, mantenha
 número de detecções com P(TP) >= `p_min` e se a noite tem uma detecção sob as
 regras de repetição k = 1, 2 e 3.
 
-No FrogNet (2026), 6.304 clipes revisados (16 espécies x 7 locais) deram uma
+No DiverSons (2026), 6.304 clipes revisados (16 espécies x 7 locais) deram uma
 AUC de 0,93 para o modelo hierárquico, contra 0,82 para o score isolado, e
 cerca de 3,15 milhões de detecções foram pontuadas.
 
@@ -158,15 +158,15 @@ locais) e células local x mês com pelo menos cinco noites gravadas.
 
 ```{r, eval = FALSE}
 build_community_matrices(
-  "~/FrogNet_calibration/nightly_detection_history.csv",
-  "~/FrogNet_community_matrices",
+  "~/DiverSons_calibration/nightly_detection_history.csv",
+  "~/DiverSons_community_matrices",
   core_species = c("boa_ran", "den_nan", "phy_alb", "rhi_dip", "sci_nas",
                    "lep_pod", "lep_fus", "pse_par", "pit_azu", "lys_lim"),
   k_min = 2, min_nights_month = 5
 )
 ```
 
-As seis espécies com calibração problemática no FrogNet (`tra_typ`,
+As seis espécies com calibração problemática no DiverSons (`tra_typ`,
 `boa_pun`, `den_min`, `sci_fuv`, `ade_dip`, `lep_ele`) ficam de fora; use-as,
 no máximo, em uma análise de sensibilidade.
 

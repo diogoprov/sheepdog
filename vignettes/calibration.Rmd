@@ -764,7 +764,7 @@ list.files(out_dir)
 ```
 
 `nightly_detection_history.csv` is the input of the occupancy and
-community analyses (see `vignette("frognet-workflow")`). Five folds and
+community analyses (see `vignette("diversons-workflow")`). Five folds and
 the example's `r nrow(val)` clips run in seconds; a project with thousands
 of clips and many species takes longer, and `effort_curve = TRUE` adds the
 effort curve.

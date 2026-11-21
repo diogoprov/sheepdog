@@ -65,7 +65,7 @@ read_validation_tables <- function(files, candidates = NULL) {
 #'   recording is training data for one species and test data for another.
 #' * `"site_species_night"`: the nights are drawn within each site x
 #'   species with at least two nights (the split of the 2.x scripts of the
-#'   FrogNet project). The same night can then be in the training set for
+#'   DiverSons project). The same night can then be in the training set for
 #'   one species and in the test set for another, which breaks the
 #'   independence of the test set; it is kept only to reproduce earlier
 #'   training sets, and warns.
@@ -142,7 +142,7 @@ read_validation_tables <- function(files, candidates = NULL) {
 #'   drawn for the validation set (`val/`); see Splits. `NULL` draws none.
 #' @param val_seed Seed of the validation draw. The default, `seed + 1`, is
 #'   also the seed of `max_per_site_species`; the two draws are separate,
-#'   and the default reproduces the training sets of the FrogNet project.
+#'   and the default reproduces the training sets of the DiverSons project.
 #' @param negatives Include the negative clips?
 #' @param negatives_folder `NULL` puts the negatives of each class in a
 #'   `-<species_code>` folder. A non-event class of BirdNET-Analyzer
@@ -365,7 +365,7 @@ training_guard <- function(exclude_from_test) {
 }
 
 # Conjunto de cada clipe ("train"/"test"); o sorteio segue o do script
-# m3_treino.R do FrogNet, linha a linha
+# m3_treino.R do DiverSons, linha a linha
 split_sets <- function(clipes, split, test_sites, test_prop, guarda) {
   if (split == "none") return(rep("train", nrow(clipes)))
   if (split == "site") {

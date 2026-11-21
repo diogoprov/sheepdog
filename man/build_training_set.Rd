@@ -61,7 +61,7 @@ drawn for the validation set (\verb{val/}); see Splits. \code{NULL} draws none.}
 
 \item{val_seed}{Seed of the validation draw. The default, \code{seed + 1}, is
 also the seed of \code{max_per_site_species}; the two draws are separate,
-and the default reproduces the training sets of the FrogNet project.}
+and the default reproduces the training sets of the DiverSons project.}
 
 \item{negatives}{Include the negative clips?}
 
@@ -124,7 +124,7 @@ are drawn for the test set, for all species together, so that no
 recording is training data for one species and test data for another.
 \item \code{"site_species_night"}: the nights are drawn within each site x
 species with at least two nights (the split of the 2.x scripts of the
-FrogNet project). The same night can then be in the training set for
+DiverSons project). The same night can then be in the training set for
 one species and in the test set for another, which breaks the
 independence of the test set; it is kept only to reproduce earlier
 training sets, and warns.
