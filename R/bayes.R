@@ -35,6 +35,21 @@
 #' @param validations Table returned by [read_validations()].
 #'
 #' @return A `brmsprior` object.
+#' @srrstats {BS1.2c} The prior is always explicit; this function
+#'   documents an example and the examples show how to build, inspect and
+#'   modify it.
+#' @examples
+#' if (requireNamespace("brms", quietly = TRUE)) {
+#'   ex <- system.file("extdata", "example", package = "sheepdog")
+#'   val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                      full.names = TRUE))
+#'   f <- tp ~ logit_conf + (1 | species)
+#'   prior <- calibration_prior(f, val)
+#'   print(prior)
+#'   # Any brmsprior can replace it, e.g. a narrower prior on the slope
+#'   prior[prior$class == "b", "prior"] <- "normal(1, 0.5)"
+#'   prior
+#' }
 #' @export
 calibration_prior <- function(formula, validations) {
   require_suggested("brms", "for Bayesian calibration models")
@@ -73,6 +88,27 @@ calibration_prior <- function(formula, validations) {
 #' @param rhat_max Largest acceptable R-hat.
 #' @param ess_min Smallest acceptable bulk and tail effective sample size.
 #'
+#' @details R-hat is the rank-normalised, folded split-R-hat and the effective
+#' sample sizes are the bulk and tail ESS of Vehtari et al. (2021,
+#' \doi{10.1214/20-BA1221}), computed by `posterior::summarise_draws()`
+#' over all the parameters of the model. The defaults (R-hat <= 1.01,
+#' bulk and tail ESS >= 400) are the limits recommended in that paper for
+#' 4 chains. Divergent transitions are read from the NUTS parameters of
+#' the fit (`brms::nuts_params()`), so only models sampled with NUTS can be
+#' checked.
+#'
+#' The diagnostics are summaries; inspect the chains as well. `plot(fit)`
+#' (a method of 'brms') draws the trace and the density of the
+#' post-warmup draws of each population-level parameter. To see the
+#' warmup next to the sampling phase, use `bayesplot::mcmc_trace()` with
+#' its `n_warmup` argument on `brms::as_draws_array(fit, inc_warmup =
+#' TRUE)`, which requires the warmup draws to have been saved by the Stan
+#' backend.
+#'
+#' @srrstats {BS4.3} The R-hat and ESS of Vehtari et al. (2021) are
+#'   documented with their reference.
+#' @srrstats {BS6.2} Trace plots, with and without the warmup, are
+#'   documented here.
 #' @return A one-row tibble with `max_rhat`, `min_ess_bulk`, `min_ess_tail`,
 #'   `n_divergent` and `ok`.
 #' @export
@@ -107,6 +143,18 @@ calibration_diagnostics <- function(fit, rhat_max = 1.01, ess_min = 400) {
 #'
 #' @return A `brmsfit` sampled from the prior, usable in
 #'   [plot_calibration()].
+#' @examples
+#' # Sampling from the prior compiles a Stan model, which takes minutes
+#' \dontrun{
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                    full.names = TRUE))
+#' f <- tp ~ logit_conf + (1 | species)
+#' prior_fit <- prior_predictive_calibration(f, val, calibration_prior(f, val),
+#'                                           chains = 2, seed = 1,
+#'                                           refresh = 0)
+#' plot_calibration_draws(prior_fit)
+#' }
 #' @export
 prior_predictive_calibration <- function(formula, validations, prior, ...) {
   require_suggested("brms", "for Bayesian calibration models")

@@ -31,16 +31,7 @@ detections for a night with detection.}
 \item{min_confidence}{Detections below this confidence are not scored.}
 
 \item{grid_step}{Models fitted with \code{engine = "brms"}: step of the grid
-of scores on which the posterior is computed.
-
-With a model fitted with \code{engine = "brms"}, the posterior of P(TP) is
-computed once on a grid of scores (step \code{grid_step}) for each site x
-species and assigned to the detections by their score rounded to the
-grid, so that the cost does not depend on the number of detections;
-the rounding error is small next to the uncertainty of the calibration.
-Each detection then gets the posterior mean (\code{p_tp}), a lower quantile
-(\code{p_tp_lower}) and the posterior probability that P(TP) >= \code{p_min}
-(\code{pr_reliable}). \code{\link[=detection_history]{detection_history()}} can use either rule.}
+of scores on which the posterior is computed.}
 
 \item{seed}{Seed of the choice of draws. The global random number
 generator is left as it was.}
