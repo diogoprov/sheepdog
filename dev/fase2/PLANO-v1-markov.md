@@ -1201,6 +1201,53 @@ razão de emissões. O próximo teste é no estágio 1: emissões menos rígidas
 faixa média, por exemplo por faixas de score, com a razão f₁/f₀ por faixa
 ancorada na precisão ponderada do ct12.
 
+### Estágio 1 por faixas de score (21/11/2026)
+
+`emissions_bins_curiango.R`: f₀ e f₁ constantes por faixa (< 0,1
+censurado; 0,1–0,2; 0,2–0,3; 0,3–0,4; ≥ 0,4). No estágio 2 só a razão
+f₁/f₀ por faixa importa. Os minutos com canto de cada faixa são a precisão
+ponderada do ct12 na faixa vezes os minutos da faixa no depósito (a
+referência pós-estratificada, faixa a faixa); f₁ sai desses minutos e f₀ do
+resto do censo, com 0,5 por faixa. Uma primeira versão tirou f₁ da fração
+ponderada dos positivos (`emissions_bins_pos.rds`, ajuste `binspos_m1`):
+os 20 positivos ≥ 0,4 dão 0,45 de f₁ nessa faixa, onde os 1.756 minutos
+(precisão 1) dão 0,53.
+
+Estágio 2 (`run_curiango_2stage.R`, Markov, 4 cadeias de 1.000 + 1.000,
+12 min): sem divergências, sem treedepth máximo, E-BFMI ≥ 0,96, R-hat
+1,00, ESS bulk ≥ 2.500. `ppc_curiango_2stage.R` passou a aceitar emissões
+por faixa: sorteia a faixa por f_w e reamostra o score entre os minutos do
+depósito naquela faixa.
+
+| Ajuste | ψ_c | θ̄ | ρ | Prevalência marginal (90%) |
+|---|---|---|---|---|
+| f₀ do censo, paramétrico (`census_m1`) | 0,39 | 0,138 | 4,67 | 0,057 (0,053 a 0,061) |
+| faixas, f₁ dos positivos (`binspos_m1`) | 0,42 | 0,116 | 4,49 | 0,053 (0,049 a 0,057) |
+| faixas, f₁ do censo (`bins_m1`) | 0,41 | 0,102 | 4,28 | **0,047 (0,043 a 0,050)** |
+| Referência pós-estratificada | | | | 0,033 (0,027 a 0,039) |
+
+Leave-one-out no ct12 com `bins_m1` (obs. contra pred.): 0,1–0,2: 0,013
+contra 0,023; 0,2–0,3: 0,155 contra 0,332 (6 positivos em 32); 0,3–0,4:
+0,29 contra 0,44 (3 em 9); longe de surto: 0,0063 contra 0,0097; vizinho de
+surto: 0,19 contra 0,39. No depósito, o modelo põe 4.742 minutos com canto
+contra 3.198 da referência; 1.427 deles nos 3.264 vizinhos de surto, onde a
+precisão do ct12 indica cerca de 630.
+
+PPC: P(y | anterior) passa (0,39 contra 0,38 a 0,42), a variância por noite
+quase passa (10,3 contra 6,7 a 10,0); y_rate (0,018 contra 0,022 a 0,028)
+e noites com algum score alto (0,25 contra 0,27 a 0,32) ainda acima.
+
+Leitura (interpretação): as emissões por faixa tiram cerca de 40% do
+excesso (de 0,057 para 0,047) e melhoram o agrupamento entre noites. O que
+sobra (1,4 vez a referência) está sobretudo nos vizinhos de surto e nas
+faixas de 0,2 a 0,4, onde a precisão do ct12 se apoia em 9 positivos. Este
+ajuste usa emissões pontuais; a incerteza do estágio 1 (29 positivos
+efetivos) ainda não foi propagada, e nas réplicas do bootstrap paramétrico
+ela alargou o intervalo de 0,053–0,061 para 0,043–0,086. Próximo passo:
+réplicas do bootstrap por noite do estágio 1 por faixas, como em
+`boot_ct12`. Se o intervalo agrupado não alcançar a referência, o excesso
+nos vizinhos de surto e o y_rate acima são o alvo de um HMM com surtos.
+
 ## Critério para levar o v1 de dois estágios ao crywolf (20/11/2026)
 
 Decidido com o Diogo: o v1 fica em `dev/fase2` até cumprir os três
@@ -1213,7 +1260,8 @@ critérios abaixo. Cumpridos, o pedido vai à sessão do crywolf como
    20/11: reprova (0,043 a 0,086 contra 0,019 a 0,035). Em 21/11, com
    f₀ do censo e com 3 estados, continua reprovando. A referência passa a
    ser a pós-estratificada por faixa de score, 0,033 (0,027 a 0,039); o
-   modelo com f₀ do censo dá 0,057 (0,053 a 0,061), ainda fora.*
+   modelo com f₀ do censo dá 0,057 (0,053 a 0,061), e com emissões por
+   faixa 0,047 (0,043 a 0,050), ainda fora, sem propagar o estágio 1.*
 2. **Cobertura do procedimento em dois estágios:** uma simulação com o
    estágio 1 ponderado, o bootstrap por noite e o estágio 2 com réplicas
    cobre ψ, θ̄ e ψθ̄, pelas regras V1/V2 da validação do v1.
