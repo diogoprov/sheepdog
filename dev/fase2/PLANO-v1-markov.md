@@ -1032,3 +1032,83 @@ Liliana, em `results/curiango_v1/treino/` (fora do git). Rodado com
   por esse motivo.
 - 269 dos 377 nomes de `compau` começam com "teste.". É prefixo de nome de
   arquivo; nenhum desses clipes casa com um minuto verificado.
+
+### Item 4: prevalência marginal do modelo × referência por desenho (20/11/2026)
+
+`curiango_prevalencia_marginal.R`. O ψθ̄ = 0,059 é a prevalência de uma
+noite típica (ψ com as covariáveis no centro, θ̄ na noite mediana). A
+referência de Hájek é a média sobre todos os minutos. Para comparar a mesma
+grandeza, calculei a prevalência marginal do modelo: para cada draw, a média
+de ψᵢ · P(wₙ = 1 | zᵢ = 1) sobre os 97.806 minutos, com P(w = 1 | z = 1)
+dada pela recursão de Markov sem as emissões. Foram 100 draws de cada uma
+das 20 réplicas. A referência ganhou um bootstrap por sítio-noite (696
+sítio-noites com verificados de ct01+ct02, π1 fixo, 2.000 réplicas).
+Saída em `results/curiango_v1/boot_ct12/prevalencia_marginal.rds`.
+
+| Quantidade | Mediana | 90% |
+|---|---|---|
+| Modelo, ψθ̄ (noite típica) | 0,059 | 0,038 a 0,088 |
+| Modelo, prevalência marginal nos minutos | **0,062** | 0,043 a 0,086 |
+| Referência de Hájek (ct01+ct02, n = 960, 43 positivos) | **0,026** | 0,019 a 0,035 |
+| Proporção sem pesos | 0,045 | |
+
+**Os intervalos não se sobrepõem.** Em todos os draws, a prevalência
+marginal fica acima da referência. Corrigir a grandeza não fecha a
+diferença: a média sobre os minutos sobe um pouco em relação à noite
+típica.
+
+Onde está o excesso. Minutos com canto por faixa do score custom: o modelo
+dá prevalência × massa de f₁ na faixa × N; a referência dá a soma de
+y / π1 em ct01+ct02.
+
+| Faixa | Modelo (90%) | Referência HT | Positivos | Minutos no depósito |
+|---|---|---|---|---|
+| < 0,1 (censurado) | 193 (68 a 430) | 0 | 0 | 39.956 |
+| 0,1 a 0,4 | 2.928 (1.489 a 4.917) | 1.343 | 23 | 56.094 |
+| 0,4 a 0,7 | 1.572 (970 a 1.957) | 412 | 8 | 858 |
+| ≥ 0,7 | 1.399 (859 a 1.816) | 817 | 12 | 898 |
+
+- Nas faixas altas, o modelo prevê mais minutos com canto do que o
+  depósito inteiro tem minutos (1.572 contra 858; 1.399 contra 898). É o
+  mesmo excesso que o PPC de 19/11 mostrou (fração acima de logit 0,4:
+  0,030 a 0,036 previsto, 0,018 observado), agora na escala da
+  prevalência.
+- A forma de f₁ concorda com a referência. A massa da referência por faixa
+  (0,52 / 0,16 / 0,32 dos positivos ponderados acima de 0,1) se parece com
+  a f₁ do estágio 1 (0,47 / 0,28 / 0,23).
+- Estimativa só com as emissões, sem a estrutura dinâmica: dada a fração
+  observada de minutos acima de 0,4 (0,018) e a massa de f₀ e f₁ acima
+  desse corte, a prevalência implícita é 0,035 (0,029 a 0,051); com o corte
+  em 0,7, 0,040 (0,030 a 0,067). Esse intervalo encosta no da referência e
+  fica abaixo do modelo. (A mesma conta na fração censurada dá 0,13; ali
+  f₀ põe 0,46 de massa e o depósito tem 0,41, de modo que as emissões
+  também não fecham entre si na cauda baixa.)
+
+Leitura (interpretação): o excesso vem do estágio 2, não da referência. Com
+as emissões fixas, a estrutura latente (ψ por sítio-noite, θ com
+covariáveis, ρ comum) parece não reproduzir ao mesmo tempo as sequências de
+minutos e a contagem de scores altos. O ajuste fecha as sequências
+(ρ ≈ 4,5) à custa de chamar de canto minutos de score baixo e médio:
+2.928 na faixa de 0,1 a 0,4, contra 1.343 da referência. A incerteza de f₁
+(29 positivos efetivos) agrava, mas não explica tudo: a estimativa só pelas
+emissões já fica abaixo do modelo. Os falsos negativos da anotadora
+puxariam a referência para baixo, mas teriam de ser mais da metade dos
+cantos para fechar a diferença.
+
+**Critério 1 do item 8 não cumprido.**
+
+## Critério para levar o v1 de dois estágios ao crywolf (20/11/2026)
+
+Decidido com o Diogo: o v1 fica em `dev/fase2` até cumprir os três
+critérios abaixo. Cumpridos, o pedido vai à sessão do crywolf como
+`fp_occu_score()` experimental. Não se mexe no `~/GitHub/crywolf` daqui.
+
+1. **Concordância com a referência por desenho:** a prevalência marginal do
+   modelo e a referência de Hájek (com bootstrap por sítio-noite) têm
+   intervalos de 90% que se sobrepõem, no Curiango ct01+ct02. *Situação em
+   20/11: reprova (0,043 a 0,086 contra 0,019 a 0,035).*
+2. **Cobertura do procedimento em dois estágios:** uma simulação com o
+   estágio 1 ponderado, o bootstrap por noite e o estágio 2 com réplicas
+   cobre ψ, θ̄ e ψθ̄, pelas regras V1/V2 da validação do v1.
+3. **Segundo conjunto:** o procedimento funciona na rodada aleatória do
+   FrogNet (com o Massao), com convergência, PPC e o critério 1.
