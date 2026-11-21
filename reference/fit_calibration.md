@@ -111,6 +111,24 @@ columns named in the formula enter the model: the other columns of
 are neither used nor stored in the fitted object. The species and site
 levels are stored in the attribute `sheepdog_levels`.
 
+## Input checks and missing values
+
+`validations` must be a data frame (a tibble, `data.frame` or
+`data.table`; it is converted to a tibble) with the columns `site` and
+`species` (factors or character vectors; ordered factors are used as
+unordered), `tp` (0/1, or logical) and every variable of `formula`,
+usually `logit_conf` (numeric, without NaN or infinite values; extra
+classes such as 'units' are dropped). The response of `formula` must be
+`tp`. Rows with a missing value in a variable of the formula are left
+out with a message; this policy is fixed, the same in both engines, and
+no missing value reaches the fitting function. Before the fit, an error
+is raised when all the clips have the same verdict or when the fixed
+effects are collinear (rank-deficient model matrix), a warning when the
+verdicts are completely separated by the score (the maximum likelihood
+slope is then infinite), and a message lists species with a single
+verdict class or separated verdicts. With `engine = "brms"`, `prior`
+must be a `brmsprior` object.
+
 ## Maximum likelihood fit
 
 Models with random effects are fitted by
@@ -201,10 +219,10 @@ if (requireNamespace("lme4", quietly = TRUE)) {
   confint(fit, method = "Wald", parm = "beta_")
 }
 #> (Intercept)  logit_conf 
-#>  -0.2060526   1.6030184 
+#>  -0.2060523   1.6030183 
 #>                  2.5 %    97.5 %
-#> (Intercept) -0.9305439 0.5184387
-#> logit_conf   1.4584249 1.7476119
+#> (Intercept) -0.9305499 0.5184454
+#> logit_conf   1.4584248 1.7476119
 
 # Bayesian fit: the prior is always given explicitly. Fitting compiles a
 # Stan model, which takes minutes, so this part is not run here.

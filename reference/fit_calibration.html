@@ -166,6 +166,26 @@ used nor stored in the fitted object. The species and site levels are
 stored in the attribute <code>sheepdog_levels</code>.</p>
     </div>
     <div class="section level2">
+    <h2 id="input-checks-and-missing-values">Input checks and missing values<a class="anchor" aria-label="anchor" href="#input-checks-and-missing-values"></a></h2>
+
+
+<p><code>validations</code> must be a data frame (a tibble, <code>data.frame</code> or
+<code>data.table</code>; it is converted to a tibble) with the columns <code>site</code> and
+<code>species</code> (factors or character vectors; ordered factors are used as
+unordered), <code>tp</code> (0/1, or logical) and every variable of <code>formula</code>,
+usually <code>logit_conf</code> (numeric, without NaN or infinite values; extra
+classes such as 'units' are dropped). The response of <code>formula</code> must be
+<code>tp</code>. Rows with a missing value in a variable of the formula are left
+out with a message; this policy is fixed, the same in both engines,
+and no missing value reaches the fitting function. Before the fit, an
+error is raised when all the clips have the same verdict or when the
+fixed effects are collinear (rank-deficient model matrix), a warning
+when the verdicts are completely separated by the score (the maximum
+likelihood slope is then infinite), and a message lists species with a
+single verdict class or separated verdicts. With <code>engine = "brms"</code>,
+<code>prior</code> must be a <code>brmsprior</code> object.</p>
+    </div>
+    <div class="section level2">
     <h2 id="maximum-likelihood-fit">Maximum likelihood fit<a class="anchor" aria-label="anchor" href="#maximum-likelihood-fit"></a></h2>
 
 
@@ -241,10 +261,10 @@ binned posterior predictive check of <code><a href="calibration_ppc.html">calibr
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">fit</span>, method <span class="op">=</span> <span class="st">"Wald"</span>, parm <span class="op">=</span> <span class="st">"beta_"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  logit_conf </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.2060526   1.6030184 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.2060523   1.6030183 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  2.5 %    97.5 %</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept) -0.9305439 0.5184387</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> logit_conf   1.4584249 1.7476119</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept) -0.9305499 0.5184454</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> logit_conf   1.4584248 1.7476119</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Bayesian fit: the prior is always given explicitly. Fitting compiles a</span></span></span>
 <span class="r-in"><span><span class="co"># Stan model, which takes minutes, so this part is not run here.</span></span></span>

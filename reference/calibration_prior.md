@@ -43,7 +43,9 @@ A `brmsprior` object.
   occasion (`tp ~ logit_conf + temp`): `normal(0, 1)`, which suits a
   standardised covariate. 'brms' bounds a whole class, not a single
   coefficient, so with such terms the slope of `logit_conf` keeps
-  `normal(1, 1)` without the truncation at 0;
+  `normal(1, 1)` without the truncation at 0. A warning is raised when
+  such a numeric covariate is not standardised (absolute mean above 0.25
+  or standard deviation outside 0.5 to 2);
 
 - `sd` (standard deviations of the random effects): `exponential(1)`;
 

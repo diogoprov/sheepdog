@@ -147,7 +147,7 @@ tables <- setNames(file.path(ex, "birdnet", sites,
                              "BirdNET_SelectionTable.txt"), sites)
 fit <- fit_calibration(read_validations(files),
                        calibration_models()$m2_species_slope)
-#> lme4: 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.
+#> 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.
 scored <- score_detections(tables, fit)
 #> Scoring ARA (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA/BirdNET_SelectionTable.txt)...
 #>   1753 detections of calibrated species (0 of species NOT calibrated were dropped).

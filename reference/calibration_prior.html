@@ -120,7 +120,9 @@ and assuming that a higher score never lowers P(TP);</p></li>
 occasion (<code>tp ~ logit_conf + temp</code>): <code>normal(0, 1)</code>, which suits a
 standardised covariate. 'brms' bounds a whole class, not a single
 coefficient, so with such terms the slope of <code>logit_conf</code> keeps
-<code>normal(1, 1)</code> without the truncation at 0;</p></li>
+<code>normal(1, 1)</code> without the truncation at 0. A warning is raised when
+such a numeric covariate is not standardised (absolute mean above
+0.25 or standard deviation outside 0.5 to 2);</p></li>
 <li><p><code>sd</code> (standard deviations of the random effects): <code>exponential(1)</code>;</p></li>
 <li><p><code>cor</code> (correlations between random effects): <code>lkj(2)</code>, which pulls
 the correlations away from +-1 (the singular fits of m4 with 'lme4').</p></li>

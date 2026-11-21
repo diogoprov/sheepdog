@@ -55,6 +55,49 @@
   and
   [`compare_thresholds()`](https://provetelab.org/sheepdog/reference/compare_thresholds.md));
   it is now in the Details.
+- Input checks (rOpenSci standards, phase 3).
+  [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
+  and
+  [`compare_calibration_models()`](https://provetelab.org/sheepdog/reference/compare_calibration_models.md)
+  check that `validations` is a data frame with the needed columns, that
+  `tp` is 0/1 and the formula’s response, and convert the table to a
+  tibble; rows with missing values in the formula’s variables are left
+  out with a message. Before a fit,
+  [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
+  stops when all verdicts are equal or the fixed effects are collinear,
+  warns when the verdicts are completely separated by the score, and
+  reports species with one verdict class; with `engine = "brms"`,
+  `prior` must be a `brmsprior`.
+  [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md)
+  and
+  [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)
+  stop on confidence scores that are NaN, infinite or outside 0 to 1,
+  and
+  [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md)
+  reports the clips left out for a missing score and the scores bounded
+  before the logit. Scalar arguments of
+  [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md),
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md),
+  [`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md),
+  [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md),
+  [`history_draws()`](https://provetelab.org/sheepdog/reference/history_draws.md),
+  [`calibration_diagnostics()`](https://provetelab.org/sheepdog/reference/calibration_diagnostics.md),
+  [`calibration_ppc()`](https://provetelab.org/sheepdog/reference/calibration_ppc.md)
+  and
+  [`plot_calibration_draws()`](https://provetelab.org/sheepdog/reference/plot_calibration_draws.md)
+  are checked for length and range.
+  [`calibration_prior()`](https://provetelab.org/sheepdog/reference/calibration_prior.md)
+  warns when a covariate given the normal(0, 1) prior is not
+  standardised. Output files of
+  [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md),
+  [`threshold_record()`](https://provetelab.org/sheepdog/reference/threshold_record.md),
+  [`warning_signs()`](https://provetelab.org/sheepdog/reference/warning_signs.md)
+  and
+  [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md)
+  get their extension when it is missing.
+- [`compare_calibration_models()`](https://provetelab.org/sheepdog/reference/compare_calibration_models.md)
+  now stops when a model uses a column that `validations` lacks, instead
+  of warning that the fit failed in every fold.
 
 ## sheepdog 3.4.1
 
