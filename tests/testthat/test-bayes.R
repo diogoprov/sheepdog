@@ -94,3 +94,44 @@ test_that("the brms backend scores, builds histories and propagates draws", {
   expect_true(all(md$summary$frequency_lower <= md$summary$frequency_mean))
   expect_true(all(md$summary$frequency_mean <= md$summary$frequency_upper))
 })
+
+#' @srrstats {BS5.0} The seed given to Stan is returned as
+#'   `attr(fit, "sheepdog_seed")`, and `calibrate()` passes its own `seed`
+#'   to the Bayesian refit.
+test_that("fit_calibration() passes a seed to brms and keeps it", {
+  skip_if_not_installed("brms")
+  args <- NULL
+  local_mocked_bindings(
+    brm = function(...) {
+      args <<- list(...)
+      structure(list(), class = "brmsfit")
+    },
+    .package = "brms")
+  local_mocked_bindings(calibration_diagnostics = function(fit, ...) {
+    tibble::tibble(max_rhat = 1, min_ess_bulk = 1000, min_ess_tail = 1000,
+                   n_divergent = 0L, ok = TRUE)
+  })
+  ex <- system.file("extdata", "example", package = "sheepdog")
+  val <- suppressMessages(read_validations(list.files(
+    file.path(ex, "validation"), full.names = TRUE)))
+  f <- tp ~ logit_conf
+  pr <- calibration_prior(f, val)
+
+  fit <- fit_calibration(val, f, engine = "brms", prior = pr, seed = 42)
+  expect_identical(args$seed, 42)
+  expect_identical(attr(fit, "sheepdog_seed"), 42)
+
+  # sem seed: um seed sorteado do RNG do R, reprodutivel com set.seed()
+  s1 <- withr::with_seed(7, attr(fit_calibration(
+    val, f, engine = "brms", prior = pr), "sheepdog_seed"))
+  s2 <- withr::with_seed(7, attr(fit_calibration(
+    val, f, engine = "brms", prior = pr), "sheepdog_seed"))
+  expect_identical(s1, s2)
+  expect_identical(args$seed, s2)
+})
+
+test_that("calibrate() gives its seed to the brms refit unless brms_args has one", {
+  expect_identical(brms_args_with_seed(list(chains = 2), 2026)$seed, 2026)
+  expect_identical(brms_args_with_seed(list(seed = 1), 2026)$seed, 1)
+  expect_identical(brms_args_with_seed(list(), 5), list(seed = 5))
+})

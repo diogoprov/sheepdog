@@ -28,7 +28,7 @@ in passive acoustic monitoring (PAM). It runs three stages:
 3. **Community matrices.** Turn the calibrated histories into
    effort-standardised site x month matrices for multivariate ordinations.
 
-sheepdog was developed for the FrogNet project (anurans of the Pantanal and
+sheepdog was developed for the [DiverSons project](https://provetelab.org/projects.html#diversons-acoustic-monitoring-of-frogs) (anurans of the Pantanal and
 Cerrado, Mato Grosso do Sul, Brazil), but it works with the output of any
 BirdNET pretrained and custom classifier. `export_occupancy_data()` writes its
 validation and calibration outputs in a documented format for occupancy models
@@ -146,7 +146,7 @@ Each stage is also available as separate functions:
 | 3. Community matrices | `cell_status()`, `suggest_core_species()`, `community_matrices()`, `community_matrices_draws()` |
 
 The [articles](https://provetelab.org/sheepdog/articles/) cover each stage
-with runnable examples; `vignette("frognet-workflow")` shows the complete
+with runnable examples; `vignette("diversons-workflow")` shows the complete
 workflow.
 
 The selection tables must have the standard BirdNET/Raven columns
@@ -214,7 +214,29 @@ The selected model can also be fitted in a Bayesian framework with 'brms'
 posterior predictive and prior sensitivity checks. Each detection then gets
 the posterior probability that it is reliable, and the uncertainty of the
 calibration can be propagated to the detection histories and the community
-matrices (`vignette("bayesian-calibration")`).
+matrices (`vignette("bayesian-calibration")`). The prior is never implicit:
+`calibration_prior()` builds an example centred on an already calibrated
+score, which can be inspected, changed and checked before the fit.
+
+```r
+val <- read_validations(c("UEM/validation_by_clip.csv",
+                          "ARA/validation_by_clip.csv"))
+f <- tp ~ logit_conf + (logit_conf | species) + (1 | site:species)
+prior <- calibration_prior(f, val)          # a brmsprior; edit as needed
+prior_fit <- prior_predictive_calibration(f, val, prior, seed = 1)
+plot_calibration_draws(prior_fit)           # what the prior implies
+fit <- fit_calibration(val, f, engine = "brms", prior = prior, seed = 1)
+calibration_diagnostics(fit)                # R-hat, ESS, divergences
+```
+
+How this relates to existing implementations: a per-species logistic
+calibration on logit(score), as described by Wood & Kahl (2024), can be
+fitted by hand with `stats::glm()` on the reviewed clips of one species;
+it is the model `m0_global` of `calibration_models(single_species = TRUE)`.
+sheepdog adds the multi-species hierarchical
+models, their comparison by cross-validation, the Bayesian fit with
+propagation of its uncertainty, the sampling designs with known inclusion
+probabilities, and the export to occupancy models with false positives.
 
 ## Integration with crywolf
 
@@ -247,8 +269,11 @@ scripts are preserved in the
 
 Developed by **Diogo B. Provete** (Universidade Federal de Mato Grosso do Sul),
 from the protocol design of **Larissa S. M. Sugai** (Cornell Lab of
-Ornithology) and **Liliana Piatti** (UFMS), within the FrogNet project. Code
+Ornithology) and **Liliana Piatti** (UFMS), within the [DiverSons project](https://provetelab.org/projects.html#diversons-acoustic-monitoring-of-frogs). Code
 written with AI assistance (Claude, Anthropic), with human review and tests.
+
+The DiverSons project (principal investigator: Liliana Piatti) was funded by
+FUNDECT (Termo de Outorga 95/2023) from July 2023 to July 2026.
 
 If sheepdog is useful in your work, please cite it (GitHub's "Cite this
 repository" button uses `CITATION.cff`, and `citation("sheepdog")` gives the
@@ -261,6 +286,14 @@ same reference in R):
 The hex sticker uses a dog silhouette by Mozillian from
 [PhyloPic](https://www.phylopic.org/images/d3e8133c-e669-4881-9111-b44145f94212)
 (CC0 1.0).
+
+## Life cycle
+
+sheepdog is stable and actively maintained (see the badge above). Version
+numbers follow semantic versioning; breaking changes come with a major
+version, an entry in `NEWS.md` and, when results change, a migration
+article. The full statement is in the
+[contributing guide](https://github.com/diogoprov/sheepdog/blob/main/.github/CONTRIBUTING.md#life-cycle).
 
 ## Contributing
 

@@ -26,6 +26,10 @@ please open an issue first so that we can agree on the approach.
 1. Fork the repository and create a branch from `main`.
 2. Make your change. Document new or changed functions with
    [roxygen2](https://roxygen2.r-lib.org) and run `devtools::document()`.
+   The documentation also runs the roclet of
+   [srr](https://docs.ropensci.org/srr/), which tracks the rOpenSci
+   statistical standards, so install srr first
+   (`install.packages("srr", repos = "https://ropensci-review-tools.r-universe.dev")`).
 3. Add tests with [testthat](https://testthat.r-lib.org) under
    `tests/testthat/`. Tests that need Stan, `crywolf` or other optional
    packages must be skipped when those packages are missing.
@@ -34,6 +38,40 @@ please open an issue first so that we can agree on the approach.
 5. Add a bullet to the top of `NEWS.md` describing the change.
 6. Open a pull request against `main`. Continuous integration runs
    `R CMD check` on Windows, macOS and Linux and reports test coverage.
+
+## Tests that fit Stan models
+
+The default test run (`devtools::test()`, `R CMD check`) never compiles a
+Stan model: the code paths of `engine = "brms"` are tested with a mocked
+`brms::brm()`. The tests that fit real Bayesian models are switched on by an
+environment variable:
+
+```r
+Sys.setenv(SHEEPDOG_TEST_BRMS = "true")
+devtools::test(filter = "bayes|calibrated_thresholds")
+```
+
+They need 'brms' with a working Stan backend ('rstan' or 'cmdstanr' with
+CmdStan installed) and the suggested packages 'posterior' and 'lme4'. They
+fit small models to the example data in
+`system.file("extdata", "example", package = "sheepdog")`; compilation
+dominates the run time, a few minutes on a laptop, and memory use is that of
+a normal Stan compilation. Run them before changing `fit_calibration()`,
+`score_detections()`, `history_draws()` or any other function that handles a
+`brmsfit`.
+
+## Life cycle
+
+sheepdog is stable and actively maintained. Its version numbers follow
+[semantic versioning](https://semver.org): a change in the major version
+(as in 2.x to 3.0.0) may break existing code, and is documented in `NEWS.md`
+and, when it changes results, in a migration article such as
+`vignette("migration-3.0.0")`. Changes to defaults that alter results are
+announced with a warning before they take effect. Files written by earlier
+versions (clip manifests, validation tables and detection histories, back
+to the scripts of v1.2.0) remain readable. Planned work is tracked in the
+[issues](https://github.com/diogoprov/sheepdog/issues), including the
+alignment with the rOpenSci standards for statistical software.
 
 ## Code style
 

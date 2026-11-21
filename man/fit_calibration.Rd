@@ -24,12 +24,16 @@ fit_calibration(
 from \code{\link[=calibration_prior]{calibration_prior()}}. Required.}
 
 \item{...}{\code{engine = "brms"}: further arguments for \code{brms::brm()} (e.g.
-\code{chains}, \code{iter}, \code{cores}, \code{backend}, \code{seed}).}
+\code{chains}, \code{iter}, \code{cores}, \code{backend}, \code{seed}). Without \code{seed}, one is
+drawn from R's random number generator (so \code{set.seed()} before the
+call makes the fit reproducible) and passed to \code{brms::brm()}.}
 }
 \value{
 A \code{glm}, \code{glmerMod} or \code{brmsfit} model, with the attribute
 \code{sheepdog_levels} (the species and site levels), used by
-\code{\link[=score_detections]{score_detections()}} and \code{\link[=plot_calibration]{plot_calibration()}}.
+\code{\link[=score_detections]{score_detections()}} and \code{\link[=plot_calibration]{plot_calibration()}}. A \code{brmsfit} also
+carries the attribute \code{sheepdog_seed}, the seed given to Stan, so that
+the fit can be repeated.
 }
 \description{
 Fits a calibration model to all the reviewed clips. The species and
@@ -56,4 +60,101 @@ runs and a warning is raised when R-hat, the effective sample sizes or
 the divergent transitions fail the usual limits. Check the prior with
 \code{\link[=prior_predictive_calibration]{prior_predictive_calibration()}}, the fit with \code{brms::pp_check()} and
 the sensitivity to the prior with \code{\link[=calibration_sensitivity]{calibration_sensitivity()}}.
+}
+\section{Formula and model matrix}{
+
+The formula uses the syntax of 'lme4' for random effects (\code{(term | group)}) and is turned into model matrices by the fitting function
+itself: \code{stats::glm()} for a formula without random effects,
+\code{lme4::glmer()} otherwise, or \code{brms::brm()}. sheepdog does not build
+the matrices. The response is \code{tp} (1 = true positive, 0 = false
+positive) and the predictor of the score is \code{logit_conf}, the logit of
+the BirdNET confidence bounded at 1e-4 and 1 - 1e-4 (see
+\code{\link[=read_validations]{read_validations()}}); the inverse transform, from the linear
+predictor to P(TP), is \code{stats::plogis()}. Only the columns named in the
+formula enter the model: the other columns of \code{validations} (for
+example those kept with \code{keep} in \code{\link[=read_validations]{read_validations()}}) are neither
+used nor stored in the fitted object. The species and site levels are
+stored in the attribute \code{sheepdog_levels}.
+}
+
+\section{Maximum likelihood fit}{
+
+Models with random effects are fitted by \code{lme4::glmer()} with
+\code{lme4::glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))}: the bound optimisation by quadratic approximation, with up to
+100000 function evaluations, a larger budget than the 'lme4' default,
+for the correlated random slopes of the larger calibration models. The
+convergence tolerances are those of 'lme4' and
+cannot be changed from sheepdog; convergence warnings of 'lme4' are
+passed on. Models without random effects use the iteratively
+reweighted least squares of \code{stats::glm()} with its default control.
+}
+
+\section{Bayesian computation}{
+
+With \code{engine = "brms"}, the posterior is sampled with the No-U-Turn
+Sampler (NUTS) of Stan (Carpenter et al. 2017,
+\doi{10.18637/jss.v076.i01}) through 'brms' (Bürkner 2017,
+\doi{10.18637/jss.v080.i01}). The computational settings are those of
+\code{brms::brm()} unless they are given in \code{...}: 4 chains of 2000
+iterations each, of which the first half (\code{warmup = floor(iter / 2)})
+is warmup, without thinning (\code{thin = 1}), and random initial values
+(\code{init = NULL}). Initial values can be set with \code{init}, passed on to
+\code{brms::brm()}; to start from a previous fit, pass its posterior means
+as \code{init} or refit the model. \code{stats::update()} on the returned
+\code{brmsfit} runs the sampler again but returns an object without the
+attributes \code{sheepdog_levels} and \code{sheepdog_seed}, so a model refitted
+that way cannot be passed to \code{\link[=score_detections]{score_detections()}}; call
+\code{fit_calibration()} again instead.
+
+Only NUTS is supported. Other algorithms of \code{brms::brm()} (\code{algorithm = "meanfield"}, for instance) can be passed through \code{...}, but
+\code{\link[=calibration_diagnostics]{calibration_diagnostics()}}, which reads the NUTS parameters, then
+fails. The convergence checks of \code{\link[=calibration_diagnostics]{calibration_diagnostics()}} always run
+after the fit and cannot be switched off; a model that fails them
+raises a warning, which \code{suppressWarnings()} silences. sheepdog has no
+verbosity argument of its own: the progress output of Stan is
+controlled by \code{refresh} (e.g. \code{refresh = 0}, passed on to the Stan
+backend) and \code{silent} (e.g. \code{silent = 2}) of \code{brms::brm()}, and the
+messages of sheepdog by \code{suppressMessages()}.
+}
+
+\section{Methods for the fitted model}{
+
+The returned object keeps the class of the fitting function, so the
+methods of \code{stats}, 'lme4' and 'brms' apply. Confidence intervals of
+the coefficients come from \code{stats::confint()} for \code{glm} and \code{glmerMod}
+models (profile likelihood by default; \code{method = "Wald"} for a
+faster approximation of a \code{glmerMod}), and credible intervals from
+\code{brms::posterior_interval()} or \code{summary()} for a \code{brmsfit}.
+\code{stats::residuals()} returns deviance residuals for \code{glm} and
+\code{glmerMod} models and, for a \code{brmsfit}, the posterior summary of the
+response residuals (observed minus fitted probability). With a binary response, residuals take
+two values for each fitted probability and say little one by one; check
+the fit with the calibration intercept and slope of
+\code{\link[=compare_calibration_models]{compare_calibration_models()}}, with \code{\link[=calibration_quality]{calibration_quality()}}, or with the
+binned posterior predictive check of \code{\link[=calibration_ppc]{calibration_ppc()}} for a
+\code{brmsfit}.
+}
+
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+# Maximum likelihood, one species-level random intercept
+if (requireNamespace("lme4", quietly = TRUE)) {
+  fit <- fit_calibration(val, tp ~ logit_conf + (1 | species))
+  print(lme4::fixef(fit))
+  confint(fit, method = "Wald", parm = "beta_")
+}
+
+# Bayesian fit: the prior is always given explicitly. Fitting compiles a
+# Stan model, which takes minutes, so this part is not run here.
+\dontrun{
+f <- tp ~ logit_conf + (1 | species)
+prior <- calibration_prior(f, val)
+fit_b <- fit_calibration(val, f, engine = "brms", prior = prior,
+                         chains = 4, iter = 2000, seed = 1,
+                         refresh = 0)
+calibration_diagnostics(fit_b)
+brms::posterior_interval(fit_b)
+}
 }

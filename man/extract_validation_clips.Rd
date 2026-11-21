@@ -46,7 +46,7 @@ are still created), but \code{status} tells what would be done. Useful to
 check a selection before cutting.}
 
 \item{classifier}{Label of the classifier that produced the selection
-tables (e.g. \code{"FrogNet v2, BirdNET-Analyzer 2.4.0"}), recorded in
+tables (e.g. \code{"DiverSons v2, BirdNET-Analyzer 2.4.0"}), recorded in
 \code{extraction_info.csv}. \code{NULL} records \code{NA}.}
 }
 \value{

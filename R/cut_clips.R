@@ -130,7 +130,7 @@ pack_clips <- function(manifest, output_dir) {
 #' @param make_zip Zip one package per species (skipped when `simulate` is
 #'   `TRUE`).
 #' @param classifier Label of the classifier that produced the selection
-#'   tables (e.g. `"FrogNet v2, BirdNET-Analyzer 2.4.0"`), recorded in
+#'   tables (e.g. `"DiverSons v2, BirdNET-Analyzer 2.4.0"`), recorded in
 #'   `extraction_info.csv`. `NULL` records `NA`.
 #'
 #' @return The manifest written to `clip_manifest.csv`, invisibly.
