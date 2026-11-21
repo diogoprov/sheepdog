@@ -16,6 +16,9 @@ Os dados do DiverSons não são distribuídos com o pacote, de modo que os chunk
 que os leem não são executados; a última seção roda com os arquivos de
 exemplo incluídos no pacote.
 
+O DiverSons (coordenação de Liliana Piatti) foi financiado pela FUNDECT
+(Termo de Outorga 95/2023) de julho de 2023 a julho de 2026.
+
 ```{r, eval = FALSE}
 library(sheepdog)
 ```

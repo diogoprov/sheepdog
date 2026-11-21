@@ -19,6 +19,9 @@ data are not distributed with the package, so the chunks that read them are
 not run; the last section runs on the example files shipped with the
 package.
 
+DiverSons (principal investigator: Liliana Piatti) was funded by FUNDECT
+(Termo de Outorga 95/2023) from July 2023 to July 2026.
+
 ```{r, eval = FALSE}
 library(sheepdog)
 ```
