@@ -1384,6 +1384,54 @@ nas simulações. Isso é compatível com cantos de score mais baixo
 concentrados perto dos surtos (f₁ que depende da posição no surto) ou com
 scores dependentes entre minutos vizinhos dado w.
 
+### Teste das emissões: independência dado w (21/11/2026)
+
+`curiango_teste_emissoes.R`. No v1, dado w, a faixa de score de um minuto
+não depende dos scores dos outros minutos. Então, nos verificados do ct12,
+P(faixa | w, contexto) deve ser igual nos dois contextos, quando o contexto
+depende só dos vizinhos: "surto" (algum minuto a até K passos, sem lacuna,
+com score ≥ 0,4, sem contar o próprio) ou "longe". Pesos 1/π₁; bootstrap
+por sítio-noite (2.000, semente 2026). Com K = 2 (K = 1 entre parênteses):
+
+| | < 0,1 | 0,1–0,2 | 0,2–0,3 | 0,3–0,4 | ≥ 0,4 |
+|---|---|---|---|---|---|
+| w = 1, longe (16 positivos) | 0 | 0,34 | 0,39 | 0 | 0,27 |
+| w = 1, surto (27 positivos) | 0 | 0,21 | 0,08 | 0,13 | 0,57 |
+| w = 0, longe (888 negativos) | 0,47 | 0,50 | 0,02 | 0,01 | 0 |
+| w = 0, surto (29 negativos) | 0,22 | 0,65 | 0,14 | 0 | 0 |
+
+* **f₁ depende do contexto.** P(≥ 0,4 | w = 1): 0,57 perto de surto contra
+  0,27 longe; diferença 0,30 (90%: 0,02 a 0,56; K = 1: 0,35, 0,05 a 0,59).
+* **f₀ também.** Os negativos perto de surto têm scores mais altos: 0,79
+  deles na faixa de 0,1 a 0,4 (90%: 0,63 a 0,91), contra 0,53 longe (0,49
+  a 0,57), e só 0,22 abaixo de 0,1, contra 0,47 longe.
+* Juntando: na faixa de 0,1 a 0,4, a razão f₁/f₀ perto de surto é
+  exp(−0,93) ≈ 0,40 vez a de longe (90%: 0,21 a 0,71; K = 1: 0,38, 0,19 a
+  0,74). Um score médio ao lado de um surto indica canto cerca de 2,5 vezes
+  menos do que o mesmo score isolado.
+* A referência pós-estratificada por faixa × contexto quase não muda:
+  0,031 (90%: 0,026 a 0,036) contra 0,033 por faixa.
+* ct03 (descritivo): há 4 negativos com score ≥ 0,4 (3 longe, 1 perto), o
+  que o ct12 não mostrou; a precisão 1 na faixa alta é aproximada.
+
+Os números são pequenos (27 positivos e 29 negativos verificados perto de
+surto), mas as duas violações vão no mesmo sentido e os intervalos excluem
+zero.
+
+Leitura (interpretação): o v1 usa uma razão f₁/f₀ única por faixa, tirada
+sobretudo de minutos longe de surto, e a cadeia de Markov já sobe a chance
+a priori de canto ao lado de um surto. Perto de surto, a mesma razão conta
+o contexto duas vezes: os minutos de score médio ali são em boa parte
+negativos com score inflado (cauda do canto vizinho, outra espécie no mesmo
+evento), não canto. Isso explica onde estava o excesso (1.427 minutos com
+canto nos vizinhos de surto contra cerca de 630 pela precisão do ct12) e o
+y_rate acima no PPC, e é compatível com a simulação, que mantinha as
+emissões independentes e não reproduzia o viés. O conserto natural fica no
+estágio 1 e não exige mudar o Stan, que já recebe log-emissões por minuto:
+emissões por faixa × contexto. Usando só o minuto anterior como contexto,
+p(sₙ | wₙ, sₙ₋₁), a verossimilhança continua própria (HMM autorregressivo);
+usando os dois lados, vira verossimilhança composta.
+
 ## Critério para levar o v1 de dois estágios ao crywolf (20/11/2026)
 
 Decidido com o Diogo: o v1 fica em `dev/fase2` até cumprir os três
