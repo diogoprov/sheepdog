@@ -82,7 +82,7 @@
 <h2 id="proposing-a-change">Proposing a change<a class="anchor" aria-label="anchor" href="#proposing-a-change"></a></h2>
 <p>Small fixes (typos, documentation) can go straight to a pull request. For larger changes, such as a new sampling design or a new calibration model, please open an issue first so that we can agree on the approach.</p>
 <ol style="list-style-type: decimal"><li>Fork the repository and create a branch from <code>main</code>.</li>
-<li>Make your change. Document new or changed functions with <a href="https://roxygen2.r-lib.org" class="external-link">roxygen2</a> and run <code>devtools::document()</code>.</li>
+<li>Make your change. Document new or changed functions with <a href="https://roxygen2.r-lib.org" class="external-link">roxygen2</a> and run <code>devtools::document()</code>. The documentation also runs the roclet of <a href="https://docs.ropensci.org/srr/" class="external-link">srr</a>, which tracks the rOpenSci statistical standards, so install srr first (<code>install.packages("srr", repos = "https://ropensci-review-tools.r-universe.dev")</code>).</li>
 <li>Add tests with <a href="https://testthat.r-lib.org" class="external-link">testthat</a> under <code>tests/testthat/</code>. Tests that need Stan, <code>crywolf</code> or other optional packages must be skipped when those packages are missing.</li>
 <li>Run <code>devtools::check()</code> and make sure it finishes with no errors or warnings.</li>
 <li>Add a bullet to the top of <code>NEWS.md</code> describing the change.</li>

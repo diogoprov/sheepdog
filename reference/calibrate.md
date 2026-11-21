@@ -153,7 +153,10 @@ calibrate(
 
   `engine = "brms"`: list of further arguments for
   [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html)
-  (e.g. `list(chains = 4, cores = 4, backend = "cmdstanr")`).
+  (e.g. `list(chains = 4, cores = 4, backend = "cmdstanr")`). Without
+  `seed` in this list, `seed` is also the seed of the Bayesian refit, so
+  the whole run is reproducible; it is written to
+  `calibration_model.txt`.
 
 - rule:
 

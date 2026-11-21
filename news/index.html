@@ -73,6 +73,9 @@
 <ul><li>Infrastructure following the rOpenSci packaging guide: <code>inst/CITATION</code> (so that <code>citation("sheepdog")</code> works), <code>codemeta.json</code>, a contributing guide and a code of conduct (in <code>.github/</code>), and repostatus and R-CMD-check badges in the README.</li>
 <li>
 <code>CITATION.cff</code> and the README now point to the Zenodo concept DOI (10.5281/zenodo.22696209), which always resolves to the latest version; they pointed to the DOI of version 1.0.0.</li>
+<li>The rOpenSci statistical standards of the General, Regression and Bayesian categories are documented with <code>srr</code> tags (<code>R/srr-stats-standards.R</code>; the roclet runs with <code>devtools::document()</code>). The triage and the remaining gaps are in <code>dev/ropensci-stats/gap-table.md</code>.</li>
+<li>
+<code>calibrate(engine = "brms")</code> now passes its <code>seed</code> to the Bayesian refit (unless <code>brms_args</code> has one), so the whole run is reproducible; before, the refit drew a random seed. <code>fit_calibration(engine = "brms")</code> draws a seed from R’s generator when none is given (reproducible with <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code>) and keeps it in <code>attr(fit, "sheepdog_seed")</code>; <code><a href="../reference/calibrate.html">calibrate()</a></code> writes it to <code>calibration_model.txt</code>.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="3.4.1" id="sheepdog-341">sheepdog 3.4.1<a class="anchor" aria-label="anchor" href="#sheepdog-341"></a></h2>

@@ -43,7 +43,11 @@ fit_calibration(
 
   `engine = "brms"`: further arguments for
   [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html)
-  (e.g. `chains`, `iter`, `cores`, `backend`, `seed`).
+  (e.g. `chains`, `iter`, `cores`, `backend`, `seed`). Without `seed`,
+  one is drawn from R's random number generator (so
+  [`set.seed()`](https://rdrr.io/r/base/Random.html) before the call
+  makes the fit reproducible) and passed to
+  [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html).
 
 ## Value
 
@@ -52,6 +56,8 @@ A `glm`, `glmerMod` or `brmsfit` model, with the attribute
 [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md)
 and
 [`plot_calibration()`](https://provetelab.org/sheepdog/reference/plot_calibration.md).
+A `brmsfit` also carries the attribute `sheepdog_seed`, the seed given
+to Stan, so that the fit can be repeated.
 
 ## Details
 
