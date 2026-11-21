@@ -164,3 +164,42 @@ test_that("list_recordings() adds .csv to the output file", {
                  "no extension")
   expect_true(file.exists(file.path(d, "rec.csv")))
 })
+
+test_that("the remaining branches of the shared checks raise their messages", {
+  val <- ex_validations()
+  expect_error(check_number(5, "x", upper = 3), "of at most 3")
+  bad <- val
+  bad$logit_conf <- as.character(bad$logit_conf)
+  expect_error(check_validations(bad), "`logit_conf` of `validations` must be numeric")
+  bad <- val
+  bad$confidence[1] <- 2
+  expect_error(check_validations(bad, cols = c("site", "species", "tp",
+                                               "confidence")),
+               "outside 0 to 1")
+  expect_error(suppressMessages(drop_missing(
+    dplyr::mutate(val, logit_conf = NA_real_), "logit_conf")),
+               "No row of `validations` is complete")
+  expect_identical(deparse1(fixed_formula(tp ~ (1 | species))), "tp ~ 1")
+
+  um <- dplyr::mutate(val, tp = ifelse(species == levels(species)[1], 1L, tp))
+  msgs <- testthat::capture_messages(suppressWarnings(
+    fit_calibration(um, tp ~ logit_conf)))
+  expect_true(any(grepl("single verdict class", msgs)))
+
+  expect_error(compare_calibration_models(val, list(tp ~ logit_conf)),
+               "named list of formulas")
+})
+
+test_that("Bayesian helpers check their computational parameters", {
+  fit <- structure(list(), class = "brmsfit")
+  expect_error(calibration_diagnostics(fit, rhat_max = 0.9), "`rhat_max`")
+  expect_error(calibration_diagnostics(fit, ess_min = -1), "`ess_min`")
+  expect_error(history_draws(fit, scored = NULL, p_min = 2), "`p_min`")
+  expect_error(history_draws(fit, scored = NULL, n_draws = 0), "`n_draws`")
+  expect_error(history_draws(fit, scored = NULL, grid_step = 1), "`grid_step`")
+  expect_error(history_draws(fit, scored = NULL, seed = 1.5), "`seed`")
+  skip_if_not_installed("ggplot2")
+  expect_error(plot_calibration_draws(fit, n_draws = 0), "`n_draws`")
+  expect_error(plot_calibration_draws(fit, p_min = -1), "`p_min`")
+  expect_error(plot_calibration_draws(fit, seed = NA), "`seed`")
+})
