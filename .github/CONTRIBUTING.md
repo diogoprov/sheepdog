@@ -26,6 +26,10 @@ please open an issue first so that we can agree on the approach.
 1. Fork the repository and create a branch from `main`.
 2. Make your change. Document new or changed functions with
    [roxygen2](https://roxygen2.r-lib.org) and run `devtools::document()`.
+   The documentation also runs the roclet of
+   [srr](https://docs.ropensci.org/srr/), which tracks the rOpenSci
+   statistical standards, so install srr first
+   (`install.packages("srr", repos = "https://ropensci-review-tools.r-universe.dev")`).
 3. Add tests with [testthat](https://testthat.r-lib.org) under
    `tests/testthat/`. Tests that need Stan, `crywolf` or other optional
    packages must be skipped when those packages are missing.

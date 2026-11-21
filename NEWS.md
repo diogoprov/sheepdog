@@ -7,6 +7,10 @@
 - `CITATION.cff` and the README now point to the Zenodo concept DOI
   (10.5281/zenodo.22696209), which always resolves to the latest version;
   they pointed to the DOI of version 1.0.0.
+- The rOpenSci statistical standards of the General, Regression and
+  Bayesian categories are documented with `srr` tags
+  (`R/srr-stats-standards.R`; the roclet runs with `devtools::document()`).
+  The triage and the remaining gaps are in `dev/ropensci-stats/gap-table.md`.
 
 # sheepdog 3.4.1
 

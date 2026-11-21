@@ -83,6 +83,7 @@ test_that("a global model scores without lme4-specific levels", {
   expect_true(stats::cor(sc$confidence, sc$p_tp, method = "spearman") > 0.99)
 })
 
+#' @srrstats {G5.5} Random steps in tests are seeded with `withr::with_seed()` or a `seed` argument, and tests check that calibration and bootstrap functions leave the global RNG state untouched.
 test_that("calibration functions leave the global RNG untouched", {
   skip_if_not_installed("lme4")
   val <- suppressMessages(read_validations(
