@@ -1248,6 +1248,38 @@ réplicas do bootstrap por noite do estágio 1 por faixas, como em
 `boot_ct12`. Se o intervalo agrupado não alcançar a referência, o excesso
 nos vizinhos de surto e o y_rate acima são o alvo de um HMM com surtos.
 
+### Estágio 1 por faixas com bootstrap por noite (21/11/2026)
+
+`emissions_bins_boot.R`: 20 réplicas do estágio 1 por faixas, com
+sítio-noites do depósito inteiro sorteados com reposição (semente 2026); f₁
+na faixa ≥ 0,4 varia de 0,43 a 0,60 entre réplicas. Cada réplica ajustada
+no estágio 2 (Markov, 4 cadeias de 1.000 + 1.000, ~14 min cada, duas por vez
+no Mac, ~2,5 h). Diagnósticos nas 20: nenhuma divergência, nenhum
+treedepth máximo, R-hat máximo 1,003, ESS bulk mínimo 2.263. Entre réplicas,
+ψ_c vai de 0,39 a 0,43, θ̄ de 0,074 a 0,122 e ρ de 3,7 a 4,5.
+
+| | Prevalência marginal (90%) |
+|---|---|
+| Modelo, 20 réplicas agrupadas (200 draws cada) | **0,047 (0,038 a 0,056)** |
+| Referência pós-estratificada | 0,033 (0,027 a 0,039) |
+| Referência de Hájek simples | 0,026 (0,019 a 0,035) |
+
+* Os intervalos de 90% se sobrepõem por 0,001 (0,038 a 0,039): pela letra
+  do critério 1, passa.
+* A mediana do modelo é 1,42 vez a referência; P(modelo > referência
+  pontual) = 0,996 e, contra o bootstrap da referência, 0,98. Em 19 das 20
+  réplicas a mediana fica acima de 0,039. A propagação do estágio 1 alargou
+  o intervalo sem mover o centro (0,047 com emissões pontuais e agrupado).
+* A comparação não é independente: o estágio 1 por faixas ancora f₁ na
+  mesma precisão ponderada do ct12 que a referência usa. Mesmo assim, o
+  estágio 2 devolve 1,4 vez o canto que entrou pelas emissões, o que aponta
+  para o estágio 2 (vizinhos de surto, y_rate do PPC acima), não para o
+  estágio 1.
+
+Leitura (interpretação): a sobreposição vem do alargamento do intervalo, não
+de concordância no centro. O critério 1 passa no limite; o viés de cerca de
++40% na prevalência de minutos parece real e se concentra perto dos surtos.
+
 ## Critério para levar o v1 de dois estágios ao crywolf (20/11/2026)
 
 Decidido com o Diogo: o v1 fica em `dev/fase2` até cumprir os três
@@ -1261,7 +1293,10 @@ critérios abaixo. Cumpridos, o pedido vai à sessão do crywolf como
    f₀ do censo e com 3 estados, continua reprovando. A referência passa a
    ser a pós-estratificada por faixa de score, 0,033 (0,027 a 0,039); o
    modelo com f₀ do censo dá 0,057 (0,053 a 0,061), e com emissões por
-   faixa 0,047 (0,043 a 0,050), ainda fora, sem propagar o estágio 1.*
+   faixa 0,047 (0,043 a 0,050), ainda fora, sem propagar o estágio 1.
+   Com as 20 réplicas do estágio 1 por faixas: 0,047 (0,038 a 0,056),
+   sobreposição de 0,001 com a referência; passa no limite, com a mediana
+   1,4 vez a referência (P(modelo > referência) = 0,98).*
 2. **Cobertura do procedimento em dois estágios:** uma simulação com o
    estágio 1 ponderado, o bootstrap por noite e o estágio 2 com réplicas
    cobre ψ, θ̄ e ψθ̄, pelas regras V1/V2 da validação do v1.
