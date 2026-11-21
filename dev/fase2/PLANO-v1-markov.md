@@ -1016,3 +1016,19 @@ Leitura:
 - Este é o resultado a reportar para o v1 de dois estágios no Curiango:
   ψθ̄ = 0,059 (0,038 a 0,088), com a ressalva de que 20 réplicas dão
   extremos do intervalo imprecisos.
+
+### Sobreposição treino/teste do classificador custom (20/11/2026)
+
+Listas de `01_training/compau` (377 clipes) e `noise` (342) da máquina da
+Liliana, em `results/curiango_v1/treino/` (fora do git). Rodado com
+`curiango_treino_sobreposicao.R`.
+
+- Os clipes vêm de 414 gravações de origem, de set/2021 a jul/2024:
+  curiango 6 em 2021, 180 em 2022, 191 em 2023; ruído 157 em 2022, 175 em
+  2023, 10 em 2024. O depósito vai de 26/11/2023 a 27/02/2025.
+- Só 1 gravação de curiango e 5 de ruído caem no período e no depósito.
+  **Nenhuma está entre os 1.199 minutos verificados.** Logo, não há
+  sobreposição treino/teste, e as métricas do custom não estão otimistas
+  por esse motivo.
+- 269 dos 377 nomes de `compau` começam com "teste.". É prefixo de nome de
+  arquivo; nenhum desses clipes casa com um minuto verificado.
