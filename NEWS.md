@@ -11,6 +11,12 @@
   Bayesian categories are documented with `srr` tags
   (`R/srr-stats-standards.R`; the roclet runs with `devtools::document()`).
   The triage and the remaining gaps are in `dev/ropensci-stats/gap-table.md`.
+- `calibrate(engine = "brms")` now passes its `seed` to the Bayesian refit
+  (unless `brms_args` has one), so the whole run is reproducible; before,
+  the refit drew a random seed. `fit_calibration(engine = "brms")` draws a
+  seed from R's generator when none is given (reproducible with
+  `set.seed()`) and keeps it in `attr(fit, "sheepdog_seed")`; `calibrate()`
+  writes it to `calibration_model.txt`.
 
 # sheepdog 3.4.1
 

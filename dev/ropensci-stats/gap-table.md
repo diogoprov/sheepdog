@@ -9,8 +9,8 @@ statistical software track. The tags themselves are in
 |---|---|---|---|
 | G | 16 | 7 | 45 |
 | RE | 18 | 7 | 23 |
-| BS | 16 | 14 | 26 |
-| Total | 50 | 28 | 94 |
+| BS | 17 | 14 | 25 |
+| Total | 51 | 28 | 93 |
 
 Partially met standards are counted as to do.
 
@@ -122,9 +122,11 @@ Partially met standards are counted as to do.
 
 ## Phase 5: fixes and new options
 
+BS5.0 (the seed was not passed to brms by `calibrate()` nor kept in the
+fit) was fixed in phase 1 and is tagged in `tests/testthat/test-bayes.R`.
+
 | Standard | Gap |
 |---|---|
-| BS5.0 | the seed is not attached to the returned object, and `calibrate()` does not pass `seed` to brms. |
 | RE3.3 | the lme4 optimiser and tolerances cannot be changed; planned `control` argument. |
 | RE6.2 | `plot_calibration()` shows no interval for lme4 fits; uncertainty is shown only for brms fits by `plot_calibration_draws()`. |
 

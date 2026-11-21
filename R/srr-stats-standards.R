@@ -146,7 +146,6 @@ NULL
 #' @srrstatsTODO {BS3.1} *Implement pre-processing routines to diagnose perfect collinearity, and provide appropriate diagnostic messages or warnings* Gap: see RE2.4.
 #' @srrstatsTODO {BS4.0} *Packages should document sampling algorithms (generally via literary citation, or reference to other software)* Gap: document that sampling uses Stan's NUTS through brms, with verified references for brms and Stan.
 #' @srrstatsTODO {BS4.3} *Implement or otherwise offer at least one type of convergence checker, and provide a documented reference for that implementation.* Gap: `calibration_diagnostics()` uses rank-normalised R-hat and bulk and tail ESS from the posterior package, without a documented reference.
-#' @srrstatsTODO {BS5.0} *Return values should include starting value(s) or seed(s), including values for each sequence where multiple sequences are included* Gap: the seed is not attached to the returned object, and `calibrate()` does not pass `seed` to brms.
 #' @srrstatsTODO {BS6.2} *Software should provide and document straightforward abilities to plot sequences of posterior samples, with burn-in periods clearly distinguished* Gap: document trace plots with warmup distinguished.
 #' @srrstatsTODO {BS7.0} *Software should demonstrate and confirm recovery of parametric estimates of a prior distribution* Gap: no test of prior recovery.
 #' @srrstatsTODO {BS7.1} *Software should demonstrate and confirm recovery of a prior distribution in the absence of any additional data or information* Gap: no test of prior recovery without data.
