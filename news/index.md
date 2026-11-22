@@ -109,6 +109,35 @@
 - [`compare_calibration_models()`](https://provetelab.org/sheepdog/reference/compare_calibration_models.md)
   now stops when a model uses a column that `validations` lacks, instead
   of warning that the fit failed in every fold.
+- Tests for the rOpenSci standards (phase 4): parameter recovery of
+  [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
+  under several seeds, estimates improving with more reviewed clips,
+  edge conditions (empty, non-numeric, constant and collinear input,
+  separation), noise at machine precision, stability across seeds, and
+  the accessor methods of the fitted models. Extended tests, switched on
+  by `SHEEPDOG_EXTENDED_TESTS=true` (the earlier `SHEEPDOG_TEST_BRMS`
+  still works), fit Stan models to check prior and posterior recovery
+  and scaling with the data; a GitHub Actions workflow runs them weekly.
+- [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
+  now stops when a grouping factor of the random effects has one level
+  per reviewed clip; ‘lme4’ fitted such models with an unidentifiable
+  variance.
+- Condition messages shared by several functions now have one wording:
+  missing columns are reported as “`x` lacks the column(s): …”
+  everywhere (some functions said “lacks column(s)” or “needs the
+  column(s)”), a missing `cluster` column of
+  [`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md)
+  and
+  [`recall_ceiling()`](https://provetelab.org/sheepdog/reference/recall_ceiling.md)
+  is reported the same way, and `conf` of
+  [`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md),
+  [`recall_ceiling()`](https://provetelab.org/sheepdog/reference/recall_ceiling.md)
+  and
+  [`compare_calibration_curves()`](https://provetelab.org/sheepdog/reference/compare_calibration_curves.md)
+  must be “a number strictly between 0 and 1”.
+  [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md)
+  now distinguishes files without reviewed clips from clips without a
+  verdict and a score.
 
 ## sheepdog 3.4.1
 

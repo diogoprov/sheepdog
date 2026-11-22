@@ -40,31 +40,44 @@ model, please open an issue first so that we can agree on the approach.
 6.  Open a pull request against `main`. Continuous integration runs
     `R CMD check` on Windows, macOS and Linux and reports test coverage.
 
-## Tests that fit Stan models
+## Extended tests
 
 The default test run (`devtools::test()`, `R CMD check`) never compiles
 a Stan model: the code paths of `engine = "brms"` are tested with a
 mocked
 [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html). The
-tests that fit real Bayesian models are switched on by an environment
-variable:
+extended tests, which fit real Bayesian models, are switched on by an
+environment variable (`SHEEPDOG_TEST_BRMS = "true"`, the earlier name,
+still works):
 
 ``` r
 
-Sys.setenv(SHEEPDOG_TEST_BRMS = "true")
+Sys.setenv(SHEEPDOG_EXTENDED_TESTS = "true")
 devtools::test(filter = "bayes|calibrated_thresholds")
 ```
 
-They need ‘brms’ with a working Stan backend (‘rstan’ or ‘cmdstanr’ with
+They check that sampling from the prior alone recovers the prior, that
+the posterior recovers the intercept and slope of simulated data, and
+how the posterior precision and the sampling time scale with the number
+of reviewed clips, besides running the brms code paths end to end. They
+need ‘brms’ with a working Stan backend (‘rstan’ or ‘cmdstanr’ with
 CmdStan installed) and the suggested packages ‘posterior’ and ‘lme4’.
-They fit small models to the example data in
-`system.file("extdata", "example", package = "sheepdog")`; compilation
-dominates the run time, a few minutes on a laptop, and memory use is
-that of a normal Stan compilation. Run them before changing
+They use the example data in
+`system.file("extdata", "example", package = "sheepdog")` and
+simulations, and download nothing. Compilation dominates the run time,
+about ten minutes on a laptop, and memory use is that of a normal Stan
+compilation. The GitHub Actions workflow `extended-tests.yaml` runs them
+every Monday and can be started by hand from the Actions tab. Run them
+before changing
 [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md),
 [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md),
 [`history_draws()`](https://provetelab.org/sheepdog/reference/history_draws.md)
 or any other function that handles a `brmsfit`.
+
+The condition messages of the package (errors, warnings and messages)
+are listed, with whether a test matches them, by
+`Rscript dev/ropensci-stats/conditions.R`; each message is raised from
+one place in the code.
 
 ## Life cycle
 

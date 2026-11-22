@@ -322,7 +322,7 @@ rr <- select_clips(pred, sampling_mode = "random_recordings",
                    recording_fraction = 0.1, recording_duration = 300,
                    species = "boa-ran")
 #> Sampling mode: random_recordings (occasion = file).
-#> 354 recordings listed at 4 site(s).
+#> 354 recordings found at 4 site(s).
 #> Filter of 1 species: 7553 -> 874 predictions.
 #> 35 file(s) drawn among 354 recorded, to annotate 1 species.
 rr |>
@@ -531,7 +531,7 @@ tryCatch(
   warning = \(w) conditionMessage(w)
 )
 #> Sampling mode: random_recordings (occasion = file).
-#> 354 recordings listed at 4 site(s).
+#> 354 recordings found at 4 site(s).
 #> 4 file(s) drawn among 354 recorded, to annotate 8 species.
 #> [1] "target_total/max_per_species are ignored in \"random_recordings\" (recording_fraction or n_recordings_per_site apply)."
 ```
