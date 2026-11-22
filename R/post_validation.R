@@ -540,8 +540,8 @@ check_by <- function(val, by) {
 
 #' Empirical threshold of one cell
 #'
-#' The lowest cut c such that the precision of the clips with confidence
-#' >= c reaches the target. With weights, the precision and the support of
+#' The lowest cut c such that the precision of the clips with
+#' confidence >= c reaches the target. With weights, the precision and the support of
 #' the decision are the weighted ones in cells where every clip has
 #' `inclusion_prob`.
 #'

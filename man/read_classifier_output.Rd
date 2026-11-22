@@ -6,22 +6,26 @@
 \usage{
 read_classifier_output(
   files,
-  format = c("perch", "opensoundscape"),
-  score_scale = c("logit", "probability"),
+  format = c("perch", "opensoundscape", "arbimon"),
+  score_scale = NULL,
   min_confidence = 0.1,
   site_pattern = NULL,
   audio_root = NULL,
-  window_s = 5
+  window_s = 5,
+  recordings = NULL,
+  label = NULL
 )
 }
 \arguments{
 \item{files}{Character vector of paths to prediction files (CSV), or to
 folders searched recursively for \code{.csv} files.}
 
-\item{format}{Character scalar, one of \code{"perch"} or \code{"opensoundscape"}.}
+\item{format}{Character scalar, one of \code{"perch"}, \code{"opensoundscape"} or
+\code{"arbimon"}.}
 
-\item{score_scale}{Character scalar, one of \code{"logit"} (default) or
-\code{"probability"}: the scale of the scores in the files.}
+\item{score_scale}{\code{NULL} or character scalar, one of \code{"logit"} or
+\code{"probability"}: the scale of the scores in the files. \code{NULL} takes
+\code{"logit"} for Perch and OpenSoundscape and \code{"probability"} for Arbimon.}
 
 \item{min_confidence}{Numeric scalar in [0, 1]. Rows with a lower
 \code{confidence} are left out.}
@@ -37,12 +41,20 @@ computed from). Absolute paths and URLs are kept as they are.}
 
 \item{window_s}{Numeric scalar > 0, length of the window in seconds,
 used for the Perch files that do not store its end.}
+
+\item{recordings}{\code{NULL}, a data frame or a character scalar path to the
+\code{recordings} table of an Arbimon project backup, with the columns
+\code{recording_id} and \code{meta} (JSON with the original \code{filename}) or
+\code{filename}. Needed for the Arbimon "export all" files only.}
+
+\item{label}{\code{NULL} or character scalar, the species of an Arbimon
+"export all" file (one job, one template). Needed for those files only.}
 }
 \value{
 A tibble with one row per prediction: \code{site}, \code{begin_time},
 \code{end_time}, \code{species_code}, \code{confidence}, \code{begin_path} and
 \code{file_offset} (the columns required by \code{\link[=select_clips]{select_clips()}}), plus \code{label},
-\code{score} (as in the file) and \code{classifier}.
+\code{score} (as in the file) and \code{classifier}; for Arbimon, also \code{verdict}.
 }
 \description{
 Reads the prediction files of classifiers other than BirdNET and returns
@@ -76,6 +88,32 @@ OpenSoundscape model (\code{CNN} or the models of the bioacoustics model zoo,
 e.g. BirdNET and Perch) and saved with \code{to_csv()}: the columns \code{file},
 \code{start_time} and \code{end_time}, then one column of scores per class. Windows
 whose scores are missing (audio that could not be read) are left out.
+
+\strong{\code{"arbimon"}}: the results of a pattern matching job of Arbimon
+(template matching; the score is a correlation between 0 and 1). Two
+exports are recognised:
+\itemize{
+\item the download of one job, with the columns \code{recording} (the name of
+the audio file), \code{site}, \code{species}, \code{songtype}, \code{x1}, \code{x2} (start and
+end of the match, in seconds from the start of the recording),
+\code{validated} and \code{score}; older exports name the minute column \code{min}
+and lack \code{frequency}, and both variants are read;
+\item the "export all results" of a project, one file per job, with the
+columns \code{x1}, \code{x2}, \code{score}, \code{validated}, \code{site_name}, \code{recording_id}
+and \code{audio_url}. It names neither the species nor the audio file:
+give the species in \code{label} and the \code{recordings} table of a project
+backup (\code{recordings.0001.csv}), whose \code{meta} column holds the original
+file name of each recording. Files without any result (empty files)
+are skipped.
+}
+
+The site is the Arbimon site (\code{site} or \code{site_name}) unless
+\code{site_pattern} is given. The label is the species; a species with more
+than one song type gets the song type in brackets (\code{"Coccyzus minor (Simple Call)"}). The reviews done in Arbimon are kept in \code{verdict}:
+\code{present} (or 1) is \code{"positive"}, \verb{not present} is \code{"negative"}, and
+\verb{(not validated)}, empty or 0 is missing. The "export all" files hold
+only 1 and 0, and whether 0 marks a rejected or an unreviewed match is
+not documented, so a 0 is read as missing.
 }
 
 \section{Scores}{
@@ -91,6 +129,10 @@ it is and must lie between 0 and 1. The calibration models work on the
 logit of \code{confidence}, which for logits is the score itself, so no
 information is lost. The original score is kept in \code{score}.
 
+Arbimon correlations lie between 0 and 1 and are read as they are
+(\code{score_scale = "probability"}, its default), although they are not
+probabilities.
+
 Rows with \code{confidence} below \code{min_confidence} are left out (0.1, the
 default minimum confidence of BirdNET). A Perch file already lacks the
 windows below the logit threshold used to write it; a logit of 0 is a
@@ -100,9 +142,9 @@ confidence of 0.5.
 \section{Sites and labels}{
 
 
-The site is the folder that holds each audio file (\code{site_A/rec.wav}
-gives \code{site_A}), or is taken from the file name with \code{site_pattern}, as
-in \code{\link[=read_selection_tables]{read_selection_tables()}}. The date and hour of a recording are read
+For Perch and OpenSoundscape, the site is the folder that holds each
+audio file (\code{site_A/rec.wav} gives \code{site_A}), or is taken from the file
+name with \code{site_pattern}, as in \code{\link[=read_selection_tables]{read_selection_tables()}}. The date and hour of a recording are read
 from its file name (\code{YYYYMMDD_HHMMSS}) by the functions downstream, as for
 BirdNET.
 
@@ -124,6 +166,10 @@ Lapp, S., Rhinehart, T., Freeland-Haynes, L., Khilnani, J., Syunkova, A.
 and Kitzes, J. (2023). OpenSoundscape: an open-source bioacoustics
 analysis package for Python. \emph{Methods in Ecology and Evolution}, 14(9),
 2321-2328. \doi{10.1111/2041-210X.14196}
+
+Aide, T. M., Corrada-Bravo, C., Campos-Cerqueira, M., Milan, C., Vega, G.
+and Alvarez, R. (2013). Real-time bioacoustics monitoring and automated
+species identification. \emph{PeerJ}, 1, e103. \doi{10.7717/peerj.103}
 }
 \seealso{
 \code{\link[=read_selection_tables]{read_selection_tables()}} for BirdNET, \code{\link[=read_pamdp]{read_pamdp()}} for pamDP

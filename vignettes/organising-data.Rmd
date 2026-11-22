@@ -163,7 +163,7 @@ clips <- select_clips(pam$predictions, sampling_mode = "score_bands",
   manifest the review app. `calibrate()` still reads BirdNET selection
   tables from disk.
 
-## Predictions of Perch and OpenSoundscape
+## Predictions of Perch, OpenSoundscape and Arbimon
 
 `read_classifier_output()` reads the prediction files of other
 classifiers and returns them in the same shape:
@@ -193,6 +193,25 @@ clips <- select_clips(pred, sampling_mode = "score_bands",
   the folder `wood_thrush`); the label is kept in `label`.
 - **Calibration:** pass the table to `score_detections()`.
 
+`format = "arbimon"` reads the results of Arbimon pattern matching jobs.
+The download of a job names the audio file (`recording`), the site and
+the species, and is read on its own. The "export all results" files name
+neither the species nor the audio file, so they also need the species in
+`label` and the `recordings` table of a project backup, which holds the
+original file names:
+
+```{r, eval = FALSE}
+pm <- read_classifier_output("arbimon/pm-job_116143.csv", format = "arbimon",
+                             label = "Boana raniceps",
+                             recordings = "backup/recordings.0001.csv",
+                             audio_root = "/Volumes/NAS/pam/audio")
+```
+
+The site is the Arbimon site, the score (a correlation between 0 and 1) is
+used as it is, and the reviews done in Arbimon are kept in `verdict`. The
+dates and hours still come from the file names, so files named by Arbimon
+in another pattern need to be renamed to `YYYYMMDD_HHMMSS`.
+
 ## Where each function looks
 
 | step | function | reads | writes |
@@ -200,7 +219,7 @@ clips <- select_clips(pred, sampling_mode = "score_bands",
 | read predictions | `read_selection_tables()` | `birdnet/<site>/` | a table in R |
 | list recordings | `list_recordings()` | `audio/<site>/` | `recordings.csv` |
 | or read a pamDP package | `read_pamdp()` | `deployments.csv`, `media.csv`, `observations.csv` | predictions and recordings in R |
-| or read Perch or OpenSoundscape | `read_classifier_output()` | prediction CSVs | a table in R |
+| or read Perch, OpenSoundscape or Arbimon | `read_classifier_output()` | prediction CSVs | a table in R |
 | choose clips | `select_clips()` | predictions, recordings | a manifest in R |
 | cut clips | `cut_clips()`, `extract_validation_clips()` | the audio, through `Begin Path` | `clips/<species>/`, `clip_manifest.csv` |
 | review | file manager (`Positive`/`Negative` subfolders) or `run_app()` | clips, manifest | folders, or a verdicts CSV |

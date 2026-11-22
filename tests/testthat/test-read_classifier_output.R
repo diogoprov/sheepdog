@@ -138,3 +138,90 @@ test_that("score_detections() takes a table of predictions like the paths", {
     "Table not found for ARA")
   expect_identical(nrow(none), 0L)
 })
+
+test_that("Arbimon job downloads are read with sites, labels and verdicts", {
+  d <- withr::local_tempdir()
+  # older download: `min`, no `frequency`
+  writeLines(c(
+    "id,recording,site,year,month,day,hour,min,species,songtype,x1,x2,y1,y2,validated,uri,score,site_id",
+    "1,LevMax_20170314_033000.flac,LevMax,2017,3,14,3,30,Eleutherodactylus coqui,Common Song,34.8,35.6,1119,3703,(not validated),https://x/1.png,0.226,2324",
+    "2,PinMax_20170312_233000.flac,PinMax,2017,3,12,23,30,Eleutherodactylus coqui,Common Song,48.9,49.7,1119,3703,present,https://x/2.png,0.312,1976",
+    "3,PinMax_20170312_233000.flac,PinMax,2017,3,12,23,30,Eleutherodactylus coqui,Common Song,10.0,10.8,1119,3703,not present,https://x/3.png,0.05,1976"),
+    file.path(d, "coqui.csv"))
+  # newer download: `minute` and `frequency`; one species, two song types
+  writeLines(c(
+    "id,recording,site,year,month,day,hour,minute,species,songtype,x1,x2,y1,y2,frequency,validated,url,score,site_id",
+    "4,LevMax_20170320_161000.flac,LevMax,2017,3,20,16,10,Coccyzus minor,Simple Call,5.0,6.0,500,900,24000,(not validated),https://x/4,0.4,2324",
+    "5,LevMax_20170320_161000.flac,LevMax,2017,3,20,16,10,Coccyzus minor,Common Song,7.0,8.0,500,900,24000,present,https://x/5,0.5,2324"),
+    file.path(d, "cuckoo.csv"))
+  file.create(file.path(d, "empty_job.csv"))
+  a <- suppressMessages(read_classifier_output(d, "arbimon",
+                                               audio_root = "/audio"))
+  # the 0.05 match is below min_confidence; the empty file is skipped
+  expect_identical(nrow(a), 4L)
+  expect_setequal(a$site, c("LevMax", "PinMax"))
+  expect_setequal(a$label, c("Eleutherodactylus coqui",
+                             "Coccyzus minor (Simple Call)",
+                             "Coccyzus minor (Common Song)"))
+  expect_identical(a$verdict[a$score == 0.312], "positive")
+  expect_true(is.na(a$verdict[a$score == 0.226]))
+  expect_equal(a$confidence, a$score)
+  expect_identical(a$begin_path[a$score == 0.312],
+                   "/audio/PinMax_20170312_233000.flac")
+  expect_equal(sort(a$end_time - a$begin_time), c(0.8, 0.8, 1, 1),
+               tolerance = 1e-8)
+  neg <- suppressMessages(read_classifier_output(
+    file.path(d, "coqui.csv"), "arbimon", min_confidence = 0))
+  expect_identical(neg$verdict[neg$score == 0.05], "negative")
+  expect_error(read_classifier_output(file.path(d, "empty_job.csv"),
+                                      "arbimon"), "Every file is empty")
+})
+
+test_that("Arbimon export-all files need the recordings and the label", {
+  d <- withr::local_tempdir()
+  f <- file.path(d, "pm-job_116143.csv")
+  writeLines(c(
+    "x1,y1,x2,y2,score,validated,site_id,recording_id,recording_local_time,site_name,audio_url",
+    "27.685,29625,27.994,45188,0.136,0,80097,268285577,2025-09-02 04:00:00,7_ZdzE05_KZP,https://s3/a.flac",
+    "25.285,29625,25.594,45188,0.181,1,80097,268285579,2025-09-04 04:00:00,7_ZdzE05_KZP,https://s3/b.flac"),
+    f)
+  rec <- tibble::tibble(
+    recording_id = c("268285577", "268285579"),
+    meta = c('{"encoder":"x","filename":"Z05_20250902_040000.wav"}',
+             '{"encoder":"x","filename":"Z05_20250904_040000.wav"}'))
+  expect_error(read_classifier_output(f, "arbimon"), "give it in `label`")
+  expect_error(read_classifier_output(f, "arbimon", label = "Gryllus sp."),
+               "give the `recordings` table")
+  x <- suppressMessages(read_classifier_output(
+    f, "arbimon", label = "Gryllus sp.", recordings = rec))
+  expect_identical(x$begin_path, c("Z05_20250902_040000.wav",
+                                   "Z05_20250904_040000.wav"))
+  expect_identical(unique(x$site), "7_ZdzE05_KZP")
+  expect_identical(x$verdict, c(NA, "positive"))
+  rec_csv <- file.path(d, "recordings.0001.csv")
+  readr::write_csv(rec, rec_csv)
+  y <- suppressMessages(read_classifier_output(
+    f, "arbimon", label = "Gryllus sp.", recordings = rec_csv))
+  expect_identical(y$begin_path, x$begin_path)
+  expect_error(read_classifier_output(f, "arbimon", label = "G",
+                                      recordings = rec[1, ]),
+               "recording_id\\(s\\) not found")
+  expect_error(read_classifier_output(f, "arbimon", label = "G",
+                                      recordings = rec["recording_id"]),
+               "needs the columns recording_id and meta")
+  expect_error(read_classifier_output(f, "arbimon", label = "G",
+                                      recordings = file.path(d, "no.csv")),
+               "Not found")
+  bad <- file.path(d, "bad.csv")
+  writeLines(c("a,b", "1,2"), bad)
+  expect_error(read_classifier_output(bad, "arbimon"),
+               "is not an Arbimon pattern matching export")
+  holes <- file.path(d, "holes.csv")
+  writeLines(c(
+    "x1,y1,x2,y2,score,validated,site_id,recording_id,recording_local_time,site_name,audio_url",
+    ",1,2,3,0.5,0,1,268285577,t,S,u",
+    "1,1,2,3,0.5,0,1,268285577,t,S,u"), holes)
+  expect_message(read_classifier_output(holes, "arbimon", label = "G",
+                                        recordings = rec),
+                 "1 row\\(s\\) without a recording, start or score left out")
+})

@@ -31,6 +31,32 @@
 #' `start_time` and `end_time`, then one column of scores per class. Windows
 #' whose scores are missing (audio that could not be read) are left out.
 #'
+#' **`"arbimon"`**: the results of a pattern matching job of Arbimon
+#' (template matching; the score is a correlation between 0 and 1). Two
+#' exports are recognised:
+#'
+#' - the download of one job, with the columns `recording` (the name of
+#'   the audio file), `site`, `species`, `songtype`, `x1`, `x2` (start and
+#'   end of the match, in seconds from the start of the recording),
+#'   `validated` and `score`; older exports name the minute column `min`
+#'   and lack `frequency`, and both variants are read;
+#' - the "export all results" of a project, one file per job, with the
+#'   columns `x1`, `x2`, `score`, `validated`, `site_name`, `recording_id`
+#'   and `audio_url`. It names neither the species nor the audio file:
+#'   give the species in `label` and the `recordings` table of a project
+#'   backup (`recordings.0001.csv`), whose `meta` column holds the original
+#'   file name of each recording. Files without any result (empty files)
+#'   are skipped.
+#'
+#' The site is the Arbimon site (`site` or `site_name`) unless
+#' `site_pattern` is given. The label is the species; a species with more
+#' than one song type gets the song type in brackets (`"Coccyzus minor
+#' (Simple Call)"`). The reviews done in Arbimon are kept in `verdict`:
+#' `present` (or 1) is `"positive"`, `not present` is `"negative"`, and
+#' `(not validated)`, empty or 0 is missing. The "export all" files hold
+#' only 1 and 0, and whether 0 marks a rejected or an unreviewed match is
+#' not documented, so a 0 is read as missing.
+#'
 #' @section Scores:
 #'
 #' sheepdog works with scores between 0 and 1, as BirdNET writes them.
@@ -43,6 +69,10 @@
 #' logit of `confidence`, which for logits is the score itself, so no
 #' information is lost. The original score is kept in `score`.
 #'
+#' Arbimon correlations lie between 0 and 1 and are read as they are
+#' (`score_scale = "probability"`, its default), although they are not
+#' probabilities.
+#'
 #' Rows with `confidence` below `min_confidence` are left out (0.1, the
 #' default minimum confidence of BirdNET). A Perch file already lacks the
 #' windows below the logit threshold used to write it; a logit of 0 is a
@@ -50,9 +80,9 @@
 #'
 #' @section Sites and labels:
 #'
-#' The site is the folder that holds each audio file (`site_A/rec.wav`
-#' gives `site_A`), or is taken from the file name with `site_pattern`, as
-#' in [read_selection_tables()]. The date and hour of a recording are read
+#' For Perch and OpenSoundscape, the site is the folder that holds each
+#' audio file (`site_A/rec.wav` gives `site_A`), or is taken from the file
+#' name with `site_pattern`, as in [read_selection_tables()]. The date and hour of a recording are read
 #' from its file name (`YYYYMMDD_HHMMSS`) by the functions downstream, as for
 #' BirdNET.
 #'
@@ -65,9 +95,11 @@
 #'
 #' @param files Character vector of paths to prediction files (CSV), or to
 #'   folders searched recursively for `.csv` files.
-#' @param format Character scalar, one of `"perch"` or `"opensoundscape"`.
-#' @param score_scale Character scalar, one of `"logit"` (default) or
-#'   `"probability"`: the scale of the scores in the files.
+#' @param format Character scalar, one of `"perch"`, `"opensoundscape"` or
+#'   `"arbimon"`.
+#' @param score_scale `NULL` or character scalar, one of `"logit"` or
+#'   `"probability"`: the scale of the scores in the files. `NULL` takes
+#'   `"logit"` for Perch and OpenSoundscape and `"probability"` for Arbimon.
 #' @param min_confidence Numeric scalar in \[0, 1\]. Rows with a lower
 #'   `confidence` are left out.
 #' @param site_pattern `NULL` or character scalar, regular expression with
@@ -79,11 +111,17 @@
 #'   computed from). Absolute paths and URLs are kept as they are.
 #' @param window_s Numeric scalar > 0, length of the window in seconds,
 #'   used for the Perch files that do not store its end.
+#' @param recordings `NULL`, a data frame or a character scalar path to the
+#'   `recordings` table of an Arbimon project backup, with the columns
+#'   `recording_id` and `meta` (JSON with the original `filename`) or
+#'   `filename`. Needed for the Arbimon "export all" files only.
+#' @param label `NULL` or character scalar, the species of an Arbimon
+#'   "export all" file (one job, one template). Needed for those files only.
 #'
 #' @return A tibble with one row per prediction: `site`, `begin_time`,
 #'   `end_time`, `species_code`, `confidence`, `begin_path` and
 #'   `file_offset` (the columns required by [select_clips()]), plus `label`,
-#'   `score` (as in the file) and `classifier`.
+#'   `score` (as in the file) and `classifier`; for Arbimon, also `verdict`.
 #' @seealso [read_selection_tables()] for BirdNET, [read_pamdp()] for pamDP
 #'   data packages.
 #' @references
@@ -96,16 +134,26 @@
 #' and Kitzes, J. (2023). OpenSoundscape: an open-source bioacoustics
 #' analysis package for Python. *Methods in Ecology and Evolution*, 14(9),
 #' 2321-2328. \doi{10.1111/2041-210X.14196}
+#'
+#' Aide, T. M., Corrada-Bravo, C., Campos-Cerqueira, M., Milan, C., Vega, G.
+#' and Alvarez, R. (2013). Real-time bioacoustics monitoring and automated
+#' species identification. *PeerJ*, 1, e103. \doi{10.7717/peerj.103}
 #' @export
 read_classifier_output <- function(files,
-                                   format = c("perch", "opensoundscape"),
-                                   score_scale = c("logit", "probability"),
+                                   format = c("perch", "opensoundscape",
+                                              "arbimon"),
+                                   score_scale = NULL,
                                    min_confidence = 0.1,
                                    site_pattern = NULL,
                                    audio_root = NULL,
-                                   window_s = 5) {
+                                   window_s = 5,
+                                   recordings = NULL,
+                                   label = NULL) {
   format <- match.arg(format)
-  score_scale <- match.arg(score_scale)
+  if (is.null(score_scale)) {
+    score_scale <- if (format == "arbimon") "probability" else "logit"
+  }
+  score_scale <- match.arg(score_scale, c("logit", "probability"))
   check_prob(min_confidence, "min_confidence")
   check_number(window_s, "window_s", 0, Inf, open = TRUE)
   if (!is.null(audio_root) &&
@@ -114,11 +162,16 @@ read_classifier_output <- function(files,
   }
   paths <- classifier_files(files)
 
+  if (format == "arbimon") {
+    paths <- paths[file.size(paths) > 0]
+    if (length(paths) == 0) stop("Every file is empty.", call. = FALSE)
+  }
   reader <- switch(format, perch = read_perch_csv,
-                   opensoundscape = read_opensoundscape_csv)
+                   opensoundscape = read_opensoundscape_csv,
+                   arbimon = read_arbimon_csv)
   preds <- map(paths, function(p) {
     reader(p, score_scale = score_scale, min_confidence = min_confidence,
-           window_s = window_s)
+           window_s = window_s, recordings = recordings, label = label)
   }) |>
     list_rbind()
   if (is.null(preds) || nrow(preds) == 0) {
@@ -126,16 +179,18 @@ read_classifier_output <- function(files,
          " in ", length(paths), " file(s).", call. = FALSE)
   }
   preds$begin_path <- pamdp_resolve(preds$begin_path, audio_root)
-  preds$site <- if (is.null(site_pattern)) {
-    site_from_folder(preds$begin_path)
-  } else {
-    site_from_name(preds$begin_path, site_pattern)
+  if (!is.null(site_pattern)) {
+    preds$site <- site_from_name(preds$begin_path, site_pattern)
+  } else if (!"site" %in% names(preds)) {
+    preds$site <- site_from_folder(preds$begin_path)
   }
+  if (format == "arbimon") preds <- arbimon_labels(preds)
   out <- preds |>
     mutate(species_code = label_species_code(label),
            file_offset = begin_time, classifier = format) |>
     select(site, begin_time, end_time, species_code, confidence,
-           begin_path, file_offset, label, score, classifier) |>
+           begin_path, file_offset, label, score, classifier,
+           any_of("verdict")) |>
     arrange(site, begin_path, begin_time, species_code)
   message(nrow(out), " predictions read from ", length(paths), " file(s), ",
           n_distinct(out$site), " site(s) and ", n_distinct(out$label),
@@ -201,10 +256,12 @@ score_to_confidence <- function(score, score_scale, file) {
 #' @param score_scale Character scalar, `"logit"` or `"probability"`.
 #' @param min_confidence Numeric scalar in \[0, 1\].
 #' @param window_s Numeric scalar, window length for headers without its end.
+#' @param ... Unused; the common arguments of the other readers.
 #' @return A tibble with `begin_path`, `begin_time`, `end_time`, `label`,
 #'   `score` and `confidence`, rows below `min_confidence` left out.
 #' @noRd
-read_perch_csv <- function(path, score_scale, min_confidence, window_s) {
+read_perch_csv <- function(path, score_scale, min_confidence, window_s,
+                           ...) {
   raw <- read_csv(path, col_types = cols(.default = col_character()),
                   show_col_types = FALSE, progress = FALSE, trim_ws = TRUE)
   names(raw) <- str_trim(names(raw))
@@ -254,14 +311,13 @@ read_perch_csv <- function(path, score_scale, min_confidence, window_s) {
 #' @param path Character scalar, path to the CSV.
 #' @param score_scale Character scalar, `"logit"` or `"probability"`.
 #' @param min_confidence Numeric scalar in \[0, 1\].
-#' @param window_s Unused; kept for a common signature with
-#'   read_perch_csv().
+#' @param ... Unused; the common arguments of the other readers.
 #' @return A tibble with `begin_path`, `begin_time`, `end_time`, `label`,
 #'   `score` and `confidence`, or `NULL` when no row reaches
 #'   `min_confidence`.
 #' @noRd
 read_opensoundscape_csv <- function(path, score_scale, min_confidence,
-                                    window_s = NULL) {
+                                    ...) {
   raw <- read_csv(path, show_col_types = FALSE, progress = FALSE,
                   col_types = cols(file = col_character(),
                                    .default = readr::col_double()))
@@ -322,4 +378,134 @@ site_from_folder <- function(paths) {
          "be taken from it; give `site_pattern`.", call. = FALSE)
   }
   basename(folders)
+}
+
+#' Read one Arbimon pattern matching export
+#'
+#' Recognises the download of one job (columns `recording`, `site`,
+#' `species`, `songtype`) and the "export all results" file of a job
+#' (columns `recording_id`, `site_name`, `audio_url`), which needs the
+#' recordings of a project backup and the label.
+#'
+#' @param path Character scalar, path to the CSV.
+#' @param score_scale Character scalar, `"logit"` or `"probability"`.
+#' @param min_confidence Numeric scalar in \[0, 1\].
+#' @param recordings `NULL`, a data frame or a character scalar path, the
+#'   recordings table of a project backup.
+#' @param label `NULL` or character scalar, the species of the job.
+#' @param ... Unused; the common arguments of the other readers.
+#' @return A tibble with `begin_path`, `begin_time`, `end_time`, `site`,
+#'   `species`, `songtype`, `score`, `confidence` and `verdict`, rows below
+#'   `min_confidence` left out.
+#' @noRd
+read_arbimon_csv <- function(path, score_scale, min_confidence,
+                             recordings = NULL, label = NULL, ...) {
+  raw <- read_csv(path, col_types = cols(.default = col_character()),
+                  show_col_types = FALSE, progress = FALSE)
+  num <- function(x) suppressWarnings(as.numeric(x))
+  if (all(c("recording", "site", "species", "x1", "x2", "score",
+            "validated") %in% names(raw))) {
+    tb <- tibble(begin_path = raw$recording, site = raw$site,
+                 species = raw$species,
+                 songtype = if ("songtype" %in% names(raw)) raw$songtype else
+                   NA_character_,
+                 begin_time = num(raw$x1), end_time = num(raw$x2),
+                 score = num(raw$score), validated = raw$validated)
+  } else if (all(c("recording_id", "site_name", "x1", "x2", "score",
+                   "validated") %in% names(raw))) {
+    if (is.null(label) || !is.character(label) || length(label) != 1 ||
+        is.na(label) || !nzchar(label)) {
+      stop(path, " is an Arbimon \"export all\" file, which does not name ",
+           "the species: give it in `label`.", call. = FALSE)
+    }
+    rec <- arbimon_recordings(recordings, path)
+    file <- rec$filename[match(raw$recording_id, rec$recording_id)]
+    if (anyNA(file)) {
+      stop(path, ": ", sum(is.na(file)), " recording_id(s) not found in ",
+           "`recordings` (e.g. ", raw$recording_id[is.na(file)][1], ").",
+           call. = FALSE)
+    }
+    tb <- tibble(begin_path = file, site = raw$site_name, species = label,
+                 songtype = NA_character_, begin_time = num(raw$x1),
+                 end_time = num(raw$x2), score = num(raw$score),
+                 validated = raw$validated)
+  } else {
+    stop(path, " is not an Arbimon pattern matching export: its header (",
+         paste(names(raw), collapse = ", "), ") lacks recording, site, ",
+         "species, x1, x2, score and validated, and recording_id, ",
+         "site_name, x1, x2, score and validated.", call. = FALSE)
+  }
+  v <- str_to_lower(str_trim(tb$validated))
+  tb$verdict <- case_when(v %in% c("present", "1") ~ "positive",
+                          v == "not present" ~ "negative",
+                          .default = NA_character_)
+  tb$validated <- NULL
+  bad <- is.na(tb$score) | is.na(tb$begin_time) | is.na(tb$begin_path)
+  if (any(bad)) {
+    message(sum(bad), " row(s) without a recording, start or score left ",
+            "out of ", path, ".")
+    tb <- tb[!bad, ]
+  }
+  tb$confidence <- score_to_confidence(tb$score, score_scale, path)
+  tb[tb$confidence >= min_confidence, ]
+}
+
+#' Map Arbimon recording ids to their original file names
+#'
+#' @param recordings `NULL`, a data frame or a character scalar path, the
+#'   `recordings` table of a project backup.
+#' @param path Character scalar, the export being read, for the messages.
+#' @return A tibble with `recording_id` and `filename`.
+#' @noRd
+arbimon_recordings <- function(recordings, path) {
+  if (is.null(recordings)) {
+    stop(path, " is an Arbimon \"export all\" file, which does not name the ",
+         "audio files: give the `recordings` table of a project backup.",
+         call. = FALSE)
+  }
+  if (is.character(recordings) && length(recordings) == 1) {
+    if (!file.exists(recordings)) {
+      stop("Not found: ", recordings, call. = FALSE)
+    }
+    recordings <- read_csv(recordings,
+                           col_types = cols(.default = col_character()),
+                           show_col_types = FALSE, progress = FALSE)
+  }
+  check_data_frame(recordings, "recordings")
+  if (!"recording_id" %in% names(recordings) ||
+      !any(c("filename", "meta") %in% names(recordings))) {
+    stop("`recordings` needs the columns recording_id and meta (or ",
+         "filename), as in the recordings table of an Arbimon backup.",
+         call. = FALSE)
+  }
+  file <- if ("filename" %in% names(recordings)) {
+    as.character(recordings$filename)
+  } else {
+    vapply(as.character(recordings$meta), function(m) {
+      x <- tryCatch(jsonlite::fromJSON(m), error = function(e) NULL)
+      if (is.list(x) && is.character(x$filename)) x$filename[1] else
+        NA_character_
+    }, character(1), USE.NAMES = FALSE)
+  }
+  tibble(recording_id = as.character(recordings$recording_id),
+         filename = file)
+}
+
+#' Build the labels of Arbimon matches
+#'
+#' The species, with the song type in brackets when a species has more than
+#' one song type among the files read.
+#'
+#' @param preds A data frame with `species` and `songtype`.
+#' @return `preds` with `label` added and `species` and `songtype` dropped.
+#' @noRd
+arbimon_labels <- function(preds) {
+  n_types <- tapply(preds$songtype, preds$species,
+                    function(x) length(unique(stats::na.omit(x))))
+  several <- n_types[preds$species] > 1
+  preds$label <- ifelse(several, paste0(preds$species, " (", preds$songtype,
+                                        ")"), preds$species)
+  preds$species <- NULL
+  preds$songtype <- NULL
+  preds
 }
