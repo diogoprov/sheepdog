@@ -193,7 +193,7 @@ cross-validation on all the clips (formulas with random effects need the
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> m3_plus_site            0.928 0.006<span style="text-decoration: underline;">40</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> m2_species_slope        0.916 0.005<span style="text-decoration: underline;">56</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> m1_species_intercept    0.902 0.005<span style="text-decoration: underline;">44</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> m0_global               0.862 0.012<span style="text-decoration: underline;">1</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> m0_global               0.862 0.012<span style="text-decoration: underline;">0</span></span></span></code></pre></div>
 <p>The effort curve below is drawn for the global model
 (<code>m0_global</code>, a single logistic regression on the logit of
 the score) and for the hierarchical <code>m4_species_x_site</code>
@@ -897,6 +897,48 @@ a night should stay in the same fold across rounds:
 <code>fold_group = "night"</code> does this, since it groups by the
 column and not by the round. Apply <code><a href="../reference/exclude_training_clips.html">exclude_training_clips()</a></code>
 the same way in every round.</p>
+<p><strong>A <code>"score_bands"</code> round after
+<code>"random_detections"</code> rounds.</strong> When
+<code><a href="../reference/compare_calibration_curves.html">compare_calibration_curves()</a></code> asks to
+<code>"sample_more_near_threshold"</code>, the random rounds have too
+few clips at high scores, where most detections are not. Another
+<code>"random_detections"</code> round would add mostly low scores; a
+<code>"score_bands"</code> round draws the same number of clips in each
+score band. It is a separate draw, so give the random rounds, with their
+verdicts, as <code>previous</code> of the other design: they stay in the
+pool, the inclusion probabilities of the new round are those of its own
+stratum x band, and <code>inherit = TRUE</code> reuses the positive
+verdicts of clips already reviewed. <code>"score_bands"</code> has no
+later rounds of its own (a second one is refused).</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/extract_validation_clips.html">extract_validation_clips</a></span><span class="op">(</span><span class="va">data_dir</span>, <span class="st">"bands"</span>,</span>
+<span>                         sampling_mode <span class="op">=</span> <span class="st">"score_bands"</span>, n_top <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>                         score_breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.4</span>, <span class="fl">0.7</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>                         previous <span class="op">=</span> <span class="st">"round2/results/validation_combined.csv"</span>,</span>
+<span>                         inherit <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co"># ... review, then:</span></span>
+<span><span class="fu"><a href="../reference/post_validation.html">post_validation</a></span><span class="op">(</span>verdicts_file <span class="op">=</span> <span class="st">"bands/verdicts.csv"</span>,</span>
+<span>                manifest_path <span class="op">=</span> <span class="st">"bands/clip_manifest.csv"</span>,</span>
+<span>                output_dir <span class="op">=</span> <span class="st">"bands/results"</span>,</span>
+<span>                previous <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"round1/results/validation_by_clip.csv"</span>,</span>
+<span>                             <span class="st">"round2/results/validation_by_clip.csv"</span><span class="op">)</span>,</span>
+<span>                candidates <span class="op">=</span> <span class="st">"round1/candidates.csv"</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="../reference/combine_rounds.html">combine_rounds()</a></code> (here through
+<code>post_validation(previous = )</code>) recomputes
+<code>inclusion_prob</code> only for the
+<code>"random_detections"</code> clips, as one simple random sample of
+each stratum. The <code>"score_bands"</code> clips keep their own
+<code>inclusion_prob</code>, <code>n_candidates</code> and
+<code>n_drawn</code>, with <code>stratum</code> and
+<code>n_rounds</code> set to <code>NA</code>, and an occasion drawn by
+both designs is not taken as a repeated round. The threshold and
+calibration functions weight every clip by
+<code>1 / inclusion_prob</code>, so the pooled table adds the
+Horvitz–Thompson totals of the two draws, and the weighted precision of
+a score bin is still a ratio estimate. A clip drawn by both designs
+appears once per design. The pooled table is for thresholds and
+calibration only: <code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code> warns about the
+<code>"score_bands"</code> clips, and crywolf drops them.</p>
 <p><strong>Stopping at the target biases the precision.</strong> The
 probabilities are exact for a number of rounds fixed in advance. A cell
 that goes on until it reaches the target stops right after a lucky
@@ -953,7 +995,7 @@ computed for the best model of the cross-validation and written to
 <code>effort_curve.csv</code>. The arguments <code>effort_n</code> and
 <code>effort_reps</code> set the training sizes and the number of
 repetitions.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ARA"</span>, <span class="st">"BAI"</span>, <span class="st">"NHE"</span>, <span class="st">"XAR"</span><span class="op">)</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibrate.html">calibrate</a></span><span class="op">(</span></span>
 <span>  validation_files  <span class="op">=</span> <span class="va">val_files</span>,</span>

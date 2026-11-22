@@ -70,7 +70,9 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="sheepdog-development-version">sheepdog (development version)<a class="anchor" aria-label="anchor" href="#sheepdog-development-version"></a></h2>
-<ul><li>The documentation now names the project DiverSons instead of FrogNet. The vignette <code>frognet-workflow</code> is now <code>diversons-workflow</code> (also its Portuguese translation); the old article addresses redirect to the new ones.</li>
+<ul><li>
+<code><a href="../reference/combine_rounds.html">combine_rounds()</a></code> keeps the clips of a <code>"score_bands"</code> round (or of any other design) as they are: their <code>inclusion_prob</code>, <code>n_candidates</code> and <code>n_drawn</code> are no longer overwritten by those of the <code>"random_detections"</code> stratum, and an occasion drawn by both designs no longer stops it as a repeated round. <code>post_validation(previous = )</code> of a <code>"score_bands"</code> round drawn after random rounds now works. Documented in <code><a href="../reference/combine_rounds.html">combine_rounds()</a></code>, <code><a href="../reference/select_clips.html">select_clips()</a></code> and <code><a href="../articles/validation-effort.html">vignette("validation-effort")</a></code>.</li>
+<li>The documentation now names the project DiverSons instead of FrogNet. The vignette <code>frognet-workflow</code> is now <code>diversons-workflow</code> (also its Portuguese translation); the old article addresses redirect to the new ones.</li>
 <li>Infrastructure following the rOpenSci packaging guide: <code>inst/CITATION</code> (so that <code>citation("sheepdog")</code> works), <code>codemeta.json</code>, a contributing guide and a code of conduct (in <code>.github/</code>), and repostatus and R-CMD-check badges in the README.</li>
 <li>
 <code>CITATION.cff</code> and the README now point to the Zenodo concept DOI (10.5281/zenodo.22696209), which always resolves to the latest version; they pointed to the DOI of version 1.0.0.</li>

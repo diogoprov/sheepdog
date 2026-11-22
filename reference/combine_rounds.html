@@ -117,10 +117,11 @@ data frame. <code>NULL</code> looks for it in the folders of <code>validation</c
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>The stacked table, with <code>stratum</code>, <code>n_candidates</code>, <code>n_drawn</code>,
-the cumulative <code>inclusion_prob</code> and <code>n_rounds</code>, the number of rounds
-with clips of the site x species. Clips of other sampling modes are
-kept as they are, with these columns <code>NA</code>.</p>
+    <p>The stacked table, in the order of the input, with <code>stratum</code>,
+<code>n_candidates</code>, <code>n_drawn</code>, the cumulative <code>inclusion_prob</code> and
+<code>n_rounds</code>, the number of rounds with clips of the site x species.
+Clips of other sampling modes keep their <code>inclusion_prob</code>,
+<code>n_candidates</code> and <code>n_drawn</code>, with <code>stratum</code> and <code>n_rounds</code> <code>NA</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -128,6 +129,24 @@ kept as they are, with these columns <code>NA</code>.</p>
 the rounds of a cell go on until it reaches a target, the decision to
 stop depends on the verdicts, and the precision tends to be too high;
 see <code><a href="../articles/validation-effort.html">vignette("validation-effort")</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="rounds-of-other-designs">Rounds of other designs<a class="anchor" aria-label="anchor" href="#rounds-of-other-designs"></a></h2>
+
+
+<p>The tables may also hold clips of other designs, such as a
+<code>"score_bands"</code> round drawn after the random rounds to add clips near the
+threshold (<code>previous</code> of the other design in <code><a href="select_clips.html">select_clips()</a></code>). Only the
+<code>"random_detections"</code> clips form the cumulative sample: the clips of the
+other designs are independent draws and keep their own <code>inclusion_prob</code>,
+<code>n_candidates</code> and <code>n_drawn</code>, and an occasion drawn by both designs is
+not taken as a repeated round. Weighted by <code>1 / inclusion_prob</code>, the
+pooled table adds the Horvitz-Thompson totals of the draws, so the
+weighted precision of <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>, <code><a href="precision_by_bin.html">precision_by_bin()</a></code> and
+<code><a href="compare_calibration_curves.html">compare_calibration_curves()</a></code> is still a ratio estimate. Clips of
+<code>"score_bands"</code> are chosen by their score and are not for occupancy
+models (<code><a href="export_occupancy_data.html">export_occupancy_data()</a></code> warns about them). See
+<code><a href="../articles/validation-effort.html">vignette("validation-effort")</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

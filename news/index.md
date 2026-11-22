@@ -2,6 +2,17 @@
 
 ## sheepdog (development version)
 
+- [`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md)
+  keeps the clips of a `"score_bands"` round (or of any other design) as
+  they are: their `inclusion_prob`, `n_candidates` and `n_drawn` are no
+  longer overwritten by those of the `"random_detections"` stratum, and
+  an occasion drawn by both designs no longer stops it as a repeated
+  round. `post_validation(previous = )` of a `"score_bands"` round drawn
+  after random rounds now works. Documented in
+  [`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md),
+  [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
+  and
+  [`vignette("validation-effort")`](https://provetelab.org/sheepdog/articles/validation-effort.md).
 - The documentation now names the project DiverSons instead of FrogNet.
   The vignette `frognet-workflow` is now `diversons-workflow` (also its
   Portuguese translation); the old article addresses redirect to the new

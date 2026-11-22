@@ -105,7 +105,7 @@ select(cv, model, auc_mean, auc_sd)
 #> 2 m3_plus_site            0.928 0.00640
 #> 3 m2_species_slope        0.916 0.00556
 #> 4 m1_species_intercept    0.902 0.00544
-#> 5 m0_global               0.862 0.0121
+#> 5 m0_global               0.862 0.0120
 ```
 
 The effort curve below is drawn for the global model (`m0_global`, a
@@ -875,6 +875,50 @@ should stay in the same fold across rounds: `fold_group = "night"` does
 this, since it groups by the column and not by the round. Apply
 [`exclude_training_clips()`](https://provetelab.org/sheepdog/reference/exclude_training_clips.md)
 the same way in every round.
+
+**A `"score_bands"` round after `"random_detections"` rounds.** When
+[`compare_calibration_curves()`](https://provetelab.org/sheepdog/reference/compare_calibration_curves.md)
+asks to `"sample_more_near_threshold"`, the random rounds have too few
+clips at high scores, where most detections are not. Another
+`"random_detections"` round would add mostly low scores; a
+`"score_bands"` round draws the same number of clips in each score band.
+It is a separate draw, so give the random rounds, with their verdicts,
+as `previous` of the other design: they stay in the pool, the inclusion
+probabilities of the new round are those of its own stratum x band, and
+`inherit = TRUE` reuses the positive verdicts of clips already reviewed.
+`"score_bands"` has no later rounds of its own (a second one is
+refused).
+
+``` r
+
+extract_validation_clips(data_dir, "bands",
+                         sampling_mode = "score_bands", n_top = 5,
+                         score_breaks = c(0.1, 0.4, 0.7, 1),
+                         previous = "round2/results/validation_combined.csv",
+                         inherit = TRUE)
+# ... review, then:
+post_validation(verdicts_file = "bands/verdicts.csv",
+                manifest_path = "bands/clip_manifest.csv",
+                output_dir = "bands/results",
+                previous = c("round1/results/validation_by_clip.csv",
+                             "round2/results/validation_by_clip.csv"),
+                candidates = "round1/candidates.csv")
+```
+
+[`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md)
+(here through `post_validation(previous = )`) recomputes
+`inclusion_prob` only for the `"random_detections"` clips, as one simple
+random sample of each stratum. The `"score_bands"` clips keep their own
+`inclusion_prob`, `n_candidates` and `n_drawn`, with `stratum` and
+`n_rounds` set to `NA`, and an occasion drawn by both designs is not
+taken as a repeated round. The threshold and calibration functions
+weight every clip by `1 / inclusion_prob`, so the pooled table adds the
+Horvitz–Thompson totals of the two draws, and the weighted precision of
+a score bin is still a ratio estimate. A clip drawn by both designs
+appears once per design. The pooled table is for thresholds and
+calibration only:
+[`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+warns about the `"score_bands"` clips, and crywolf drops them.
 
 **Stopping at the target biases the precision.** The probabilities are
 exact for a number of rounds fixed in advance. A cell that goes on until

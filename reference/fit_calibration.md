@@ -219,10 +219,10 @@ if (requireNamespace("lme4", quietly = TRUE)) {
   confint(fit, method = "Wald", parm = "beta_")
 }
 #> (Intercept)  logit_conf 
-#>  -0.2060523   1.6030183 
+#>  -0.2060526   1.6030184 
 #>                  2.5 %    97.5 %
-#> (Intercept) -0.9305499 0.5184454
-#> logit_conf   1.4584248 1.7476119
+#> (Intercept) -0.9305439 0.5184387
+#> logit_conf   1.4584249 1.7476119
 
 # Bayesian fit: the prior is always given explicitly. Fitting compiles a
 # Stan model, which takes minutes, so this part is not run here.
