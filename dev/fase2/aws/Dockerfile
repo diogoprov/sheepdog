@@ -12,7 +12,7 @@ ENV OPENBLAS_NUM_THREADS=1 \
     CMDSTAN=/opt/cmdstan/cmdstan-2.40.0 \
     MAKEFLAGS="-j16"
 
-RUN R -q -e 'install.packages(c("posterior", "remotes"))' \
+RUN R -q -e 'install.packages(c("posterior", "remotes", "withr"))' \
  && R -q -e 'install.packages("cmdstanr", repos = c("https://stan-dev.r-universe.dev", getOption("repos")))'
 RUN mkdir -p /opt/cmdstan \
  && R -q -e 'cmdstanr::install_cmdstan(dir = "/opt/cmdstan", version = "2.40.0", cores = 32, quiet = TRUE)'

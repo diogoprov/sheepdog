@@ -73,7 +73,12 @@
 #' The tables of earlier rounds keep the probability of their own round:
 #' use [combine_rounds()] to stack them. In `"top"`, there is no inclusion
 #' probability, and `previous` only leaves out the clips already reviewed.
-#' `previous` is not available for `"random_recordings"`.
+#' `previous` is not available for `"random_recordings"`, and a
+#' `"score_bands"` round has no later rounds of its own; to add clips near
+#' the threshold after `"random_detections"` rounds, draw a `"score_bands"`
+#' round with those rounds as `previous` of the other design, and stack all
+#' of them with [combine_rounds()], which keeps the `inclusion_prob` of the
+#' `"score_bands"` clips.
 #'
 #' Choosing the cells of a round from their verdicts, and stopping when a
 #' cell reaches a target, makes the stopping depend on the results; see

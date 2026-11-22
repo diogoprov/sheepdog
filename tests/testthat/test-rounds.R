@@ -388,3 +388,29 @@ test_that("read_validation_tables() skips missing files with candidates", {
     "Not found")
   expect_equal(nrow(comb), nrow(r1))
 })
+
+test_that("a score_bands round is stacked with the random rounds as it is", {
+  pred <- rounds_detections(20)
+  r1 <- draw(pred)
+  r2 <- draw(pred, previous = r1, candidates = attr(r1, "candidates"))
+  anteriores <- dplyr::mutate(dplyr::bind_rows(r1, r2), verdict = "positive")
+  # n_top = 10 de 20 por faixa: com certeza cai em ocasioes das rodadas 1 e 2
+  sb <- suppressMessages(select_clips(pred, "score_bands", n_top = 10,
+                                      strata = "site_species",
+                                      score_breaks = c(0.5, 0.8, 1),
+                                      previous = anteriores, seed = 3))
+  expect_gt(length(intersect(ids(sb), ids(r2))), 0)
+  comb <- combine_rounds(list(r1, r2, sb), attr(r1, "candidates"))
+  expect_equal(nrow(comb), nrow(r1) + nrow(r2) + nrow(sb))
+  expect_equal(comb$sampling_mode,
+               c(r1$sampling_mode, r2$sampling_mode, sb$sampling_mode))
+  rd <- comb[comb$sampling_mode == "random_detections", ]
+  expect_equal(unique(rd$inclusion_prob), 4 / 20)
+  expect_equal(unique(rd$n_rounds), 2L)
+  faixas <- comb[comb$sampling_mode == "score_bands", ]
+  expect_equal(faixas$inclusion_prob, sb$inclusion_prob)
+  expect_equal(faixas$n_candidates, sb$n_candidates)
+  expect_equal(faixas$n_drawn, sb$n_drawn)
+  expect_true(all(is.na(faixas$stratum)))
+  expect_true(all(is.na(faixas$n_rounds)))
+})

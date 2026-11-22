@@ -3,7 +3,12 @@
 # night, scores by class). Stage 1 emissions are fixed at their point estimates.
 # With a night random effect, `new` draws fresh night effects from N(0, sigma)
 # (marginal replication); `same` keeps the posterior effects of each night.
-# Also takes fits of model_v1_3state.stan (persistent f1 components).
+# Also takes fits of model_v1_3state.stan (persistent f1 components) and fits
+# with stage 1 by score bins (emissions_bins_curiango.R): the bin is drawn
+# from f_w and the score resampled among the deposit minutes of that bin.
+# With stage 1 by bin x context (emissions_binsctx_curiango.R), the bin is
+# drawn minute by minute from f_w(. | c), c = 1 when the previous simulated
+# minute (contiguous) is in the top bin.
 #   Rscript dev/fase2/ppc_curiango_2stage.R FIT_FILE [N_DRAWS] [same|new]
 source("dev/fase2/curiango_v1.R")
 a <- commandArgs(TRUE); f <- readRDS(a[1]); nd <- if (length(a) > 1) as.integer(a[2]) else 200L
@@ -34,6 +39,16 @@ remix <- function(n, p) {
   rnorm(n, ifelse(low, p[["mu_a"]], p[["mu_b"]]), ifelse(low, p[["sd_a"]], p[["sd_b"]]))
 }
 obs <- stats(st$s, st$cens, st$v)
+ctxe <- identical(f$emissions$type, "binsctx")
+bins <- identical(f$emissions$type, "bins") || ctxe
+if (bins) {
+  # observed scores on the latent scale, censored ones pushed past the limits
+  s_obs <- ifelse(st$cens == 1L, st$c_lo - 1, ifelse(st$cens == 2L, st$c_hi + 1, st$s))
+  pr <- ifelse(st$cens == 1L, 0, ifelse(st$cens == 2L, 1, plogis(st$s)))
+  bin_obs <- as.integer(cut(pr, f$emissions$breaks, right = FALSE))
+  nbin <- length(f$emissions$breaks) - 1L
+  pool <- split(seq_len(st$N_occ), factor(bin_obs, levels = seq_len(nbin)))
+}
 dr <- f$draws; idx <- round(seq(1, nrow(dr), length.out = nd)); set.seed(2026)
 three <- "xi" %in% colnames(dr)
 rho_col <- "rho[1]" %in% colnames(dr)
@@ -54,6 +69,7 @@ rep <- vapply(idx, \(i) {
   w <- integer(st$N_occ)
   hc <- integer(st$N_occ)  # 1 when a call is in the high component of f1
   u2 <- runif(st$N_occ)
+  bb <- integer(st$N_occ)
   for (j in seq_len(max(len))) {
     k <- which(pos == j)
     prev <- if (j == 1L) 0L else ifelse(adj[k], w[k - 1L], 0L)
@@ -64,12 +80,24 @@ rep <- vapply(idx, \(i) {
         ifelse(prev == 1L, ifelse(hc[k - 1L] == 1L, g("p_hh"), g("p_hl")), g("p_h"))
       hc[k] <- as.integer(w[k] == 1L & u2[k] < ph)
     }
+    if (ctxe) {
+      cx <- if (j == 1L) integer(length(k)) else as.integer(adj[k] & bb[k - 1L] == nbin)
+      for (ww in 0:1) for (cc in 0:1) {
+        kk <- k[w[k] == ww & cx == cc]
+        if (length(kk)) bb[kk] <- sample.int(nbin, length(kk), TRUE,
+          (if (ww == 1L) f$emissions$f1 else f$emissions$f0)[seq_len(nbin) + nbin * cc])
+      }
+    }
   }
   s <- if (three) {
     f1 <- f$emissions$f1
     ifelse(w == 0L, remix(st$N_occ, f$emissions$f0),
            ifelse(hc == 1L, rnorm(st$N_occ, f1[["mu_b"]], f1[["sd_b"]]),
                   rnorm(st$N_occ, f1[["mu_a"]], f1[["sd_a"]])))
+  } else if (bins) {
+    if (!ctxe) bb <- ifelse(w == 1L, sample.int(nbin, st$N_occ, TRUE, f$emissions$f1),
+                            sample.int(nbin, st$N_occ, TRUE, f$emissions$f0))
+    s_obs[vapply(bb, \(x) pool[[x]][sample.int(length(pool[[x]]), 1L)], 0L)]
   } else ifelse(w == 1L, remix(st$N_occ, f$emissions$f1), remix(st$N_occ, f$emissions$f0))
   cens <- ifelse(s < st$c_lo, 1L, ifelse(s > st$c_hi, 2L, 0L))
   stats(s, cens, w)

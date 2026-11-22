@@ -1,5 +1,7 @@
 # Two-stage v1 on the Curiango: stage 1 emissions (emissions_2stage_curiango.R)
 # fixed, then model_v1_2stage.stan with or without the Markov term.
+# EMIS_RDS may carry `v` (labels of a simulated data set), which replaces the
+# Curiango labels.
 #   Rscript dev/fase2/run_curiango_2stage.R OUT_DIR EMIS_RDS [markov 1/0] [chains] [warmup] [sampling] [night_re 1/0]
 suppressPackageStartupMessages(library(cmdstanr))
 source("dev/fase2/curiango_v1.R")
@@ -15,6 +17,8 @@ d <- curiango_v1("custom", c_lo = qlogis(0.1)); st <- d$stan
 nights <- d$night[st$first]
 dat <- st[c("N_site", "N_occ", "first", "last", "P_psi", "X", "P_theta", "D", "v", "adj")]
 dat$e0 <- em$e0; dat$e1 <- em$e1; dat$markov <- mk
+# simulated data sets (sim_surtos_curiango.R) carry their own labels
+if (!is.null(em$v)) dat$v <- as.integer(em$v)
 dat$night_re <- re; dat$N_night <- length(unique(nights))
 dat$night <- match(nights, sort(unique(nights)))
 mod <- cmdstan_model("dev/fase2/model_v1_2stage.stan", dir = out, quiet = TRUE)
@@ -29,7 +33,7 @@ secs <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
 pars <- c("beta", "alpha", if (mk == 1) "rho", if (re == 1) c("sigma_night", "u_night"),
           "psi_c", "theta0", "theta_bar")
 saveRDS(list(markov = mk, night_re = re, chains = ch, warmup = wu, sampling = sa, seconds = secs,
-             emissions = em[c("rate", "f0", "f1", "n_eff")],
+             emissions = em[intersect(c("type", "breaks", "rate", "f0", "f1", "n_eff"), names(em))],
              summary = as.data.frame(fit$summary(pars)),
              diag = fit$diagnostic_summary(quiet = TRUE),
              draws = posterior::as_draws_matrix(fit$draws(pars))),

@@ -23,6 +23,8 @@ systemctl start docker
 mkdir -p ${WORK}
 aws s3 cp ${S3}/code.tar.gz /tmp/code.tar.gz
 tar xzf /tmp/code.tar.gz -C ${WORK}
+# optional inputs that are not in git (uploaded by launch.sh from dev/fase2/inputs)
+aws s3 sync ${S3}/inputs ${WORK}/dev/fase2/inputs --only-show-errors || true
 mkdir -p ${WORK}/${OUT}
 aws s3 sync ${S3}/tasks ${WORK}/${OUT} --only-show-errors
 checkpoint() {
