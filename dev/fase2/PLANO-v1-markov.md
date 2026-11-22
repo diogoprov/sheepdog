@@ -1569,6 +1569,59 @@ que o alvo do v1 é a ocupação por sítio-noite? `sim_psi_curiango.R`.
   seguinte é a cobertura com bootstrap na AWS. Viés maior → o v1 precisa
   de emissões com dependência antes de ir ao crywolf.
 
+### Simulação de ψ: resultados (21/11/2026)
+
+Calibração (média de 10 simulações): os três geradores ficam perto do
+Curiango em y_rate (0,016 contra 0,018), P(y | anterior) (0,37 a 0,38
+contra 0,39), minutos altos com vizinho alto (0,58 a 0,59 contra 0,567) e
+noites com um único minuto alto (0,097 a 0,099 contra 0,115), mas passam
+na fração de noites com algum minuto alto (0,30 a 0,32 contra 0,25).
+`ind`: ρ = 4,63, ψ̄ = 0,56. `pers` e `pers0` (os mesmos parâmetros, porque
+a f₀ perto de surto não mexe nos scores ≥ 0,4): κ = 0,51, ρ = 2,94,
+ψ̄ = 0,44.
+
+24 ajustes (4 cadeias de 500 + 500): sem divergências, R-hat ≤ 1,01, ESS
+bulk ≥ 766. `sim_psi_curiango.R resumo`.
+
+| Cenário | ψ̄ verdadeiro | Viés absoluto de ψ̄ | Viés relativo | Cobertura 90% | ρ estimado | Modelo / referência (minutos) |
+|---|---|---|---|---|---|---|
+| `ind` | 0,560 | −0,012 | −2,1% | 6/8 | 4,54 | 1,02 (0,92 a 1,07) |
+| `pers` | 0,441 | −0,009 | −2,0% | 7/8 | 3,10 | 1,00 (0,94 a 1,05) |
+| `pers0` | 0,441 | −0,007 | −1,6% | 6/8 | 3,46 | 1,04 (0,96 a 1,15) |
+
+Por conjunto, o viés absoluto de ψ̄ vai de −0,047 a +0,026. A cobertura
+sem o bootstrap do estágio 1 sai abaixo de 0,90, como esperado.
+
+ψ̄ nos 36 conjuntos da simulação com surtos (mesmo resumo):
+
+| Cenário | ψ̄ verdadeiro | Viés absoluto | Cobertura 90% |
+|---|---|---|---|
+| `v1` | 0,369 | +0,002 | 7/8 |
+| `het` | 0,499 | +0,004 | 7/8 |
+| `semi` | 0,362 | −0,014 | 6/8 |
+| `het2` | 0,467 | −0,023 | 6/6 |
+| `hett` | 0,488 | **−0,162** | 0/6 |
+
+* **As violações das emissões não enviesam ψ.** Persistência do score
+  dentro do canto e f₀ elevada perto de surto: viés ≤ 0,01 em média e
+  ≤ 0,05 em todo conjunto. Pelo critério fixado, passa.
+* **O que enviesa ψ é θ heterogêneo entre sítio-noites (`hett`):** −0,16
+  (−33%), em todos os conjuntos. É o problema clássico de heterogeneidade
+  de detecção em ocupação: noites ocupadas com pouco canto parecem vazias.
+  No Curiango, o efeito aleatório de noite em θ estimou σ = 0,32 (seção de
+  13/11), bem abaixo do σ = 0,95 de `hett`; um efeito por sítio-noite
+  ainda não foi testado.
+* Nenhum gerador reproduz o excesso de minutos do Curiango (1,42): aqui a
+  razão fica entre 0,92 e 1,15. A causa da prevalência de minutos inflada
+  continua sem explicação completa; para ψ ela parece não importar.
+
+Leitura (interpretação): para o alvo de ocupação, o v1 resiste às
+violações das emissões que vimos no Curiango, e a fraqueza que aparece é
+a de qualquer modelo de ocupação, a heterogeneidade de detecção. Próximos
+passos: (i) cobertura de ψ com o bootstrap do estágio 1 (AWS), que é o
+critério 2 reescrito; (ii) testar no Curiango um efeito aleatório de
+sítio-noite em θ e ver se ψ se move; (iii) FrogNet.
+
 ## Critério para levar o v1 de dois estágios ao crywolf (20/11/2026)
 
 Decidido com o Diogo: o v1 fica em `dev/fase2` até cumprir os três
