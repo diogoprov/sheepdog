@@ -125,8 +125,6 @@ read_classifier_output <- function(files,
     stop("No prediction at or above `min_confidence` = ", min_confidence,
          " in ", length(paths), " file(s).", call. = FALSE)
   }
-  n_low <- sum(attr(preds, "n_low"), 0)
-
   preds$begin_path <- pamdp_resolve(preds$begin_path, audio_root)
   preds$site <- if (is.null(site_pattern)) {
     site_from_folder(preds$begin_path)
@@ -204,8 +202,7 @@ score_to_confidence <- function(score, score_scale, file) {
 #' @param min_confidence Numeric scalar in \[0, 1\].
 #' @param window_s Numeric scalar, window length for headers without its end.
 #' @return A tibble with `begin_path`, `begin_time`, `end_time`, `label`,
-#'   `score` and `confidence`, with the attribute `n_low` (rows below
-#'   `min_confidence`).
+#'   `score` and `confidence`, rows below `min_confidence` left out.
 #' @noRd
 read_perch_csv <- function(path, score_scale, min_confidence, window_s) {
   raw <- read_csv(path, col_types = cols(.default = col_character()),
@@ -245,8 +242,7 @@ read_perch_csv <- function(path, score_scale, min_confidence, window_s) {
     tb <- tb[!bad, ]
   }
   tb$confidence <- score_to_confidence(tb$score, score_scale, path)
-  keep <- tb$confidence >= min_confidence
-  structure(tb[keep, ], n_low = sum(!keep))
+  tb[tb$confidence >= min_confidence, ]
 }
 
 #' Read one OpenSoundscape prediction CSV
@@ -261,7 +257,8 @@ read_perch_csv <- function(path, score_scale, min_confidence, window_s) {
 #' @param window_s Unused; kept for a common signature with
 #'   read_perch_csv().
 #' @return A tibble with `begin_path`, `begin_time`, `end_time`, `label`,
-#'   `score` and `confidence`, with the attribute `n_low`.
+#'   `score` and `confidence`, or `NULL` when no row reaches
+#'   `min_confidence`.
 #' @noRd
 read_opensoundscape_csv <- function(path, score_scale, min_confidence,
                                     window_s = NULL) {
@@ -285,10 +282,9 @@ read_opensoundscape_csv <- function(path, score_scale, min_confidence,
             "be read) left out of ", path, ".")
     raw <- raw[!failed, ]
   }
-  all_scores <- unlist(raw[classes], use.names = FALSE)
-  conf_all <- score_to_confidence(all_scores, score_scale, path)
-  n_low <- sum(!is.na(conf_all) & conf_all < min_confidence)
-  rm(all_scores, conf_all)
+  # one pass over all scores for the scale check and its message
+  score_to_confidence(unlist(raw[classes], use.names = FALSE), score_scale,
+                      path)
   tb <- map(classes, function(cl) {
     s <- raw[[cl]]
     conf <- suppressMessages(score_to_confidence(s, score_scale, path))
@@ -299,12 +295,7 @@ read_opensoundscape_csv <- function(path, score_scale, min_confidence,
            confidence = conf[keep])
   }) |>
     list_rbind()
-  if (is.null(tb)) {
-    tb <- tibble(begin_path = character(), begin_time = numeric(),
-                 end_time = numeric(), label = character(), score = numeric(),
-                 confidence = numeric())
-  }
-  structure(tb, n_low = n_low)
+  tb
 }
 
 #' Build sheepdog species codes from classifier labels

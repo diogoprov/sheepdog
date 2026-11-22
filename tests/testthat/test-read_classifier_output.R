@@ -76,6 +76,14 @@ test_that("OpenSoundscape wide tables become one row per class and window", {
   pr <- suppressMessages(read_classifier_output(p, "opensoundscape",
                                                 score_scale = "probability"))
   expect_equal(sort(pr$confidence), seq(0.1, 0.6, by = 0.05))
+  low <- write_lines_tmp(c(
+    "file,start_time,end_time,sp1,sp2",
+    "S1/S1_20240110_200000.wav,0,3,-5,2",
+    "S1/S1_20240110_200000.wav,3,6,-6,-4"))
+  lo <- suppressMessages(read_classifier_output(low, "opensoundscape"))
+  expect_identical(lo$label, "sp2")
+  expect_error(suppressMessages(read_classifier_output(
+    low, "opensoundscape", min_confidence = 0.95)), "No prediction at or above")
   no_class <- write_lines_tmp(c("file,start_time,end_time", "S1/a.wav,0,3"))
   expect_error(read_classifier_output(no_class, "opensoundscape"),
                "has no class columns")
@@ -99,6 +107,7 @@ test_that("sites, audio roots and folders of files are handled", {
     d, "perch", site_pattern = "^[^_]+_([^_]+)_", audio_root = "/audio/"))
   expect_identical(x$site, c("Campus01", "Campus02"))
   expect_identical(x$begin_path[1], "/audio/rec_Campus01_20240110_200000.wav")
+  expect_error(read_classifier_output(1:3, "perch"), "character vector of paths")
   expect_error(read_classifier_output(file.path(d, "none.csv"), "perch"),
                "Not found")
   expect_error(read_classifier_output(withr::local_tempdir(), "perch"),
@@ -124,4 +133,8 @@ test_that("score_detections() takes a table of predictions like the paths", {
   expect_error(score_detections(tab[, c("site", "confidence")], fit),
                "lacks the column")
   expect_error(score_detections(1:3, fit), "data frame of predictions")
+  expect_warning(none <- suppressMessages(score_detections(
+    c(ARA = file.path(withr::local_tempdir(), "none.txt")), fit)),
+    "Table not found for ARA")
+  expect_identical(nrow(none), 0L)
 })
