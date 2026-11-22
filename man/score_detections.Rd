@@ -15,10 +15,13 @@ score_detections(
 )
 }
 \arguments{
-\item{tables}{Named character vector, one element per site, named by site
-(the site names of the calibration): the path of the combined selection
-table of each site, or the folder of its per-audio tables (see
-\code{\link[=read_selection_tables]{read_selection_tables()}}).}
+\item{tables}{Either a data frame (or tibble) of predictions, one row per
+prediction, with the columns \code{site}, \code{species_code}, \code{confidence},
+\code{begin_path} and \code{file_offset}, as returned by \code{\link[=read_selection_tables]{read_selection_tables()}}
+or \code{\link[=read_classifier_output]{read_classifier_output()}}; or a named character vector, one element
+per site, named by site (the site names of the calibration): the path of
+the combined selection table of each site, or the folder of its
+per-audio tables (see \code{\link[=read_selection_tables]{read_selection_tables()}}).}
 
 \item{fit}{A \code{glm}, \code{glmerMod} or \code{brmsfit} returned by \code{\link[=fit_calibration]{fit_calibration()}}.}
 
@@ -42,8 +45,8 @@ A tibble with \code{site}, \code{species}, \code{date}, \code{night}, \code{hour
 fitted with \code{engine = "brms"}, also \code{p_tp_lower} and \code{pr_reliable}.
 }
 \description{
-Reads the complete BirdNET selection tables (not only the reviewed
-clips) and predicts, for each detection, the probability that it is a
+Reads the complete BirdNET selection tables, or takes a table of
+predictions already read (not only the reviewed clips), and predicts, for each detection, the probability that it is a
 true positive. Only species present in the calibration are scored. The
 night of each detection is its recording date, or the day before for
 recordings that start before \code{dawn_hour}.

@@ -1,5 +1,15 @@
 # sheepdog (development version)
 
+- New `read_classifier_output()` reads the predictions of Perch (the
+  inference CSV of perch-hoplite and of the earlier perch repository), of
+  OpenSoundscape (the table of `predict()`) and of Arbimon pattern matching
+  jobs (with the reviews done in Arbimon in `verdict`), and returns them in
+  the shape of `read_selection_tables()`. Logits are turned into confidences
+  with the logistic function (`score_scale`), and the original score is
+  kept.
+- `score_detections()` also takes a table of predictions, such as the
+  output of `read_selection_tables()` or `read_classifier_output()`,
+  instead of paths to selection tables.
 - `fit_calibration()` gains `control`: a `lme4::glmerControl()` object or a
   list of `stats::glm.control()` arguments with `engine = "lme4"` (to change
   the optimiser, the evaluation budget or the convergence tolerances), or

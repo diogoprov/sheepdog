@@ -1012,16 +1012,19 @@ calibration_effort <- function(validations, formula,
 
 #' Score every detection with the calibration model
 #'
-#' Reads the complete BirdNET selection tables (not only the reviewed
-#' clips) and predicts, for each detection, the probability that it is a
+#' Reads the complete BirdNET selection tables, or takes a table of
+#' predictions already read (not only the reviewed clips), and predicts, for each detection, the probability that it is a
 #' true positive. Only species present in the calibration are scored. The
 #' night of each detection is its recording date, or the day before for
 #' recordings that start before `dawn_hour`.
 #'
-#' @param tables Named character vector, one element per site, named by site
-#'   (the site names of the calibration): the path of the combined selection
-#'   table of each site, or the folder of its per-audio tables (see
-#'   [read_selection_tables()]).
+#' @param tables Either a data frame (or tibble) of predictions, one row per
+#'   prediction, with the columns `site`, `species_code`, `confidence`,
+#'   `begin_path` and `file_offset`, as returned by [read_selection_tables()]
+#'   or [read_classifier_output()]; or a named character vector, one element
+#'   per site, named by site (the site names of the calibration): the path of
+#'   the combined selection table of each site, or the folder of its
+#'   per-audio tables (see [read_selection_tables()]).
 #' @param fit A `glm`, `glmerMod` or `brmsfit` returned by [fit_calibration()].
 #' @param min_confidence Numeric scalar in \[0, 1\]. Detections below this
 #'   confidence are not scored.
@@ -1063,10 +1066,15 @@ calibration_effort <- function(validations, formula,
 score_detections <- function(tables, fit, min_confidence = 0.1,
                              dawn_hour = 12, p_min = 0.95, lower_prob = 0.05,
                              grid_step = 0.01) {
-  if (!is.character(tables) || length(tables) == 0L ||
-      is.null(names(tables)) || any(!nzchar(names(tables)))) {
-    stop("`tables` must be a character vector of paths named by site.",
-         call. = FALSE)
+  if (is.data.frame(tables)) {
+    tables <- as_input_table(
+      tables, c("site", "species_code", "confidence", "begin_path",
+                "file_offset"), "tables", numeric = "confidence")
+    tables <- split(tables, as.character(tables$site))
+  } else if (!is.character(tables) || length(tables) == 0L ||
+             is.null(names(tables)) || any(!nzchar(names(tables)))) {
+    stop("`tables` must be a data frame of predictions or a character ",
+         "vector of paths named by site.", call. = FALSE)
   }
   check_prob(min_confidence, "min_confidence")
   check_number(dawn_hour, "dawn_hour", 0, 24)
@@ -1081,15 +1089,20 @@ score_detections <- function(tables, fit, min_confidence = 0.1,
             "effects only: ", paste(new_sites, collapse = ", "))
   }
   imap(tables, function(path, loc) {
-    if (!file.exists(path)) {
-      warning("Table not found for ", loc, ": ", path)
-      return(NULL)
-    }
-    message("Scoring ", loc, " (", path, ")...")
-    tb <- read_score_columns(path)
-    if (is.null(tb)) {
-      warning("No table read for ", loc, ": ", path)
-      return(NULL)
+    if (is.data.frame(path)) {
+      message("Scoring the predictions of ", loc, "...")
+      tb <- select(path, species_code, confidence, begin_path, file_offset)
+    } else {
+      if (!file.exists(path)) {
+        warning("Table not found for ", loc, ": ", path)
+        return(NULL)
+      }
+      message("Scoring ", loc, " (", path, ")...")
+      tb <- read_score_columns(path)
+      if (is.null(tb)) {
+        warning("No table read for ", loc, ": ", path)
+        return(NULL)
+      }
     }
     m <- str_match(basename(tb$begin_path), "(\\d{8})_(\\d{6})")
     tb <- tb |>

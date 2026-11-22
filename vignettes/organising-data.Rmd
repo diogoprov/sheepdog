@@ -158,10 +158,59 @@ clips <- select_clips(pam$predictions, sampling_mode = "score_bands",
   (`YYYYMMDD_HHMMSS`), not from the `timestamp` of `media.csv`.
 - **Human classifications:** left out, because pamDP has no field that ties
   them to the prediction they check.
-- **Which functions accept the tables:** `select_clips()` and
-  `export_occupancy_data()`, and through the manifest the review app.
-  `calibrate()` and `score_detections()` still read BirdNET selection
+- **Which functions accept the tables:** `select_clips()`,
+  `export_occupancy_data()` and `score_detections()`, and through the
+  manifest the review app. `calibrate()` still reads BirdNET selection
   tables from disk.
+
+## Predictions of Perch, OpenSoundscape and Arbimon
+
+`read_classifier_output()` reads the prediction files of other
+classifiers and returns them in the same shape:
+
+- `format = "perch"`: the inference CSV written by `write_inference_csv()`
+  of perch-hoplite or of the earlier perch repository, one row per window
+  and label above the logit threshold chosen when it was written;
+- `format = "opensoundscape"`: the table of `predict()` saved with
+  `to_csv()`, with `file`, `start_time`, `end_time` and one column per
+  class.
+
+```{r, eval = FALSE}
+pred <- read_classifier_output("perch/inference.csv", format = "perch",
+                               audio_root = "/Volumes/NAS/pam/audio")
+recs <- list_recordings("/Volumes/NAS/pam/audio")
+clips <- select_clips(pred, sampling_mode = "score_bands",
+                      recordings = recs)
+```
+
+- **Scores:** both classifiers write logits by default, and neither file
+  says so. With `score_scale = "logit"` (the default), `confidence` is
+  `plogis(score)`; use `score_scale = "probability"` when the model applied
+  a sigmoid. The calibration works on the logit of `confidence`, which is
+  then the original score. Rows below `min_confidence` (0.1) are left out.
+- **Site:** the folder of each audio file, or `site_pattern` on its name.
+- **Species:** built from the label as for pamDP (`"Wood Thrush"` goes to
+  the folder `wood_thrush`); the label is kept in `label`.
+- **Calibration:** pass the table to `score_detections()`.
+
+`format = "arbimon"` reads the results of Arbimon pattern matching jobs.
+The download of a job names the audio file (`recording`), the site and
+the species, and is read on its own. The "export all results" files name
+neither the species nor the audio file, so they also need the species in
+`label` and the `recordings` table of a project backup, which holds the
+original file names:
+
+```{r, eval = FALSE}
+pm <- read_classifier_output("arbimon/pm-job_116143.csv", format = "arbimon",
+                             label = "Boana raniceps",
+                             recordings = "backup/recordings.0001.csv",
+                             audio_root = "/Volumes/NAS/pam/audio")
+```
+
+The site is the Arbimon site, the score (a correlation between 0 and 1) is
+used as it is, and the reviews done in Arbimon are kept in `verdict`. The
+dates and hours still come from the file names, so files named by Arbimon
+in another pattern need to be renamed to `YYYYMMDD_HHMMSS`.
 
 ## Where each function looks
 
@@ -170,6 +219,7 @@ clips <- select_clips(pam$predictions, sampling_mode = "score_bands",
 | read predictions | `read_selection_tables()` | `birdnet/<site>/` | a table in R |
 | list recordings | `list_recordings()` | `audio/<site>/` | `recordings.csv` |
 | or read a pamDP package | `read_pamdp()` | `deployments.csv`, `media.csv`, `observations.csv` | predictions and recordings in R |
+| or read Perch, OpenSoundscape or Arbimon | `read_classifier_output()` | prediction CSVs | a table in R |
 | choose clips | `select_clips()` | predictions, recordings | a manifest in R |
 | cut clips | `cut_clips()`, `extract_validation_clips()` | the audio, through `Begin Path` | `clips/<species>/`, `clip_manifest.csv` |
 | review | file manager (`Positive`/`Negative` subfolders) or `run_app()` | clips, manifest | folders, or a verdicts CSV |
