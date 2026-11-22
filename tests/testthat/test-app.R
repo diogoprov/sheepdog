@@ -677,3 +677,14 @@ test_that("the sampling tab draws score bands", {
                    all = FALSE)
     })
 })
+
+test_that("with_notes() collects warnings and messages and keeps the value", {
+  r <- with_notes({
+    message("  first note  ")
+    warning("second note")
+    42
+  })
+  expect_identical(r$value, 42)
+  expect_identical(r$notes, c("first note", "second note"))
+  expect_identical(with_notes(1)$notes, character())
+})

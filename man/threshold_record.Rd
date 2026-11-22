@@ -55,7 +55,7 @@ val <- read_validation_tables(file.path(ex, "validation",
 thr <- suggest_thresholds(val, target_precision = 0.90, min_n = 15,
                           sustained = TRUE)
 boot <- threshold_bootstrap(val, target_precision = 0.90, min_n = 15,
-                            n_boot = 100)
+                            sustained = TRUE, n_boot = 100)
 val$month <- substr(val$recording_date, 1, 6)
 groups <- threshold_by_group(val, boot, by = "month", min_n = 5,
                              threshold_column = "threshold_conservative")

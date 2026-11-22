@@ -142,3 +142,12 @@ utils::globalVariables(c(
   "threshold_weighted", "time", "to", "top_error", "top_error_excess",
   "tp", "unreviewed_high", "upper", "verdict", "w"
 ))
+
+#' Session state of the package
+#'
+#' An environment for state that lasts one R session, such as whether a
+#' once-per-session warning was already shown.
+#'
+#' @format An environment.
+#' @noRd
+sheepdog_state <- new.env(parent = emptyenv())
