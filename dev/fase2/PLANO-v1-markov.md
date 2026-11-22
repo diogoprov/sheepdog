@@ -1133,7 +1133,8 @@ Dois fatos do dado:
   positivos; os 23 positivos restantes estão na faixa de 0,1 a 0,4
   (precisão ponderada 0,026), e nenhum abaixo de 0,1;
 * dos 1.756 minutos com score ≥ 0,4 no depósito (1,8%), 98,7% têm um
-  vizinho imediato também ≥ 0,4.
+  vizinho imediato também ≥ 0,4. *Correção em 21/11/2026: são 996, 56,7%;
+  201 sítio-noites têm um único minuto ≥ 0,4. O 98,7% não se reproduz.*
 
 Leitura (interpretação): os scores altos vêm em surtos curtos, concentrados
 em poucas noites. O modelo só consegue produzir esse agrupamento pela cadeia
@@ -1467,7 +1468,7 @@ contra os 0,4 do teste com os dois lados), porque o minuto anterior vê só
 metade da vizinhança e porque a regressão aditiva põe o efeito do contexto
 na precisão, que o estágio 2 já reproduz pela cadeia. O problema parece
 estar na conta do estágio 2: para gerar o agrupamento observado dos scores
-altos (98,7% com vizinho alto, P(y | anterior) = 0,39) com f₁(≥ 0,4) ≈ 0,5
+altos (P(y | anterior) = 0,39; 56,7% com vizinho alto, não 98,7%) com f₁(≥ 0,4) ≈ 0,5
 independente entre minutos, o modelo precisa de sequências de canto longas
 (ρ ≈ 4: P(canto | canto anterior) ≈ 0,86, contra ~0,68 pela precisão do
 ct12 nos minutos depois de um score alto), e essas sequências passam pelos
@@ -1478,6 +1479,59 @@ canto. A simulação não tinha isso. Um modelo que separe as duas coisas
 precisaria de emissões com dependência dentro do canto, por exemplo f₁(b |
 faixa anterior) só para minutos com canto, o que exige rótulos de minutos
 vizinhos que o ct12 quase não tem (sorteio aleatório).
+
+### Validação por noite: v1 contra fp_occu() com limiar (21/11/2026)
+
+Alvo do v1 redefinido com o Diogo: ocupação por sítio-noite, como os outros
+modelos do crywolf (estático, multiespécie e dinâmico). A prevalência de
+minutos deixa de ser o alvo. `curiango_validacao_noite.R`.
+
+Noites G+: 16 sítio-noites sem nenhum minuto ≥ 0,4 e com canto confirmado
+por ouvido (13 do ct03, 3 do ct12; score máximo de 0,20 a 0,39). Os dois
+modelos foram reajustados sem os 29 rótulos dessas noites:
+* v1 de dois estágios, emissões por faixa, Markov (`validacao_noite/v1`,
+  10 min): sem divergências, R-hat ≤ 1,003, ESS ≥ 3.087; ψ_c = 0,39,
+  prevalência marginal 0,046. As emissões usaram o ct12 inteiro, com 3
+  positivos de noites G+ (vazamento pequeno);
+* `fp_occu()` do crywolf instalado, limiar 0,40, `markov = "time"`, a
+  especificação do `ind_mk` da vinheta dynamic (22 min): sem divergências,
+  R-hat ≤ 1,008, ESS ≥ 886.
+
+| P(ocupada) média | n | v1 | fp_occu |
+|---|---|---|---|
+| noites com algum score ≥ 0,4 | 444 | 0,996 | 0,593 |
+| G+ (rótulos removidos) | 16 | 0,260 | 0,055 |
+| outras noites sem score alto | 1.293 | 0,141 | 0,023 |
+| ocupação média no depósito | 1.753 | 0,358 | 0,168 |
+| piso: fração de noites com score ≥ 0,4 | | 0,253 | |
+
+* **Discriminação das G+ entre as noites sem score alto: empate.** AUC 0,75
+  (v1) contra 0,78 (fp_occu); entre as de máximo 0,2 a 0,4, 0,71 contra
+  0,81. O v1 dá às G+ 1,8 vez a média das outras; o fp_occu, 2,4 vezes,
+  num nível muito mais baixo. Nenhum dos dois recupera bem essas noites.
+* **A diferença de ψ vem das noites com score alto.** O fp_occu dá 0,22
+  às 201 noites com um único minuto ≥ 0,4 (o v1, 0,99) e 0,36 às noites
+  com score alto e só negativos verificados (o v1, 0,99). Sua ocupação
+  média (0,168) fica abaixo do piso de 0,253.
+* **Precisão dos minutos altos isolados, pelos verificados:** com vizinho
+  alto, 119 de 119 positivos; isolados em noites com outros altos, 36 de
+  39; únicos na noite, 13 de 14 (todos do ct03, escolhido ouvindo, então
+  enviesado para cima). Um minuto ≥ 0,4 isolado é quase sempre canto.
+
+Leitura (interpretação): o teste das G+ não separa os modelos; os dois só
+sobem um pouco a chance de noites com scores médios. O que separa é o
+tratamento das detecções altas. No `ind_mk`, uma detecção depois de
+lacuna é ambígua (fp_gap = 2,86: p₁₀ ≈ p₁₁ ≈ 0,04 após lacuna), e cada
+minuto verificado negativo entra como uma visita do método verificado
+que não detectou (p_verified = 0,70), o que derruba a ocupação de noites
+com detecções reais. Os rótulos do Curiango são minutos sorteados, não
+visitas de um especialista ao sítio: o modelo de verificação do crywolf
+parece não servir para esse desenho. O v1 usa os rótulos como w conhecido
+no minuto, que é o que eles são, e dá ψ acima do piso. Essa comparação não
+mostra que o v1 acerta ψ (não há referência por desenho para a noite), mas
+mostra que o limiar com o modelo de verificação atual erra para baixo de
+um jeito que os verificados contradizem. Fica como achado para a sessão do
+crywolf (sem mexer no repositório daqui).
 
 ## Critério para levar o v1 de dois estágios ao crywolf (20/11/2026)
 
