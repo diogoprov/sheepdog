@@ -60,3 +60,22 @@ scores (step \code{grid_step}) for each site x species and assigned to the
 detections by their rounded score, which keeps the cost independent of
 the number of detections.
 }
+\examples{
+# Fitting a Bayesian calibration compiles a Stan model, which takes
+# minutes, so this example is not run here.
+\dontrun{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+f <- tp ~ logit_conf + (1 | species)
+fit <- fit_calibration(val, f, engine = "brms",
+                       prior = calibration_prior(f, val),
+                       chains = 4, iter = 2000, seed = 1, refresh = 0)
+sites <- c("ARA", "BAI", "NHE", "XAR")
+tables <- setNames(file.path(ex, "birdnet", sites,
+                             "BirdNET_SelectionTable.txt"), sites)
+scored <- score_detections(tables, fit, p_min = 0.95)
+hd <- history_draws(fit, scored, p_min = 0.95, n_draws = 200)
+community_matrices_draws(hd, core_species = c("boa_ran", "phy_cuv"))
+}
+}

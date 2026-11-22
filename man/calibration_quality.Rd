@@ -106,6 +106,15 @@ The fits use maximum likelihood, also when the final model is fitted with
 \code{engine = "brms"}. Use \code{fold_group} to keep the clips of a recording or
 night on the same side of the split.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+# Species intercepts as fixed effects, so that lme4 is not needed
+q <- calibration_quality(val, tp ~ logit_conf + species, k_folds = 3)
+q[c("species", "n", "auc", "auc_score", "logloss_gain", "cal_slope",
+    "status")]
+}
 \seealso{
 \code{\link[=compare_calibration_models]{compare_calibration_models()}}, \code{\link[=calibration_ppc]{calibration_ppc()}}
 }

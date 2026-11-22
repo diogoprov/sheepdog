@@ -51,6 +51,18 @@ function computes the precision of the reviewed clips at or above the
 threshold of the cell, weighted by \code{1 / inclusion_prob} when the clips
 have it, and flags the groups below \code{target_precision}.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validation_tables(file.path(ex, "validation",
+                                        "validation_by_clip_ARA.csv"))
+thr <- suggest_thresholds(val, target_precision = 0.90, min_n = 15)
+# Does the threshold of each cell hold in every month?
+val$month <- substr(val$recording_date, 1, 6)
+threshold_by_group(val, thr, by = "month", target_precision = 0.90,
+                   min_n = 5)
+# One threshold for every cell
+threshold_by_group(val, 0.5, by = "month", min_n = 5)
+}
 \seealso{
 \code{\link[=threshold_bootstrap]{threshold_bootstrap()}}, \code{\link[=threshold_record]{threshold_record()}}.
 }

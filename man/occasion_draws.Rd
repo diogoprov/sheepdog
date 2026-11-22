@@ -89,6 +89,31 @@ processed one at a time, in alphabetical order, each from the seed. The
 global random number generator is left as it was.
 }
 
+\examples{
+# The export needs the draws of a Bayesian calibration. Fitting compiles
+# a Stan model, which takes minutes, so this example is not run here.
+\dontrun{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val_files <- list.files(file.path(ex, "validation"), full.names = TRUE)
+val <- read_validations(val_files)
+f <- tp ~ logit_conf + (1 | species)
+fit <- fit_calibration(val, f, engine = "brms",
+                       prior = calibration_prior(f, val),
+                       chains = 4, iter = 2000, seed = 1, refresh = 0)
+out_dir <- file.path(tempdir(), "occupancy")
+export_occupancy_data(out_dir,
+                      read_selection_tables(file.path(ex, "birdnet")),
+                      recordings = file.path(ex, "recordings.csv"),
+                      validation = val_files, fit = fit, n_draws = 100,
+                      overwrite = TRUE)
+# One version of the detections per draw, without writing them
+y <- occasion_draws(out_dir, rule = "sample", n_draws = 20, seed = 2026,
+                    write = FALSE)
+# Keep only the predictions the calibration is nearly sure of
+occasion_draws(out_dir, species = "boa_ran", rule = "threshold",
+               p_min = 0.95)
+}
+}
 \seealso{
 \code{\link[=export_occupancy_data]{export_occupancy_data()}}, \code{\link[=history_draws]{history_draws()}},
 \code{vignette("crywolf-integration")}.

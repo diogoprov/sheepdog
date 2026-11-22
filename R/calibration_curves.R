@@ -641,6 +641,16 @@ predict_curve <- function(fit, x) {
 #'   one row per clip, to show bins over the whole score range. Without it, only
 #'   the high bins of `top_error` are shown.
 #' @return A ggplot object.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' validation <- read_validation_tables(list.files(file.path(ex, "validation"),
+#'                                                 full.names = TRUE))
+#' cmp <- compare_calibration_curves(validation, curves = "logistic",
+#'                                   k_folds = 3)
+#' # Observed precision over the whole score range
+#' if (requireNamespace("ggplot2", quietly = TRUE)) {
+#'   plot_calibration_curves(cmp, validation = validation)
+#' }
 #' @export
 plot_calibration_curves <- function(x, validation = NULL, bin_width = 0.1) {
   require_suggested("ggplot2", "to plot the calibration curves")

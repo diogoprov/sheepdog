@@ -17,3 +17,14 @@ detection under each repetition rule).
 \description{
 Summarise the detection history by site and species
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+fit <- fit_calibration(val, tp ~ logit_conf + species)
+sites <- c("ARA", "BAI", "NHE", "XAR")
+tables <- file.path(ex, "birdnet", sites, "BirdNET_SelectionTable.txt")
+names(tables) <- sites
+history <- detection_history(score_detections(tables, fit))
+summarise_history(history)
+}

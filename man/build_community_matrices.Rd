@@ -41,3 +41,13 @@ the matrices of \code{\link[=community_matrices]{community_matrices()}} to \code
 also lists the dropped cells). This is the function form of the v1.2.0
 script \code{gerar_matrizes_comunidade.R}.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+out <- file.path(tempdir(), "matrices")
+build_community_matrices(file.path(ex, "nightly_detection_history.csv"),
+                         output_dir = out,
+                         core_species = c("boa_ran", "ela_bic",
+                                          "phy_cuv"),
+                         k_min = 2)
+list.files(out)
+}

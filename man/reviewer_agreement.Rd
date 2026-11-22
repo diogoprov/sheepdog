@@ -26,3 +26,18 @@ with more reviewers, or different pairs of reviewers on different
 clips, Fleiss' kappa (Fleiss 1971, \doi{10.1037/h0031619}). Only
 positive and negative verdicts count.
 }
+\examples{
+reviews <- list(
+  ana = data.frame(species_folder = "boa_ran",
+                   clip_file = paste0("clip", 1:8, ".wav"),
+                   verdict = c("positive", "positive", "negative",
+                               "positive", "negative", "positive",
+                               "negative", "positive")),
+  bruno = data.frame(species_folder = "boa_ran",
+                     clip_file = paste0("clip", 1:8, ".wav"),
+                     verdict = c("positive", "negative", "negative",
+                                 "positive", "negative", "positive",
+                                 "positive", "positive"))
+)
+reviewer_agreement(reviews)
+}

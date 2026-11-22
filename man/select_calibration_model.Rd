@@ -39,3 +39,14 @@ error rule prefers the simpler model when the data cannot tell the
 candidates apart. This is the default of \code{\link[=calibrate]{calibrate()}} since 3.0.0.
 }
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+if (requireNamespace("lme4", quietly = TRUE)) {
+  cv <- compare_calibration_models(val, calibration_models()[1:2],
+                                   k_folds = 3)
+  select_calibration_model(cv, k_folds = 3)
+  select_calibration_model(cv, rule = "best_auc")
+}
+}

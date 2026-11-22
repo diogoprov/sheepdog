@@ -1,6 +1,14 @@
 # Fluxo do limiar: bootstrap por gravacao, limiar por grupo, ficha do
 # limiar e revisao cega no app
 
+# The calls below rely on the current default of `sustained` (TRUE); its
+# once-per-session warning has its own test at the end of this file.
+local({
+  old <- sheepdog_state$warned_sustained
+  sheepdog_state$warned_sustained <- TRUE
+  withr::defer(sheepdog_state$warned_sustained <- old, teardown_env())
+})
+
 # Tabela de validacao sintetica: uma celula, 40 gravacoes de 5 clipes, com
 # a precisao subindo com o score e pesos de um sorteio por faixa
 validacao_sintetica <- function(seed = 1, n_rec = 40) {
@@ -189,4 +197,19 @@ test_that("threshold_bootstrap() is stable across seeds and rejects empty input"
   expect_lte(diff(range(r$threshold_median)), 0.03)
   expect_lte(diff(range(r$threshold_conservative)), 0.03)
   expect_lte(diff(range(r$share_reached)), 0.1)
+})
+
+test_that("threshold_bootstrap() warns once that the sustained default changes", {
+  val <- validacao_sintetica(seed = 5)
+  old <- sheepdog_state$warned_sustained
+  withr::defer(sheepdog_state$warned_sustained <- old)
+  sheepdog_state$warned_sustained <- NULL
+  expect_warning(b0 <- threshold_bootstrap(val, 0.9, 10, n_boot = 20),
+                 "will change from TRUE to FALSE", fixed = TRUE)
+  expect_no_warning(b1 <- threshold_bootstrap(val, 0.9, 10, n_boot = 20))
+  b2 <- threshold_bootstrap(val, 0.9, 10, n_boot = 20, sustained = TRUE)
+  expect_identical(b0, b2)
+  expect_identical(b1, b2)
+  expect_no_warning(threshold_bootstrap(val, 0.9, 10, n_boot = 20,
+                                        sustained = FALSE))
 })

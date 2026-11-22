@@ -10,7 +10,7 @@ threshold_bootstrap(
   min_n = 15,
   by = NULL,
   weighted = NULL,
-  sustained = TRUE,
+  sustained = NULL,
   n_boot = 1000,
   cluster = "source_audio",
   conf = 0.95,
@@ -41,8 +41,12 @@ clips without \code{inclusion_prob} get no threshold, with a warning, and
 it is an error if no clip has it. \code{FALSE}: always the unweighted one,
 and \code{n_support} for \code{min_n}.}
 
-\item{sustained}{Logical scalar. If \code{TRUE}, the target must also hold at
-every higher cut with at least \code{min_n} clips. See Sustained target.}
+\item{sustained}{\code{NULL} or logical scalar. If \code{TRUE}, the target must
+also hold at every higher cut with at least \code{min_n} clips (see
+\code{\link[=suggest_thresholds]{suggest_thresholds()}}). \code{NULL}, the default, currently means \code{TRUE}
+and warns once per session: in the next minor version the default
+becomes \code{FALSE}, as in \code{\link[=suggest_thresholds]{suggest_thresholds()}}, so that the point
+\code{threshold} matches it. Set \code{sustained} to keep the current thresholds.}
 
 \item{n_boot}{Integer scalar >= 1. Number of bootstrap replicates.}
 
@@ -97,6 +101,15 @@ more clips near the threshold. A wide interval means
 the precision curve is flat near the target, and a new round of review
 near the threshold narrows it (a new round of \code{\link[=select_clips]{select_clips()}}, combined
 with the first by \code{\link[=combine_rounds]{combine_rounds()}}).
+}
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validation_tables(file.path(ex, "validation",
+                                        "validation_by_clip_ARA.csv"))
+# Resamples whole recordings; use n_boot = 1000 or more in practice
+boot <- threshold_bootstrap(val, target_precision = 0.90, min_n = 15,
+                            sustained = TRUE, n_boot = 100)
+boot[, c("species_folder", "threshold", "threshold_conservative")]
 }
 \seealso{
 \code{\link[=suggest_thresholds]{suggest_thresholds()}}, \code{\link[=threshold_by_group]{threshold_by_group()}},

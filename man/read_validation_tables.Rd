@@ -27,3 +27,10 @@ verdict, unlike \code{\link[=read_validations]{read_validations()}}, which keeps
 calibration needs. Tables written by v1.2.0 (\code{validacao_por_clipe.csv})
 are also read.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+files <- list.files(file.path(ex, "validation"), full.names = TRUE)
+basename(files)
+val <- read_validation_tables(files)
+table(val$site, val$verdict)
+}

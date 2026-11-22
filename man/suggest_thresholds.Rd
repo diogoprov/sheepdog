@@ -98,6 +98,15 @@ A cell that mixes clips with and without \code{inclusion_prob} (\code{"top"} and
 precision, with a warning, since \code{"top"} clips are not a probability
 sample and should not set thresholds.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validation_tables(list.files(file.path(ex, "validation"),
+                                         full.names = TRUE))
+suggest_thresholds(val, target_precision = 0.9, min_n = 10)
+# the target must also hold at every higher cut
+suggest_thresholds(val, target_precision = 0.9, min_n = 10,
+                   sustained = TRUE)
+}
 \seealso{
 \code{\link[=threshold_bootstrap]{threshold_bootstrap()}} for the conservative threshold to apply;
 \code{\link[=calibrated_thresholds]{calibrated_thresholds()}} for thresholds from the calibration model.

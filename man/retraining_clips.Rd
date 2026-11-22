@@ -19,3 +19,8 @@ and \code{source_audio}.
 \description{
 Lists the clips confirmed as positive, ready to retrain the classifier.
 }
+\examples{
+val <- read.csv(system.file("extdata", "validation_by_clip.csv",
+                            package = "sheepdog"))
+retraining_clips(val)
+}

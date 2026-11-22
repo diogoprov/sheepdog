@@ -32,6 +32,16 @@
 #'
 #' @return `validation` with `identity` and `identity_certainty` filled.
 #' @seealso [run_app()], [confuser_summary()], [identity_categories()].
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read.csv(file.path(ex, "validation", "validation_by_clip_ARA.csv"))
+#' # Identities of two negative clips, written in a spreadsheet
+#' neg <- val$clip_file[val$verdict == "negative"][1:2]
+#' ids <- data.frame(clip = neg, identity = c("insect", "bird|noise"),
+#'                   certainty = c("sure", "probable"))
+#' val <- join_identities(val, ids, certainty_col = "certainty")
+#' val[val$clip_file %in% neg,
+#'     c("clip_file", "verdict", "identity", "identity_certainty")]
 #' @export
 join_identities <- function(validation, identities, clip_col = "clip",
                             identity_col = "identity",
@@ -136,6 +146,13 @@ join_identities <- function(validation, identities, clip_col = "clip",
 #'   class counted) and `is_class` (the identity is a class of the
 #'   classifier other than the target), sorted by class and decreasing `n`.
 #' @seealso [join_identities()], [build_training_set()].
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read.csv(file.path(ex, "validation", "validation_by_clip_ARA.csv"))
+#' neg <- val$clip_file[val$verdict == "negative"][1:3]
+#' ids <- data.frame(clip = neg, identity = c("insect", "insect", "bird|rain"))
+#' val <- join_identities(val, ids)
+#' confuser_summary(val)
 #' @export
 confuser_summary <- function(validation, verdicts = "negative",
                              classes = NULL) {

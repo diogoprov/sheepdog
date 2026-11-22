@@ -38,6 +38,14 @@ with weight \code{1 / k} in \code{n_weighted} for \code{k} identities, so that
 \code{n_weighted} sums to the number of clips with an identity. Clips without
 an identity are counted as \code{identity = NA}.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read.csv(file.path(ex, "validation", "validation_by_clip_ARA.csv"))
+neg <- val$clip_file[val$verdict == "negative"][1:3]
+ids <- data.frame(clip = neg, identity = c("insect", "insect", "bird|rain"))
+val <- join_identities(val, ids)
+confuser_summary(val)
+}
 \seealso{
 \code{\link[=join_identities]{join_identities()}}, \code{\link[=build_training_set]{build_training_set()}}.
 }

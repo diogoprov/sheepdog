@@ -64,3 +64,16 @@ Effort (nights recorded) is approximated by the number of distinct
 nights in the history of the site, for any species. With dense
 detections, every night actually recorded appears in the history.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+history <- read.csv(file.path(ex, "nightly_detection_history.csv"),
+                    colClasses = c(night = "character"))
+mats <- community_matrices(history,
+                           core_species = c("boa_ran", "ela_bic",
+                                            "phy_cuv"),
+                           k_min = 2, min_nights_month = 5)
+mats$frequency
+# Site x month cells dropped for low effort
+mats$effort[!mats$effort$included, ]
+head(mats$trials)
+}

@@ -71,3 +71,11 @@ Column names are standardised to lower case without units or punctuation,
 e.g. \verb{Begin Time (s)} becomes \code{begin_time} and \verb{File Offset (s)} becomes
 \code{file_offset}.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+# one folder per site, each with a combined BirdNET_SelectionTable.txt
+list.files(file.path(ex, "birdnet"), recursive = TRUE)
+det <- read_selection_tables(file.path(ex, "birdnet"))
+det[1:3, c("site", "species_code", "confidence", "begin_path",
+           "file_offset")]
+}

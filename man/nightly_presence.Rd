@@ -21,3 +21,10 @@ Summarises the verdicts by site, species and night. A night is
 \code{"not_detected_in_reviewed"} when clips were reviewed but none was
 positive, and \code{"not_reviewed"} otherwise.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validation_tables(list.files(file.path(ex, "validation"),
+                                         full.names = TRUE))
+pres <- nightly_presence(val)
+table(pres$species_folder, pres$presence)
+}

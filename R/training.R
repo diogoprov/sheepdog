@@ -16,6 +16,12 @@
 #'
 #' @return A tibble with the columns of the validation tables; `night` and
 #'   `recording_date` are character.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' files <- list.files(file.path(ex, "validation"), full.names = TRUE)
+#' basename(files)
+#' val <- read_validation_tables(files)
+#' table(val$site, val$verdict)
 #' @export
 read_validation_tables <- function(files, candidates = NULL) {
   if (!is.null(candidates)) {
@@ -181,6 +187,34 @@ read_validation_tables <- function(files, candidates = NULL) {
 #'   `copy = TRUE`, clips that could not be copied are left out.
 #' @seealso [training_nights()], [exclude_training_clips()],
 #'   `vignette("retraining")`.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validation_tables(list.files(file.path(ex, "validation"),
+#'                                          full.names = TRUE))
+#' # Recreate the folders of a review in the BirdNET GUI, with empty files,
+#' # and read back where each clip is (reviewed_path)
+#' review_dir <- file.path(tempdir(), "clips_training")
+#' dest <- file.path(review_dir, val$species_folder,
+#'                   ifelse(val$verdict == "positive", "Positive", "Negative"))
+#' for (d in unique(dest)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
+#' invisible(file.create(file.path(dest, val$clip_file)))
+#' reviewed <- classify_review(val[, setdiff(names(val),
+#'                                           c("verdict", "reviewed_path"))],
+#'                             review_dir)
+#'
+#' # Hold out one site for testing; copy = FALSE writes only training_set.csv
+#' out_dir <- file.path(tempdir(), "birdnet_training")
+#' ts <- build_training_set(reviewed, out_dir, split = "site",
+#'                          test_sites = "NHE", min_files = 20,
+#'                          copy = FALSE)
+#' table(ts$set, ts$verdict)
+#'
+#' # Or a split by night, with all negatives in the non-event class "Noise"
+#' ts_night <- build_training_set(reviewed, out_dir, split = "night",
+#'                                test_prop = 0.2, negatives_folder = "Noise",
+#'                                min_files = 20, copy = FALSE)
+#' attr(ts_night, "checks")
+#' unlink(c(review_dir, out_dir), recursive = TRUE)
 #' @export
 build_training_set <- function(validation, output_dir,
                                split = c("site", "night",
@@ -640,6 +674,17 @@ recording_parts <- function(files, pattern = recording_pattern) {
 #'   [dplyr::bind_rows()]), else the default of [training_nights()].
 #'
 #' @return The manifest without the excluded clips.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' det <- read_selection_tables(file.path(ex, "birdnet"))
+#' man <- select_clips(det, sampling_mode = "top", n_top = 1)
+#'
+#' # nights whose recordings were used to train the classifier, read from the
+#' # names of its training clips
+#' trained <- training_nights(c("ARA01_20211016_190000_3.0s_6.0s.wav",
+#'                              "BAI01_20211020_220000_9.0s_12.0s.wav"))
+#' man2 <- exclude_training_clips(man, trained, level = "night")
+#' nrow(man) - nrow(man2)
 #' @export
 exclude_training_clips <- function(manifest, training_set,
                                    level = c("clip", "recording", "night"),

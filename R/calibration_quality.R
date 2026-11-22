@@ -66,6 +66,14 @@
 #'   cannot be computed (e.g. the AUC of a group with one verdict) are `NA`.
 #'   Folds whose fit failed are left out, with a warning.
 #' @seealso [compare_calibration_models()], [calibration_ppc()]
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                    full.names = TRUE))
+#' # Species intercepts as fixed effects, so that lme4 is not needed
+#' q <- calibration_quality(val, tp ~ logit_conf + species, k_folds = 3)
+#' q[c("species", "n", "auc", "auc_score", "logloss_gain", "cal_slope",
+#'     "status")]
 #' @export
 calibration_quality <- function(validations, formula, k_folds = 5,
                                 seed = 2026, fold_group = NULL,

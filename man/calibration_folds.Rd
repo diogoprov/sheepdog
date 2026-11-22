@@ -40,3 +40,15 @@ transfer to new sites. Unlike clip folds, they cannot guarantee that
 each species appears in each training and test set. A test fold with
 only one verdict has no AUC but still contributes probability scores.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE),
+                        keep = "source_audio")
+# Clips assigned within site x species
+folds <- calibration_folds(val, k_folds = 5)
+table(folds)
+# Clips of the same recording kept in the same fold
+folds_rec <- calibration_folds(val, k_folds = 5, fold_group = "source_audio")
+table(val$site, folds_rec)
+}

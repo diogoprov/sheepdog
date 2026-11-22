@@ -35,3 +35,10 @@ by species and a site x species intercept.
 The list goes from the simplest to the most complex model; that order is
 the complexity used by \code{\link[=select_calibration_model]{select_calibration_model()}}.
 }
+\examples{
+mods <- calibration_models()
+names(mods)
+mods$m2_species_slope
+# Family for a single species, with uncorrelated site effects
+names(calibration_models(uncorrelated = TRUE, single_species = TRUE))
+}

@@ -156,6 +156,29 @@ lower-case form with every run of other characters replaced by a hyphen:
 is \code{boana_raniceps}. The label is kept in \code{label}.
 }
 
+\examples{
+# A small Perch inference CSV (perch-hoplite); the scores are logits and
+# the audio paths are relative to the folder the embeddings came from
+perch <- tempfile(fileext = ".csv")
+writeLines(c(
+  "idx,project,filename,window_start,window_end,label,logits",
+  "1,demo,SITE_A/A01_20240110_200000.wav,0.0,5.0,Boana raniceps,2.0",
+  "2,demo,SITE_A/A01_20240110_200000.wav,5.0,10.0,Boana raniceps,-3.0",
+  "3,demo,SITE_B/B01_20240111_210000.wav,10.0,15.0,Scinax fuscovarius,0.5"
+), perch)
+p <- read_classifier_output(perch, "perch", audio_root = "/data/audio")
+p[, c("site", "species_code", "confidence", "score", "begin_path")]
+
+# An OpenSoundscape prediction table: one column of scores per class
+oss <- tempfile(fileext = ".csv")
+writeLines(c(
+  "file,start_time,end_time,Boana raniceps,Scinax fuscovarius",
+  "/data/audio/SITE_A/A01_20240110_200000.wav,0.0,3.0,1.2,-2.5",
+  "/data/audio/SITE_A/A01_20240110_200000.wav,3.0,6.0,-0.4,0.8"
+), oss)
+read_classifier_output(oss, "opensoundscape", min_confidence = 0.3)
+unlink(c(perch, oss))
+}
 \references{
 Ghani, B., Denton, T., Kahl, S. and Klinck, H. (2023). Global birdsong
 embeddings enable superior transfer learning for bioacoustic

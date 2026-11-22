@@ -28,6 +28,12 @@
 #' with the first by [combine_rounds()]).
 #'
 #' @inheritParams suggest_thresholds
+#' @param sustained `NULL` or logical scalar. If `TRUE`, the target must
+#'   also hold at every higher cut with at least `min_n` clips (see
+#'   [suggest_thresholds()]). `NULL`, the default, currently means `TRUE`
+#'   and warns once per session: in the next minor version the default
+#'   becomes `FALSE`, as in [suggest_thresholds()], so that the point
+#'   `threshold` matches it. Set `sustained` to keep the current thresholds.
 #' @param n_boot Integer scalar >= 1. Number of bootstrap replicates.
 #' @param cluster Character scalar, the column of `validation` that defines
 #'   the resampling unit:
@@ -50,16 +56,24 @@
 #'   target) and `n_clusters`.
 #' @seealso [suggest_thresholds()], [threshold_by_group()],
 #'   [threshold_record()].
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validation_tables(file.path(ex, "validation",
+#'                                         "validation_by_clip_ARA.csv"))
+#' # Resamples whole recordings; use n_boot = 1000 or more in practice
+#' boot <- threshold_bootstrap(val, target_precision = 0.90, min_n = 15,
+#'                             sustained = TRUE, n_boot = 100)
+#' boot[, c("species_folder", "threshold", "threshold_conservative")]
 #' @export
 threshold_bootstrap <- function(validation, target_precision = 0.90,
                                 min_n = 15, by = NULL, weighted = NULL,
-                                sustained = TRUE, n_boot = 1000,
+                                sustained = NULL, n_boot = 1000,
                                 cluster = "source_audio", conf = 0.95,
                                 seed = 2026) {
   check_by(validation, by)
   check_prob(target_precision, "target_precision", open = TRUE)
   check_number(min_n, "min_n", lower = 1, integer = TRUE)
-  check_flag(sustained, "sustained")
+  if (!is.null(sustained)) check_flag(sustained, "sustained")
   check_number(n_boot, "n_boot", lower = 1, integer = TRUE)
   if (!is.character(cluster) || length(cluster) != 1L) {
     stop("`cluster` must be the name of one column.", call. = FALSE)
@@ -74,6 +88,10 @@ threshold_bootstrap <- function(validation, target_precision = 0.90,
   reviewed <- reviewed_with_confidence(validation)
   has_weights <- has_inclusion_prob(reviewed)
   check_reviewed(reviewed)
+  if (is.null(sustained)) {
+    warn_sustained_default()
+    sustained <- TRUE
+  }
   res <- withr::with_seed(seed, {
     reviewed |>
       group_by(site, species_folder, across(all_of(by))) |>
@@ -135,6 +153,17 @@ threshold_bootstrap <- function(validation, target_precision = 0.90,
 #'   `below_target`. A group with fewer than `min_n` clips above the
 #'   threshold gets `below_target = NA`.
 #' @seealso [threshold_bootstrap()], [threshold_record()].
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validation_tables(file.path(ex, "validation",
+#'                                         "validation_by_clip_ARA.csv"))
+#' thr <- suggest_thresholds(val, target_precision = 0.90, min_n = 15)
+#' # Does the threshold of each cell hold in every month?
+#' val$month <- substr(val$recording_date, 1, 6)
+#' threshold_by_group(val, thr, by = "month", target_precision = 0.90,
+#'                    min_n = 5)
+#' # One threshold for every cell
+#' threshold_by_group(val, 0.5, by = "month", min_n = 5)
 #' @export
 threshold_by_group <- function(validation, thresholds, by,
                                target_precision = 0.90, min_n = 15,
@@ -203,6 +232,22 @@ threshold_by_group <- function(validation, thresholds, by,
 #'   when `file` is given.
 #' @seealso [suggest_thresholds()], [threshold_bootstrap()],
 #'   [threshold_by_group()].
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validation_tables(file.path(ex, "validation",
+#'                                         "validation_by_clip_ARA.csv"))
+#' thr <- suggest_thresholds(val, target_precision = 0.90, min_n = 15,
+#'                           sustained = TRUE)
+#' boot <- threshold_bootstrap(val, target_precision = 0.90, min_n = 15,
+#'                             sustained = TRUE, n_boot = 100)
+#' val$month <- substr(val$recording_date, 1, 6)
+#' groups <- threshold_by_group(val, boot, by = "month", min_n = 5,
+#'                              threshold_column = "threshold_conservative")
+#' threshold_record(thr, bootstrap = boot, groups = groups)
+#' # Also write the record as a Markdown table
+#' md <- file.path(tempdir(), "threshold_record.md")
+#' threshold_record(thr, bootstrap = boot, groups = groups, file = md)
+#' head(readLines(md))
 #' @export
 threshold_record <- function(thresholds, bootstrap = NULL, groups = NULL,
                              extraction_info = NULL, target_precision = 0.90,
@@ -262,4 +307,23 @@ threshold_record <- function(thresholds, bootstrap = NULL, groups = NULL,
   writeLines(lines, file)
   message("Threshold record written to ", file)
   invisible(record)
+}
+
+#' Warn once per session that the default of `sustained` will change
+#'
+#' `threshold_bootstrap()` used `sustained = TRUE` while
+#' `suggest_thresholds()` uses `FALSE`; the bootstrap default moves to
+#' `FALSE` in the next minor version, announced with this warning first.
+#'
+#' @return `NULL`, invisibly; called for its warning.
+#' @noRd
+warn_sustained_default <- function() {
+  if (isTRUE(sheepdog_state$warned_sustained)) return(invisible(NULL))
+  sheepdog_state$warned_sustained <- TRUE
+  warning("The default of `sustained` in threshold_bootstrap() will change ",
+          "from TRUE to FALSE in the next minor version, to match ",
+          "suggest_thresholds(). Set `sustained = TRUE` to keep the current ",
+          "thresholds. This warning is shown once per session.",
+          call. = FALSE)
+  invisible(NULL)
 }

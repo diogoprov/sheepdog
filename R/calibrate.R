@@ -34,6 +34,14 @@
 #'   logit and the factor conversions and why they are always applied.
 #' @srrstats {RE4.12} The bounded logit and its inverse are documented in
 #'   the section "Transformations".
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' files <- list.files(file.path(ex, "validation"), full.names = TRUE)
+#' val <- read_validations(files)
+#' head(val)
+#' # Keep the recording of each clip, e.g. for grouped folds
+#' val_rec <- read_validations(files, keep = "source_audio")
+#' table(val_rec$site)
 #' @export
 read_validations <- function(files, site_map = NULL, keep = NULL) {
   if (!is.null(keep) && (!is.character(keep) || anyNA(keep) ||
@@ -137,6 +145,12 @@ rename_site <- function(x, site_map) {
 #'   `uncorrelated = TRUE`, `m5_species_x_site_uncorrelated`. With
 #'   `single_species = TRUE`: `m0_global`, `m1_site_intercept`,
 #'   `m2_site_slope` and optionally `m3_site_slope_uncorrelated`.
+#' @examples
+#' mods <- calibration_models()
+#' names(mods)
+#' mods$m2_species_slope
+#' # Family for a single species, with uncorrelated site effects
+#' names(calibration_models(uncorrelated = TRUE, single_species = TRUE))
 #' @export
 calibration_models <- function(uncorrelated = FALSE, single_species = FALSE) {
   if (single_species) {
@@ -215,6 +229,17 @@ calibration_candidates <- function(validations, uncorrelated = FALSE) {
 #'   and nonempty. `NULL` keeps the original clip folds.
 #'
 #' @return Integer vector of fold numbers, in the input row order.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                    full.names = TRUE),
+#'                         keep = "source_audio")
+#' # Clips assigned within site x species
+#' folds <- calibration_folds(val, k_folds = 5)
+#' table(folds)
+#' # Clips of the same recording kept in the same fold
+#' folds_rec <- calibration_folds(val, k_folds = 5, fold_group = "source_audio")
+#' table(val$site, folds_rec)
 #' @export
 calibration_folds <- function(validations, k_folds = 5, seed = 2026,
                                fold_group = NULL) {
@@ -316,6 +341,16 @@ calibration_folds <- function(validations, k_folds = 5, seed = 2026,
 #'   of the model in `models`), ordered from the highest mean AUC. Failed
 #'   folds also raise a warning. A test fold with only one verdict has
 #'   missing AUC but contributes log-loss and Brier; it is not a failed fit.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                    full.names = TRUE))
+#' # Global model and species random intercept; the latter needs lme4
+#' if (requireNamespace("lme4", quietly = TRUE)) {
+#'   cv <- compare_calibration_models(val, calibration_models()[1:2],
+#'                                    k_folds = 3)
+#'   cv[c("model", "auc_mean", "logloss_mean", "cal_slope", "prop_singular")]
+#' }
 #' @export
 compare_calibration_models <- function(validations,
                                        models = NULL,
@@ -423,6 +458,16 @@ score_probabilities <- function(tp, p) {
 #'   standard error).
 #'
 #' @return The name of the selected model.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                    full.names = TRUE))
+#' if (requireNamespace("lme4", quietly = TRUE)) {
+#'   cv <- compare_calibration_models(val, calibration_models()[1:2],
+#'                                    k_folds = 3)
+#'   select_calibration_model(cv, k_folds = 3)
+#'   select_calibration_model(cv, rule = "best_auc")
+#' }
 #' @export
 select_calibration_model <- function(comparison,
                                      rule = c("one_se_logloss", "best_auc"),
@@ -855,14 +900,16 @@ fit_model <- function(formula, data, quiet = TRUE, control = NULL) {
   }
   require_suggested("lme4", "to fit calibration models with random effects")
   if (is.null(control)) control <- default_glmer_control()
-  msgs <- character()
+  acc <- new.env(parent = emptyenv())
+  acc$msgs <- character()
   fit <- withCallingHandlers(
     lme4::glmer(formula, data = data, family = stats::binomial,
                 control = control),
     message = function(m) {
-      msgs <<- c(msgs, trimws(conditionMessage(m)))
+      acc$msgs <- c(acc$msgs, trimws(conditionMessage(m)))
       invokeRestart("muffleMessage")
     })
+  msgs <- acc$msgs
   attr(fit, "sheepdog_messages") <- msgs
   if (!quiet) {
     others <- msgs[!grepl("singular", msgs, ignore.case = TRUE)]
@@ -966,6 +1013,12 @@ auc <- function(tp, p) {
 #'   `auc_mean`, `auc_sd`, `n_train_mean` (mean clips per cell actually
 #'   used for training), `n_test_mean` (mean size of the test set) and
 #'   `n_failed` (repetitions dropped).
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                    full.names = TRUE))
+#' # A few repetitions of a model without random effects, to keep it fast
+#' calibration_effort(val, tp ~ logit_conf, n_train = c(5, 10), n_reps = 5)
 #' @export
 calibration_effort <- function(validations, formula,
                                n_train = c(5, 10, 15, 20, 25, 30),
@@ -1062,6 +1115,16 @@ calibration_effort <- function(validations, formula,
 #' @return A tibble with `site`, `species`, `date`, `night`, `hour`,
 #'   `confidence`, `p_tp`, `begin_path` and `file_offset`; with a model
 #'   fitted with `engine = "brms"`, also `p_tp_lower` and `pr_reliable`.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                    full.names = TRUE))
+#' fit <- fit_calibration(val, tp ~ logit_conf + species)
+#' sites <- c("ARA", "BAI", "NHE", "XAR")
+#' tables <- file.path(ex, "birdnet", sites, "BirdNET_SelectionTable.txt")
+#' names(tables) <- sites
+#' scored <- score_detections(tables, fit, min_confidence = 0.1)
+#' head(scored)
 #' @export
 score_detections <- function(tables, fit, min_confidence = 0.1,
                              dawn_hour = 12, p_min = 0.95, lower_prob = 0.05,
@@ -1213,6 +1276,18 @@ read_score_columns <- function(path) {
 #' @return A tibble with `site`, `species`, `night`, `n_detections`,
 #'   `n_reliable`, `p_tp_max`, `detection_k1`, `detection_k2`,
 #'   `detection_k3` and `detection`.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                    full.names = TRUE))
+#' fit <- fit_calibration(val, tp ~ logit_conf + species)
+#' sites <- c("ARA", "BAI", "NHE", "XAR")
+#' tables <- file.path(ex, "birdnet", sites, "BirdNET_SelectionTable.txt")
+#' names(tables) <- sites
+#' scored <- score_detections(tables, fit)
+#' history <- detection_history(scored, p_min = 0.95,
+#'                              min_detections_night = 2)
+#' head(history)
 #' @export
 detection_history <- function(scored, p_min = 0.95,
                               min_detections_night = 1,
@@ -1250,6 +1325,16 @@ detection_history <- function(scored, p_min = 0.95,
 #' @return A tibble with `site`, `species`, `nights` (nights with any
 #'   scored detection) and `nights_k1` to `nights_k3` (nights with
 #'   detection under each repetition rule).
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                    full.names = TRUE))
+#' fit <- fit_calibration(val, tp ~ logit_conf + species)
+#' sites <- c("ARA", "BAI", "NHE", "XAR")
+#' tables <- file.path(ex, "birdnet", sites, "BirdNET_SelectionTable.txt")
+#' names(tables) <- sites
+#' history <- detection_history(score_detections(tables, fit))
+#' summarise_history(history)
 #' @export
 summarise_history <- function(history) {
   history |>
@@ -1288,6 +1373,16 @@ summarise_history <- function(history) {
 #' @srrstats {RE6.2} The curves are the fitted P(TP) over a grid of
 #'   scores; `interval = TRUE` adds pointwise confidence or credible bands.
 #' @return A ggplot object.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                    full.names = TRUE))
+#' if (requireNamespace("lme4", quietly = TRUE) &&
+#'     requireNamespace("ggplot2", quietly = TRUE)) {
+#'   fit <- fit_calibration(val, tp ~ logit_conf + (1 | species))
+#'   plot_calibration(fit, val, model_name = "species intercept",
+#'                    interval = TRUE)
+#' }
 #' @export
 plot_calibration <- function(fit, validations, min_confidence = 0.1,
                              p_min = 0.95, model_name = "",
@@ -1428,6 +1523,23 @@ plot_calibration <- function(fit, validations, min_confidence = 0.1,
 #'   [calibration_quality()], by species, or by site with one species, also
 #'   written to `calibration_quality.csv`), `fit`, `effort` (or `NULL`),
 #'   `scored`, `thresholds` and `history`, invisibly.
+#' @examples
+#' # The whole workflow on the example data; outputs go to a temporary folder
+#' \donttest{
+#' if (requireNamespace("lme4", quietly = TRUE)) {
+#'   ex <- system.file("extdata", "example", package = "sheepdog")
+#'   sites <- c("ARA", "BAI", "NHE", "XAR")
+#'   val_files <- file.path(ex, "validation",
+#'                          paste0("validation_by_clip_", sites, ".csv"))
+#'   tables <- file.path(ex, "birdnet", sites, "BirdNET_SelectionTable.txt")
+#'   names(tables) <- sites
+#'   out <- file.path(tempdir(), "calibration")
+#'   res <- calibrate(val_files, tables, out, k_folds = 3)
+#'   res$comparison[c("model", "auc_mean", "logloss_mean")]
+#'   head(res$history)
+#'   list.files(out)
+#' }
+#' }
 #' @export
 calibrate <- function(validation_files, prediction_tables, output_dir,
                       site_map = NULL, min_confidence = 0.1, p_min = 0.95,

@@ -51,6 +51,13 @@
 #'   followed by the standardised table columns. The columns `begin_time`,
 #'   `end_time`, `species_code`, `confidence`, `begin_path` and `file_offset`
 #'   are required.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' # one folder per site, each with a combined BirdNET_SelectionTable.txt
+#' list.files(file.path(ex, "birdnet"), recursive = TRUE)
+#' det <- read_selection_tables(file.path(ex, "birdnet"))
+#' det[1:3, c("site", "species_code", "confidence", "begin_path",
+#'            "file_offset")]
 #' @export
 read_selection_tables <- function(data_dir,
                                   table_pattern = "^BirdNET_SelectionTable\\.txt$",

@@ -44,6 +44,25 @@ in the BirdNET GUI. \code{"uncertain"} verdicts are kept but, like
 \code{"disagreement"}, left out of precision, thresholds and calibration,
 which use only positive and negative verdicts.
 }
+\examples{
+man <- system.file("extdata", "clip_manifest.csv", package = "sheepdog")
+m <- read.csv(man)
+# A verdicts file as written by run_app(), with two reviewers
+f <- tempfile(fileext = ".csv")
+write.csv(data.frame(
+  clip_file = m$clip_file[c(1, 1, 2, 3)],
+  species_folder = m$species_folder[c(1, 1, 2, 3)],
+  reviewer = c("ana", "bruno", "ana", "bruno"),
+  verdict = c("positive", "negative", "positive", "uncertain"),
+  time = "2026-01-15T20:00:00-0300"
+), f, row.names = FALSE)
+# The verdicts of one reviewer
+v <- app_verdicts(man, f, reviewer = "ana")
+table(v$verdict)
+# Every reviewer: one row per clip and reviewer
+v_all <- app_verdicts(man, f)
+v_all[!is.na(v_all$reviewer), c("clip_file", "reviewer", "verdict")]
+}
 \seealso{
 \code{\link[=run_app]{run_app()}}, \code{\link[=classify_review]{classify_review()}}.
 }
