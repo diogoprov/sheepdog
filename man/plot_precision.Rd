@@ -12,14 +12,16 @@ plot_precision(
 )
 }
 \arguments{
-\item{precision}{Table returned by \code{\link[=precision_by_bin]{precision_by_bin()}}.}
+\item{precision}{A data frame (or tibble) returned by
+\code{\link[=precision_by_bin]{precision_by_bin()}}.}
 
-\item{bins}{Breaks of the confidence bins (left-closed).}
+\item{bins}{Numeric vector of length >= 2, increasing breaks of the
+confidence bins (left-closed).}
 
-\item{target_precision}{Target precision.}
+\item{target_precision}{Numeric scalar in (0, 1). Target precision.}
 
-\item{min_n}{Minimum of reviewed clips for a bin to be taken seriously;
-bins with fewer are flagged in \code{low_support}.}
+\item{min_n}{Integer scalar >= 1. Minimum of reviewed clips for a bin to
+be taken seriously; bins with fewer are flagged in \code{low_support}.}
 }
 \value{
 A ggplot object.

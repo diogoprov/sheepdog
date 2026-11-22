@@ -23,24 +23,30 @@
 #' File names are expected to carry the date and time as `YYYYMMDD_HHMMSS`,
 #' as most recorders write them; the files whose names do not are reported.
 #'
-#' @param audio_dir Root folder of the audio files, searched recursively.
-#' @param audio_pattern Regular expression for the audio file names (case
+#' @param audio_dir Character scalar, path to the root folder of the audio
+#'   files, searched recursively.
+#' @param audio_pattern Character scalar, regular expression for the audio
+#'   file names (case
 #'   insensitive).
 #' @param site `NULL` (the site is the first folder below `audio_dir`) or a
-#'   single site name for every file.
-#' @param site_pattern Optional regular expression with one capture group
+#'   character scalar, a single site name for every file.
+#' @param site_pattern `NULL` or character scalar, regular expression with
+#'   one capture group
 #'   that takes the site from the file name, for recordings of several sites
 #'   in the same folder. For example, `"^[^_]+_([^_]+)_"` reads `Campus01`
 #'   from `Campinas_Campus01_20261003_074339.flac`. It replaces the folder
 #'   rule and cannot be combined with `site`.
-#' @param remap_from,remap_to Replace the prefix `remap_from` of the listed
+#' @param remap_from,remap_to `NULL` or character scalars. Replace the
+#'   prefix `remap_from` of the listed
 #'   paths by `remap_to`, e.g. `"/Volumes/NAS/"` and `"N:/"`, so that the
 #'   paths match `Begin Path`. Backslashes are turned into forward slashes
 #'   first.
-#' @param predictions Optional table of predictions from
+#' @param predictions `NULL` or a data frame of predictions (one row per
+#'   prediction) from
 #'   [read_selection_tables()], to check that its audio files are in the
 #'   list.
-#' @param file Optional path of a CSV file to write the table to (e.g.
+#' @param file `NULL` or character scalar, path of a CSV file to write the
+#'   table to (e.g.
 #'   `"recordings.csv"`).
 #'
 #' @return A tibble with `site` and `source_audio`, one row per recording,
@@ -70,63 +76,68 @@ list_recordings <- function(audio_dir,
   if (!is.null(site) && !is.null(site_pattern)) {
     stop("Give `site` or `site_pattern`, not both.", call. = FALSE)
   }
-  relativos <- list.files(audio_dir, pattern = audio_pattern,
+  rel_paths <- list.files(audio_dir, pattern = audio_pattern,
                           recursive = TRUE, ignore.case = TRUE)
-  if (length(relativos) == 0) {
+  if (length(rel_paths) == 0) {
     stop("No audio file matching ", audio_pattern, " found in ", audio_dir,
          ".", call. = FALSE)
   }
 
-  sitio <- if (!is.null(site_pattern)) {
-    site_from_name(relativos, site_pattern)
+  sites <- if (!is.null(site_pattern)) {
+    site_from_name(rel_paths, site_pattern)
   } else if (is.null(site)) {
-    partes <- strsplit(relativos, "/", fixed = TRUE)
-    soltos <- lengths(partes) == 1
-    if (any(soltos)) {
-      stop(sum(soltos), " audio file(s) directly in `audio_dir` (e.g. ",
-           relativos[soltos][1], "): put them in a folder per site or give ",
+    parts <- strsplit(rel_paths, "/", fixed = TRUE)
+    loose <- lengths(parts) == 1
+    if (any(loose)) {
+      stop(sum(loose), " audio file(s) directly in `audio_dir` (e.g. ",
+           rel_paths[loose][1], "): put them in a folder per site or give ",
            "`site` or `site_pattern`.", call. = FALSE)
     }
-    vapply(partes, `[`, character(1), 1)
+    vapply(parts, `[`, character(1), 1)
   } else {
     site
   }
-  raiz <- sub("/+$", "", str_replace_all(audio_dir, fixed("\\"), "/"))
-  gravacoes <- tibble(
-    site = sitio,
-    source_audio = remap_path(file.path(raiz, relativos), remap_from,
+  root <- sub("/+$", "", str_replace_all(audio_dir, fixed("\\"), "/"))
+  recordings <- tibble(
+    site = sites,
+    source_audio = remap_path(file.path(root, rel_paths), remap_from,
                               remap_to)
   ) |>
     arrange(site, source_audio)
 
-  sem_data <- is.na(parse_date_hour(basename(gravacoes$source_audio))$recording_date)
-  if (any(sem_data)) {
-    warning(sum(sem_data), " file name(s) without a date and time as ",
-            "YYYYMMDD_HHMMSS (e.g. ", basename(gravacoes$source_audio[sem_data][1]),
+  no_date <- is.na(
+    parse_date_hour(basename(recordings$source_audio))$recording_date
+  )
+  if (any(no_date)) {
+    warning(sum(no_date), " file name(s) without a date and time as ",
+            "YYYYMMDD_HHMMSS (e.g. ",
+            basename(recordings$source_audio[no_date][1]),
             "): their night and hour cannot be read.", call. = FALSE)
   }
-  message(nrow(gravacoes), " recordings listed at ",
-          n_distinct(gravacoes$site), " site(s).")
+  message(nrow(recordings), " recordings listed at ",
+          n_distinct(recordings$site), " site(s).")
 
   if (!is.null(predictions)) {
     if (!"begin_path" %in% names(predictions)) {
       stop("`predictions` lacks the column begin_path; read it with ",
            "read_selection_tables().", call. = FALSE)
     }
-    audios <- unique(str_replace_all(predictions$begin_path, fixed("\\"), "/"))
-    faltam <- setdiff(audios, gravacoes$source_audio)
-    message(length(audios) - length(faltam), " of ", length(audios),
+    audio_files <- unique(
+      str_replace_all(predictions$begin_path, fixed("\\"), "/")
+    )
+    absent <- setdiff(audio_files, recordings$source_audio)
+    message(length(audio_files) - length(absent), " of ", length(audio_files),
             " audio files of the predictions are in the list.")
-    if (length(faltam) > 0) {
-      warning(length(faltam), " audio file(s) of the predictions are not in ",
-              "the list, e.g. ", faltam[1], ". Check `remap_from` and ",
+    if (length(absent) > 0) {
+      warning(length(absent), " audio file(s) of the predictions are not in ",
+              "the list, e.g. ", absent[1], ". Check `remap_from` and ",
               "`remap_to`.", call. = FALSE)
     }
   }
 
   if (!is.null(file)) {
-    write_csv(gravacoes, file)
-    return(invisible(gravacoes))
+    write_csv(recordings, file)
+    return(invisible(recordings))
   }
-  gravacoes
+  recordings
 }

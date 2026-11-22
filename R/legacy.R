@@ -1,8 +1,11 @@
-# Leitura de arquivos no formato da v1.2.0 (colunas e valores em portugues).
-# O mapa abaixo e o mesmo documentado no NEWS.md e na vignette do contrato.
+# Reading files in the v1.2.0 format (Portuguese columns and values).
+# The map below is the same one documented in NEWS.md and in the contract
+# vignette.
 
+#' Map from v1.2.0 (Portuguese) column names to current column names
+#' @noRd
 legacy_columns <- c(
-  # manifesto e validacao por clipe
+  # manifest and per-clip review
   local               = "site",
   pasta_especie       = "species_folder",
   data_gravacao       = "recording_date",
@@ -20,9 +23,9 @@ legacy_columns <- c(
   prob_inclusao       = "inclusion_prob",
   veredito            = "verdict",
   caminho_wav         = "reviewed_path",
-  # tabela de gravacoes (tabela_gravacoes)
+  # recordings table (tabela_gravacoes)
   caminho_audio       = "source_audio",
-  # historico de deteccao por noite
+  # nightly detection history
   especie             = "species",
   n_deteccoes         = "n_detections",
   n_confiaveis        = "n_reliable",
@@ -32,6 +35,8 @@ legacy_columns <- c(
   deteccao            = "detection"
 )
 
+#' Map from v1.2.0 (Portuguese) values to current values, by column
+#' @noRd
 legacy_values <- list(
   verdict = c(positivo = "positive", negativo = "negative",
               nao_validado = "not_reviewed", clipe_ausente = "clip_missing"),
@@ -42,20 +47,33 @@ legacy_values <- list(
              simulado = "simulated", ok = "ok")
 )
 
-# Arquivo no formato antigo? (tem 'local' e nao tem 'site')
+#' Test whether a table is in the v1.2.0 format
+#'
+#' A table is legacy when it has a `local` column and no `site` column.
+#'
+#' @param df A data frame.
+#' @return Logical scalar.
+#' @noRd
 is_legacy <- function(df) "local" %in% names(df) && !"site" %in% names(df)
 
-# Renomeia colunas e recodifica valores do formato v1.2.0; tabelas ja no
-# formato atual passam intactas. clip_file NAO muda (prefixo "grav_" dos
-# clipes antigos): e o nome do arquivo no disco, usado para casar a revisao
+#' Convert a v1.2.0 table to the current format
+#'
+#' Renames columns and recodes values of the v1.2.0 format; tables already
+#' in the current format pass unchanged. `clip_file` is NOT changed (the
+#' "grav_" prefix of old clips): it is the file name on disk, used to match
+#' the review.
+#'
+#' @param df A data frame, legacy or current.
+#' @return A data frame with current column names and values.
+#' @noRd
 from_legacy <- function(df) {
   if (!is_legacy(df)) return(df)
-  velhas <- intersect(names(legacy_columns), names(df))
-  df <- rename(df, !!!setNames(velhas, legacy_columns[velhas]))
+  old_cols <- intersect(names(legacy_columns), names(df))
+  df <- rename(df, !!!setNames(old_cols, legacy_columns[old_cols]))
   for (col in intersect(names(legacy_values), names(df))) {
-    mapa <- legacy_values[[col]]
+    value_map <- legacy_values[[col]]
     x <- df[[col]]
-    df[[col]] <- ifelse(x %in% names(mapa), unname(mapa[x]), x)
+    df[[col]] <- ifelse(x %in% names(value_map), unname(value_map[x]), x)
   }
   if ("status" %in% names(df)) {
     df$status <- str_replace(df$status, "^erro: ", "error: ")

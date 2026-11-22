@@ -13,21 +13,24 @@ community_matrices(
 )
 }
 \arguments{
-\item{history}{Nightly detection history, as returned by
-\code{\link[=detection_history]{detection_history()}} (v1.2.0 \code{historico_deteccao_noite.csv} tables
-are also accepted).}
+\item{history}{A data frame (or tibble), the nightly detection history
+as returned by \code{\link[=detection_history]{detection_history()}}, one row per site x species x
+night (v1.2.0 \code{historico_deteccao_noite.csv} tables are also
+accepted).}
 
-\item{core_species}{Species codes (the \code{species} column) that enter the
-matrix.}
+\item{core_species}{Character vector of length >= 1, species codes (the
+\code{species} column) that enter the matrix.}
 
-\item{k_min}{Repetition rule: 1, 2 or 3 reliable detections on the night.}
+\item{k_min}{Integer scalar, one of 1, 2 or 3. Repetition rule: 1, 2 or
+3 reliable detections on the night.}
 
-\item{min_nights_month}{Site x month cells with fewer recorded nights are
-dropped from the matrices (unstable frequencies) and flagged in
-\code{effort}.}
+\item{min_nights_month}{Numeric scalar. Site x month cells with fewer
+recorded nights are dropped from the matrices (unstable frequencies)
+and flagged in \code{effort}.}
 
-\item{drop_empty}{Drop the site x month rows in which no core species
-was detected. Distances such as Bray-Curtis are undefined for them.}
+\item{drop_empty}{Logical scalar. If \code{TRUE}, drops the site x month rows
+in which no core species was detected. Distances such as Bray-Curtis
+are undefined for them.}
 }
 \value{
 A list with three tibbles, \code{frequency} and \code{counts} (one row per

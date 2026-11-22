@@ -7,9 +7,10 @@
 reviewer_agreement(reviews)
 }
 \arguments{
-\item{reviews}{One table of reviewed clips (as returned by
-\code{\link[=classify_review]{classify_review()}}) with a \code{reviewer} column, or a named list of
-such tables, named by reviewer.}
+\item{reviews}{A data frame (or tibble) or a named list of data frames.
+One table of reviewed clips (as returned by \code{\link[=classify_review]{classify_review()}}) with
+a \code{reviewer} column, or a named list of such tables, named by
+reviewer.}
 }
 \value{
 A tibble with \code{species_folder}, \code{n_clips} (clips with at least

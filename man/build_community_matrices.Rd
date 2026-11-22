@@ -13,19 +13,22 @@ build_community_matrices(
 )
 }
 \arguments{
-\item{history_file}{Path to \code{nightly_detection_history.csv} (or a v1.2.0
+\item{history_file}{Character scalar, path to
+\code{nightly_detection_history.csv} (or a v1.2.0
 \code{historico_deteccao_noite.csv}).}
 
-\item{output_dir}{Output folder; created if needed.}
+\item{output_dir}{Character scalar, path to the output folder; created if
+needed.}
 
-\item{core_species}{Species codes (the \code{species} column) that enter the
-matrix.}
+\item{core_species}{Character vector of length >= 1, species codes (the
+\code{species} column) that enter the matrix.}
 
-\item{k_min}{Repetition rule: 1, 2 or 3 reliable detections on the night.}
+\item{k_min}{Integer scalar, one of 1, 2 or 3. Repetition rule: 1, 2 or
+3 reliable detections on the night.}
 
-\item{min_nights_month}{Site x month cells with fewer recorded nights are
-dropped from the matrices (unstable frequencies) and flagged in
-\code{effort}.}
+\item{min_nights_month}{Numeric scalar. Site x month cells with fewer
+recorded nights are dropped from the matrices (unstable frequencies)
+and flagged in \code{effort}.}
 }
 \value{
 The list returned by \code{\link[=community_matrices]{community_matrices()}}, invisibly.

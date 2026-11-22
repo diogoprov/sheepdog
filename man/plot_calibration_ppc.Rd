@@ -7,10 +7,10 @@
 plot_calibration_ppc(ppc, check = "score")
 }
 \arguments{
-\item{ppc}{Table returned by \code{\link[=calibration_ppc]{calibration_ppc()}}.}
+\item{ppc}{A data frame (tibble) returned by \code{\link[=calibration_ppc]{calibration_ppc()}}.}
 
-\item{check}{The check to draw: \code{"score"}, \code{"site"}, \code{"species"},
-\code{"overall"} or a column given in \code{group}.}
+\item{check}{Character scalar, the check to draw: \code{"score"}, \code{"site"},
+\code{"species"}, \code{"overall"} or a column given in \code{group}.}
 }
 \value{
 A ggplot object.

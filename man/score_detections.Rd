@@ -15,24 +15,26 @@ score_detections(
 )
 }
 \arguments{
-\item{tables}{Named character vector, named by site (the site names of
-the calibration): the path of the combined selection table of each
-site, or the folder of its per-audio tables (see
+\item{tables}{Named character vector, one element per site, named by site
+(the site names of the calibration): the path of the combined selection
+table of each site, or the folder of its per-audio tables (see
 \code{\link[=read_selection_tables]{read_selection_tables()}}).}
 
-\item{fit}{Model returned by \code{\link[=fit_calibration]{fit_calibration()}}.}
+\item{fit}{A \code{glm}, \code{glmerMod} or \code{brmsfit} returned by \code{\link[=fit_calibration]{fit_calibration()}}.}
 
-\item{min_confidence}{Detections below this confidence are not scored.}
+\item{min_confidence}{Numeric scalar in [0, 1]. Detections below this
+confidence are not scored.}
 
-\item{dawn_hour}{Recordings that start before this hour belong to the
-night before.}
+\item{dawn_hour}{Numeric scalar in [0, 24]. Recordings that start before
+this hour belong to the night before.}
 
-\item{p_min, lower_prob}{Models fitted with \code{engine = "brms"}: the
-threshold of \code{pr_reliable} and the probability of the lower quantile
-\code{p_tp_lower}.}
+\item{p_min, lower_prob}{Numeric scalars, \code{p_min} in [0, 1] and \code{lower_prob}
+in (0, 1). Models fitted with \code{engine = "brms"}: the threshold of
+\code{pr_reliable} and the probability of the lower quantile \code{p_tp_lower}.}
 
-\item{grid_step}{Models fitted with \code{engine = "brms"}: step of the grid
-of scores on which the posterior is computed.}
+\item{grid_step}{Numeric scalar in (0, 0.5). Models fitted with
+\code{engine = "brms"}: step of the grid of scores on which the posterior is
+computed.}
 }
 \value{
 A tibble with \code{site}, \code{species}, \code{date}, \code{night}, \code{hour},

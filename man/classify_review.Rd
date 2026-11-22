@@ -12,16 +12,16 @@ classify_review(
 )
 }
 \arguments{
-\item{manifest}{Clip manifest: a data frame or the path to
-\code{clip_manifest.csv}. Manifests written by v1.2.0
-(\code{manifesto_clipes.csv}) are also read.}
+\item{manifest}{A data frame (or tibble) or a character scalar. The clip
+manifest, one row per clip, or the path to \code{clip_manifest.csv}.
+Manifests written by v1.2.0 (\code{manifesto_clipes.csv}) are also read.}
 
-\item{review_dir}{Folder with the reviewed clips (the \code{clips} folder of
-the validation package, after the review).}
+\item{review_dir}{Character scalar, path to the folder with the reviewed
+clips (the \code{clips} folder of the validation package, after the review).}
 
-\item{positive_pattern, negative_pattern}{Regular expressions
-(case-insensitive) that identify the positive and negative folders in
-the path of each clip.}
+\item{positive_pattern, negative_pattern}{Character scalars, regular
+expressions (case-insensitive) that identify the positive and negative
+folders in the path of each clip.}
 }
 \value{
 The manifest with two more columns: \code{verdict} (\code{"positive"},

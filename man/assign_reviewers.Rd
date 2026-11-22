@@ -7,16 +7,17 @@
 assign_reviewers(manifest, reviewers, overlap = 0.1, seed = 2026)
 }
 \arguments{
-\item{manifest}{Clip manifest, as returned by \code{\link[=select_clips]{select_clips()}} or
-\code{\link[=cut_clips]{cut_clips()}}.}
+\item{manifest}{A data frame (or tibble), the clip manifest as returned
+by \code{\link[=select_clips]{select_clips()}} or \code{\link[=cut_clips]{cut_clips()}}. One row per clip.}
 
-\item{reviewers}{Names of the reviewers (at least two).}
-
-\item{overlap}{Fraction of the clips of each species reviewed by two
+\item{reviewers}{Character vector of length >= 2, unique names of the
 reviewers.}
 
-\item{seed}{Seed of the draws. The global random number generator is
-left as it was.}
+\item{overlap}{Numeric scalar in [0, 1]. Fraction of the clips of each
+species reviewed by two reviewers.}
+
+\item{seed}{Integer scalar, seed of the draws. The global random number
+generator is left as it was.}
 }
 \value{
 The manifest with \code{reviewer} (the first reviewer of each clip)

@@ -33,8 +33,10 @@
 #' \doi{10.1201/9780429029608}) and Gelman et al. (2026, *Bayesian
 #' Workflow*, Chapman & Hall).
 #'
-#' @param formula Calibration formula (see [calibration_models()]).
-#' @param validations Table returned by [read_validations()].
+#' @param formula A model formula, the calibration formula (see
+#'   [calibration_models()]).
+#' @param validations A data frame (or tibble) returned by [read_validations()],
+#'   one row per reviewed clip.
 #'
 #' @return A `brmsprior` object.
 #' @srrstats {BS1.2c} The prior is always explicit; this function
@@ -60,21 +62,21 @@ calibration_prior <- function(formula, validations) {
   classes <- unique(tab$class)
   coefs_b <- setdiff(tab$coef[tab$class == "b"], "")
   m <- round(mean(validations$logit_conf), 3)
-  outras <- intersect(setdiff(coefs_b, "logit_conf"), names(validations))
-  nao_padr <- outras[map_lgl(outras, function(v) {
+  others <- intersect(setdiff(coefs_b, "logit_conf"), names(validations))
+  not_std <- others[map_lgl(others, function(v) {
     x <- validations[[v]]
     is.numeric(x) && (abs(mean(x, na.rm = TRUE)) > 0.25 ||
                         !dplyr::between(stats::sd(x, na.rm = TRUE), 0.5, 2))
   })]
-  if (length(nao_padr) > 0) {
+  if (length(not_std) > 0) {
     warning("The normal(0, 1) prior on the other population-level terms ",
             "assumes standardised covariates, but ",
-            paste(nao_padr, collapse = ", "), " are not (mean far from 0 ",
+            paste(not_std, collapse = ", "), " are not (mean far from 0 ",
             "or standard deviation far from 1). Standardise them, e.g. ",
             "with scale(), or set their prior by hand.", call. = FALSE)
   }
-  # com outros termos fixos (ex. uma covariavel), o limite em 0 nao pode
-  # ficar so na inclinacao do score: o brms limita a classe inteira
+  # with other population-level terms (e.g. a covariate), the bound at 0
+  # cannot apply only to the score slope: brms bounds the whole class
   b <- if (all(coefs_b %in% "logit_conf")) {
     brms::prior_string("normal(1, 1)", class = "b", lb = 0)
   } else {
@@ -99,9 +101,11 @@ calibration_prior <- function(formula, validations) {
 #' sizes and the number of divergent transitions of a model fitted with
 #' `engine = "brms"`, and whether they pass the usual limits.
 #'
-#' @param fit Model returned by [fit_calibration()] with `engine = "brms"`.
-#' @param rhat_max Largest acceptable R-hat.
-#' @param ess_min Smallest acceptable bulk and tail effective sample size.
+#' @param fit A `brmsfit` returned by [fit_calibration()] with
+#'   `engine = "brms"`.
+#' @param rhat_max Numeric scalar >= 1, largest acceptable R-hat.
+#' @param ess_min Numeric scalar >= 0, smallest acceptable bulk and tail
+#'   effective sample size.
 #'
 #' @details R-hat is the rank-normalised, folded split-R-hat and the effective
 #' sample sizes are the bulk and tail ESS of Vehtari et al. (2021,
@@ -132,13 +136,13 @@ calibration_diagnostics <- function(fit, rhat_max = 1.01, ess_min = 400) {
   check_number(rhat_max, "rhat_max", lower = 1)
   check_number(ess_min, "ess_min", lower = 0)
   require_suggested("posterior", "for the convergence diagnostics")
-  resumo <- posterior::summarise_draws(posterior::as_draws_df(fit),
-                                       "rhat", "ess_bulk", "ess_tail")
+  smry <- posterior::summarise_draws(posterior::as_draws_df(fit),
+                                     "rhat", "ess_bulk", "ess_tail")
   np <- brms::nuts_params(fit)
   n_div <- sum(np$Value[np$Parameter == "divergent__"])
-  out <- tibble(max_rhat = max(resumo$rhat, na.rm = TRUE),
-                min_ess_bulk = min(resumo$ess_bulk, na.rm = TRUE),
-                min_ess_tail = min(resumo$ess_tail, na.rm = TRUE),
+  out <- tibble(max_rhat = max(smry$rhat, na.rm = TRUE),
+                min_ess_bulk = min(smry$ess_bulk, na.rm = TRUE),
+                min_ess_tail = min(smry$ess_tail, na.rm = TRUE),
                 n_divergent = as.integer(n_div))
   mutate(out, ok = max_rhat <= rhat_max & min_ess_bulk >= ess_min &
            min_ess_tail >= ess_min & n_divergent == 0)
@@ -152,7 +156,8 @@ calibration_diagnostics <- function(fit, rhat_max = 1.01, ess_min = 400) {
 #' [plot_calibration()].
 #'
 #' @inheritParams calibration_prior
-#' @param prior Prior, e.g. from [calibration_prior()].
+#' @param prior A `brmsprior` object, the prior, e.g. from
+#'   [calibration_prior()].
 #' @param ... Further arguments for `brms::brm()` (e.g. `chains`, `iter`,
 #'   `backend`, `seed`).
 #'
@@ -188,11 +193,12 @@ prior_predictive_calibration <- function(formula, validations, prior, ...) {
 #' prior-data conflict or a strongly informative prior shows up as
 #' sensitivity to both.
 #'
-#' @param fit Model returned by [fit_calibration()] with `engine = "brms"`.
-#' @param variable Parameters to analyse. `NULL` takes the population-level
-#'   effects and the standard deviations and correlations of the random
-#'   effects (`b_`, `sd_`, `cor_`), leaving out the individual random
-#'   effects.
+#' @param fit A `brmsfit` returned by [fit_calibration()] with
+#'   `engine = "brms"`.
+#' @param variable `NULL` or a character vector of the names of the parameters
+#'   to analyse. `NULL` takes the population-level effects and the standard
+#'   deviations and correlations of the random effects (`b_`, `sd_`, `cor_`),
+#'   leaving out the individual random effects.
 #' @param ... Further arguments for `priorsense::powerscale_sensitivity()`.
 #'
 #' @return The table of `priorsense::powerscale_sensitivity()`.
@@ -201,44 +207,74 @@ calibration_sensitivity <- function(fit, variable = NULL, ...) {
   check_brmsfit(fit)
   require_suggested("priorsense", "for the prior sensitivity analysis")
   if (is.null(variable)) {
-    todas <- posterior::variables(fit)
-    variable <- grep("^(b|sd|cor)_", todas, value = TRUE)
+    all_vars <- posterior::variables(fit)
+    variable <- grep("^(b|sd|cor)_", all_vars, value = TRUE)
   }
   priorsense::powerscale_sensitivity(fit, variable = variable, ...)
 }
 
-# Grade de scores (passo `step`) a partir de `min_confidence`
+#' Grid of scores from `min_confidence` in steps of `step`
+#'
+#' @param min_confidence Numeric scalar in \[0, 1\], the lowest score.
+#' @param step Numeric scalar, the grid step.
+#' @return Numeric vector of grid points below 1.
+#' @noRd
 score_grid <- function(min_confidence, step) {
   seq(floor(min_confidence / step) * step, 1 - step / 2, by = step)
 }
 
-# Score arredondado para a grade
+#' Snap scores to the nearest point of the score grid
+#'
+#' @param confidence Numeric vector of scores in \[0, 1\].
+#' @param min_confidence Numeric scalar in \[0, 1\], the lowest score.
+#' @param step Numeric scalar, the grid step.
+#' @return Integer-valued numeric vector of grid indices, same length as
+#'   `confidence`, clamped to the grid.
+#' @noRd
 snap_to_grid <- function(confidence, min_confidence, step) {
   g <- score_grid(min_confidence, step)
   idx <- round((confidence - g[1]) / step) + 1
   pmin(pmax(idx, 1), length(g))
 }
 
-# Amostras da posterior de P(TP) num local, para todas as especies x
-# pontos da grade: matriz amostras x (especie, ponto), com a tabela da grade.
-# `keys`: niveis de outras variaveis de agrupamento (ex. list(month =
-# "202406")), constantes na grade
+#' Posterior draws of P(TP) on the score grid of one site
+#'
+#' Computes the draws for every species x grid point of one site.
+#'
+#' @param fit A `brmsfit` calibration model.
+#' @param site Character scalar, the site.
+#' @param species Character vector of species.
+#' @param min_confidence Numeric scalar in \[0, 1\], the lowest score.
+#' @param step Numeric scalar, the grid step.
+#' @param draw_ids Integer vector or `NULL`, the posterior draws to use.
+#' @param keys Named list of levels of other grouping variables (e.g.
+#'   `list(month = "202406")`), constant over the grid.
+#' @return A list with `grid` (a tibble, one row per species x grid point)
+#'   and `draws` (a matrix, draws x grid rows).
+#' @noRd
 grid_draws <- function(fit, site, species, min_confidence, step,
                        draw_ids = NULL, keys = list()) {
-  niveis <- fit_levels(fit)
-  grade <- expand_grid(species = species,
-                       confidence = score_grid(min_confidence, step)) |>
-    mutate(site = factor(site, levels = niveis$site),
-           species = factor(species, levels = niveis$species),
+  lvls <- fit_levels(fit)
+  grid <- expand_grid(species = species,
+                      confidence = score_grid(min_confidence, step)) |>
+    mutate(site = factor(site, levels = lvls$site),
+           species = factor(species, levels = lvls$species),
            logit_conf = safe_logit(confidence))
-  for (k in names(keys)) grade[[k]] <- keys[[k]]
-  draws <- brms::posterior_epred(fit, newdata = grade, allow_new_levels = TRUE,
+  for (k in names(keys)) grid[[k]] <- keys[[k]]
+  draws <- brms::posterior_epred(fit, newdata = grid, allow_new_levels = TRUE,
                                  draw_ids = draw_ids)
-  list(grid = grade, draws = draws)
+  list(grid = grid, draws = draws)
 }
 
-# Resumo das amostras por ponto da grade: media, quantil inferior e
-# Pr(P(TP) >= p_min)
+#' Summarise grid draws by grid point
+#'
+#' @param draws Numeric matrix of P(TP), draws x grid points.
+#' @param p_min Numeric scalar in \[0, 1\], reliability threshold.
+#' @param lower_prob Numeric scalar in \[0, 1\], probability of the lower
+#'   quantile.
+#' @return A tibble with `p_tp` (mean), `p_tp_lower` (lower quantile) and
+#'   `pr_reliable` (Pr(P(TP) >= p_min)), one row per grid point.
+#' @noRd
 summarise_grid_draws <- function(draws, p_min, lower_prob) {
   tibble(p_tp = colMeans(draws),
          p_tp_lower = apply(draws, 2, stats::quantile, probs = lower_prob,
@@ -260,11 +296,14 @@ summarise_grid_draws <- function(draws, p_min, lower_prob) {
 #' detections by their rounded score, which keeps the cost independent of
 #' the number of detections.
 #'
-#' @param fit Model returned by [fit_calibration()] with `engine = "brms"`.
-#' @param scored Table returned by [score_detections()].
-#' @param n_draws Number of posterior draws.
-#' @param seed Seed of the choice of draws. The global random number
-#'   generator is left as it was.
+#' @param fit A `brmsfit` returned by [fit_calibration()] with
+#'   `engine = "brms"`.
+#' @param scored A data frame (or tibble) returned by [score_detections()], one
+#'   row per detection.
+#' @param n_draws Integer scalar >= 1, number of posterior draws (at most the
+#'   number of draws in `fit`).
+#' @param seed Integer scalar, seed of the choice of draws. The global random
+#'   number generator is left as it was.
 #' @inheritParams detection_history
 #' @inheritParams score_detections
 #'
@@ -290,20 +329,20 @@ history_draws <- function(fit, scored, p_min = 0.95, n_draws = 200,
   n_g <- length(score_grid(min_confidence, grid_step))
 
   map(split(scored, scored$site), function(sc) {
-    especies <- sort(unique(sc$species))
-    gd <- grid_draws(fit, sc$site[1], especies, min_confidence, grid_step,
+    spp <- sort(unique(sc$species))
+    gd <- grid_draws(fit, sc$site[1], spp, min_confidence, grid_step,
                      draw_ids = ids)
-    confiavel <- t(gd$draws >= p_min)        # pontos da grade x amostras
-    contagem <- count(sc, species, night, .g)
-    coluna <- (match(contagem$species, especies) - 1) * n_g + contagem$.g
-    chave <- paste(contagem$species, contagem$night, sep = "\r")
-    n_rel <- rowsum(confiavel[coluna, , drop = FALSE] * contagem$n,
-                    group = chave, reorder = FALSE)
-    n_det <- rowsum(contagem$n, group = chave, reorder = FALSE)[, 1]
-    partes <- strsplit(rownames(n_rel), "\r", fixed = TRUE)
+    reliable <- t(gd$draws >= p_min)        # grid points x draws
+    counts <- count(sc, species, night, .g)
+    col_idx <- (match(counts$species, spp) - 1) * n_g + counts$.g
+    key <- paste(counts$species, counts$night, sep = "\r")
+    n_rel <- rowsum(reliable[col_idx, , drop = FALSE] * counts$n,
+                    group = key, reorder = FALSE)
+    n_det <- rowsum(counts$n, group = key, reorder = FALSE)[, 1]
+    parts <- strsplit(rownames(n_rel), "\r", fixed = TRUE)
     tibble(site = sc$site[1],
-           species = rep(map_chr(partes, 1), times = ncol(n_rel)),
-           night = rep(map_chr(partes, 2), times = ncol(n_rel)),
+           species = rep(map_chr(parts, 1), times = ncol(n_rel)),
+           night = rep(map_chr(parts, 2), times = ncol(n_rel)),
            n_detections = rep(as.integer(n_det), times = ncol(n_rel)),
            draw = rep(ids, each = nrow(n_rel)),
            n_reliable = as.integer(n_rel))
@@ -326,8 +365,9 @@ history_draws <- function(fit, scored, p_min = 0.95, n_draws = 200,
 #' frequencies are also returned, e.g. to repeat an ordination on each
 #' draw.
 #'
-#' @param history Table returned by [history_draws()].
-#' @param probs Probabilities of the interval.
+#' @param history A data frame (or tibble) returned by [history_draws()].
+#' @param probs Numeric vector of length 2 in \[0, 1\], probabilities of the
+#'   lower and upper limits of the interval.
 #' @inheritParams community_matrices
 #'
 #' @return A list with `summary` (`site`, `month`, `species`,
@@ -338,7 +378,7 @@ history_draws <- function(fit, scored, p_min = 0.95, n_draws = 200,
 community_matrices_draws <- function(history, core_species, k_min = 2,
                                      min_nights_month = 5,
                                      probs = c(0.05, 0.95)) {
-  por_amostra <- history |>
+  by_draw <- history |>
     group_split(draw) |>
     map(function(h) {
       m <- suppressWarnings(community_matrices(
@@ -349,7 +389,7 @@ community_matrices_draws <- function(history, core_species, k_min = 2,
         mutate(draw = h$draw[1], .before = 1)
     }) |>
     list_rbind()
-  resumo <- por_amostra |>
+  smry <- by_draw |>
     group_by(site, month, species, n_nights_recorded) |>
     summarise(frequency_mean = mean(frequency),
               frequency_lower = stats::quantile(frequency, probs[1],
@@ -357,8 +397,8 @@ community_matrices_draws <- function(history, core_species, k_min = 2,
               frequency_upper = stats::quantile(frequency, probs[2],
                                                 names = FALSE),
               .groups = "drop")
-  list(summary = resumo,
-       draws = select(por_amostra, draw, site, month, species, frequency))
+  list(summary = smry,
+       draws = select(by_draw, draw, site, month, species, frequency))
 }
 
 #' Calibration curves of posterior (or prior) draws
@@ -370,12 +410,13 @@ community_matrices_draws <- function(history, core_species, k_min = 2,
 #' probability scale (a prior predictive check); with a fitted model, the
 #' uncertainty of the curve. Needs the 'ggplot2' package.
 #'
-#' @param fit Model returned by [fit_calibration()] with `engine = "brms"`
+#' @param fit A `brmsfit` returned by [fit_calibration()] with `engine = "brms"`
 #'   or by [prior_predictive_calibration()].
-#' @param n_draws Number of curves.
-#' @param p_min Threshold drawn as a dashed line.
-#' @param seed Seed of the choice of draws. The global random number
-#'   generator is left as it was.
+#' @param n_draws Integer scalar >= 1, number of curves (at most the number of
+#'   draws in `fit`).
+#' @param p_min Numeric scalar in \[0, 1\], threshold drawn as a dashed line.
+#' @param seed Integer scalar, seed of the choice of draws. The global random
+#'   number generator is left as it was.
 #'
 #' @return A ggplot object.
 #' @export
@@ -388,14 +429,14 @@ plot_calibration_draws <- function(fit, n_draws = 100, p_min = 0.95,
   check_number(seed, "seed", integer = TRUE)
   ids <- withr::with_seed(seed, sample.int(brms::ndraws(fit),
                                            min(n_draws, brms::ndraws(fit))))
-  grade <- tibble(confidence = seq(0.01, 0.99, by = 0.01)) |>
+  grid <- tibble(confidence = seq(0.01, 0.99, by = 0.01)) |>
     mutate(logit_conf = safe_logit(confidence))
-  p <- brms::posterior_epred(fit, newdata = grade, re_formula = NA,
+  p <- brms::posterior_epred(fit, newdata = grid, re_formula = NA,
                              draw_ids = ids)
-  curvas <- tibble(draw = rep(seq_along(ids), times = ncol(p)),
-                   confidence = rep(grade$confidence, each = nrow(p)),
+  curves <- tibble(draw = rep(seq_along(ids), times = ncol(p)),
+                   confidence = rep(grid$confidence, each = nrow(p)),
                    p_tp = as.vector(p))
-  ggplot2::ggplot(curvas, ggplot2::aes(confidence, p_tp, group = draw)) +
+  ggplot2::ggplot(curves, ggplot2::aes(confidence, p_tp, group = draw)) +
     ggplot2::geom_abline(slope = 1, intercept = 0, colour = "grey60",
                          linetype = "dotted") +
     ggplot2::geom_hline(yintercept = p_min, linetype = "dashed",

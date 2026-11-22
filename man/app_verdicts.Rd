@@ -7,19 +7,20 @@
 app_verdicts(manifest, verdicts_file, clips_dir = NULL, reviewer = NULL)
 }
 \arguments{
-\item{manifest}{Clip manifest: a data frame or the path to
-\code{clip_manifest.csv} (from \code{\link[=select_clips]{select_clips()}}, \code{\link[=cut_clips]{cut_clips()}} or
-\code{\link[=assign_reviewers]{assign_reviewers()}}). With \code{output_dir}, by default
-\verb{<output_dir>/clip_manifest.csv} when it exists.}
+\item{manifest}{\code{NULL}, a data frame (or tibble) or a character scalar path
+to \code{clip_manifest.csv}: the clip manifest (from \code{\link[=select_clips]{select_clips()}},
+\code{\link[=cut_clips]{cut_clips()}} or \code{\link[=assign_reviewers]{assign_reviewers()}}), one row per clip. With
+\code{output_dir}, by default \verb{<output_dir>/clip_manifest.csv} when it exists.}
 
-\item{verdicts_file}{CSV written by \code{\link[=run_app]{run_app()}}.}
+\item{verdicts_file}{Character scalar, path to the CSV written by
+\code{\link[=run_app]{run_app()}}.}
 
-\item{clips_dir}{Optional folder of the clips, to fill \code{reviewed_path}
-(needed by \code{\link[=build_training_set]{build_training_set()}}).}
+\item{clips_dir}{\code{NULL} or a character scalar, folder of the clips, to fill
+\code{reviewed_path} (needed by \code{\link[=build_training_set]{build_training_set()}}).}
 
-\item{reviewer}{Optional reviewer: only their verdicts are used. With
-\code{NULL}, every reviewer's verdicts are kept, one row per clip and
-reviewer, ready for \code{\link[=reviewer_agreement]{reviewer_agreement()}} and
+\item{reviewer}{\code{NULL} or a character scalar, the reviewer: only their
+verdicts are used. With \code{NULL}, every reviewer's verdicts are kept, one row
+per clip and reviewer, ready for \code{\link[=reviewer_agreement]{reviewer_agreement()}} and
 \code{\link[=consensus_verdicts]{consensus_verdicts()}}.
 
 A clip marked more than once by the same reviewer keeps the last

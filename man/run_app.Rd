@@ -22,60 +22,63 @@ run_app(
 )
 }
 \arguments{
-\item{manifest}{Clip manifest: a data frame or the path to
-\code{clip_manifest.csv} (from \code{\link[=select_clips]{select_clips()}}, \code{\link[=cut_clips]{cut_clips()}} or
-\code{\link[=assign_reviewers]{assign_reviewers()}}). With \code{output_dir}, by default
-\verb{<output_dir>/clip_manifest.csv} when it exists.}
+\item{manifest}{\code{NULL}, a data frame (or tibble) or a character scalar path
+to \code{clip_manifest.csv}: the clip manifest (from \code{\link[=select_clips]{select_clips()}},
+\code{\link[=cut_clips]{cut_clips()}} or \code{\link[=assign_reviewers]{assign_reviewers()}}), one row per clip. With
+\code{output_dir}, by default \verb{<output_dir>/clip_manifest.csv} when it exists.}
 
-\item{clips_dir}{Folder of the cut clips, with one subfolder per
-species (\verb{<clips_dir>/<species_folder>/<clip_file>}, as written by
-\code{\link[=cut_clips]{cut_clips()}}). With \code{output_dir}, \verb{<output_dir>/clips} by default.}
+\item{clips_dir}{\code{NULL} or a character scalar, folder of the cut clips, with
+one subfolder per species (\verb{<clips_dir>/<species_folder>/<clip_file>}, as
+written by \code{\link[=cut_clips]{cut_clips()}}). With \code{output_dir}, \verb{<output_dir>/clips} by
+default.}
 
-\item{verdicts_file}{CSV where the verdicts are written. By default,
-\code{verdicts.csv} in \code{output_dir} or next to \code{manifest} when it is a
-path.}
+\item{verdicts_file}{\code{NULL} or a character scalar, path to the CSV (\code{.csv})
+where the verdicts are written. By default, \code{verdicts.csv} in \code{output_dir}
+or next to \code{manifest} when it is a path.}
 
-\item{reviewer}{Name of the reviewer, written with each verdict. With a
-manifest from \code{\link[=assign_reviewers]{assign_reviewers()}}, only the clips assigned to this
-reviewer (as first or second reviewer) are shown.}
+\item{reviewer}{\code{NULL} or a character scalar, name of the reviewer, written
+with each verdict. With a manifest from \code{\link[=assign_reviewers]{assign_reviewers()}}, only the
+clips assigned to this reviewer (as first or second reviewer) are shown.}
 
-\item{max_freq}{Upper limit of the spectrogram, in kHz: 12 by default
-(e.g. \code{8} for most anuran calls). \code{NULL} shows the whole band. It can
-also be changed in the Review tab.}
+\item{max_freq}{\code{NULL} or a numeric scalar, upper limit of the spectrogram,
+in kHz: 12 by default (e.g. \code{8} for most anuran calls). \code{NULL} shows the
+whole band. It can also be changed in the Review tab.}
 
-\item{selection_dir}{Folder of the BirdNET selection tables (as in
-\code{\link[=read_selection_tables]{read_selection_tables()}}). Opens the Sampling and Export tabs.}
+\item{selection_dir}{\code{NULL} or a character scalar, folder of the BirdNET
+selection tables (as in \code{\link[=read_selection_tables]{read_selection_tables()}}). Opens the Sampling and
+Export tabs.}
 
-\item{output_dir}{Folder of the validation round: the clips, the
-manifest, the verdicts and the export (\verb{<output_dir>/occupancy} by
-default) are written there.}
+\item{output_dir}{\code{NULL} or a character scalar, folder of the validation
+round: the clips, the manifest, the verdicts and the export
+(\verb{<output_dir>/occupancy} by default) are written there.}
 
-\item{recordings}{Optional table of all recordings (columns \code{site} and
-\code{source_audio}), or the path to its CSV: needed by
-\code{"random_recordings"} and, in the export, to keep the occasions
-without detections (see \code{\link[=export_occupancy_data]{export_occupancy_data()}}).}
+\item{recordings}{\code{NULL}, a data frame (or tibble) of all recordings (columns
+\code{site} and \code{source_audio}, one row per recording) or a character scalar
+path to its CSV: needed by \code{"random_recordings"} and, in the export, to
+keep the occasions without detections (see \code{\link[=export_occupancy_data]{export_occupancy_data()}}).}
 
-\item{audio_dir}{Optional folder of the recordings, subfolders included.
-Every recording is listed with \code{\link[=list_recordings]{list_recordings()}} and written to the
-\code{recordings} CSV when it is a path, or else to
-\verb{<output_dir>/recordings.csv}; the list is used as \code{recordings}.
-Can also be chosen in the app (Intro > Audio panel).}
+\item{audio_dir}{\code{NULL} or a character scalar, folder of the recordings,
+subfolders included. Every recording is listed with \code{\link[=list_recordings]{list_recordings()}} and
+written to the \code{recordings} CSV when it is a path, or else to
+\verb{<output_dir>/recordings.csv}; the list is used as \code{recordings}. Can also
+be chosen in the app (Intro > Audio panel).}
 
-\item{site_pattern}{Optional regular expression with one capture group
-that takes the site from the file names, when the recordings or the
-selection tables of several sites share a folder (see
-\code{\link[=list_recordings]{list_recordings()}} and \code{\link[=read_selection_tables]{read_selection_tables()}}). Can also be set in
-the Audio panel.}
+\item{site_pattern}{\code{NULL} or a character scalar, regular expression with one
+capture group that takes the site from the file names, when the recordings
+or the selection tables of several sites share a folder (see
+\code{\link[=list_recordings]{list_recordings()}} and \code{\link[=read_selection_tables]{read_selection_tables()}}). Can also be set in the
+Audio panel.}
 
-\item{blind}{Blind review: the Review tab hides the score, the sampling
-design and the clip file name (which starts with the score), and shows
-the clips in an order shuffled once per reviewer instead of the order
-of the manifest, so that the verdict does not lean on the score.}
+\item{blind}{Logical scalar. If \code{TRUE}, blind review: the Review tab hides
+the score, the sampling design and the clip file name (which starts with
+the score), and shows the clips in an order shuffled once per reviewer
+instead of the order of the manifest, so that the verdict does not lean on
+the score.}
 
-\item{classifier}{Label of the classifier, recorded in
-\code{extraction_info.csv} and \code{schema.json}.}
+\item{classifier}{\code{NULL} or a character scalar, label of the classifier,
+recorded in \code{extraction_info.csv} and \code{schema.json}.}
 
-\item{launch.browser}{Open the app in the browser? Passed to
+\item{launch.browser}{Logical scalar: open the app in the browser? Passed to
 \code{\link[shiny:runApp]{shiny::runApp()}}.}
 
 \item{...}{Further arguments to \code{\link[shiny:runApp]{shiny::runApp()}}, e.g. \code{port}.}

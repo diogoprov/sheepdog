@@ -14,21 +14,25 @@ join_identities(
 )
 }
 \arguments{
-\item{validation}{Table of verdicts with \code{clip_file} and \code{verdict}, from
-\code{\link[=app_verdicts]{app_verdicts()}}, \code{\link[=classify_review]{classify_review()}} or \code{\link[=consensus_verdicts]{consensus_verdicts()}}.}
+\item{validation}{A data frame (or tibble) of verdicts with \code{clip_file}
+and \code{verdict}, from \code{\link[=app_verdicts]{app_verdicts()}}, \code{\link[=classify_review]{classify_review()}} or
+\code{\link[=consensus_verdicts]{consensus_verdicts()}}.}
 
-\item{identities}{Data frame, or the path to a CSV, with one row per
-clip. Read a spreadsheet with \code{readxl::read_excel()} first.}
+\item{identities}{A data frame (or tibble), or a character scalar with
+the path to a CSV, with one row per clip. Read a spreadsheet with
+\code{readxl::read_excel()} first.}
 
-\item{clip_col, identity_col}{Columns of \code{identities} with the clip name
-(as in \code{clip_file}; a path is reduced to its file name) and the
-identity.}
+\item{clip_col, identity_col}{Character scalars, the columns of
+\code{identities} with the clip name (as in \code{clip_file}; a path is reduced
+to its file name) and the identity.}
 
-\item{certainty_col}{Optional column of \code{identities} with the certainty,
-\code{"sure"} or \code{"probable"}. Without it, the certainty is left \code{NA}.}
+\item{certainty_col}{\code{NULL} or a character scalar, the column of
+\code{identities} with the certainty, \code{"sure"} or \code{"probable"}. Without it,
+the certainty is left \code{NA}.}
 
-\item{reviewer}{Optional reviewer: with a table that has one row per
-clip and reviewer, only that reviewer's rows receive the identities.}
+\item{reviewer}{\code{NULL} or a character vector of reviewer names: with a
+table that has one row per clip and reviewer, only those reviewers'
+rows receive the identities.}
 }
 \value{
 \code{validation} with \code{identity} and \code{identity_certainty} filled.

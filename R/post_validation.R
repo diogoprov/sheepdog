@@ -6,14 +6,14 @@
 #' `<species>/Negative`, so the verdict of each clip comes from the path
 #' where it is found. Clips still in the species folder are not reviewed.
 #'
-#' @param manifest Clip manifest: a data frame or the path to
-#'   `clip_manifest.csv`. Manifests written by v1.2.0
-#'   (`manifesto_clipes.csv`) are also read.
-#' @param review_dir Folder with the reviewed clips (the `clips` folder of
-#'   the validation package, after the review).
-#' @param positive_pattern,negative_pattern Regular expressions
-#'   (case-insensitive) that identify the positive and negative folders in
-#'   the path of each clip.
+#' @param manifest A data frame (or tibble) or a character scalar. The clip
+#'   manifest, one row per clip, or the path to `clip_manifest.csv`.
+#'   Manifests written by v1.2.0 (`manifesto_clipes.csv`) are also read.
+#' @param review_dir Character scalar, path to the folder with the reviewed
+#'   clips (the `clips` folder of the validation package, after the review).
+#' @param positive_pattern,negative_pattern Character scalars, regular
+#'   expressions (case-insensitive) that identify the positive and negative
+#'   folders in the path of each clip.
 #'
 #' @return The manifest with two more columns: `verdict` (`"positive"`,
 #'   `"negative"`, `"not_reviewed"` or `"clip_missing"`) and
@@ -23,102 +23,134 @@
 classify_review <- function(manifest, review_dir,
                             positive_pattern = "positiv",
                             negative_pattern = "negativ") {
-  manifesto <- read_manifest(manifest)
+  clip_tbl <- read_manifest(manifest)
 
   wavs <- list.files(review_dir, pattern = "\\.wav$",
                      recursive = TRUE, full.names = TRUE)
   if (length(wavs) == 0) stop("No .wav found in ", review_dir)
 
-  # o veredito vem so das subpastas abaixo de review_dir (no Windows o
-  # dirname() troca \\ por /, entao as barras sao igualadas antes)
-  raiz <- chartr("\\", "/", review_dir)
-  revisao <- tibble(reviewed_path = wavs) |>
+  # the verdict comes only from the subfolders below review_dir (on
+  # Windows dirname() turns \\ into /, so the slashes are matched first)
+  root <- chartr("\\", "/", review_dir)
+  review <- tibble(reviewed_path = wavs) |>
     mutate(
       clip_file = basename(reviewed_path),
-      subpasta  = str_remove(chartr("\\", "/", dirname(reviewed_path)),
-                             fixed(raiz)),
+      subfolder = str_remove(chartr("\\", "/", dirname(reviewed_path)),
+                            fixed(root)),
       verdict   = case_when(
-        str_detect(subpasta, regex(positive_pattern, ignore_case = TRUE)) ~ "positive",
-        str_detect(subpasta, regex(negative_pattern, ignore_case = TRUE)) ~ "negative",
+        str_detect(subfolder, regex(positive_pattern, ignore_case = TRUE)) ~ "positive",
+        str_detect(subfolder, regex(negative_pattern, ignore_case = TRUE)) ~ "negative",
         .default = "not_reviewed"
       )
     )
 
-  resultado <- manifesto |>
-    left_join(select(revisao, clip_file, verdict, reviewed_path),
+  result <- clip_tbl |>
+    left_join(select(review, clip_file, verdict, reviewed_path),
               by = "clip_file") |>
     mutate(verdict = replace_na(verdict, "clip_missing")) |>
     fill_inherited()
 
-  contagem <- count(resultado, verdict)
-  message("Clips in the manifest: ", nrow(manifesto), "\n",
-          paste0("  ", contagem$verdict, ": ", contagem$n, collapse = "\n"))
-  if (any(duplicated(revisao$clip_file))) {
+  tally <- count(result, verdict)
+  message("Clips in the manifest: ", nrow(clip_tbl), "\n",
+          paste0("  ", tally$verdict, ": ", tally$n, collapse = "\n"))
+  if (any(duplicated(review$clip_file))) {
     warning("There are duplicated clip names in the review folder - check ",
             "for copies in more than one subfolder.")
   }
-  resultado
+  result
 }
 
-# Le o manifesto (data frame ou csv), aceitando o formato da v1.2.0
+#' Read a clip manifest
+#'
+#' Accepts a data frame or a CSV path, also in the v1.2.0 format.
+#'
+#' @param manifest A data frame, or character scalar with the path to a
+#'   CSV file.
+#' @return A tibble with the current column names, a `night` column when
+#'   `recording_date` exists, and a numeric `confidence`.
+#' @noRd
 read_manifest <- function(manifest) {
   if (is.character(manifest)) {
-    caminho <- manifest
-    if (!file.exists(caminho)) {
-      stop("`manifest` not found: ", caminho, call. = FALSE)
+    path <- manifest
+    if (!file.exists(path)) {
+      stop("`manifest` not found: ", path, call. = FALSE)
     }
-    # arquivo de 0 bytes ou so com cabecalho: copia incompleta
-    vazio <- file.size(caminho) == 0
-    if (!vazio) {
-      manifest <- read_csv(caminho, show_col_types = FALSE)
-      vazio <- nrow(manifest) == 0
+    # 0-byte file or header only: incomplete copy
+    empty <- file.size(path) == 0
+    if (!empty) {
+      manifest <- read_csv(path, show_col_types = FALSE)
+      empty <- nrow(manifest) == 0
     }
-    if (vazio) {
-      stop("`manifest` is empty (0 rows): ", caminho,
+    if (empty) {
+      stop("`manifest` is empty (0 rows): ", path,
            ". Check that the file was copied correctly.", call. = FALSE)
     }
   }
-  manifesto <- from_legacy(manifest)
-  # manifestos antigos nao tem a coluna 'night'
-  if (!"night" %in% names(manifesto) &&
-      "recording_date" %in% names(manifesto)) {
-    manifesto$night <- manifesto$recording_date
+  clip_tbl <- from_legacy(manifest)
+  # old manifests lack the 'night' column
+  if (!"night" %in% names(clip_tbl) &&
+      "recording_date" %in% names(clip_tbl)) {
+    clip_tbl$night <- clip_tbl$recording_date
   }
-  # no modo "random_recordings" a coluna vem toda NA (lida como logica)
-  if (!"confidence" %in% names(manifesto)) manifesto$confidence <- NA_real_
-  manifesto$confidence <- as.numeric(manifesto$confidence)
-  manifesto
+  # in mode "random_recordings" the column is all NA (read as logical)
+  if (!"confidence" %in% names(clip_tbl)) clip_tbl$confidence <- NA_real_
+  clip_tbl$confidence <- as.numeric(clip_tbl$confidence)
+  clip_tbl
 }
 
-# Clips with a positive or negative verdict and a confidence: whole
-# recordings (mode "random_recordings") stay out of the precision and the
-# thresholds. A missing confidence marks such a clip, so it is not a
-# missing value; only when the table says how each clip was drawn
-# (`sampling_mode`) are the other clips without a confidence missing
-# values, which follow missing_policy(). Entry routine of the threshold
-# functions (as_input_table()).
+#' Reviewed clips with a positive or negative verdict and a confidence
+#'
+#' Entry routine of the threshold functions (as_input_table()). Whole
+#' recordings (mode "random_recordings") stay out of the precision and the
+#' thresholds. A missing confidence marks such a clip, so it is not a
+#' missing value; only when the table says how each clip was drawn
+#' (`sampling_mode`) are the other clips without a confidence missing
+#' values, which follow missing_policy().
+#'
+#' @param validation A data frame of reviewed clips with `verdict` and
+#'   `confidence`.
+#' @param arg Character scalar, argument name used in the messages.
+#' @param quiet Logical scalar; if `TRUE`, skips the missing-value policy
+#'   for clips without confidence.
+#' @return A tibble of the positive and negative clips with a confidence.
+#' @noRd
 reviewed_with_confidence <- function(validation, arg = "validation",
                                      quiet = FALSE) {
   val <- as_input_table(validation, c("verdict", "confidence"), arg,
                         numeric = c("confidence", "inclusion_prob"))
   val <- filter(val, verdict %in% c("positive", "negative"))
   if (!quiet && "sampling_mode" %in% names(val)) {
-    gravacao <- val$sampling_mode %in% "random_recordings"
-    val <- bind_rows(val[gravacao, ],
-                     drop_missing(val[!gravacao, ], "confidence", arg,
+    is_rec <- val$sampling_mode %in% "random_recordings"
+    val <- bind_rows(val[is_rec, ],
+                     drop_missing(val[!is_rec, ], "confidence", arg,
                                   allow_empty = TRUE))
   }
   filter(val, !is.na(confidence))
 }
 
-# A tabela tem inclusion_prob (clipes de "random_detections")?
+#' Whether a table has inclusion probabilities
+#'
+#' True for clips of "random_detections" and the other probability
+#' designs.
+#'
+#' @param validation A data frame of reviewed clips.
+#' @return Logical scalar, `TRUE` if `inclusion_prob` exists and is not
+#'   all missing.
+#' @noRd
 has_inclusion_prob <- function(validation) {
   "inclusion_prob" %in% names(validation) &&
     any(!is.na(validation$inclusion_prob))
 }
 
-# Precisao ponderada por 1 / inclusion_prob (estimador de razao); NA quando
-# algum clipe do grupo nao tem a probabilidade (clipes de "top")
+#' Precision weighted by 1 / inclusion_prob
+#'
+#' Ratio estimator; `NA` when some clip of the group has no inclusion
+#' probability (clips of "top").
+#'
+#' @param verdict Character vector of verdicts.
+#' @param prob Numeric vector of inclusion probabilities, same length.
+#' @return Numeric scalar in \[0, 1\], or `NA`.
+#' @noRd
 weighted_precision <- function(verdict, prob) {
   prob <- as.numeric(prob)
   if (anyNA(prob)) return(NA_real_)
@@ -126,7 +158,11 @@ weighted_precision <- function(verdict, prob) {
   sum(w[verdict == "positive"]) / sum(w)
 }
 
-# Tamanho efetivo da amostra de Kish, com pesos 1 / inclusion_prob
+#' Kish effective sample size with weights 1 / inclusion_prob
+#'
+#' @param prob Numeric vector of inclusion probabilities in (0, 1\].
+#' @return Numeric scalar.
+#' @noRd
 kish_n <- function(prob) {
   w <- 1 / as.numeric(prob)
   sum(w)^2 / sum(w^2)
@@ -148,13 +184,17 @@ kish_n <- function(prob) {
 #' `inclusion_prob` (clips of `"top"`). A blind review manifest may lack
 #' `inclusion_prob`: join it back from the full manifest first.
 #'
-#' @param validation Table returned by [classify_review()].
-#' @param bins Breaks of the confidence bins (left-closed).
-#' @param min_n Minimum of reviewed clips for a bin to be taken seriously;
-#'   bins with fewer are flagged in `low_support`.
-#' @param by Optional columns of `validation` that split each site x
-#'   species cell further, e.g. the bin of an environmental gradient or of
-#'   an acoustic index joined from [covariate_bins()]. They show which
+#' @param validation A data frame (or tibble) returned by [classify_review()],
+#'   with columns `site`, `species_folder`, `verdict` and `confidence`. One
+#'   row per clip.
+#' @param bins Numeric vector of length >= 2, increasing breaks of the
+#'   confidence bins (left-closed).
+#' @param min_n Integer scalar >= 1. Minimum of reviewed clips for a bin to
+#'   be taken seriously; bins with fewer are flagged in `low_support`.
+#' @param by `NULL` or a character vector of column names of `validation`
+#'   that split each site x species cell further, e.g. the bin of an
+#'   environmental gradient or of an acoustic index joined from
+#'   [covariate_bins()]. They show which
 #'   parts of the gradient lack reviewed clips.
 #'
 #' @return A tibble with `site`, `species_folder`, the `by` columns, `bin`,
@@ -164,10 +204,10 @@ kish_n <- function(prob) {
 precision_by_bin <- function(validation, bins = seq(0.1, 1, by = 0.1),
                              min_n = 15, by = NULL) {
   check_by(validation, by)
-  dados <- reviewed_with_confidence(validation)
-  pesos <- has_inclusion_prob(dados)
-  if (!pesos) dados$inclusion_prob <- NA_real_
-  out <- dados |>
+  val <- reviewed_with_confidence(validation)
+  has_weights <- has_inclusion_prob(val)
+  if (!has_weights) val$inclusion_prob <- NA_real_
+  out <- val |>
     mutate(bin = cut(confidence, breaks = bins,
                      include.lowest = TRUE, right = FALSE)) |>
     group_by(site, species_folder, across(all_of(by)), bin) |>
@@ -178,7 +218,7 @@ precision_by_bin <- function(validation, bins = seq(0.1, 1, by = 0.1),
                                                       inclusion_prob),
               .groups = "drop") |>
     mutate(low_support = n_reviewed < min_n)
-  if (!pesos) out$precision_weighted <- NULL
+  if (!has_weights) out$precision_weighted <- NULL
   out
 }
 
@@ -232,15 +272,16 @@ precision_by_bin <- function(validation, bins = seq(0.1, 1, by = 0.1),
 #' sample and should not set thresholds.
 #'
 #' @inheritParams precision_by_bin
-#' @param target_precision Target precision.
-#' @param weighted Which precision chooses the cut. `NULL` (default): the
+#' @param target_precision Numeric scalar in (0, 1). Target precision.
+#' @param weighted `NULL`, `TRUE` or `FALSE`. Which precision chooses the
+#'   cut. `NULL` (default): the
 #'   weighted one in the cells whose clips all have `inclusion_prob`, the
 #'   unweighted one elsewhere. `TRUE`: always the weighted one; cells with
 #'   clips without `inclusion_prob` get no threshold, with a warning, and
 #'   it is an error if no clip has it. `FALSE`: always the unweighted one,
 #'   and `n_support` for `min_n`.
-#' @param sustained Must the target also hold at every higher cut with at
-#'   least `min_n` clips? See Sustained target.
+#' @param sustained Logical scalar. If `TRUE`, the target must also hold at
+#'   every higher cut with at least `min_n` clips. See Sustained target.
 #'
 #' @return A tibble with `site`, `species_folder`, the `by` columns,
 #'   `threshold`, `n_support`, `precision_at_threshold` (unweighted; `NA`
@@ -262,38 +303,38 @@ suggest_thresholds <- function(validation, target_precision = 0.90,
   if (!is.null(weighted) && !(isTRUE(weighted) || isFALSE(weighted))) {
     stop("`weighted` must be NULL, TRUE or FALSE.", call. = FALSE)
   }
-  validados <- reviewed_with_confidence(validation)
-  warn_uncombined(validados)
-  pesos <- has_inclusion_prob(validados)
-  if (isTRUE(weighted) && nrow(validados) > 0 && !pesos) {
+  reviewed <- reviewed_with_confidence(validation)
+  warn_uncombined(reviewed)
+  has_weights <- has_inclusion_prob(reviewed)
+  if (isTRUE(weighted) && nrow(reviewed) > 0 && !has_weights) {
     stop_without_inclusion_prob()
   }
-  # sem clipes com confidence, group_modify() criaria uma linha toda NA
-  # (era o que a v1.2.0 escrevia)
-  if (nrow(validados) == 0) {
-    vazio <- tibble(site = character(), species_folder = character())
-    for (col in by) vazio[[col]] <- validation[[col]][0]
-    return(bind_cols(vazio,
+  # without clips with confidence, group_modify() would create a row of
+  # NA (what v1.2.0 wrote)
+  if (nrow(reviewed) == 0) {
+    empty <- tibble(site = character(), species_folder = character())
+    for (col in by) empty[[col]] <- validation[[col]][0]
+    return(bind_cols(empty,
                      tibble(threshold = numeric(), n_support = integer(),
                             precision_at_threshold = numeric())))
   }
-  celulas <- group_by(validados, site, species_folder, across(all_of(by)))
-  if (pesos && !isFALSE(weighted)) {
-    mistas <- celulas |>
-      summarise(mista = anyNA(inclusion_prob) && !all(is.na(inclusion_prob)),
+  cells <- group_by(reviewed, site, species_folder, across(all_of(by)))
+  if (has_weights && !isFALSE(weighted)) {
+    n_mixed <- cells |>
+      summarise(mixed = anyNA(inclusion_prob) && !all(is.na(inclusion_prob)),
                 .groups = "drop") |>
-      pull(mista) |>
+      pull(mixed) |>
       sum()
-    if (mistas > 0) {
-      warning(mistas, " cell(s) mix clips with and without `inclusion_prob` ",
+    if (n_mixed > 0) {
+      warning(n_mixed, " cell(s) mix clips with and without `inclusion_prob` ",
               "(\"top\" clips?), which are not a probability sample and ",
               "should not set thresholds; ",
               if (isTRUE(weighted)) "they get no threshold."
               else "they use the unweighted precision.", call. = FALSE)
     }
   }
-  celulas |>
-    group_modify(~ threshold_for(.x, target_precision, min_n, pesos,
+  cells |>
+    group_modify(~ threshold_for(.x, target_precision, min_n, has_weights,
                                  weighted, sustained)) |>
     ungroup()
 }
@@ -322,21 +363,29 @@ suggest_thresholds <- function(validation, target_precision = 0.90,
 #' `min_n`; compare with the reading without `by`. These labels interpret
 #' counts; they are not a statistical test.
 #'
-#' @param validation Reviewed clips, as for [precision_by_bin()] (the
-#'   `validation_by_clip.csv` tables).
-#' @param detections Predictions, as returned by [read_selection_tables()].
-#' @param conf_high Score from which a prediction counts as high.
-#' @param min_n Minimum number of clips, as in [suggest_thresholds()], and
-#'   of unreviewed high-score detections for `"review more"`.
-#' @param min_precision Precision at high scores below which a cell is
-#'   `"unreliable"`.
-#' @param target_precision Target precision of [suggest_thresholds()].
-#' @param weighted Passed to [suggest_thresholds()], so that `"reached"`
-#'   follows the same rule. `prec_high` stays unweighted.
-#' @param by Optional columns that split each cell, e.g. `"temp_bin"`.
-#'   They must be columns of `covariates` (joined to both tables) or of
-#'   both tables.
-#' @param covariates Optional table of occasion covariates, such as the
+#' @param validation A data frame (or tibble) of reviewed clips, as for
+#'   [precision_by_bin()] (the `validation_by_clip.csv` tables). One row per
+#'   clip.
+#' @param detections A data frame (or tibble) of predictions, as returned by
+#'   [read_selection_tables()], with columns `site`, `species_code`,
+#'   `confidence`, `begin_path` and `file_offset`. One row per prediction.
+#' @param conf_high Numeric scalar, score from which a prediction counts as
+#'   high.
+#' @param min_n Integer scalar >= 1. Minimum number of clips, as in
+#'   [suggest_thresholds()], and of unreviewed high-score detections for
+#'   `"review more"`.
+#' @param min_precision Numeric scalar in \[0, 1\]. Precision at high scores
+#'   below which a cell is `"unreliable"`.
+#' @param target_precision Numeric scalar in (0, 1). Target precision of
+#'   [suggest_thresholds()].
+#' @param weighted `NULL`, `TRUE` or `FALSE`. Passed to
+#'   [suggest_thresholds()], so that `"reached"` follows the same rule.
+#'   `prec_high` stays unweighted.
+#' @param by `NULL` or a character vector of column names that split each
+#'   cell, e.g. `"temp_bin"`. They must be columns of `covariates` (joined
+#'   to both tables) or of both tables.
+#' @param covariates `NULL` or a data frame (or tibble) of occasion
+#'   covariates, such as the
 #'   output of [covariate_bins()], joined to the clips and to the
 #'   predictions by the columns it shares with them among `site`, `night`,
 #'   `recording_date`, `recording_hour`, `source_audio` and `occasion_id`,
@@ -360,18 +409,18 @@ review_support <- function(validation, detections, conf_high = 0.7,
                            occasion_unit = c("file", "minute"),
                            remap_from = NULL, remap_to = NULL,
                            weighted = NULL) {
-  unidade <- match.arg(occasion_unit)
+  unit <- match.arg(occasion_unit)
   check_columns(detections,
                 c("site", "species_code", "confidence", "begin_path",
                   "file_offset"),
                 "detections", hint = "Read it with read_selection_tables().")
-  # as predicoes ganham as colunas de identificacao das ocasioes, como no
+  # the predictions get the occasion identification columns, as in
   # select_clips()
   det <- detections |>
     mutate(site = as.character(site),
            species_folder = folder_name(species_code),
            source_audio = remap_path(begin_path, remap_from, remap_to),
-           occasion_id = make_occasion_id(source_audio, file_offset, unidade))
+           occasion_id = make_occasion_id(source_audio, file_offset, unit))
   det <- bind_cols(det, parse_date_hour(basename(det$begin_path))) |>
     mutate(night = recording_date)
   val <- reviewed_with_confidence(validation) |>
@@ -383,21 +432,21 @@ review_support <- function(validation, detections, conf_high = 0.7,
   check_by(val, by)
   check_by(det, by)
   for (col in by) {
-    sem <- sum(is.na(det[[col]]))
-    if (sem > 0) {
-      warning(sem, " prediction(s) without a value of `", col, "`; they ",
+    n_na <- sum(is.na(det[[col]]))
+    if (n_na > 0) {
+      warning(n_na, " prediction(s) without a value of `", col, "`; they ",
               "form a group of their own.", call. = FALSE)
     }
   }
-  # as colunas de `by` com o mesmo tipo nas duas tabelas
+  # the `by` columns get the same type in both tables
   for (col in by) {
     val[[col]] <- as.character(val[[col]])
     det[[col]] <- as.character(det[[col]])
   }
-  celula <- c("site", "species_folder", by)
+  cell <- c("site", "species_folder", by)
 
-  revisados <- val |>
-    group_by(across(all_of(celula))) |>
+  rev_summary <- val |>
+    group_by(across(all_of(cell))) |>
     summarise(n_reviewed = n(),
               n_fp = sum(verdict == "negative"),
               n_high = sum(confidence >= conf_high),
@@ -405,17 +454,17 @@ review_support <- function(validation, detections, conf_high = 0.7,
                 mean(verdict[confidence >= conf_high] == "positive")
               } else NA_real_,
               .groups = "drop")
-  todas <- det |>
-    group_by(across(all_of(celula))) |>
+  all_det <- det |>
+    group_by(across(all_of(cell))) |>
     summarise(n_high_all = sum(confidence >= conf_high), .groups = "drop")
-  limiares <- suggest_thresholds(val, target_precision = target_precision,
-                                 min_n = min_n, by = by,
-                                 weighted = weighted) |>
-    select(all_of(celula), threshold)
-  rodadas <- rounds_by_cell(val, celula, target_precision, min_n, by, weighted)
+  thr <- suggest_thresholds(val, target_precision = target_precision,
+                            min_n = min_n, by = by,
+                            weighted = weighted) |>
+    select(all_of(cell), threshold)
+  rounds <- rounds_by_cell(val, cell, target_precision, min_n, by, weighted)
 
-  saida <- full_join(revisados, todas, by = celula) |>
-    left_join(limiares, by = celula) |>
+  out <- full_join(rev_summary, all_det, by = cell) |>
+    left_join(thr, by = cell) |>
     mutate(
       n_reviewed = replace_na(n_reviewed, 0L),
       n_fp = replace_na(n_fp, 0L),
@@ -429,97 +478,129 @@ review_support <- function(validation, detections, conf_high = 0.7,
         !is.na(prec_high) & prec_high < min_precision    ~ "unreliable",
         .default = "review more"
       )) |>
-    select(all_of(celula), n_reviewed, n_fp, n_high, prec_high, n_high_all,
+    select(all_of(cell), n_reviewed, n_fp, n_high, prec_high, n_high_all,
            unreviewed_high, threshold, diagnosis) |>
     arrange(diagnosis, species_folder, site, across(all_of(by)))
-  if (is.null(rodadas)) return(saida)
-  saida <- left_join(saida, rodadas, by = celula) |>
-    mutate(reached_last_round = diagnosis == "reached" & !replace_na(.antes, FALSE) &
+  if (is.null(rounds)) return(out)
+  out <- left_join(out, rounds, by = cell) |>
+    mutate(reached_last_round = diagnosis == "reached" & !replace_na(.prior, FALSE) &
              replace_na(n_rounds, 1L) > 1L) |>
-    select(-.antes)
-  if (any(saida$reached_last_round)) {
-    message(sum(saida$reached_last_round), " cell(s) reached the target only ",
+    select(-.prior)
+  if (any(out$reached_last_round)) {
+    message(sum(out$reached_last_round), " cell(s) reached the target only ",
             "in their last round: their precision tends to be too high if ",
             "that is why the rounds stopped.")
   }
-  saida
+  out
 }
 
-# Rodadas por celula e se ela ja tinha limiar antes da ultima rodada; NULL
-# para tabelas sem combine_rounds()
-rounds_by_cell <- function(val, celula, target_precision, min_n, by, weighted) {
+#' Rounds per cell and whether the cell had a threshold before the last
+#' round
+#'
+#' @param val A data frame of reviewed clips with confidence.
+#' @param cell Character vector, columns that define a cell.
+#' @param target_precision,min_n,by,weighted Passed to
+#'   suggest_thresholds().
+#' @return `NULL` for tables without combine_rounds() (no `n_rounds`
+#'   column); otherwise a tibble with the `cell` columns, `n_rounds` and
+#'   `.prior` (logical).
+#' @noRd
+rounds_by_cell <- function(val, cell, target_precision, min_n, by, weighted) {
   if (!"n_rounds" %in% names(val)) return(NULL)
   val <- filter(val, !is.na(n_rounds))
-  por_celula <- val |>
-    group_by(across(all_of(celula))) |>
+  by_cell <- val |>
+    group_by(across(all_of(cell))) |>
     summarise(n_rounds = n_distinct(round), .groups = "drop")
-  antes <- before_last_round(val)
-  if (nrow(antes) == 0) return(mutate(por_celula, .antes = FALSE))
-  limiar <- suggest_thresholds(antes, target_precision = target_precision,
-                               min_n = min_n, by = by, weighted = weighted) |>
-    transmute(across(all_of(celula)), .antes = !is.na(threshold))
-  left_join(por_celula, limiar, by = celula)
+  before <- before_last_round(val)
+  if (nrow(before) == 0) return(mutate(by_cell, .prior = FALSE))
+  thr <- suggest_thresholds(before, target_precision = target_precision,
+                            min_n = min_n, by = by, weighted = weighted) |>
+    transmute(across(all_of(cell)), .prior = !is.na(threshold))
+  left_join(by_cell, thr, by = cell)
 }
 
-# Colunas extras de agrupamento (argumento `by`)
-check_by <- function(dados, by) {
+#' Check the extra grouping columns (argument `by`)
+#'
+#' @param val A data frame.
+#' @param by `NULL` or a character vector of column names of `val`.
+#' @return `NULL`, invisibly; stops if `by` is invalid.
+#' @noRd
+check_by <- function(val, by) {
   if (is.null(by)) return(invisible())
   if (!is.character(by) || anyNA(by)) {
     stop("`by` must be a character vector of column names.", call. = FALSE)
   }
-  faltam <- setdiff(by, names(dados))
-  if (length(faltam) > 0) {
+  absent <- setdiff(by, names(val))
+  if (length(absent) > 0) {
     stop("Column(s) of `by` not in the table: ",
-         paste(faltam, collapse = ", "), call. = FALSE)
+         paste(absent, collapse = ", "), call. = FALSE)
   }
   invisible()
 }
 
-# Menor corte c tal que a precisao entre os clipes com confidence >= c
-# atinge o alvo. Com pesos, a precisao e o apoio da decisao sao os
-# ponderados nas celulas em que todo clipe tem inclusion_prob
-threshold_for <- function(df, alvo, n_min, pesos = FALSE, weighted = NULL,
+#' Empirical threshold of one cell
+#'
+#' The lowest cut c such that the precision of the clips with confidence
+#' >= c reaches the target. With weights, the precision and the support of
+#' the decision are the weighted ones in cells where every clip has
+#' `inclusion_prob`.
+#'
+#' @param df A data frame of reviewed clips of one cell, with `confidence`,
+#'   `verdict` and, with weights, `inclusion_prob`.
+#' @param target Numeric scalar in (0, 1), target precision.
+#' @param n_min Numeric scalar, minimum number of clips (or effective
+#'   sample size, with weights) at or above a cut for it to count.
+#' @param has_weights Logical scalar, whether the table has `inclusion_prob`
+#'   (adds the weighted columns to the output).
+#' @param weighted `NULL`, `TRUE` or `FALSE`, as in suggest_thresholds().
+#' @param sustained Logical scalar; if `TRUE`, the target must hold at
+#'   every supported cut above the threshold.
+#' @return A one-row tibble with `threshold`, `n_support`,
+#'   `precision_at_threshold` and, with `has_weights`,
+#'   `precision_weighted_at_threshold`, `n_eff` and `precision_used`.
+#' @noRd
+threshold_for <- function(df, target, n_min, has_weights = FALSE, weighted = NULL,
                           sustained = FALSE) {
-  cortes <- sort(unique(round(df$confidence, 2)))
+  cuts <- sort(unique(round(df$confidence, 2)))
   out <- tibble(threshold = NA_real_, n_support = NA_integer_,
                 precision_at_threshold = NA_real_)
-  if (pesos) {
+  if (has_weights) {
     out$precision_weighted_at_threshold <- NA_real_
     out$n_eff <- NA_real_
     out$precision_used <- NA_character_
   }
-  completa <- pesos && !anyNA(df$inclusion_prob)
-  if (isTRUE(weighted) && !completa) return(out)
-  ponderar <- completa && !isFALSE(weighted)
+  complete <- has_weights && !anyNA(df$inclusion_prob)
+  if (isTRUE(weighted) && !complete) return(out)
+  use_weights <- complete && !isFALSE(weighted)
   # one pass: clips sorted by score, sums from the top; the clips at or above
   # a cut are the first n_ge of the sorted clips
-  ordem <- order(df$confidence, decreasing = TRUE)
-  conf <- df$confidence[ordem]
-  pos <- df$verdict[ordem] == "positive"
-  n_ge <- length(conf) - findInterval(cortes, rev(conf), left.open = TRUE)
-  cortes <- cortes[n_ge > 0]
+  ord <- order(df$confidence, decreasing = TRUE)
+  conf <- df$confidence[ord]
+  pos <- df$verdict[ord] == "positive"
+  n_ge <- length(conf) - findInterval(cuts, rev(conf), left.open = TRUE)
+  cuts <- cuts[n_ge > 0]
   n_ge <- n_ge[n_ge > 0]
-  medidas <- if (ponderar) {
-    w <- 1 / as.numeric(df$inclusion_prob[ordem])
+  measures <- if (use_weights) {
+    w <- 1 / as.numeric(df$inclusion_prob[ord])
     sw <- cumsum(w)[n_ge]
     rbind(cumsum(w * pos)[n_ge] / sw, sw^2 / cumsum(w^2)[n_ge])
   } else {
     rbind(cumsum(pos)[n_ge] / n_ge, n_ge)
   }
-  # o alvo vale neste corte e em todos os cortes acima com apoio, como em
-  # calibrated_thresholds(); cortes com menos de min_n clipes nao contam
-  apoiados <- which(medidas[2, ] >= n_min)
-  ruins <- apoiados[medidas[1, apoiados] < alvo]
-  validos <- apoiados[medidas[1, apoiados] >= alvo]
-  if (sustained && length(ruins) > 0) validos <- validos[validos > max(ruins)]
-  if (length(validos) == 0) return(out)
+  # the target holds at this cut and at every supported cut above it, as in
+  # calibrated_thresholds(); cuts with fewer than min_n clips do not count
+  supported <- which(measures[2, ] >= n_min)
+  failing <- supported[measures[1, supported] < target]
+  valid <- supported[measures[1, supported] >= target]
+  if (sustained && length(failing) > 0) valid <- valid[valid > max(failing)]
+  if (length(valid) == 0) return(out)
 
-  c0 <- cortes[validos[1]]
+  c0 <- cuts[valid[1]]
   sub <- filter(df, confidence >= c0)
   out$threshold <- c0
   out$n_support <- nrow(sub)
   out$precision_at_threshold <- mean(sub$verdict == "positive")
-  if (pesos) {
+  if (has_weights) {
     out$precision_weighted_at_threshold <-
       weighted_precision(sub$verdict, sub$inclusion_prob)
     out$n_eff <- if (anyNA(sub$inclusion_prob)) {
@@ -527,7 +608,7 @@ threshold_for <- function(df, alvo, n_min, pesos = FALSE, weighted = NULL,
     } else {
       kish_n(sub$inclusion_prob)
     }
-    out$precision_used <- if (ponderar) "weighted" else "unweighted"
+    out$precision_used <- if (use_weights) "weighted" else "unweighted"
   }
   out
 }
@@ -586,7 +667,8 @@ retraining_clips <- function(validation) {
 #' more than one site, each site is a line of its own colour.
 #' Needs the 'ggplot2' package.
 #'
-#' @param precision Table returned by [precision_by_bin()].
+#' @param precision A data frame (or tibble) returned by
+#'   [precision_by_bin()].
 #' @inheritParams precision_by_bin
 #' @inheritParams suggest_thresholds
 #'
@@ -595,10 +677,10 @@ retraining_clips <- function(validation) {
 plot_precision <- function(precision, bins = seq(0.1, 1, by = 0.1),
                            target_precision = 0.90, min_n = 15) {
   require_suggested("ggplot2", "to plot the precision curves")
-  # com varios locais, uma linha por local (antes as linhas de locais
-  # diferentes eram ligadas no mesmo painel)
-  varios_locais <- n_distinct(precision$site) > 1
-  linha <- if (varios_locais) {
+  # with several sites, one line per site (lines of different sites were
+  # once joined in the same panel)
+  multi_site <- n_distinct(precision$site) > 1
+  layers <- if (multi_site) {
     list(ggplot2::geom_line(ggplot2::aes(colour = site, group = site)),
          ggplot2::geom_point(ggplot2::aes(size = n_reviewed,
                                           alpha = !low_support,
@@ -610,11 +692,11 @@ plot_precision <- function(precision, bins = seq(0.1, 1, by = 0.1),
                              colour = "#2a7fbf"))
   }
   precision |>
-    mutate(conf_meio = bins[as.integer(bin)] + 0.05) |>
-    ggplot2::ggplot(ggplot2::aes(conf_meio, precision)) +
+    mutate(bin_mid = bins[as.integer(bin)] + 0.05) |>
+    ggplot2::ggplot(ggplot2::aes(bin_mid, precision)) +
     ggplot2::geom_hline(yintercept = target_precision,
                         linetype = "dashed", colour = "grey50") +
-    linha +
+    layers +
     ggplot2::scale_alpha_manual(values = c(`TRUE` = 1, `FALSE` = 0.3),
                                 guide = "none") +
     ggplot2::scale_size_continuous(name = "reviewed clips") +
@@ -667,31 +749,40 @@ plot_precision <- function(precision, bins = seq(0.1, 1, by = 0.1),
 #' This is the function form of the v1.2.0 script `pos_validacao.R`.
 #'
 #' @inheritParams classify_review
-#' @param review_dir Folder with the reviewed clips. For a review in the
+#' @param review_dir `NULL` or a character scalar, path to the folder with
+#'   the reviewed clips. For a review in the
 #'   BirdNET GUI, the `clips` folder after the review, whose subfolders
 #'   give the verdicts. With `verdicts_file`, optional: the folder of the
 #'   clips, used to fill `reviewed_path` (needed by [retraining_clips()]
 #'   and [build_training_set()]).
 #' @inheritParams precision_by_bin
 #' @inheritParams suggest_thresholds
-#' @param manifest_path Path to the manifest of the same run as the
-#'   reviewed clips (`clip_manifest.csv`, or a v1.2.0
+#' @param manifest_path Character scalar, path to the manifest of the same
+#'   run as the reviewed clips (`clip_manifest.csv`, or a v1.2.0
 #'   `manifesto_clipes.csv`).
-#' @param output_dir Output folder; created if needed.
-#' @param verdicts_file Optional verdicts file written by [run_app()], used
-#'   instead of the subfolders of `review_dir`.
-#' @param reviewer With `verdicts_file`, optional reviewer(s) whose
-#'   verdicts are used, as in [app_verdicts()].
-#' @param weighted,sustained Passed to [suggest_thresholds()].
-#' @param fit Optional model of [fit_calibration()]. With it,
-#'   [compare_thresholds()] writes `thresholds_compared.csv`.
-#' @param scored,quality With `fit`, passed to [compare_thresholds()].
-#' @param previous For a later round of a design: the
+#' @param output_dir Character scalar, path to the output folder; created if
+#'   needed.
+#' @param verdicts_file `NULL` or a character scalar, path to the verdicts
+#'   file written by [run_app()], used instead of the subfolders of
+#'   `review_dir`.
+#' @param reviewer `NULL` or a character vector of reviewer names. With
+#'   `verdicts_file`, the reviewer(s) whose verdicts are used, as in
+#'   [app_verdicts()].
+#' @param weighted,sustained `NULL`, `TRUE` or `FALSE` (`weighted`) and
+#'   logical scalar (`sustained`). Passed to [suggest_thresholds()].
+#' @param fit `NULL` or a model returned by [fit_calibration()] (`glm`,
+#'   `glmerMod` or `brmsfit`). With it, [compare_thresholds()] writes
+#'   `thresholds_compared.csv`.
+#' @param scored,quality `NULL` or data frames (or tibbles). With `fit`,
+#'   passed to [compare_thresholds()].
+#' @param previous `NULL`, a character vector of paths, a data frame, or a
+#'   list of data frames. For a later round of a design: the
 #'   `validation_by_clip.csv` of the earlier rounds. `validation_by_clip.csv`
 #'   keeps the clips of this round only; the summaries and
 #'   `validation_combined.csv` cover all rounds, from [combine_rounds()].
-#' @param candidates With `previous`, the `candidates.csv` of the first
-#'   round. `NULL` looks for it beside `manifest_path` and `previous`.
+#' @param candidates `NULL`, a data frame, or a character scalar path. With
+#'   `previous`, the `candidates.csv` of the first round. `NULL` looks for
+#'   it beside `manifest_path` and `previous`.
 #'
 #' @return A list with the tables `validation`, `precision`, `thresholds`,
 #'   `presence` and `retraining` (and `compared`, with `fit`), invisibly.
@@ -710,33 +801,33 @@ post_validation <- function(review_dir = NULL, manifest_path, output_dir,
       stop("Give `review_dir` (review in the BirdNET GUI) or ",
            "`verdicts_file` (review in run_app()).", call. = FALSE)
     }
-    resultado <- classify_review(manifest_path, review_dir,
-                                 positive_pattern, negative_pattern)
+    result <- classify_review(manifest_path, review_dir,
+                              positive_pattern, negative_pattern)
   } else {
-    resultado <- app_verdicts(manifest_path, verdicts_file,
-                              clips_dir = review_dir, reviewer = reviewer)
-    if (anyDuplicated(resultado[c("species_folder", "clip_file")])) {
+    result <- app_verdicts(manifest_path, verdicts_file,
+                           clips_dir = review_dir, reviewer = reviewer)
+    if (anyDuplicated(result[c("species_folder", "clip_file")])) {
       message("Clips reviewed by more than one reviewer are combined with ",
               "consensus_verdicts().")
-      resultado <- consensus_verdicts(resultado)
+      result <- consensus_verdicts(result)
     }
   }
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
-  write_csv(resultado, file.path(output_dir, "validation_by_clip.csv"))
+  write_csv(result, file.path(output_dir, "validation_by_clip.csv"))
   if (!is.null(previous)) {
     if (is.null(candidates)) {
       candidates <- read_candidates(NULL, c(manifest_path, previous))
     }
-    # sem a coluna `round`, esta rodada vem depois das anteriores
-    resultado <- combine_rounds(c(as.list(previous), list(resultado)),
-                                candidates)
-    write_csv(resultado, file.path(output_dir, "validation_combined.csv"))
-    message("Rounds combined: ", n_distinct(resultado$round),
+    # without the `round` column, this round comes after the previous ones
+    prev <- if (is.data.frame(previous)) list(previous) else as.list(previous)
+    result <- combine_rounds(c(prev, list(result)), candidates)
+    write_csv(result, file.path(output_dir, "validation_combined.csv"))
+    message("Rounds combined: ", n_distinct(result$round),
             "; see validation_combined.csv")
   }
 
-  validados <- filter(resultado, verdict %in% c("positive", "negative"))
-  if (nrow(validados) == 0) {
+  reviewed <- filter(result, verdict %in% c("positive", "negative"))
+  if (nrow(reviewed) == 0) {
     stop("No clip with a positive/negative verdict - was the review ",
          "done? ", if (is.null(verdicts_file)) {
            "Check positive_pattern/negative_pattern."
@@ -744,47 +835,47 @@ post_validation <- function(review_dir = NULL, manifest_path, output_dir,
            "Check `verdicts_file` and `reviewer`."
          }, call. = FALSE)
   }
-  if (has_inclusion_prob(reviewed_with_confidence(resultado, quiet = TRUE))) {
+  if (has_inclusion_prob(reviewed_with_confidence(result, quiet = TRUE))) {
     message("The manifest has inclusion_prob: the precision tables also ",
             "give the precision weighted by 1 / inclusion_prob.")
   }
-  sem_conf <- sum(is.na(validados$confidence))
-  if (sem_conf > 0) {
-    message(sem_conf, " reviewed clip(s) without confidence (drawn ",
+  n_no_conf <- sum(is.na(reviewed$confidence))
+  if (n_no_conf > 0) {
+    message(n_no_conf, " reviewed clip(s) without confidence (drawn ",
             "recordings) left out of the precision by bin and the ",
             "thresholds.")
   }
 
-  precisao <- precision_by_bin(resultado, bins, min_n)
-  write_csv(precisao, file.path(output_dir, "precision_by_bin.csv"))
+  precision_tbl <- precision_by_bin(result, bins, min_n)
+  write_csv(precision_tbl, file.path(output_dir, "precision_by_bin.csv"))
 
-  thresholds <- suggest_thresholds(resultado, target_precision, min_n,
+  thresholds <- suggest_thresholds(result, target_precision, min_n,
                                    weighted = weighted, sustained = sustained)
   write_csv(thresholds, file.path(output_dir, "suggested_thresholds.csv"))
   message("Suggested thresholds (target precision ", target_precision,
           "): see suggested_thresholds.csv")
 
-  comparados <- NULL
+  compared <- NULL
   if (!is.null(fit)) {
-    comparados <- compare_thresholds(resultado, fit, scored,
-                                     target_precision = target_precision,
-                                     min_n = min_n, quality = quality,
-                                     weighted = weighted,
-                                     sustained = sustained)
-    write_csv(comparados, file.path(output_dir, "thresholds_compared.csv"))
+    compared <- compare_thresholds(result, fit, scored,
+                                   target_precision = target_precision,
+                                   min_n = min_n, quality = quality,
+                                   weighted = weighted,
+                                   sustained = sustained)
+    write_csv(compared, file.path(output_dir, "thresholds_compared.csv"))
     message("Empirical and model thresholds: see thresholds_compared.csv")
   }
 
-  presenca <- nightly_presence(resultado)
-  write_csv(presenca, file.path(output_dir, "nightly_presence.csv"))
+  presence <- nightly_presence(result)
+  write_csv(presence, file.path(output_dir, "nightly_presence.csv"))
 
-  retreino <- retraining_clips(resultado)
-  write_csv(retreino, file.path(output_dir, "retraining_clips.csv"))
-  message(nrow(retreino), " positive clips listed for retraining.")
+  retrain <- retraining_clips(result)
+  write_csv(retrain, file.path(output_dir, "retraining_clips.csv"))
+  message(nrow(retrain), " positive clips listed for retraining.")
 
-  if (nrow(precisao) > 0) {
+  if (nrow(precision_tbl) > 0) {
     if (has_suggested("ggplot2")) {
-      g <- plot_precision(precisao, bins, target_precision, min_n)
+      g <- plot_precision(precision_tbl, bins, target_precision, min_n)
       ggplot2::ggsave(file.path(output_dir, "precision_by_bin.png"), g,
                       width = 11, height = 8, dpi = 200)
     } else {
@@ -794,8 +885,8 @@ post_validation <- function(review_dir = NULL, manifest_path, output_dir,
   }
 
   message("Done! Results in ", output_dir)
-  invisible(c(list(validation = resultado, precision = precisao,
-                   thresholds = thresholds, presence = presenca,
-                   retraining = retreino),
-              if (!is.null(comparados)) list(compared = comparados)))
+  invisible(c(list(validation = result, precision = precision_tbl,
+                   thresholds = thresholds, presence = presence,
+                   retraining = retrain),
+              if (!is.null(compared)) list(compared = compared)))
 }

@@ -14,23 +14,27 @@ threshold_by_group(
 )
 }
 \arguments{
-\item{validation}{Table returned by \code{\link[=classify_review]{classify_review()}}.}
+\item{validation}{A data frame (or tibble) returned by \code{\link[=classify_review]{classify_review()}},
+with columns \code{site}, \code{species_folder}, \code{verdict} and \code{confidence}. One
+row per clip.}
 
-\item{thresholds}{The threshold of each cell: a table with \code{site},
+\item{thresholds}{A data frame (or tibble) or a numeric scalar. The
+threshold of each cell: a table with \code{site},
 \code{species_folder} and a \code{threshold} column (e.g. from
 \code{\link[=suggest_thresholds]{suggest_thresholds()}}; \code{threshold_column} picks another column, such
 as \code{"threshold_conservative"} of \code{\link[=threshold_bootstrap]{threshold_bootstrap()}}), or a single
 number for every cell.}
 
-\item{by}{Columns of \code{validation} that define the groups, e.g.
-\code{"recording_hour"} or a month column.}
+\item{by}{Character vector of column names of \code{validation} that define
+the groups, e.g. \code{"recording_hour"} or a month column.}
 
-\item{target_precision}{Target precision.}
+\item{target_precision}{Numeric scalar in (0, 1). Target precision.}
 
-\item{min_n}{Minimum of reviewed clips for a bin to be taken seriously;
-bins with fewer are flagged in \code{low_support}.}
+\item{min_n}{Integer scalar >= 1. Minimum of reviewed clips for a bin to
+be taken seriously; bins with fewer are flagged in \code{low_support}.}
 
-\item{threshold_column}{Column of \code{thresholds} with the threshold.}
+\item{threshold_column}{Character scalar, the column of \code{thresholds} with
+the threshold.}
 }
 \value{
 A tibble with \code{site}, \code{species_folder}, the \code{by} columns,

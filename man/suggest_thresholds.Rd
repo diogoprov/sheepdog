@@ -14,27 +14,31 @@ suggest_thresholds(
 )
 }
 \arguments{
-\item{validation}{Table returned by \code{\link[=classify_review]{classify_review()}}.}
+\item{validation}{A data frame (or tibble) returned by \code{\link[=classify_review]{classify_review()}},
+with columns \code{site}, \code{species_folder}, \code{verdict} and \code{confidence}. One
+row per clip.}
 
-\item{target_precision}{Target precision.}
+\item{target_precision}{Numeric scalar in (0, 1). Target precision.}
 
-\item{min_n}{Minimum of reviewed clips for a bin to be taken seriously;
-bins with fewer are flagged in \code{low_support}.}
+\item{min_n}{Integer scalar >= 1. Minimum of reviewed clips for a bin to
+be taken seriously; bins with fewer are flagged in \code{low_support}.}
 
-\item{by}{Optional columns of \code{validation} that split each site x
-species cell further, e.g. the bin of an environmental gradient or of
-an acoustic index joined from \code{\link[=covariate_bins]{covariate_bins()}}. They show which
+\item{by}{\code{NULL} or a character vector of column names of \code{validation}
+that split each site x species cell further, e.g. the bin of an
+environmental gradient or of an acoustic index joined from
+\code{\link[=covariate_bins]{covariate_bins()}}. They show which
 parts of the gradient lack reviewed clips.}
 
-\item{weighted}{Which precision chooses the cut. \code{NULL} (default): the
+\item{weighted}{\code{NULL}, \code{TRUE} or \code{FALSE}. Which precision chooses the
+cut. \code{NULL} (default): the
 weighted one in the cells whose clips all have \code{inclusion_prob}, the
 unweighted one elsewhere. \code{TRUE}: always the weighted one; cells with
 clips without \code{inclusion_prob} get no threshold, with a warning, and
 it is an error if no clip has it. \code{FALSE}: always the unweighted one,
 and \code{n_support} for \code{min_n}.}
 
-\item{sustained}{Must the target also hold at every higher cut with at
-least \code{min_n} clips? See Sustained target.}
+\item{sustained}{Logical scalar. If \code{TRUE}, the target must also hold at
+every higher cut with at least \code{min_n} clips. See Sustained target.}
 }
 \value{
 A tibble with \code{site}, \code{species_folder}, the \code{by} columns,

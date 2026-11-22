@@ -14,19 +14,25 @@ threshold_record(
 )
 }
 \arguments{
-\item{thresholds}{Table from \code{\link[=suggest_thresholds]{suggest_thresholds()}}.}
+\item{thresholds}{A data frame (or tibble) returned by
+\code{\link[=suggest_thresholds]{suggest_thresholds()}}, with columns \code{site}, \code{species_folder} and
+\code{threshold}.}
 
-\item{bootstrap}{Optional table from \code{\link[=threshold_bootstrap]{threshold_bootstrap()}}.}
+\item{bootstrap}{\code{NULL} or a data frame (or tibble) returned by
+\code{\link[=threshold_bootstrap]{threshold_bootstrap()}}.}
 
-\item{groups}{Optional table from \code{\link[=threshold_by_group]{threshold_by_group()}}.}
+\item{groups}{\code{NULL} or a data frame (or tibble) returned by
+\code{\link[=threshold_by_group]{threshold_by_group()}}.}
 
-\item{extraction_info}{Optional path to \code{extraction_info.csv} (or the
-table read from it): its \code{key}, \code{value} rows are written at the top of
-the Markdown file.}
+\item{extraction_info}{\code{NULL}, a character scalar with the path to
+\code{extraction_info.csv}, or the data frame read from it: its \code{key},
+\code{value} rows are written at the top of the Markdown file.}
 
-\item{target_precision}{Target precision used, recorded in the table.}
+\item{target_precision}{Numeric scalar, target precision used, recorded
+in the table.}
 
-\item{file}{Optional path of a Markdown file to write.}
+\item{file}{\code{NULL} or a character scalar, path of a Markdown file to
+write.}
 }
 \value{
 A tibble, one row per cell, with the columns of \code{thresholds},

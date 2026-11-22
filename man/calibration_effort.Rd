@@ -13,17 +13,19 @@ calibration_effort(
 )
 }
 \arguments{
-\item{validations}{Table returned by \code{\link[=read_validations]{read_validations()}}.}
+\item{validations}{A data frame (or tibble) returned by \code{\link[=read_validations]{read_validations()}},
+one row per reviewed clip.}
 
-\item{formula}{Model formula, usually the best one of
+\item{formula}{A model formula, usually the best one of
 \code{\link[=compare_calibration_models]{compare_calibration_models()}}.}
 
-\item{n_train}{Training sizes per site x species.}
+\item{n_train}{Numeric vector of whole numbers, training sizes (clips) per
+site x species.}
 
-\item{n_reps}{Repetitions per training size.}
+\item{n_reps}{Integer scalar >= 1, repetitions per training size.}
 
-\item{seed}{Seed of the draws. The global random number generator is
-left as it was.}
+\item{seed}{Integer scalar, seed of the draws. The global random number
+generator is left as it was.}
 }
 \value{
 A tibble with \code{n_per_cell} (the requested training size),

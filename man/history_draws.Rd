@@ -16,25 +16,30 @@ history_draws(
 )
 }
 \arguments{
-\item{fit}{Model returned by \code{\link[=fit_calibration]{fit_calibration()}} with \code{engine = "brms"}.}
+\item{fit}{A \code{brmsfit} returned by \code{\link[=fit_calibration]{fit_calibration()}} with
+\code{engine = "brms"}.}
 
-\item{scored}{Table returned by \code{\link[=score_detections]{score_detections()}}.}
+\item{scored}{A data frame (or tibble) returned by \code{\link[=score_detections]{score_detections()}}, one
+row per detection.}
 
-\item{p_min}{Threshold on the calibrated probability (not on the
-confidence score).}
+\item{p_min}{Numeric scalar in [0, 1], threshold on the calibrated
+probability (not on the confidence score).}
 
-\item{n_draws}{Number of posterior draws.}
+\item{n_draws}{Integer scalar >= 1, number of posterior draws (at most the
+number of draws in \code{fit}).}
 
-\item{min_detections_night}{Repetition rule: minimum number of reliable
-detections for a night with detection.}
+\item{min_detections_night}{Integer scalar >= 1, repetition rule: minimum
+number of reliable detections for a night with detection.}
 
-\item{min_confidence}{Detections below this confidence are not scored.}
+\item{min_confidence}{Numeric scalar in [0, 1]. Detections below this
+confidence are not scored.}
 
-\item{grid_step}{Models fitted with \code{engine = "brms"}: step of the grid
-of scores on which the posterior is computed.}
+\item{grid_step}{Numeric scalar in (0, 0.5). Models fitted with
+\code{engine = "brms"}: step of the grid of scores on which the posterior is
+computed.}
 
-\item{seed}{Seed of the choice of draws. The global random number
-generator is left as it was.}
+\item{seed}{Integer scalar, seed of the choice of draws. The global random
+number generator is left as it was.}
 }
 \value{
 A tibble with \code{draw}, \code{site}, \code{species}, \code{night},

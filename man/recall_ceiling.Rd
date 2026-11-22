@@ -21,45 +21,54 @@ recall_ceiling(
 )
 }
 \arguments{
-\item{validation}{Reviewed clips (e.g. from \code{\link[=read_validation_tables]{read_validation_tables()}}),
-with the occasions of \code{"random_recordings"}: \code{site}, \code{species_code},
+\item{validation}{A data frame (or tibble) of reviewed clips (e.g. from
+\code{\link[=read_validation_tables]{read_validation_tables()}}), one row per clip, with the occasions of
+\code{"random_recordings"}: \code{site}, \code{species_code},
 \code{occasion_id}, \code{sampling_mode}, \code{verdict} (\code{"positive"} when the
 species was heard in the occasion, \code{"negative"} when not; other
 verdicts are left out), \code{inclusion_prob} and the \code{cluster} column.
 Clips of other designs are ignored.}
 
-\item{detections}{Predictions, as returned by \code{\link[=read_selection_tables]{read_selection_tables()}}.}
+\item{detections}{A data frame (or tibble) of predictions, as returned by
+\code{\link[=read_selection_tables]{read_selection_tables()}}, with columns \code{site}, \code{species_code},
+\code{confidence}, \code{begin_path} and \code{file_offset}.}
 
-\item{thresholds}{Thresholds at which the recall is computed: a numeric
+\item{thresholds}{\code{NULL}, a numeric vector in [0, 1], or a data frame.
+Thresholds at which the recall is computed: a numeric
 vector (the same for every group), or a table with the \code{by} columns
 and a \code{threshold} column, such as the output of
 \code{\link[=suggest_thresholds]{suggest_thresholds()}} (\code{threshold_column} picks another column, such
 as \code{"threshold_conservative"} of \code{\link[=threshold_bootstrap]{threshold_bootstrap()}}). \code{NULL} gives
 the ceiling only.}
 
-\item{by}{Columns that define the groups: \code{"species_folder"} (the
-default, every site pooled) or \code{c("site", "species_folder")}.}
+\item{by}{Character vector of column names that define the groups:
+\code{"species_folder"} (the default, every site pooled) or
+\code{c("site", "species_folder")}.}
 
-\item{min_confidence}{The lowest score kept in the selection tables (the
-minimum confidence BirdNET was run with). Predictions below it are not
-counted.}
+\item{min_confidence}{Numeric scalar, the lowest score kept in the
+selection tables (the minimum confidence BirdNET was run with).
+Predictions below it are not counted.}
 
-\item{occasion_unit}{The occasion of the draw: \code{"file"} or \code{"minute"}.}
+\item{occasion_unit}{Character scalar, one of \code{"file"} or \code{"minute"}.
+The occasion of the draw.}
 
-\item{remap_from, remap_to}{Remapping of the audio paths of \code{detections},
-as in \code{\link[=select_clips]{select_clips()}}.}
+\item{remap_from, remap_to}{\code{NULL} or character scalars. Remapping of the
+audio paths of \code{detections}, as in \code{\link[=select_clips]{select_clips()}}.}
 
-\item{threshold_column}{Column of \code{thresholds} with the threshold.}
+\item{threshold_column}{Character scalar, the column of \code{thresholds} with
+the threshold.}
 
-\item{n_boot}{Number of bootstrap replicates; 0 skips the intervals.}
+\item{n_boot}{Integer scalar >= 0. Number of bootstrap replicates; 0
+skips the intervals.}
 
-\item{cluster}{Column of \code{validation} whose levels are resampled whole:
-\code{"source_audio"} (the recording, the default) or \code{"night"}.}
+\item{cluster}{Character scalar, the column of \code{validation} whose levels
+are resampled whole: \code{"source_audio"} (the recording, the default) or
+\code{"night"}.}
 
-\item{conf}{Probability of the intervals.}
+\item{conf}{Numeric scalar in (0, 1). Probability of the intervals.}
 
-\item{seed}{Seed of the bootstrap. The global random number generator is
-left as it was.}
+\item{seed}{Integer scalar, seed of the bootstrap. The global random
+number generator is left as it was.}
 }
 \value{
 A tibble with one row per group (and threshold): the \code{by}

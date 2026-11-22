@@ -84,72 +84,93 @@
 #' species may still have called, with a lower score). A recording
 #' annotated by ear gives the state of the whole occasion.
 #'
-#' @param output_dir Folder to write. Created if needed.
-#' @param detections Predictions, as returned by [read_selection_tables()].
-#' @param recordings The list of all recordings, as a data frame or the
-#'   path to a CSV file with the columns `site` and `source_audio`, as in
+#' @param output_dir Character scalar, path to the folder to write. Created
+#'   if needed.
+#' @param detections A data frame of predictions, one row per BirdNET
+#'   prediction, as returned by [read_selection_tables()] (columns `site`,
+#'   `species_code`, `confidence`, `begin_path` and `file_offset`).
+#' @param recordings `NULL`, a data frame (one row per recording) or a
+#'   character scalar, path to a CSV file: the list of all recordings, with
+#'   the columns `site` and `source_audio`, as in
 #'   [select_clips()]. `NULL` lists the audio files in the folders of the
 #'   recordings that have predictions, which then must be reachable (see
 #'   `remap_from`).
-#' @param validation Reviewed clips, without those with an inherited verdict
-#'   (see [select_clips()]): paths to `validation_by_clip.csv`
+#' @param validation `NULL`, a character vector of paths or a data frame
+#'   (one row per reviewed clip): reviewed clips, without those with an
+#'   inherited verdict (see [select_clips()]): paths to
+#'   `validation_by_clip.csv`
 #'   files (output of [post_validation()]) or a data frame with their
 #'   columns, e.g. from [read_validation_tables()] or
 #'   [consensus_verdicts()]. `NULL` writes no validation tables.
-#' @param fit Optional model from [fit_calibration()] with
+#' @param fit `NULL` or a `brmsfit` from [fit_calibration()] with
 #'   `engine = "brms"`, for `calibration_draws.parquet`.
-#' @param sites Optional data frame of site covariates, with a `site`
-#'   column.
-#' @param occasion_covariates Optional data frame of covariates of the
+#' @param sites `NULL` or a data frame of site covariates, one row per
+#'   site, with a `site` column.
+#' @param occasion_covariates `NULL` or a data frame of covariates of the
 #'   occasions (e.g. temperature or the month), with `site` and either
 #'   `occasion_id` or `source_audio` (plus `start`, in s, for minute
 #'   occasions). One row per occasion; occasions without a row get `NA`.
 #'   Columns named like those of `occasions.csv` are refused.
-#' @param calibration_keys Optional grouping variables of the calibration
+#' @param calibration_keys `NULL` or character vector, grouping variables of
+#'   the calibration
 #'   model, besides `site` and `species`, that vary between occasions (see
 #'   Calibration keys). Only used with `fit`.
-#' @param occasion_unit The occasion of the occupancy model: `"file"` (a
+#' @param occasion_unit Character scalar, the occasion of the occupancy
+#'   model: `"file"` (a
 #'   recording) or `"minute"`. Use the value of the clip extraction, so that
 #'   the `occasion_id` of the reviewed clips match.
-#' @param recording_duration Length of the recordings (s). Needed for
+#' @param recording_duration `NULL` or numeric scalar, length of the
+#'   recordings (s). Needed for
 #'   minute occasions unless the 'av' package can read the files.
-#' @param min_confidence Predictions below this confidence are not
+#' @param min_confidence Numeric scalar in \[0, 1\]. Predictions below this
+#'   confidence are not
 #'   written; it is also the lower end of the grid of the calibration
 #'   draws. Use the `min_confidence` of the BirdNET run or higher.
-#' @param n_draws Number of posterior draws of the calibration.
-#' @param grid_step Step of the grid of scores of the calibration draws.
-#' @param seed Seed of the choice of draws and, with `n_versions`, of the
+#' @param n_draws Integer scalar >= 1, number of posterior draws of the
+#'   calibration.
+#' @param grid_step Numeric scalar > 0, step of the grid of scores of
+#'   the calibration draws.
+#' @param seed Integer scalar, seed of the choice of draws and, with
+#'   `n_versions`, of the
 #'   versions of the detections (`rule = "sample"`). The global random
 #'   number generator is left as it was.
-#' @param n_versions Optional number of versions of the detections to
+#' @param n_versions `NULL` or integer scalar >= 1, number of versions of
+#'   the detections to
 #'   write to `occasion_draws.parquet`, from the first calibration draws.
 #'   Without continuous covariates, `occasion_draws()` is called on the
 #'   folder. With them, the versions are always written, and
 #'   `NULL` means one per calibration draw (`n_draws`).
-#' @param rule,p_min Rule of the versions, as in [occasion_draws()].
-#' @param covariate_scaling Optional named list recording how each
+#' @param rule,p_min Character scalar (`"sample"` or `"threshold"`) and
+#'   numeric scalar in \[0, 1\]: rule of the versions, as in
+#'   [occasion_draws()].
+#' @param covariate_scaling `NULL` or a list named by covariate, each
+#'   element a numeric vector with `center` and `scale`, recording how each
 #'   continuous covariate of the calibration was standardised before the
 #'   model was fitted, e.g. `list(temp = c(center = 22.4, scale = 3.1))`
 #'   for `(temp_raw - 22.4) / 3.1`. It is written to `schema.json` so that
 #'   a reader can map the covariate back; the values of
 #'   `occasion_covariates` must already be on the scale of the model.
-#' @param min_verified Species with predictions but fewer than this
+#' @param min_verified Integer scalar. Species with predictions but
+#'   fewer than this
 #'   number of reviewed detection clips (positive or negative), or without
 #'   any positive or any negative clip, are named in a warning: their
 #'   false-positive rate will rest on the other species (a community
 #'   model) or on the prior. The default is a floor, not a sample size
 #'   calculation. Only used with `validation`.
-#' @param candidates The `candidates.csv` of the first round of a
-#'   `"random_detections"` design, as a path or a data frame. It gives the
+#' @param candidates `NULL`, a character scalar (path) or a data frame: the
+#'   `candidates.csv` of the first round of a `"random_detections"`
+#'   design. It gives the
 #'   stratum of each occasion and, in `schema.json`, the threshold and the
 #'   strata of the draw. `NULL` looks for it in the folders of `validation`;
 #'   without it, `stratum` is empty unless `validation` has that column, as
 #'   after [combine_rounds()]. Only used with `validation`.
-#' @param window_step Time between the starts of consecutive windows of the
+#' @param window_step Numeric scalar > 0, time between the starts of
+#'   consecutive windows of the
 #'   classifier (s), for `n_windows`: 3 for BirdNET without overlap.
-#' @param classifier Optional label of the classifier, recorded in
-#'   `schema.json`.
-#' @param overwrite Replace an existing export in `output_dir`?
+#' @param classifier `NULL` or character scalar, label of the classifier,
+#'   recorded in `schema.json`.
+#' @param overwrite Logical scalar. If `TRUE`, replace an existing export in
+#'   `output_dir`.
 #' @inheritParams select_clips
 #' @inheritParams score_detections
 #'
@@ -174,9 +195,9 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
                                   min_verified = 10, candidates = NULL,
                                   window_step = 3,
                                   classifier = NULL, overwrite = FALSE) {
-  unidade <- match.arg(occasion_unit)
+  unit <- match.arg(occasion_unit)
   rule <- match.arg(rule)
-  covs_cal <- character()
+  cal_covs <- character()
   if (!is.null(fit)) {
     if (!inherits(fit, "brmsfit")) {
       stop("`fit` must be a model fitted with engine = \"brms\": the ",
@@ -184,8 +205,8 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
     }
     require_suggested("arrow", "to write calibration_draws.parquet")
     check_calibration_keys(fit, calibration_keys)
-    covs_cal <- calibration_covariates(fit, calibration_keys)
-    check_covariate_scaling(covariate_scaling, covs_cal)
+    cal_covs <- calibration_covariates(fit, calibration_keys)
+    check_covariate_scaling(covariate_scaling, cal_covs)
   } else if (length(calibration_keys) > 0) {
     stop("`calibration_keys` need a calibration model in `fit`.", call. = FALSE)
   } else if (!is.null(n_versions)) {
@@ -208,50 +229,50 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
                   "file_offset"),
                 "detections", hint = "Read it with read_selection_tables().")
 
-  # Predicoes >= min_confidence, com a ocasiao de cada uma
+  # Predictions >= min_confidence, each with its occasion
   det <- detections |>
     filter(confidence >= min_confidence) |>
     mutate(site = as.character(site),
            species = folder_name(species_code),
            source_audio = remap_path(begin_path, remap_from, remap_to),
-           occasion_id = make_occasion_id(source_audio, file_offset, unidade))
+           occasion_id = make_occasion_id(source_audio, file_offset, unit))
   if (!is.null(species)) {
     det <- filter(det, str_extract(species_code, "[^_]+$") %in% .env$species)
   }
   if (nrow(det) == 0) stop("No prediction with confidence >= ", min_confidence, ".")
   det <- check_duplicate_predictions(det)
 
-  ocasioes <- export_occasions(det, recordings, unidade, recording_duration,
-                               dawn_hour, audio_pattern, remap_from, remap_to,
-                               window_step)
-  # predicoes em gravacoes fora da lista: a lista esta incompleta
-  sem_ocasiao <- anti_join(distinct(det, site, occasion_id), ocasioes,
+  occasions <- export_occasions(det, recordings, unit, recording_duration,
+                                dawn_hour, audio_pattern, remap_from, remap_to,
+                                window_step)
+  # predictions in recordings not in the list: the list is incomplete
+  no_occasion <- anti_join(distinct(det, site, occasion_id), occasions,
                            by = c("site", "occasion_id"))
-  if (nrow(sem_ocasiao) > 0) {
-    warning(nrow(sem_ocasiao), " occasion(s) with predictions are not in ",
+  if (nrow(no_occasion) > 0) {
+    warning(nrow(no_occasion), " occasion(s) with predictions are not in ",
             "`recordings`; they were added to occasions.csv without a ",
             "recording time. Is the list of recordings complete?",
             call. = FALSE)
-    ocasioes <- bind_rows(ocasioes, sem_ocasiao) |> arrange(site, occasion_id)
+    occasions <- bind_rows(occasions, no_occasion) |> arrange(site, occasion_id)
   }
-  fixas <- names(ocasioes)
-  ocasioes <- join_occasion_covariates(ocasioes, occasion_covariates,
-                                       remap_from, remap_to)
-  ocasioes <- add_calibration_keys(ocasioes, calibration_keys)
-  for (v in covs_cal) {
-    if (!v %in% names(ocasioes)) {
+  fixed_cols <- names(occasions)
+  occasions <- join_occasion_covariates(occasions, occasion_covariates,
+                                        remap_from, remap_to)
+  occasions <- add_calibration_keys(occasions, calibration_keys)
+  for (v in cal_covs) {
+    if (!v %in% names(occasions)) {
       stop("Calibration covariate `", v, "` is not a column of ",
            "`occasion_covariates`.", call. = FALSE)
     }
-    if (!is.numeric(ocasioes[[v]])) {
+    if (!is.numeric(occasions[[v]])) {
       stop("Calibration covariate `", v, "` must be numeric in ",
            "`occasion_covariates`.", call. = FALSE)
     }
   }
-  covariaveis <- setdiff(names(ocasioes), fixas)
+  covariates <- setdiff(names(occasions), fixed_cols)
 
-  tabelas <- list(
-    occasions = ocasioes,
+  tables <- list(
+    occasions = occasions,
     detections = det |>
       select(site, occasion_id, species_code, species, file_offset,
              confidence) |>
@@ -261,72 +282,73 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
       summarise(max_score = max(confidence), n_above_min = n(),
                 .groups = "drop")
   )
-  candidatas <- NULL
+  candidates_tab <- NULL
   if (!is.null(validation)) {
-    candidatas <- read_candidates(candidates, validation)
-    tabelas <- c(tabelas, export_validation(validation, ocasioes, candidatas))
-    check_verification_by_species(tabelas$validation, unique(det$species),
+    candidates_tab <- read_candidates(candidates, validation)
+    tables <- c(tables,
+                export_validation(validation, occasions, candidates_tab))
+    check_verification_by_species(tables$validation, unique(det$species),
                                   min_verified)
   }
-  tabelas$sites <- export_sites(sites, unique(ocasioes$site))
+  tables$sites <- export_sites(sites, unique(occasions$site))
 
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
-  # uma exportacao anterior nao deixa tabelas que esta nao escreve
+  # a previous export leaves no tables that this one does not write
   unlink(file.path(output_dir, c(paste0(occupancy_tables, ".csv"),
                                  "calibration_draws.parquet",
                                  "occasion_draws.parquet")))
-  iwalk(tabelas, \(tab, nome) write_csv(tab, file.path(output_dir,
-                                                       paste0(nome, ".csv")),
-                                        na = ""))
-  arquivos <- map(tabelas, nrow)
+  iwalk(tables, \(tab, name) write_csv(tab, file.path(output_dir,
+                                                      paste0(name, ".csv")),
+                                       na = ""))
+  table_rows <- map(tables, nrow)
 
-  calibracao <- NULL
-  versoes <- NULL
-  if (!is.null(fit) && length(covs_cal) > 0) {
+  calibration <- NULL
+  versions <- NULL
+  if (!is.null(fit) && length(cal_covs) > 0) {
     n_v <- if (is.null(n_versions)) n_draws else n_versions
-    od <- covariate_versions(fit, tabelas$detections, ocasioes,
-                             calibration_keys, covs_cal, n_draws, n_v, rule,
+    od <- covariate_versions(fit, tables$detections, occasions,
+                             calibration_keys, cal_covs, n_draws, n_v, rule,
                              p_min, seed)
     arrow::write_parquet(od, file.path(output_dir, "occasion_draws.parquet"))
-    tabelas$occasion_draws <- od
-    arquivos$occasion_draws <- nrow(od)
+    tables$occasion_draws <- od
+    table_rows$occasion_draws <- nrow(od)
     formula <- tryCatch(deparse1(stats::formula(fit)$formula),
                         error = function(e) NULL)
-    faixa <- map(set_names(covs_cal), \(v) list(
+    cov_range <- map(set_names(cal_covs), \(v) list(
       min = min(fit$data[[v]], na.rm = TRUE),
       max = max(fit$data[[v]], na.rm = TRUE)))
-    calibracao <- compact(list(
+    calibration <- compact(list(
       engine = "brms", formula = formula,
       n_draws = length(unique(od$draw)),
       keys = I(c("site", "species", calibration_keys)),
-      covariates = I(covs_cal), covariate_range = faixa,
+      covariates = I(cal_covs), covariate_range = cov_range,
       covariate_scaling = if (!is.null(covariate_scaling)) {
         map(covariate_scaling, \(s) list(center = unname(s[["center"]]),
                                          scale = unname(s[["scale"]])))
       },
       new_levels = "uncertainty"))
-    versoes <- compact(list(
+    versions <- compact(list(
       file = "occasion_draws.parquet", rule = rule,
       p_min = if (rule == "threshold") p_min,
       seed = if (rule == "sample") seed,
       n_draws = length(unique(od$draw)),
       species = I(sort(unique(od$species)))))
   } else if (!is.null(fit)) {
-    draws <- calibration_draws(fit, distinct(tabelas$scores, site, species),
+    draws <- calibration_draws(fit, distinct(tables$scores, site, species),
                                min_confidence, grid_step, n_draws, seed,
-                               ocasioes, calibration_keys)
+                               occasions, calibration_keys)
     arrow::write_parquet(draws, file.path(output_dir,
                                           "calibration_draws.parquet"))
-    tabelas$calibration_draws <- draws
-    arquivos$calibration_draws <- nrow(draws)
+    tables$calibration_draws <- draws
+    table_rows$calibration_draws <- nrow(draws)
     formula <- tryCatch(deparse1(stats::formula(fit)$formula),
                         error = function(e) NULL)
-    calibracao <- list(engine = "brms", formula = formula,
-                       n_draws = length(unique(draws$draw)),
-                       grid_step = grid_step, grid_min = min(draws$confidence),
-                       keys = I(c("site", "species", calibration_keys,
-                                  "grid_index")),
-                       new_levels = "uncertainty")
+    calibration <- list(engine = "brms", formula = formula,
+                        n_draws = length(unique(draws$draw)),
+                        grid_step = grid_step, grid_min = min(draws$confidence),
+                        keys = I(c("site", "species", calibration_keys,
+                                   "grid_index")),
+                        new_levels = "uncertainty")
   }
 
   schema <- list(
@@ -335,47 +357,64 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
     created = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     sheepdog_version = as.character(utils::packageVersion("sheepdog")),
     classifier = classifier,
-    occasion_unit = unidade,
+    occasion_unit = unit,
     min_confidence = min_confidence,
     dawn_hour = dawn_hour,
     window_step = window_step,
-    # I(): listas mesmo com um elemento (auto_unbox desfaria o vetor)
-    sites = I(sort(unique(ocasioes$site))),
+    # I(): arrays even with one element (auto_unbox would unbox the vector)
+    sites = I(sort(unique(occasions$site))),
     species = I(sort(unique(det$species_code))),
-    occasion_covariates = if (length(covariaveis)) I(covariaveis),
-    tables = imap(arquivos, \(n, nome) list(
-      file = if (nome %in% c("calibration_draws", "occasion_draws")) {
-        paste0(nome, ".parquet")
-      } else paste0(nome, ".csv"),
+    occasion_covariates = if (length(covariates)) I(covariates),
+    tables = imap(table_rows, \(n, name) list(
+      file = if (name %in% c("calibration_draws", "occasion_draws")) {
+        paste0(name, ".parquet")
+      } else paste0(name, ".csv"),
       rows = n)),
-    validation_design = validation_design(candidatas),
-    calibration = calibracao,
-    occasion_draws = versoes
+    validation_design = validation_design(candidates_tab),
+    calibration = calibration,
+    occasion_draws = versions
   )
   jsonlite::write_json(compact(schema), file.path(output_dir, "schema.json"),
                        auto_unbox = TRUE, pretty = TRUE, digits = NA)
   message("Export written to ", output_dir, ": ",
-          paste(names(arquivos), collapse = ", "), ".")
-  # sem covariaveis, as versoes saem da grade, como em occasion_draws()
-  if (!is.null(n_versions) && length(covs_cal) == 0) {
-    tabelas$occasion_draws <- occasion_draws(
+          paste(names(table_rows), collapse = ", "), ".")
+  # without covariates, the versions come from the grid, as in
+  # occasion_draws()
+  if (!is.null(n_versions) && length(cal_covs) == 0) {
+    tables$occasion_draws <- occasion_draws(
       output_dir, rule = rule, p_min = p_min, n_draws = n_versions,
       seed = seed)
     schema <- jsonlite::read_json(file.path(output_dir, "schema.json"),
                                   simplifyVector = TRUE)
   }
-  invisible(list(tables = tabelas, schema = schema))
+  invisible(list(tables = tables, schema = schema))
 }
 
-# Covariaveis continuas da calibracao: variaveis numericas do modelo alem do
-# score (as chaves sao agrupamentos)
+#' Continuous covariates of a calibration model
+#'
+#' The numeric variables of the model data other than the score (the keys
+#' are grouping factors).
+#'
+#' @param fit A `brmsfit` calibration model.
+#' @param keys Character vector of calibration keys.
+#' @return Character vector of covariate names, possibly empty.
+#' @noRd
 calibration_covariates <- function(fit, keys) {
-  dados <- fit$data
-  if (is.null(dados)) return(character())
-  numericas <- names(dados)[vapply(dados, is.numeric, logical(1))]
-  setdiff(numericas, c("tp", "logit_conf", keys))
+  model_data <- fit$data
+  if (is.null(model_data)) return(character())
+  numeric_vars <- names(model_data)[vapply(model_data, is.numeric,
+                                           logical(1))]
+  setdiff(numeric_vars, c("tp", "logit_conf", keys))
 }
 
+#' Check the `covariate_scaling` argument
+#'
+#' @param scaling `NULL` or a list named by covariate, each element a numeric
+#'   vector with `center` and `scale`.
+#' @param covs Character vector of the continuous covariates of the
+#'   calibration.
+#' @return `NULL`, invisibly; errors when `scaling` is malformed.
+#' @noRd
 check_covariate_scaling <- function(scaling, covs) {
   if (is.null(scaling)) return(invisible())
   if (!is.list(scaling) || is.null(names(scaling)) ||
@@ -393,79 +432,113 @@ check_covariate_scaling <- function(scaling, covs) {
   invisible()
 }
 
-# Versoes das deteccoes com covariaveis continuas: P(TP) de cada predicao
-# em cada draw (sem grade), sorteadas como em occasion_draws()
-covariate_versions <- function(fit, det, ocasioes, keys, covs, n_draws,
+#' Detection versions under a calibration with continuous covariates
+#'
+#' Computes P(TP) of each prediction in each draw (without a grid) and draws
+#' the versions as in [occasion_draws()].
+#'
+#' @param fit A `brmsfit` calibration model.
+#' @param det A data frame of predictions with `site`, `occasion_id`,
+#'   `species` and `confidence`.
+#' @param occasions A data frame of occasions with `site`, `occasion_id`, the
+#'   keys and the covariates.
+#' @param keys Character vector of calibration keys.
+#' @param covs Character vector of continuous covariates of the calibration.
+#' @param n_draws Integer scalar, number of posterior draws to choose.
+#' @param n_versions Integer scalar, number of versions kept (the first
+#'   chosen draws).
+#' @param rule Character scalar, `"sample"` or `"threshold"`.
+#' @param p_min Numeric scalar in \[0, 1\], threshold of `rule = "threshold"`.
+#' @param seed Numeric scalar, seed of the draws.
+#' @return A tibble with `draw`, `site`, `occasion_id`, `species` and `y`.
+#' @noRd
+covariate_versions <- function(fit, det, occasions, keys, covs, n_draws,
                                n_versions, rule, p_min, seed) {
-  niveis <- fit_levels(fit)
-  fora <- setdiff(unique(det$species), niveis$species)
-  if (length(fora) > 0) {
+  lvls <- fit_levels(fit)
+  absent <- setdiff(unique(det$species), lvls$species)
+  if (length(absent) > 0) {
     message("Species not in the calibration, left out of the versions: ",
-            paste(fora, collapse = ", "))
+            paste(absent, collapse = ", "))
   }
-  message_new_sites(det$site, niveis$site)
+  message_new_sites(det$site, lvls$site)
   ids <- withr::with_seed(seed, sort(sample.int(
     posterior_size(fit), min(n_draws, posterior_size(fit)))))
   ids <- utils::head(ids, n_versions)
-  occ_key <- paste(ocasioes$site, ocasioes$occasion_id, sep = "\r")
-  especies <- sort(intersect(unique(det$species), niveis$species))
-  map(especies, function(sp) {
+  occ_key <- paste(occasions$site, occasions$occasion_id, sep = "\r")
+  spp <- sort(intersect(unique(det$species), lvls$species))
+  map(spp, function(sp) {
     d <- det[det$species == sp, ]
     o <- match(paste(d$site, d$occasion_id, sep = "\r"), occ_key)
     nd <- tibble(site = d$site, species = d$species,
                  logit_conf = safe_logit(d$confidence))
-    for (k in keys) nd[[k]] <- ocasioes[[k]][o]
-    for (v in covs) nd[[v]] <- ocasioes[[v]][o]
-    pontuar <- !is.na(o) & stats::complete.cases(nd)
+    for (k in keys) nd[[k]] <- occasions[[k]][o]
+    for (v in covs) nd[[v]] <- occasions[[v]][o]
+    scorable <- !is.na(o) & stats::complete.cases(nd)
     for (v in covs) {
-      faixa <- range(fit$data[[v]], na.rm = TRUE)
-      fora_faixa <- pontuar & (nd[[v]] < faixa[1] | nd[[v]] > faixa[2])
-      if (any(fora_faixa)) {
-        warning(sum(fora_faixa), " prediction(s) of ", sp, " have `", v,
+      cov_range <- range(fit$data[[v]], na.rm = TRUE)
+      out_of_range <- scorable &
+        (nd[[v]] < cov_range[1] | nd[[v]] > cov_range[2])
+      if (any(out_of_range)) {
+        warning(sum(out_of_range), " prediction(s) of ", sp, " have `", v,
                 "` outside its range in the calibration data (",
-                signif(faixa[1], 3), " to ", signif(faixa[2], 3),
+                signif(cov_range[1], 3), " to ", signif(cov_range[2], 3),
                 "); their P(TP) is an extrapolation.", call. = FALSE)
       }
     }
     Pdet <- matrix(NA_real_, nrow(d), length(ids))
-    if (any(pontuar)) {
-      # niveis novos sao sorteados: mesma semente, mesmo resultado
-      Pdet[pontuar, ] <- t(withr::with_seed(seed, prediction_draws(
-        fit, nd[pontuar, , drop = FALSE], ids)))
+    if (any(scorable)) {
+      # new levels are drawn at random: same seed, same result
+      Pdet[scorable, ] <- t(withr::with_seed(seed, prediction_draws(
+        fit, nd[scorable, , drop = FALSE], ids)))
     }
-    sample_versions(d, ocasioes, o, Pdet, ids, rule, p_min, seed,
-                    motivo = "without a value of the calibration covariates or keys")
+    sample_versions(d, occasions, o, Pdet, ids, rule, p_min, seed,
+                    reason = "without a value of the calibration covariates or keys")
   }) |>
     list_rbind()
 }
 
-# P(TP) de cada linha de `newdata` nos draws `ids` (draws x linhas); funcao
-# propria para os testes
+#' P(TP) of each row of `newdata` in the chosen draws
+#'
+#' A separate function so that the tests can mock it.
+#'
+#' @param fit A `brmsfit` calibration model.
+#' @param newdata A data frame of predictor values.
+#' @param ids Integer vector of posterior draw identifiers.
+#' @return Numeric matrix, draws x rows of `newdata`.
+#' @noRd
 prediction_draws <- function(fit, newdata, ids) {
   brms::posterior_epred(fit, newdata = newdata, allow_new_levels = TRUE,
                         draw_ids = ids)
 }
 
-# Predicoes repetidas: a mesma janela lida duas vezes (tabelas de selecao
-# duplicadas) sai com um aviso; ocasioes cujas predicoes tem todas o mesmo
-# score sugerem um score copiado entre linhas (o erro do artigo do JAV) e
-# so geram um aviso
+#' Check for repeated predictions
+#'
+#' The same window read twice (duplicated selection tables) is dropped with
+#' a warning; occasions whose predictions all share one score suggest a
+#' score copied between rows (the error of the JAV article) and only raise
+#' a warning.
+#'
+#' @param det A data frame of predictions with `site`, `source_audio`,
+#'   `file_offset`, `species_code`, `occasion_id` and `confidence`.
+#' @return `det` without the repeated rows.
+#' @noRd
 check_duplicate_predictions <- function(det) {
-  chave <- c("site", "source_audio", "file_offset", "species_code")
-  repetidas <- duplicated(det[chave])
-  if (any(repetidas)) {
-    warning(sum(repetidas), " prediction(s) repeat the site, recording, ",
+  key <- c("site", "source_audio", "file_offset", "species_code")
+  repeated <- duplicated(det[key])
+  if (any(repeated)) {
+    warning(sum(repeated), " prediction(s) repeat the site, recording, ",
             "offset and species of another and were dropped. Was a ",
             "selection table read twice?", call. = FALSE)
-    det <- det[!repetidas, ]
+    det <- det[!repeated, ]
   }
-  grupos <- det |>
+  groups <- det |>
     group_by(site, occasion_id, species_code) |>
     summarise(n = n(), .n_scores = n_distinct(confidence), .groups = "drop") |>
     filter(n >= 2)
-  iguais <- sum(grupos$.n_scores == 1)
-  if (iguais >= 10 && iguais / nrow(grupos) > 0.5) {
-    warning(iguais, " of ", nrow(grupos), " occasion x species with several ",
+  same_score <- sum(groups$.n_scores == 1)
+  if (same_score >= 10 && same_score / nrow(groups) > 0.5) {
+    warning(same_score, " of ", nrow(groups),
+            " occasion x species with several ",
             "predictions have the same score in all of them. Were the ",
             "scores of an occasion copied to several rows? Then each ",
             "prediction is not a separate detection window.", call. = FALSE)
@@ -473,8 +546,15 @@ check_duplicate_predictions <- function(det) {
   det
 }
 
-# As chaves da calibracao sao fatores de agrupamento do modelo, alem de
-# local e especie
+#' Check the calibration keys
+#'
+#' The calibration keys are grouping factors of the model, besides site and
+#' species.
+#'
+#' @param fit A `brmsfit` calibration model, or `NULL`.
+#' @param keys Character vector of calibration keys, or `NULL`.
+#' @return `NULL`, invisibly; errors when the keys are invalid.
+#' @noRd
 check_calibration_keys <- function(fit, keys) {
   if (length(keys) == 0) return(invisible())
   if (!is.character(keys) || anyNA(keys) || anyDuplicated(keys)) {
@@ -492,107 +572,145 @@ check_calibration_keys <- function(fit, keys) {
   invisible()
 }
 
-# Covariaveis de ocasiao, casadas por occasion_id ou pela gravacao (e o
-# inicio do minuto)
-join_occasion_covariates <- function(ocasioes, covs, remap_from, remap_to) {
-  if (is.null(covs)) return(ocasioes)
+#' Join occasion covariates to the occasions
+#'
+#' Matches by `occasion_id`, or by the recording (and the start of the
+#' minute).
+#'
+#' @param occasions A data frame of occasions with `site`, `occasion_id` and
+#'   `source_audio`.
+#' @param covs `NULL` or a data frame with `site` and `occasion_id` or
+#'   `source_audio` (and optionally `start`), plus covariate columns.
+#' @param remap_from,remap_to Character scalars or `NULL`, passed to
+#'   `remap_path()` for `source_audio`.
+#' @return `occasions` with the covariate columns added.
+#' @noRd
+join_occasion_covariates <- function(occasions, covs, remap_from, remap_to) {
+  if (is.null(covs)) return(occasions)
   if (!is.data.frame(covs) || !"site" %in% names(covs)) {
     stop("`occasion_covariates` must be a data frame with a `site` column.",
          call. = FALSE)
   }
-  por <- if ("occasion_id" %in% names(covs)) c("site", "occasion_id")
-         else if ("source_audio" %in% names(covs)) {
-           c("site", "source_audio", if ("start" %in% names(covs)) "start")
-         } else {
-           stop("`occasion_covariates` needs `occasion_id` or `source_audio`.",
-                call. = FALSE)
-         }
-  if (identical(por, c("site", "source_audio")) &&
-      anyDuplicated(ocasioes[c("site", "source_audio")])) {
+  by <- if ("occasion_id" %in% names(covs)) c("site", "occasion_id")
+        else if ("source_audio" %in% names(covs)) {
+          c("site", "source_audio", if ("start" %in% names(covs)) "start")
+        } else {
+          stop("`occasion_covariates` needs `occasion_id` or `source_audio`.",
+               call. = FALSE)
+        }
+  if (identical(by, c("site", "source_audio")) &&
+      anyDuplicated(occasions[c("site", "source_audio")])) {
     stop("Minute occasions: `occasion_covariates` needs a `start` column, ",
          "or `occasion_id`.", call. = FALSE)
   }
-  extras <- setdiff(names(covs), por)
-  colide <- intersect(extras, names(ocasioes))
-  if (length(colide) > 0) {
+  extras <- setdiff(names(covs), by)
+  clash <- intersect(extras, names(occasions))
+  if (length(clash) > 0) {
     stop("`occasion_covariates` has column(s) named like those of ",
-         "occasions.csv: ", paste(colide, collapse = ", "), ".", call. = FALSE)
+         "occasions.csv: ", paste(clash, collapse = ", "), ".", call. = FALSE)
   }
   if (length(extras) == 0) {
     stop("`occasion_covariates` has no covariate column.", call. = FALSE)
   }
   covs <- mutate(covs, site = as.character(site))
-  if ("source_audio" %in% por) {
+  if ("source_audio" %in% by) {
     covs$source_audio <- remap_path(covs$source_audio, remap_from, remap_to)
   }
-  if ("occasion_id" %in% por) covs$occasion_id <- as.character(covs$occasion_id)
-  if ("start" %in% por) covs$start <- as.numeric(covs$start)
-  if (anyDuplicated(covs[por])) {
+  if ("occasion_id" %in% by) covs$occasion_id <- as.character(covs$occasion_id)
+  if ("start" %in% by) covs$start <- as.numeric(covs$start)
+  if (anyDuplicated(covs[by])) {
     stop("`occasion_covariates` has more than one row for some occasion.",
          call. = FALSE)
   }
-  fora <- nrow(anti_join(covs, ocasioes, by = por))
-  if (fora > 0) {
-    warning(fora, " row(s) of `occasion_covariates` match no occasion.",
+  absent <- nrow(anti_join(covs, occasions, by = by))
+  if (absent > 0) {
+    warning(absent, " row(s) of `occasion_covariates` match no occasion.",
             call. = FALSE)
   }
-  left_join(ocasioes, covs[c(por, extras)], by = por)
+  left_join(occasions, covs[c(by, extras)], by = by)
 }
 
-# Colunas das chaves em occasions.csv, como texto; "month" vem da data da
-# gravacao quando nao foi dada
-add_calibration_keys <- function(ocasioes, keys) {
+#' Add the calibration key columns to the occasions
+#'
+#' The key columns are stored as text; `month` is taken from the recording
+#' date when it was not given.
+#'
+#' @param occasions A data frame of occasions with `recording_date`.
+#' @param keys Character vector of calibration keys, or `NULL`.
+#' @return `occasions` with the key columns as character.
+#' @noRd
+add_calibration_keys <- function(occasions, keys) {
   for (k in keys) {
-    if (!k %in% names(ocasioes)) {
+    if (!k %in% names(occasions)) {
       if (k != "month") {
         stop("Calibration key `", k, "` is not a column of ",
              "`occasion_covariates`.", call. = FALSE)
       }
-      ocasioes$month <- substr(ocasioes$recording_date, 1, 6)
+      occasions$month <- substr(occasions$recording_date, 1, 6)
     }
-    ocasioes[[k]] <- as.character(ocasioes[[k]])
-    sem <- is.na(ocasioes[[k]]) | !nzchar(ocasioes[[k]])
-    if (any(sem)) {
-      warning(sum(sem), " occasion(s) have no value of the calibration key `",
+    occasions[[k]] <- as.character(occasions[[k]])
+    no_value <- is.na(occasions[[k]]) | !nzchar(occasions[[k]])
+    if (any(no_value)) {
+      warning(sum(no_value),
+              " occasion(s) have no value of the calibration key `",
               k, "`; their predictions cannot be scored.", call. = FALSE)
-      ocasioes[[k]][sem] <- NA_character_
+      occasions[[k]][no_value] <- NA_character_
     }
   }
-  ocasioes
+  occasions
 }
 
-# Tabelas CSV do esquema, na ordem de schema.json
+#' CSV tables of the export schema, in the order of schema.json
+#' @noRd
 occupancy_tables <- c("occasions", "detections", "scores", "validation",
                       "recordings_verified", "sites")
 
-# Todas as ocasioes: gravacoes (ou minutos) com ou sem predicao
-export_occasions <- function(det, recordings, unidade, recording_duration,
+#' Build the table of all occasions
+#'
+#' Every recording (or minute) is an occasion, with or without predictions.
+#'
+#' @param det A data frame of predictions.
+#' @param recordings `NULL`, a data frame or a folder of recordings, passed to
+#'   `get_recordings()`.
+#' @param unit Character scalar, `"file"` or `"minute"`.
+#' @param recording_duration Numeric scalar or `NULL`, duration of the
+#'   recordings in seconds.
+#' @param dawn_hour Integer scalar, hour that ends a night.
+#' @param audio_pattern Character scalar, regular expression of audio files.
+#' @param remap_from,remap_to Character scalars or `NULL`, path remapping.
+#' @param window_step Numeric scalar, step of the detection windows in
+#'   seconds.
+#' @return A tibble with `site`, `occasion_id`, `source_audio`,
+#'   `recording_date`, `recording_hour`, `night`, `start`, `duration` and
+#'   `n_windows`, one row per occasion.
+#' @noRd
+export_occasions <- function(det, recordings, unit, recording_duration,
                              dawn_hour, audio_pattern, remap_from, remap_to,
                              window_step) {
-  gravacoes <- suppressMessages(
+  recs <- suppressMessages(
     get_recordings(det, recordings, audio_pattern, remap_from, remap_to))
-  if (unidade == "minute") {
-    gravacoes <- gravacoes |>
+  if (unit == "minute") {
+    recs <- recs |>
       mutate(.dur = audio_duration(source_audio, recording_duration))
-    if (anyNA(gravacoes$.dur)) {
-      stop(sum(is.na(gravacoes$.dur)), " recording(s) without a readable ",
+    if (anyNA(recs$.dur)) {
+      stop(sum(is.na(recs$.dur)), " recording(s) without a readable ",
            "duration; set `recording_duration`.", call. = FALSE)
     }
-    gravacoes <- gravacoes |>
+    recs <- recs |>
       mutate(start = map(.dur, \(d) (seq_len(ceiling(d / 60)) - 1) * 60)) |>
       unnest(start) |>
       mutate(duration = pmin(60, .dur - start)) |>
       select(-.dur)
   } else {
-    gravacoes <- mutate(gravacoes, start = 0,
-                        duration = if (is.null(recording_duration)) NA_real_
-                                   else recording_duration)
+    recs <- mutate(recs, start = 0,
+                   duration = if (is.null(recording_duration)) NA_real_
+                              else recording_duration)
   }
-  gravacoes |>
+  recs |>
     mutate(site = as.character(site),
-           occasion_id = make_occasion_id(source_audio, start, unidade),
+           occasion_id = make_occasion_id(source_audio, start, unit),
            night = night_of(recording_date, recording_hour, dawn_hour),
-           # round(): 0.3 / 0.1 nao pode virar 4 janelas
+           # round(): 0.3 / 0.1 must not become 4 windows
            n_windows = as.integer(ceiling(round(duration / window_step, 6)))) |>
     distinct(site, occasion_id, .keep_all = TRUE) |>
     select(site, occasion_id, source_audio, recording_date, recording_hour,
@@ -600,17 +718,36 @@ export_occasions <- function(det, recordings, unidade, recording_duration,
     arrange(site, occasion_id)
 }
 
-# Noite de uma gravacao: o dia anterior antes de `dawn_hour`, como em
-# score_detections()
+#' Night of a recording
+#'
+#' Recordings before `dawn_hour` belong to the night of the previous day, as
+#' in [score_detections()].
+#'
+#' @param recording_date Character vector of dates as `YYYYMMDD`.
+#' @param recording_hour Vector of hours, coercible to integer.
+#' @param dawn_hour Integer scalar, hour that ends a night.
+#' @return Character vector of nights as `YYYYMMDD`.
+#' @noRd
 night_of <- function(recording_date, recording_hour, dawn_hour) {
-  hora <- suppressWarnings(as.integer(recording_hour))
-  anterior <- format(as.Date(recording_date, "%Y%m%d") - 1, "%Y%m%d")
-  if_else(!is.na(hora) & hora < dawn_hour, anterior, recording_date)
+  hour <- suppressWarnings(as.integer(recording_hour))
+  previous <- format(as.Date(recording_date, "%Y%m%d") - 1, "%Y%m%d")
+  if_else(!is.na(hour) & hour < dawn_hour, previous, recording_date)
 }
 
-# Clipes revisados: os de deteccoes (validation) e as gravacoes anotadas
-# de ouvido (recordings_verified), que dao o estado da ocasiao
-export_validation <- function(validation, ocasioes, candidatas = NULL) {
+#' Build the tables of reviewed clips
+#'
+#' Splits the reviewed clips into those of detections (`validation`) and the
+#' recordings annotated by ear (`recordings_verified`), which give the state
+#' of the occasion.
+#'
+#' @param validation A data frame of reviewed clips, or a character vector
+#'   of validation table paths.
+#' @param occasions A data frame of occasions with `site` and `occasion_id`.
+#' @param candidates `NULL` or a data frame read from `candidates.csv`.
+#' @return A list with the tibble `validation` and, when there are
+#'   recordings reviewed by ear, `recordings_verified`.
+#' @noRd
+export_validation <- function(validation, occasions, candidates = NULL) {
   if (is.character(validation)) {
     validation <- read_validation_tables(validation)
   }
@@ -619,23 +756,23 @@ export_validation <- function(validation, ocasioes, candidatas = NULL) {
                 c("site", "species_code", "occasion_id", "sampling_mode",
                   "verdict"),
                 "validation", hint = "Was it written by post_validation()?")
-  # um veredito herdado e o mesmo julgamento do outro desenho: exporta-lo daria
-  # ao modelo duas observacoes dele
-  herdados <- is_inherited(validation)
-  if (any(herdados)) {
-    warning(sum(herdados), " clip(s) with an inherited verdict left out, as ",
+  # an inherited verdict is the same judgement of the other design: exporting
+  # it would give the model two observations of it
+  inherited <- is_inherited(validation)
+  if (any(inherited)) {
+    warning(sum(inherited), " clip(s) with an inherited verdict left out, as ",
             "they repeat a judgement. They are chosen by their verdict, which ",
             "can bias the rates that an occupancy model estimates from these ",
             "tables; review them (`inherit = FALSE` in select_clips()) if ",
             "they are many.", call. = FALSE)
-    validation <- validation[!herdados, ]
+    validation <- validation[!inherited, ]
   }
   for (col in c("confidence", "clip_start", "clip_end", "inclusion_prob",
                 "n_detections_occasion", "round", "n_candidates", "n_drawn")) {
     if (!col %in% names(validation)) validation[[col]] <- NA_real_
   }
   if (!"stratum" %in% names(validation)) validation$stratum <- NA_character_
-  validation <- join_candidates(validation, candidatas)
+  validation <- join_candidates(validation, candidates)
   v <- validation |>
     mutate(site = as.character(site),
            species = folder_name(species_code),
@@ -648,10 +785,10 @@ export_validation <- function(validation, ocasioes, candidatas = NULL) {
     mutate(review_scope = review_scope(sampling_mode, tp,
                                        n_detections_occasion),
            .by = c(site, occasion_id, species_code, sampling_mode))
-  fora <- anti_join(distinct(v, site, occasion_id), ocasioes,
+  absent <- anti_join(distinct(v, site, occasion_id), occasions,
                     by = c("site", "occasion_id"))
-  if (nrow(fora) > 0) {
-    warning(nrow(fora), " reviewed occasion(s) do not match any occasion; ",
+  if (nrow(absent) > 0) {
+    warning(nrow(absent), " reviewed occasion(s) do not match any occasion; ",
             "check that `occasion_unit` is the one of the clip extraction.",
             call. = FALSE)
   }
@@ -666,30 +803,30 @@ export_validation <- function(validation, ocasioes, candidatas = NULL) {
       arrange(site, occasion_id, species_code, clip_start)
   )
   check_clips_in_both_designs(out$validation)
-  faixas <- sum(out$validation$sampling_mode %in% "score_bands")
-  if (faixas > 0) {
-    warning(faixas, " reviewed clip(s) of sampling_mode = \"score_bands\" ",
+  n_bands <- sum(out$validation$sampling_mode %in% "score_bands")
+  if (n_bands > 0) {
+    warning(n_bands, " reviewed clip(s) of sampling_mode = \"score_bands\" ",
             "are written to validation.csv. They were chosen by their score, ",
             "so they serve thresholds and calibration but not the ",
             "false-positive rate of an occupancy model: crywolf drops them. ",
             "Use \"random_detections\" or \"random_recordings\" clips for ",
             "the occupancy model.", call. = FALSE)
   }
-  gravacoes <- filter(v, sampling_mode == "random_recordings")
-  nas_duas <- semi_join(
+  recs <- filter(v, sampling_mode == "random_recordings")
+  in_both <- semi_join(
     distinct(filter(out$validation, sampling_mode %in%
                       c("random_detections", "directed_pps")),
              site, species_code, occasion_id),
-    gravacoes, by = c("site", "species_code", "occasion_id"))
-  if (nrow(nas_duas) > 0) {
-    warning(nrow(nas_duas), " occasion(s) are in both `validation` and ",
+    recs, by = c("site", "species_code", "occasion_id"))
+  if (nrow(in_both) > 0) {
+    warning(nrow(in_both), " occasion(s) are in both `validation` and ",
             "`recordings_verified`. A model that reads both takes them as ",
             "two independent reviews; say so if the clips also set the ",
             "thresholds, and check that one verdict was not copied from the ",
             "other.", call. = FALSE)
   }
-  if (nrow(gravacoes) > 0) {
-    out$recordings_verified <- gravacoes |>
+  if (nrow(recs) > 0) {
+    out$recordings_verified <- recs |>
       select(site, occasion_id, species_code, species, inclusion_prob,
              verdict, present = tp, all_of(extras)) |>
       arrange(site, occasion_id, species_code)
@@ -697,70 +834,110 @@ export_validation <- function(validation, ocasioes, candidatas = NULL) {
   out
 }
 
-# Clipes revisados por especie: com poucos, ou sem positivo ou sem
-# negativo, a taxa de falso positivo da especie nao vem dos dados dela
-# Estrato e N das ocasioes sorteadas, quando a tabela nao os traz; os outros
-# desenhos ficam sem eles, mesmo numa ocasiao que tambem foi candidata
-join_candidates <- function(validation, candidatas) {
-  if (is.null(candidatas)) return(validation)
+#' Add the stratum and N of the drawn occasions from the candidates
+#'
+#' Fills `stratum` and `n_candidates` of `"random_detections"` clips when the
+#' table lacks them; the other designs stay without them, even in an
+#' occasion that was also a candidate.
+#'
+#' @param validation A data frame of reviewed clips with the occasion key
+#'   columns, `sampling_mode`, `stratum` and `n_candidates`.
+#' @param candidates `NULL` or a data frame of candidate occasions with the
+#'   occasion key columns, `stratum` and `n_candidates`.
+#' @return `validation` with `stratum` and `n_candidates` filled.
+#' @noRd
+join_candidates <- function(validation, candidates) {
+  if (is.null(candidates)) return(validation)
   validation |>
-    mutate(across(all_of(ocasiao_chave), as.character)) |>
-    left_join(candidatas |>
-                mutate(across(all_of(ocasiao_chave), as.character)) |>
-                select(all_of(ocasiao_chave), .estrato = stratum,
+    mutate(across(all_of(occasion_key), as.character)) |>
+    left_join(candidates |>
+                mutate(across(all_of(occasion_key), as.character)) |>
+                select(all_of(occasion_key), .cand_stratum = stratum,
                        .n = n_candidates),
-              by = ocasiao_chave) |>
-    mutate(.sorteada = sampling_mode == "random_detections",
-           stratum = if_else(.sorteada,
-                             coalesce(as.character(stratum), .estrato),
+              by = occasion_key) |>
+    mutate(.drawn = sampling_mode == "random_detections",
+           stratum = if_else(.drawn,
+                             coalesce(as.character(stratum), .cand_stratum),
                              as.character(stratum)),
-           n_candidates = if_else(.sorteada,
+           n_candidates = if_else(.drawn,
                                   coalesce(as.integer(n_candidates), .n),
                                   as.integer(n_candidates))) |>
-    select(-.estrato, -.n, -.sorteada)
+    select(-.cand_stratum, -.n, -.drawn)
 }
 
-# Um mesmo clipe nos dois desenhos e um julgamento so, ou dois que um modelo
-# leria como independentes
+#' Warn about clips reviewed in more than one design
+#'
+#' The same clip in two designs is a single judgement, or two that a model
+#' would read as independent.
+#'
+#' @param validation A data frame of reviewed clips with `site`,
+#'   `occasion_id`, `species_code`, `clip_start` and `sampling_mode`.
+#' @return Called for its side effect (a warning).
+#' @noRd
 check_clips_in_both_designs <- function(validation) {
-  nos_dois <- validation |>
+  in_both <- validation |>
     distinct(site, occasion_id, species_code, clip_start, sampling_mode) |>
     count(site, occasion_id, species_code, clip_start) |>
     filter(n > 1)
-  if (nrow(nos_dois) > 0) {
-    desenhos <- validation |>
-      semi_join(nos_dois, by = c("site", "occasion_id", "species_code",
+  if (nrow(in_both) > 0) {
+    designs <- validation |>
+      semi_join(in_both, by = c("site", "occasion_id", "species_code",
                                  "clip_start")) |>
       pull(sampling_mode) |>
       unique() |>
       sort()
-    warning(nrow(nos_dois), " clip(s) are in more than one design (",
-            paste0("\"", desenhos, "\"", collapse = ", "), "). A model that ",
+    warning(nrow(in_both), " clip(s) are in more than one design (",
+            paste0("\"", designs, "\"", collapse = ", "), "). A model that ",
             "reads both designs takes them as two reviews; keep one of each.",
             call. = FALSE)
   }
 }
 
-# O que um negativo cobre, dentro de uma ocasiao x especie: "occasion" quando
-# todas as predicoes acima do limiar do sorteio tem veredito; senao, so o clipe
+#' What a negative verdict covers within an occasion x species
+#'
+#' `"occasion"` when every prediction above the threshold of the draw has a
+#' verdict; otherwise only the clip.
+#'
+#' @param sampling_mode Character vector of sampling modes of one occasion x
+#'   species.
+#' @param tp Integer vector of verdicts (1, 0 or `NA`), same length.
+#' @param n_detections_occasion Numeric vector, the number of predictions of
+#'   the occasion above the threshold.
+#' @return Character vector of `"occasion"` or `"clip"`, same length.
+#' @noRd
 review_scope <- function(sampling_mode, tp, n_detections_occasion) {
-  completa <- sampling_mode %in% c("random_detections", "directed_pps") &
+  complete <- sampling_mode %in% c("random_detections", "directed_pps") &
     sum(!is.na(tp)) == n_detections_occasion
-  if_else(coalesce(completa, FALSE), "occasion", "clip")
+  if_else(coalesce(complete, FALSE), "occasion", "clip")
 }
 
-# Desenho do sorteio, de candidates.csv
-validation_design <- function(candidatas) {
-  if (is.null(candidatas)) return(NULL)
-  campos <- list(threshold = candidatas$threshold[1],
-                 strata = candidatas$strata[1],
-                 occasion_unit = candidatas$occasion_unit[1],
-                 capped = candidatas$capped[1])
-  discard(campos, \(x) is.null(x) || is.na(x))
+#' Design of the draw, from candidates.csv
+#'
+#' @param candidates `NULL` or a data frame read from `candidates.csv`.
+#' @return `NULL` or a list with the non-missing `threshold`, `strata`,
+#'   `occasion_unit` and `capped`.
+#' @noRd
+validation_design <- function(candidates) {
+  if (is.null(candidates)) return(NULL)
+  fields <- list(threshold = candidates$threshold[1],
+                 strata = candidates$strata[1],
+                 occasion_unit = candidates$occasion_unit[1],
+                 capped = candidates$capped[1])
+  discard(fields, \(x) is.null(x) || is.na(x))
 }
 
-check_verification_by_species <- function(validation, especies, min_verified) {
-  por_sp <- tibble(species = especies) |>
+#' Warn about species with few reviewed clips
+#'
+#' With few clips, or without a positive or a negative one, the
+#' false-positive rate of a species does not come from its own data.
+#'
+#' @param validation A data frame with `species` and `tp`.
+#' @param spp Character vector of the exported species.
+#' @param min_verified Integer scalar, the minimum number of reviewed clips.
+#' @return `NULL`, invisibly; called for its warning.
+#' @noRd
+check_verification_by_species <- function(validation, spp, min_verified) {
+  by_sp <- tibble(species = spp) |>
     left_join(validation |> filter(!is.na(tp)) |>
                 group_by(species) |>
                 summarise(n = n(), pos = sum(tp), .groups = "drop"),
@@ -768,67 +945,88 @@ check_verification_by_species <- function(validation, especies, min_verified) {
     mutate(n = coalesce(n, 0L), pos = coalesce(pos, 0L), neg = n - pos) |>
     filter(n < min_verified | pos == 0 | neg == 0) |>
     arrange(n, species)
-  if (nrow(por_sp) == 0) return(invisible())
-  warning(nrow(por_sp), " species with fewer than ", min_verified,
+  if (nrow(by_sp) == 0) return(invisible())
+  warning(nrow(by_sp), " species with fewer than ", min_verified,
           " reviewed clips, or without a positive or a negative one: ",
-          paste0(por_sp$species, " (", por_sp$n, ": ", por_sp$pos, "+ ",
-                 por_sp$neg, "-)", collapse = ", "),
+          paste0(by_sp$species, " (", by_sp$n, ": ", by_sp$pos, "+ ",
+                 by_sp$neg, "-)", collapse = ", "),
           ". Their false-positive rates will rest on the other species ",
           "(a community model) or on the prior.", call. = FALSE)
 }
 
-# Covariaveis de local; os locais sem linha ficam com NA
-export_sites <- function(sites, nomes) {
-  base <- tibble(site = sort(nomes))
+#' Build the table of site covariates
+#'
+#' Sites without a row in `sites` get `NA`.
+#'
+#' @param sites `NULL` or a data frame with a `site` column.
+#' @param site_names Character vector of the exported sites.
+#' @return A tibble with `site` and the covariates, one row per site.
+#' @noRd
+export_sites <- function(sites, site_names) {
+  base <- tibble(site = sort(site_names))
   if (is.null(sites)) return(base)
   if (!"site" %in% names(sites)) {
     stop("`sites` must have a `site` column.", call. = FALSE)
   }
   sites <- mutate(sites, site = as.character(site))
-  sem <- setdiff(nomes, sites$site)
-  if (length(sem) > 0) {
+  no_covs <- setdiff(site_names, sites$site)
+  if (length(no_covs) > 0) {
     warning("Site(s) without covariates in `sites`: ",
-            paste(sem, collapse = ", "), call. = FALSE)
+            paste(no_covs, collapse = ", "), call. = FALSE)
   }
   left_join(base, sites, by = "site")
 }
 
-# Amostras da posterior de P(TP) na grade de scores, para os pares
-# local x especie com predicoes e, com chaves, para cada combinacao de
-# niveis das chaves entre as ocasioes do local
-calibration_draws <- function(fit, pares, min_confidence, grid_step, n_draws,
-                              seed, ocasioes = NULL, keys = NULL) {
-  niveis <- fit_levels(fit)
-  fora <- setdiff(unique(pares$species), niveis$species)
-  if (length(fora) > 0) {
+#' Posterior draws of P(TP) on the score grid
+#'
+#' Draws for every site x species pair with predictions and, with keys, for
+#' every combination of key levels among the occasions of the site.
+#'
+#' @param fit A `brmsfit` calibration model.
+#' @param pairs A data frame with `site` and `species`.
+#' @param min_confidence Numeric scalar in \[0, 1\], the lowest score.
+#' @param grid_step Numeric scalar, the grid step.
+#' @param n_draws Integer scalar, number of posterior draws.
+#' @param seed Numeric scalar, seed of the choice of draws and of new levels.
+#' @param occasions `NULL` or a data frame of occasions with `site` and the
+#'   keys.
+#' @param keys Character vector of calibration keys, or `NULL`.
+#' @return A tibble with `draw`, `site`, `species`, the keys, `grid_index`,
+#'   `confidence` and `p_tp`.
+#' @noRd
+calibration_draws <- function(fit, pairs, min_confidence, grid_step, n_draws,
+                              seed, occasions = NULL, keys = NULL) {
+  lvls <- fit_levels(fit)
+  absent <- setdiff(unique(pairs$species), lvls$species)
+  if (length(absent) > 0) {
     message("Species not in the calibration, left out of the draws: ",
-            paste(fora, collapse = ", "))
+            paste(absent, collapse = ", "))
   }
-  pares <- filter(pares, species %in% niveis$species)
-  message_new_sites(pares$site, niveis$site)
+  pairs <- filter(pairs, species %in% lvls$species)
+  message_new_sites(pairs$site, lvls$site)
   ids <- withr::with_seed(seed, sort(sample.int(
     posterior_size(fit), min(n_draws, posterior_size(fit)))))
   n_g <- length(score_grid(min_confidence, grid_step))
   combos <- if (length(keys)) {
-    distinct(ocasioes[c("site", keys)]) |>
+    distinct(occasions[c("site", keys)]) |>
       filter(if_all(all_of(keys), \(x) !is.na(x)))
   } else {
-    tibble(site = unique(pares$site))
+    tibble(site = unique(pairs$site))
   }
-  # niveis novos das chaves sao sorteados: mesma semente, mesmo resultado
+  # new key levels are drawn at random: same seed, same result
   withr::with_seed(seed, {
     pmap(combos, function(site, ...) {
-      nivel <- list(...)
-      especies <- sort(pares$species[pares$site == site])
-      if (length(especies) == 0) return(NULL)
-      gd <- grid_draws(fit, site, especies, min_confidence, grid_step,
-                       draw_ids = ids, keys = nivel)
+      key_levels <- list(...)
+      spp <- sort(pairs$species[pairs$site == site])
+      if (length(spp) == 0) return(NULL)
+      gd <- grid_draws(fit, site, spp, min_confidence, grid_step,
+                       draw_ids = ids, keys = key_levels)
       out <- tibble(draw = rep(ids, times = ncol(gd$draws)),
                     site = site,
                     species = rep(as.character(gd$grid$species),
                                   each = length(ids)))
-      for (k in names(nivel)) out[[k]] <- nivel[[k]]
-      out$grid_index <- rep(rep(seq_len(n_g), length(especies)),
+      for (k in names(key_levels)) out[[k]] <- key_levels[[k]]
+      out$grid_index <- rep(rep(seq_len(n_g), length(spp)),
                             each = length(ids))
       out$confidence <- rep(gd$grid$confidence, each = length(ids))
       out$p_tp <- as.vector(gd$draws)
@@ -839,16 +1037,28 @@ calibration_draws <- function(fit, pares, min_confidence, grid_step, n_draws,
     arrange(site, species, across(all_of(keys)), grid_index, draw)
 }
 
-# Numero de amostras da posterior (funcao propria para os testes)
+#' Number of posterior draws of a model
+#'
+#' A separate function so that the tests can mock it.
+#'
+#' @param fit A `brmsfit` model.
+#' @return Integer scalar.
+#' @noRd
 posterior_size <- function(fit) brms::ndraws(fit)
 
-# Sites of the predictions absent from the calibration (drawn as new
-# levels of the site effect)
+#' Report sites absent from the calibration
+#'
+#' These sites are drawn as new levels of the site effect.
+#'
+#' @param sites Character vector of the sites of the predictions.
+#' @param calibrated Character vector of the sites in the calibration.
+#' @return The new sites, invisibly.
+#' @noRd
 message_new_sites <- function(sites, calibrated) {
-  novos <- setdiff(unique(sites), calibrated)
-  if (length(novos) > 0) {
+  new_sites <- setdiff(unique(sites), calibrated)
+  if (length(new_sites) > 0) {
     message("Site(s) not in the calibration, drawn as new levels of the ",
-            "site effect: ", paste(novos, collapse = ", "))
+            "site effect: ", paste(new_sites, collapse = ", "))
   }
-  invisible(novos)
+  invisible(new_sites)
 }

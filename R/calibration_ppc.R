@@ -21,21 +21,23 @@
 #' modelling (e.g. a group effect in the calibration formula), whereas no
 #' flag is not proof of a good fit.
 #'
-#' @param fit Model returned by [fit_calibration()] with `engine = "brms"`.
-#' @param validations The calibration data the model was fitted to, in the
-#'   same row order, with any columns named in `group` (keep them with
-#'   `read_validations(keep = )`). `NULL` uses the data stored in `fit`,
-#'   which only hold the columns of the formula.
-#' @param group Optional character vector of columns of `validations` to
+#' @param fit A `brmsfit` returned by [fit_calibration()] with
+#'   `engine = "brms"`.
+#' @param validations `NULL` or a data frame (or tibble), the calibration data
+#'   the model was fitted to, in the same row order, with any columns named in
+#'   `group` (keep them with `read_validations(keep = )`). `NULL` uses the data
+#'   stored in `fit`, which only hold the columns of the formula.
+#' @param group `NULL` or a character vector of columns of `validations` to
 #'   check within, besides score bins, sites and species.
-#' @param bin_width Width of the score bins. Bins with fewer than
-#'   `min_n` clips are merged with their neighbour.
-#' @param min_n Smallest number of clips in a score bin.
-#' @param prob Probability of the predictive interval.
-#' @param flag Groups with a p-value below `flag` or above `1 - flag` are
-#'   flagged.
-#' @param n_draws Number of posterior draws; `NULL` uses all.
-#' @param seed Seed of the choice of draws and of the predictive
+#' @param bin_width Numeric scalar in (0, 1), width of the score bins. Bins with
+#'   fewer than `min_n` clips are merged with their neighbour.
+#' @param min_n Integer scalar >= 1, smallest number of clips in a score bin.
+#' @param prob Numeric scalar in (0, 1), probability of the predictive interval.
+#' @param flag Numeric scalar in (0, 1). Groups with a p-value below `flag` or
+#'   above `1 - flag` are flagged.
+#' @param n_draws `NULL` or an integer scalar >= 1, number of posterior draws;
+#'   `NULL` uses all.
+#' @param seed Integer scalar, seed of the choice of draws and of the predictive
 #'   simulation. The global random number generator is left as it was.
 #'
 #' @return A tibble with one row per check and group: `check` (`"overall"`,
@@ -57,15 +59,15 @@ calibration_ppc <- function(fit, validations = NULL, group = NULL,
   check_prob(flag, "flag", open = TRUE)
   check_number(n_draws, "n_draws", lower = 1, integer = TRUE, null_ok = TRUE)
   check_number(seed, "seed", integer = TRUE)
-  dados <- if (is.null(validations)) fit$data else validations
-  if (nrow(dados) != nrow(fit$data)) {
-    stop("`validations` has ", nrow(dados), " rows but the model was fitted ",
+  data <- if (is.null(validations)) fit$data else validations
+  if (nrow(data) != nrow(fit$data)) {
+    stop("`validations` has ", nrow(data), " rows but the model was fitted ",
          "to ", nrow(fit$data), "; pass the data used in fit_calibration().",
          call. = FALSE)
   }
-  if (!is.null(group) && !all(group %in% names(dados))) {
+  if (!is.null(group) && !all(group %in% names(data))) {
     stop("Column(s) not in `validations`: ",
-         paste(setdiff(group, names(dados)), collapse = ", "), call. = FALSE)
+         paste(setdiff(group, names(data)), collapse = ", "), call. = FALSE)
   }
   y <- fit$data$tp
   if (!is.null(validations) && "tp" %in% names(validations) &&
@@ -79,14 +81,14 @@ calibration_ppc <- function(fit, validations = NULL, group = NULL,
            else sort(sample.int(n_total, min(n_draws, n_total)))
     brms::posterior_predict(fit, draw_ids = ids)
   })
-  score <- if ("confidence" %in% names(dados)) dados$confidence
-           else stats::plogis(dados$logit_conf)
-  grupos <- list(overall = rep("all", length(y)),
+  score <- if ("confidence" %in% names(data)) data$confidence
+           else stats::plogis(data$logit_conf)
+  groups <- list(overall = rep("all", length(y)),
                  score = score_bins(score, bin_width, min_n))
-  for (col in intersect(c("site", "species", group), names(dados))) {
-    grupos[[col]] <- as.character(dados[[col]])
+  for (col in intersect(c("site", "species", group), names(data))) {
+    groups[[col]] <- as.character(data[[col]])
   }
-  ppc_table(y, yrep, grupos, prob, flag)
+  ppc_table(y, yrep, groups, prob, flag)
 }
 
 #' Plot posterior predictive checks of a calibration model
@@ -95,9 +97,9 @@ calibration_ppc <- function(fit, validations = NULL, group = NULL,
 #' positives of each group over its posterior predictive mean and interval.
 #' Flagged groups are drawn as crosses.
 #'
-#' @param ppc Table returned by [calibration_ppc()].
-#' @param check The check to draw: `"score"`, `"site"`, `"species"`,
-#'   `"overall"` or a column given in `group`.
+#' @param ppc A data frame (tibble) returned by [calibration_ppc()].
+#' @param check Character scalar, the check to draw: `"score"`, `"site"`,
+#'   `"species"`, `"overall"` or a column given in `group`.
 #'
 #' @return A ggplot object.
 #' @export
@@ -127,38 +129,60 @@ plot_calibration_ppc <- function(ppc, check = "score") {
                    legend.position = "bottom")
 }
 
-# Faixas de score de largura `width`; as com menos de `min_n` clipes se
-# juntam a vizinha (a seguinte, ou a anterior na ultima faixa)
+#' Bin scores into intervals of fixed width
+#'
+#' Bins with fewer than `min_n` clips are merged with their neighbour (the
+#' next one, or the previous one for the last bin).
+#'
+#' @param score Numeric vector in \[0, 1\], confidence scores.
+#' @param width Numeric scalar, width of the bins.
+#' @param min_n Integer scalar, smallest number of clips in a bin.
+#' @return A factor with one element per score, labelled by the range of the
+#'   scores in each bin and ordered by score.
+#' @noRd
 score_bins <- function(score, width = 0.1, min_n = 15) {
-  faixa <- floor(pmin(score, 1 - 1e-9) / width)
+  bin <- floor(pmin(score, 1 - 1e-9) / width)
   repeat {
-    n <- table(faixa)
+    n <- table(bin)
     if (length(n) == 1 || all(n >= min_n)) break
-    alvo <- as.numeric(names(n)[n < min_n][1])
-    vizinhos <- as.numeric(names(n))
-    destino <- if (alvo == max(vizinhos)) max(vizinhos[vizinhos < alvo])
-               else min(vizinhos[vizinhos > alvo])
-    faixa[faixa == alvo] <- destino
+    target <- as.numeric(names(n)[n < min_n][1])
+    neighbours <- as.numeric(names(n))
+    dest <- if (target == max(neighbours)) max(neighbours[neighbours < target])
+            else min(neighbours[neighbours > target])
+    bin[bin == target] <- dest
   }
-  rotulo <- tapply(score, faixa, function(x) sprintf("%.2f-%.2f", min(x), max(x)))
-  ordem <- order(as.numeric(names(rotulo)))
-  factor(unname(rotulo[as.character(faixa)]), levels = unname(rotulo[ordem]))
+  label <- tapply(score, bin, function(x) sprintf("%.2f-%.2f", min(x), max(x)))
+  ord <- order(as.numeric(names(label)))
+  factor(unname(label[as.character(bin)]), levels = unname(label[ord]))
 }
 
-# Tabela das checagens: uma linha por checagem x grupo. `yrep` tem uma
-# linha por amostra e uma coluna por clipe
-ppc_table <- function(y, yrep, grupos, prob = 0.9, flag = 0.05) {
-  cauda <- (1 - prob) / 2
-  imap(grupos, function(g, nome) {
+#' Table of posterior predictive checks
+#'
+#' @param y Integer vector of 0/1 verdicts, one per clip.
+#' @param yrep Numeric matrix of replicated verdicts, one row per draw and
+#'   one column per clip.
+#' @param groups Named list of vectors (character or factor), each with one
+#'   element per clip; the names are the checks.
+#' @param prob Numeric scalar in (0, 1), probability of the predictive
+#'   interval.
+#' @param flag Numeric scalar in (0, 1); groups with a p-value below `flag`
+#'   or above `1 - flag` are flagged.
+#' @return A tibble with one row per check x group: `check`, `group`, `n`,
+#'   `observed`, `pred_mean`, `pred_lower`, `pred_upper`, `p_value` and
+#'   `flagged`.
+#' @noRd
+ppc_table <- function(y, yrep, groups, prob = 0.9, flag = 0.05) {
+  tail_p <- (1 - prob) / 2
+  imap(groups, function(g, name) {
     idx <- split(seq_along(y), g, drop = TRUE)
     if (is.factor(g)) idx <- idx[intersect(levels(g), names(idx))]
-    imap(idx, function(i, rotulo) {
+    imap(idx, function(i, label) {
       t_rep <- rowMeans(yrep[, i, drop = FALSE])
       t_obs <- mean(y[i])
-      tibble(check = nome, group = rotulo, n = length(i), observed = t_obs,
+      tibble(check = name, group = label, n = length(i), observed = t_obs,
              pred_mean = mean(t_rep),
-             pred_lower = unname(stats::quantile(t_rep, cauda)),
-             pred_upper = unname(stats::quantile(t_rep, 1 - cauda)),
+             pred_lower = unname(stats::quantile(t_rep, tail_p)),
+             pred_upper = unname(stats::quantile(t_rep, 1 - tail_p)),
              p_value = mean(t_rep > t_obs) + mean(t_rep == t_obs) / 2)
     }) |> list_rbind()
   }) |>

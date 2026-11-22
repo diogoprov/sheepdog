@@ -25,49 +25,59 @@ post_validation(
 )
 }
 \arguments{
-\item{review_dir}{Folder with the reviewed clips. For a review in the
+\item{review_dir}{\code{NULL} or a character scalar, path to the folder with
+the reviewed clips. For a review in the
 BirdNET GUI, the \code{clips} folder after the review, whose subfolders
 give the verdicts. With \code{verdicts_file}, optional: the folder of the
 clips, used to fill \code{reviewed_path} (needed by \code{\link[=retraining_clips]{retraining_clips()}}
 and \code{\link[=build_training_set]{build_training_set()}}).}
 
-\item{manifest_path}{Path to the manifest of the same run as the
-reviewed clips (\code{clip_manifest.csv}, or a v1.2.0
+\item{manifest_path}{Character scalar, path to the manifest of the same
+run as the reviewed clips (\code{clip_manifest.csv}, or a v1.2.0
 \code{manifesto_clipes.csv}).}
 
-\item{output_dir}{Output folder; created if needed.}
+\item{output_dir}{Character scalar, path to the output folder; created if
+needed.}
 
-\item{positive_pattern, negative_pattern}{Regular expressions
-(case-insensitive) that identify the positive and negative folders in
-the path of each clip.}
+\item{positive_pattern, negative_pattern}{Character scalars, regular
+expressions (case-insensitive) that identify the positive and negative
+folders in the path of each clip.}
 
-\item{bins}{Breaks of the confidence bins (left-closed).}
+\item{bins}{Numeric vector of length >= 2, increasing breaks of the
+confidence bins (left-closed).}
 
-\item{target_precision}{Target precision.}
+\item{target_precision}{Numeric scalar in (0, 1). Target precision.}
 
-\item{min_n}{Minimum of reviewed clips for a bin to be taken seriously;
-bins with fewer are flagged in \code{low_support}.}
+\item{min_n}{Integer scalar >= 1. Minimum of reviewed clips for a bin to
+be taken seriously; bins with fewer are flagged in \code{low_support}.}
 
-\item{verdicts_file}{Optional verdicts file written by \code{\link[=run_app]{run_app()}}, used
-instead of the subfolders of \code{review_dir}.}
+\item{verdicts_file}{\code{NULL} or a character scalar, path to the verdicts
+file written by \code{\link[=run_app]{run_app()}}, used instead of the subfolders of
+\code{review_dir}.}
 
-\item{reviewer}{With \code{verdicts_file}, optional reviewer(s) whose
-verdicts are used, as in \code{\link[=app_verdicts]{app_verdicts()}}.}
+\item{reviewer}{\code{NULL} or a character vector of reviewer names. With
+\code{verdicts_file}, the reviewer(s) whose verdicts are used, as in
+\code{\link[=app_verdicts]{app_verdicts()}}.}
 
-\item{weighted, sustained}{Passed to \code{\link[=suggest_thresholds]{suggest_thresholds()}}.}
+\item{weighted, sustained}{\code{NULL}, \code{TRUE} or \code{FALSE} (\code{weighted}) and
+logical scalar (\code{sustained}). Passed to \code{\link[=suggest_thresholds]{suggest_thresholds()}}.}
 
-\item{previous}{For a later round of a design: the
+\item{previous}{\code{NULL}, a character vector of paths, a data frame, or a
+list of data frames. For a later round of a design: the
 \code{validation_by_clip.csv} of the earlier rounds. \code{validation_by_clip.csv}
 keeps the clips of this round only; the summaries and
 \code{validation_combined.csv} cover all rounds, from \code{\link[=combine_rounds]{combine_rounds()}}.}
 
-\item{candidates}{With \code{previous}, the \code{candidates.csv} of the first
-round. \code{NULL} looks for it beside \code{manifest_path} and \code{previous}.}
+\item{candidates}{\code{NULL}, a data frame, or a character scalar path. With
+\code{previous}, the \code{candidates.csv} of the first round. \code{NULL} looks for
+it beside \code{manifest_path} and \code{previous}.}
 
-\item{fit}{Optional model of \code{\link[=fit_calibration]{fit_calibration()}}. With it,
-\code{\link[=compare_thresholds]{compare_thresholds()}} writes \code{thresholds_compared.csv}.}
+\item{fit}{\code{NULL} or a model returned by \code{\link[=fit_calibration]{fit_calibration()}} (\code{glm},
+\code{glmerMod} or \code{brmsfit}). With it, \code{\link[=compare_thresholds]{compare_thresholds()}} writes
+\code{thresholds_compared.csv}.}
 
-\item{scored, quality}{With \code{fit}, passed to \code{\link[=compare_thresholds]{compare_thresholds()}}.}
+\item{scored, quality}{\code{NULL} or data frames (or tibbles). With \code{fit},
+passed to \code{\link[=compare_thresholds]{compare_thresholds()}}.}
 }
 \value{
 A list with the tables \code{validation}, \code{precision}, \code{thresholds},

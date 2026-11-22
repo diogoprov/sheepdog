@@ -13,19 +13,22 @@ training_nights(
 )
 }
 \arguments{
-\item{files}{File names or paths of training clips. Elements that are
+\item{files}{Character vector, file names or paths of training clips.
+Elements that are
 folders are listed recursively.}
 
-\item{pattern}{Perl regular expression with the named groups \code{site},
+\item{pattern}{Character scalar, Perl regular expression with the named
+groups \code{site},
 \code{date} (\code{YYYYMMDD}) and \code{time} (\code{HHMMSS}). The default takes the
 letters before the recorder number, the date and the time of names
 such as \code{ARA01_20211016_190000} or
 \code{..._ARA_ARA01_20230121_203000_12.0s_15.0s.wav}.}
 
-\item{site_map}{Optional named character vector to fix diverging site
+\item{site_map}{\code{NULL} or a named character vector to fix diverging site
 names, e.g. \code{c(BEP2 = "BEP")}, as in \code{\link[=read_validations]{read_validations()}}.}
 
-\item{night_cutoff}{Recordings that start before this hour belong to
+\item{night_cutoff}{Numeric scalar (hour, 0-23). Recordings that start
+before this hour belong to
 the night of the day before, as in \code{\link[=detection_history]{detection_history()}}.}
 }
 \value{

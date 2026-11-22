@@ -29,81 +29,86 @@ calibrate(
 )
 }
 \arguments{
-\item{validation_files}{Paths to the \code{validation_by_clip.csv} files of
-the sites (v1.2.0 \code{validacao_por_clipe.csv} files are also read).}
+\item{validation_files}{Character vector, paths to the
+\code{validation_by_clip.csv} files of the sites (v1.2.0
+\code{validacao_por_clipe.csv} files are also read).}
 
-\item{prediction_tables}{Named character vector of the complete
-selection tables, named by site: the path of each combined table, or
-the folder of the per-audio tables of each site (see
+\item{prediction_tables}{Named character vector of the complete selection
+tables, one element per site, named by site: the path of each combined
+table, or the folder of the per-audio tables of each site (see
 \code{\link[=score_detections]{score_detections()}}).}
 
-\item{output_dir}{Output folder; created if needed. The calibrated
-detections of a large project can take hundreds of MB.}
+\item{output_dir}{Character scalar, output folder; created if needed. The
+calibrated detections of a large project can take hundreds of MB.}
 
-\item{site_map}{Optional named character vector to fix diverging site
+\item{site_map}{\code{NULL} or a named character vector to fix diverging site
 names, as \code{c(old = "new")}, e.g. \code{c(BEP2 = "BEP")}.}
 
-\item{min_confidence}{Detections below this confidence are not scored.}
+\item{min_confidence}{Numeric scalar in [0, 1]. Detections below this
+confidence are not scored.}
 
-\item{p_min}{Threshold on the calibrated probability (not on the
-confidence score).}
+\item{p_min}{Numeric scalar in [0, 1], threshold on the calibrated
+probability (not on the confidence score).}
 
-\item{min_detections_night}{Repetition rule: minimum number of reliable
-detections for a night with detection.}
+\item{min_detections_night}{Integer scalar >= 1, repetition rule: minimum
+number of reliable detections for a night with detection.}
 
-\item{dawn_hour}{Recordings that start before this hour belong to the
-night before.}
+\item{dawn_hour}{Numeric scalar in [0, 24]. Recordings that start before
+this hour belong to the night before.}
 
-\item{k_folds}{Number of folds.}
+\item{k_folds}{Integer scalar >= 2, number of folds.}
 
-\item{select}{Rule to choose the model; see
+\item{select}{Character scalar, one of \code{"one_se_logloss"} (default) or
+\code{"best_auc"}: the rule to choose the model; see
 \code{\link[=select_calibration_model]{select_calibration_model()}}.}
 
-\item{uncorrelated}{Include the m4 variant without the species
-intercept-slope correlation among the candidates; see
+\item{uncorrelated}{Logical scalar. If \code{TRUE}, include the m4 variant without
+the species intercept-slope correlation among the candidates; see
 \code{\link[=calibration_models]{calibration_models()}}.}
 
-\item{effort_curve}{Draw the effort curve (slow).}
+\item{effort_curve}{Logical scalar. If \code{TRUE}, draw the effort curve (slow).}
 
-\item{effort_n, effort_reps}{Training sizes and repetitions of the
-effort curve.}
+\item{effort_n, effort_reps}{Numeric vector of training sizes and integer
+scalar >= 1 of repetitions of the effort curve.}
 
-\item{engine}{Engine of the final fit: \code{"lme4"} or \code{"brms"} (see
-\code{\link[=fit_calibration]{fit_calibration()}}). The comparison of the candidate models always
-uses maximum likelihood (fast); with \code{"brms"}, the selected model is
-then refitted in a Bayesian framework, its convergence diagnostics are
-written to \code{calibration_diagnostics.csv}, and the scored detections
-carry \code{p_tp_lower} and \code{pr_reliable}.}
+\item{engine}{Character scalar, one of \code{"lme4"} (default) or \code{"brms"}: the
+engine of the final fit (see \code{\link[=fit_calibration]{fit_calibration()}}). The comparison of the
+candidate models always uses maximum likelihood (fast); with \code{"brms"}, the
+selected model is then refitted in a Bayesian framework, its convergence
+diagnostics are written to \code{calibration_diagnostics.csv}, and the scored
+detections carry \code{p_tp_lower} and \code{pr_reliable}.}
 
-\item{prior}{\code{engine = "brms"}: the prior, as a \code{brmsprior} object or as
-a function of the selected formula and the validations that returns
-one, e.g. \code{calibration_prior} (whose classes then match the selected
-model). Required with \code{"brms"}.}
+\item{prior}{\code{NULL}, a \code{brmsprior} object or a function. With
+\code{engine = "brms"}, the prior, as a \code{brmsprior} object or as a function of
+the selected formula and the validations that returns one, e.g.
+\code{calibration_prior} (whose classes then match the selected model). Required
+with \code{"brms"}.}
 
-\item{brms_args}{\code{engine = "brms"}: list of further arguments for
-\code{brms::brm()} (e.g. \code{list(chains = 4, cores = 4, backend = "cmdstanr")}).
-Without \code{seed} in this list, \code{seed} is also the seed of the Bayesian
-refit, so the whole run is reproducible; it is written to
-\code{calibration_model.txt}.}
+\item{brms_args}{A list. With \code{engine = "brms"}, list of further arguments
+for \code{brms::brm()} (e.g.
+\code{list(chains = 4, cores = 4, backend = "cmdstanr")}). Without \code{seed} in
+this list, \code{seed} is also the seed of the Bayesian refit, so the whole run
+is reproducible; it is written to \code{calibration_model.txt}.}
 
-\item{rule}{When a detection is reliable: \code{"mean"}, its calibrated
-probability (the posterior mean with \code{engine = "brms"}) is >= \code{p_min};
-\code{"probability"}, the posterior probability that P(TP) >= \code{p_min} (the
-\code{pr_reliable} of a model fitted with \code{engine = "brms"}) is >=
-\code{prob_min}. The second rule propagates the uncertainty of the
-calibration and is more conservative where few clips were reviewed.}
+\item{rule}{Character scalar, one of \code{"mean"} (default) or \code{"probability"}:
+when a detection is reliable. \code{"mean"}, its calibrated probability (the
+posterior mean with \code{engine = "brms"}) is >= \code{p_min}; \code{"probability"}, the
+posterior probability that P(TP) >= \code{p_min} (the \code{pr_reliable} of a model
+fitted with \code{engine = "brms"}) is >= \code{prob_min}. The second rule propagates
+the uncertainty of the calibration and is more conservative where few clips
+were reviewed.}
 
-\item{prob_min}{\code{rule = "probability"}: threshold on \code{pr_reliable}.
-\code{pr_reliable} is computed in \code{\link[=score_detections]{score_detections()}} for its \code{p_min};
-use the same \code{p_min} in both.}
+\item{prob_min}{Numeric scalar in [0, 1]. With \code{rule = "probability"},
+threshold on \code{pr_reliable}. \code{pr_reliable} is computed in
+\code{\link[=score_detections]{score_detections()}} for its \code{p_min}; use the same \code{p_min} in both.}
 
-\item{seed}{Seed of the fold assignment. The global random number
-generator is left as it was.}
+\item{seed}{Integer scalar, seed of the fold assignment. The global random
+number generator is left as it was.}
 
-\item{fold_group}{Optional character vector of grouping columns. Do not
+\item{fold_group}{\code{NULL} or a character vector of grouping columns. Do not
 include \code{species}, verdicts or confidence scores: these would split
-recordings or nights by species or by outcome. Group IDs must be
-nonmissing and nonempty. \code{NULL} keeps the original clip folds.}
+recordings or nights by species or by outcome. Group IDs must be nonmissing
+and nonempty. \code{NULL} keeps the original clip folds.}
 }
 \value{
 A list with \code{comparison}, \code{quality} (from

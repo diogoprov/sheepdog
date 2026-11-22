@@ -6,10 +6,12 @@
 #' calibration needs. Tables written by v1.2.0 (`validacao_por_clipe.csv`)
 #' are also read.
 #'
-#' @param files Paths to the `validation_by_clip.csv` files. Missing files
+#' @param files Character vector, paths to the `validation_by_clip.csv`
+#'   files. Missing files
 #'   are skipped with a warning.
-#' @param candidates For the rounds of one design: the `candidates.csv` of
-#'   the first round, passed to [combine_rounds()], which gives the clips
+#' @param candidates `NULL`, a character scalar (path) or a data frame. For
+#'   the rounds of one design: the `candidates.csv` of the first round,
+#'   passed to [combine_rounds()], which gives the clips
 #'   their cumulative `inclusion_prob`. `NULL` only stacks the tables.
 #'
 #' @return A tibble with the columns of the validation tables; `night` and
@@ -17,11 +19,11 @@
 #' @export
 read_validation_tables <- function(files, candidates = NULL) {
   if (!is.null(candidates)) {
-    existem <- file.exists(files)
-    if (any(!existem)) {
-      warning("Not found: ", paste(files[!existem], collapse = ", "))
+    found <- file.exists(files)
+    if (any(!found)) {
+      warning("Not found: ", paste(files[!found], collapse = ", "))
     }
-    return(combine_rounds(files[existem], candidates))
+    return(combine_rounds(files[found], candidates))
   }
   tabs <- map(files, function(f) {
     if (!file.exists(f)) { warning("Not found: ", f); return(NULL) }
@@ -115,47 +117,61 @@ read_validation_tables <- function(files, candidates = NULL) {
 #' with `split = "night"`. With `strict = TRUE`, any count above 0 is an
 #' error.
 #'
-#' @param validation Reviewed clips, as returned by [classify_review()],
+#' @param validation A data frame of reviewed clips, one row per clip, as
+#'   returned by [classify_review()],
 #'   [post_validation()] (`$validation`) or [read_validation_tables()]. It
 #'   needs `site`, `species_code`, `clip_file`, `verdict` and
 #'   `reviewed_path` (the path where the review left each clip), and
 #'   `night` for the splits by night.
-#' @param output_dir Output folder; `train/` and, if any clip is held out,
+#' @param output_dir Character scalar, path to the output folder; `train/`
+#'   and, if any clip is held out,
 #'   `test/` are created in it.
-#' @param split How to split the clips into training and test sets; see
-#'   Splits.
-#' @param test_sites Sites held out for testing with `split = "site"`.
+#' @param split Character scalar, one of `"site"`, `"night"`,
+#'   `"site_species_night"` or `"none"`: how to split the clips into
+#'   training and test sets; see Splits.
+#' @param test_sites `NULL` or character vector, sites held out for testing
+#'   with `split = "site"`.
 #'   `NULL` puts every clip in `train/`.
-#' @param test_prop Proportion of the nights of each site (or site x
+#' @param test_prop Numeric scalar in (0, 1), proportion of the nights of
+#'   each site (or site x
 #'   species) drawn for the test set.
-#' @param seed Seed of the draws.
-#' @param max_per_site_species Optional maximum number of positive
+#' @param seed Numeric scalar, seed of the draws.
+#' @param max_per_site_species `NULL` or integer scalar, maximum number of
+#'   positive
 #'   training clips per site x species. Larger sets are reduced by taking
 #'   clips from the nights in turn, in random order, which keeps as many
 #'   nights as possible. Test clips and negatives are not reduced.
-#' @param exclude_from_test Optional table with `site` and `night` (e.g.
+#' @param exclude_from_test `NULL` or a data frame with `site` and `night`,
+#'   one row per night (e.g.
 #'   from [training_nights()]): nights that must not be in the test set,
 #'   such as nights whose recordings trained another classifier that will
 #'   be compared on it. They are left out of the draws of the test and
 #'   validation sets and stay in the training set.
-#' @param val_prop Optional proportion of the training nights of each site
+#' @param val_prop `NULL` or numeric scalar in (0, 1), proportion of the
+#'   training nights of each site
 #'   drawn for the validation set (`val/`); see Splits. `NULL` draws none.
-#' @param val_seed Seed of the validation draw. The default, `seed + 1`, is
+#' @param val_seed Numeric scalar, seed of the validation draw. The
+#'   default, `seed + 1`, is
 #'   also the seed of `max_per_site_species`; the two draws are separate,
 #'   and the default reproduces the training sets of the DiverSons project.
-#' @param negatives Include the negative clips?
-#' @param negatives_folder `NULL` puts the negatives of each class in a
+#' @param negatives Logical scalar. If `TRUE`, include the negative clips.
+#' @param negatives_folder `NULL` or character scalar. `NULL` puts the
+#'   negatives of each class in a
 #'   `-<species_code>` folder. A non-event class of BirdNET-Analyzer
 #'   (`"Noise"`, `"Other"`, `"Background"` or `"Silence"`) puts all of them
 #'   in that folder instead; see Negatives.
-#' @param min_files Minimum number of positive training files per class
+#' @param min_files Numeric scalar, minimum number of positive training
+#'   files per class
 #'   below which a warning is raised.
-#' @param copy Copy the clips? With `FALSE`, only `training_set.csv` is
+#' @param copy Logical scalar. If `TRUE`, copy the clips; with `FALSE`, only
+#'   `training_set.csv` is
 #'   written, so that the split can be built on a computer without the
 #'   clips and copied later.
-#' @param remap_from,remap_to Optional prefix of `reviewed_path` and its
+#' @param remap_from,remap_to `NULL` or character scalars, prefix of
+#'   `reviewed_path` and its
 #'   replacement, for clips reviewed on another computer or drive.
-#' @param strict Raise an error if any check is above 0?
+#' @param strict Logical scalar. If `TRUE`, raise an error if any check is
+#'   above 0.
 #'
 #' @return A tibble with one row per clip: `site`, `species_code`,
 #'   `verdict`, `set` (`"train"`, `"val"` or `"test"`), `class_folder`,
@@ -181,14 +197,14 @@ build_training_set <- function(validation, output_dir,
                 c("site", "species_code", "clip_file", "verdict",
                   "reviewed_path"),
                 "validation")
-  por_noite <- split %in% c("night", "site_species_night")
-  if ((por_noite || !is.null(exclude_from_test)) &&
+  by_night <- split %in% c("night", "site_species_night")
+  if ((by_night || !is.null(exclude_from_test)) &&
       !"night" %in% names(validation)) {
     stop("`validation` lacks the column `night`, needed by split = \"",
          split, "\" and `exclude_from_test`.", call. = FALSE)
   }
-  if (por_noite && (!is.numeric(test_prop) || length(test_prop) != 1 ||
-                    test_prop <= 0 || test_prop >= 1)) {
+  if (by_night && (!is.numeric(test_prop) || length(test_prop) != 1 ||
+                   test_prop <= 0 || test_prop >= 1)) {
     stop("`test_prop` must be a number between 0 and 1.", call. = FALSE)
   }
   if (!is.numeric(seed) || length(seed) != 1 || is.na(seed)) {
@@ -219,137 +235,147 @@ build_training_set <- function(validation, output_dir,
     warning("`test_sites` is ignored with split = \"", split, "\".",
             call. = FALSE)
   }
-  vereditos <- c("positive", if (negatives) "negative")
-  clipes <- validation |>
-    filter(verdict %in% vereditos, !is.na(reviewed_path))
-  if ("confidence" %in% names(clipes)) {
-    inteiras <- sum(is.na(clipes$confidence))
-    if (inteiras > 0) {
-      message(inteiras, " whole-recording clip(s) (no confidence) left out.")
-      clipes <- filter(clipes, !is.na(confidence))
+  verdicts <- c("positive", if (negatives) "negative")
+  clips <- validation |>
+    filter(verdict %in% verdicts, !is.na(reviewed_path))
+  if ("confidence" %in% names(clips)) {
+    n_whole <- sum(is.na(clips$confidence))
+    if (n_whole > 0) {
+      message(n_whole, " whole-recording clip(s) (no confidence) left out.")
+      clips <- filter(clips, !is.na(confidence))
     }
   }
-  if (nrow(clipes) == 0) stop("No reviewed clip to copy.")
+  if (nrow(clips) == 0) stop("No reviewed clip to copy.")
   if (split == "site") {
-    desconhecidos <- setdiff(test_sites, unique(clipes$site))
-    if (length(desconhecidos) > 0) {
+    unknown <- setdiff(test_sites, unique(clips$site))
+    if (length(unknown) > 0) {
       warning("Site(s) in `test_sites` without clips: ",
-              paste(desconhecidos, collapse = ", "))
+              paste(unknown, collapse = ", "))
     }
   }
   for (col in c("source_audio", "clip_start", "clip_end", "night")) {
-    if (!col %in% names(clipes)) clipes[[col]] <- NA
+    if (!col %in% names(clips)) clips[[col]] <- NA
   }
-  clipes$night <- as.character(clipes$night)
-  # especie das chaves de sorteio: species_folder quando existe (a ordem dos
-  # grupos entra no sorteio)
-  clipes$.sp <- if ("species_folder" %in% names(clipes)) {
-    clipes$species_folder
+  clips$night <- as.character(clips$night)
+  # species of the draw keys: species_folder when present (the order of
+  # the groups enters the draw)
+  clips$.sp <- if ("species_folder" %in% names(clips)) {
+    clips$species_folder
   } else {
-    clipes$species_code
+    clips$species_code
   }
-  guarda <- training_guard(exclude_from_test)
+  guard <- training_guard(exclude_from_test)
 
-  clipes$set <- with_training_seed(seed, split_sets(
-    clipes, split, test_sites, test_prop, guarda))
+  clips$set <- with_training_seed(seed, split_sets(
+    clips, split, test_sites, test_prop, guard))
   if (!is.null(max_per_site_species)) {
-    antes <- nrow(clipes)
-    clipes <- with_training_seed(seed + 1,
-                                 cap_positives(clipes, max_per_site_species))
+    n_before <- nrow(clips)
+    clips <- with_training_seed(seed + 1,
+                                cap_positives(clips, max_per_site_species))
     message("At most ", max_per_site_species, " positive training clips ",
-            "per site x species: ", antes, " -> ", nrow(clipes), " clips.")
+            "per site x species: ", n_before, " -> ", nrow(clips), " clips.")
   }
   if (!is.null(val_prop)) {
-    # sobre as linhas de treino, na ordem que tem depois do teto, como uma
-    # segunda chamada da funcao
-    treino <- clipes$set == "train"
-    clipes$set[treino] <- if_else(
+    # on the training rows, in their order after the cap, like a second
+    # call of the function
+    is_train <- clips$set == "train"
+    clips$set[is_train] <- if_else(
       with_training_seed(val_seed, split_sets(
-        clipes[treino, ], "night", NULL, val_prop, guarda)) == "test",
+        clips[is_train, ], "night", NULL, val_prop, guard)) == "test",
       "val", "train")
   }
 
   if (!is.null(remap_from) && !is.null(remap_to)) {
-    clipes$reviewed_path <- remap_path(clipes$reviewed_path, remap_from,
-                                       remap_to)
+    clips$reviewed_path <- remap_path(clips$reviewed_path, remap_from,
+                                      remap_to)
   }
-  negativo <- clipes$verdict == "negative"
-  pasta <- if_else(negativo, paste0("-", clipes$species_code),
-                   clipes$species_code)
-  destino <- clipes$clip_file
+  is_neg <- clips$verdict == "negative"
+  class_dir <- if_else(is_neg, paste0("-", clips$species_code),
+                       clips$species_code)
+  dest_file <- clips$clip_file
   if (!is.null(negatives_folder)) {
-    pasta[negativo] <- negatives_folder
-    destino[negativo] <- paste(str_extract(clipes$species_code[negativo],
+    class_dir[is_neg] <- negatives_folder
+    dest_file[is_neg] <- paste(str_extract(clips$species_code[is_neg],
                                            "[^_]+$"),
-                               clipes$site[negativo],
-                               clipes$clip_file[negativo], sep = "-")
+                               clips$site[is_neg],
+                               clips$clip_file[is_neg], sep = "-")
   }
-  copia <- clipes |>
-    transmute(site, species_code, verdict, set, class_folder = pasta,
+  copy_tab <- clips |>
+    transmute(site, species_code, verdict, set, class_folder = class_dir,
               clip_file, source_audio, clip_start, clip_end,
               from = reviewed_path,
-              to = file.path(output_dir, set, class_folder, destino),
+              to = file.path(output_dir, set, class_folder, dest_file),
               night)
-  repetidos <- sum(duplicated(copia$to))
-  if (repetidos > 0) {
-    warning(repetidos, " clip(s) share a destination with another clip and ",
+  n_dup <- sum(duplicated(copy_tab$to))
+  if (n_dup > 0) {
+    warning(n_dup, " clip(s) share a destination with another clip and ",
             "would overwrite it.", call. = FALSE)
   }
 
   if (copy) {
-    walk(unique(dirname(copia$to)), dir.create, recursive = TRUE,
+    walk(unique(dirname(copy_tab$to)), dir.create, recursive = TRUE,
          showWarnings = FALSE)
-    ok <- file.copy(copia$from, copia$to, overwrite = TRUE)
+    ok <- file.copy(copy_tab$from, copy_tab$to, overwrite = TRUE)
     if (!all(ok)) {
       warning(sum(!ok), " clip(s) could not be copied - check ",
               "`reviewed_path`.")
     }
-    copia <- copia[ok, ]
+    copy_tab <- copy_tab[ok, ]
   } else {
     dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
   }
 
-  poucos <- copia |>
+  few <- copy_tab |>
     filter(set == "train", verdict == "positive") |>
     count(species_code) |>
-    right_join(distinct(copia, species_code), by = "species_code") |>
+    right_join(distinct(copy_tab, species_code), by = "species_code") |>
     mutate(n = replace_na(n, 0L)) |>
     filter(n < min_files)
-  if (nrow(poucos) > 0) {
+  if (nrow(few) > 0) {
     warning("Class(es) with fewer than ", min_files, " positive training ",
-            "files: ", paste0(poucos$species_code, " (", poucos$n, ")",
+            "files: ", paste0(few$species_code, " (", few$n, ")",
                               collapse = ", "), call. = FALSE)
   }
 
-  write_csv(copia, file.path(output_dir, "training_set.csv"))
-  message(nrow(copia), " clips ", if (copy) "copied to " else
+  write_csv(copy_tab, file.path(output_dir, "training_set.csv"))
+  message(nrow(copy_tab), " clips ", if (copy) "copied to " else
             "listed in training_set.csv (nothing copied) in ", output_dir,
-          " (", sum(copia$set == "train"), " train, ",
-          if (!is.null(val_prop)) paste0(sum(copia$set == "val"), " val, "),
-          sum(copia$set == "test"), " test).")
-  checagens <- training_checks(copia, guarda, validacao = !is.null(val_prop))
-  if (any(copia$set %in% c("test", "val"))) {
+          " (", sum(copy_tab$set == "train"), " train, ",
+          if (!is.null(val_prop)) paste0(sum(copy_tab$set == "val"), " val, "),
+          sum(copy_tab$set == "test"), " test).")
+  checks <- training_checks(copy_tab, guard, with_val = !is.null(val_prop))
+  if (any(copy_tab$set %in% c("test", "val"))) {
     message("Checks (all should be 0 with split = \"night\"):\n",
-            paste0("  ", names(checagens), ": ", checagens,
+            paste0("  ", names(checks), ": ", checks,
                    collapse = "\n"))
-    if (strict && any(checagens > 0)) {
+    if (strict && any(checks > 0)) {
       stop("The test or validation set is not independent of the ",
            "training set (see the checks above).", call. = FALSE)
     }
   }
-  attr(copia, "checks") <- checagens
-  invisible(copia)
+  attr(copy_tab, "checks") <- checks
+  invisible(copy_tab)
 }
 
-# Sorteios com semente propria, nos geradores padrao do R, sem mexer no
-# gerador global
+#' Evaluate draws with their own seed
+#'
+#' Uses the default R generators and leaves the global generator as it was.
+#'
+#' @param seed Numeric scalar, the seed.
+#' @param code Expression to evaluate.
+#' @return The value of `code`.
+#' @noRd
 with_training_seed <- function(seed, code) {
   withr::with_seed(seed, code, .rng_kind = "Mersenne-Twister",
                    .rng_normal_kind = "Inversion",
                    .rng_sample_kind = "Rejection")
 }
 
-# Noites que nao podem ir para o teste (site x night como texto)
+#' Nights that cannot go to the test set
+#'
+#' @param exclude_from_test `NULL` or a data frame with `site` and `night`.
+#' @return `NULL`, or a tibble of distinct `site` x `night` as character.
+#' @noRd
 training_guard <- function(exclude_from_test) {
   if (is.null(exclude_from_test)) return(NULL)
   check_columns(exclude_from_test, c("site", "night"), "exclude_from_test")
@@ -359,98 +385,125 @@ training_guard <- function(exclude_from_test) {
     distinct()
 }
 
-# Conjunto de cada clipe ("train"/"test"); o sorteio segue o do script
-# m3_treino.R do DiverSons, linha a linha
-split_sets <- function(clipes, split, test_sites, test_prop, guarda) {
-  if (split == "none") return(rep("train", nrow(clipes)))
+#' Assign each clip to a set
+#'
+#' The draw follows the m3_treino.R script of the DiverSons project, line
+#' by line.
+#'
+#' @param clips A data frame with `site`, `.sp` and `night`.
+#' @param split Character scalar, `"none"`, `"site"`, `"night"` or
+#'   `"site_species_night"`.
+#' @param test_sites `NULL` or character vector of test sites.
+#' @param test_prop Numeric scalar in (0, 1), proportion of nights drawn.
+#' @param guard `NULL` or a data frame of `site` x `night` kept out of the
+#'   test set.
+#' @return Character vector, `"train"` or `"test"` per row of `clips`.
+#' @noRd
+split_sets <- function(clips, split, test_sites, test_prop, guard) {
+  if (split == "none") return(rep("train", nrow(clips)))
   if (split == "site") {
-    return(if_else(clipes$site %in% test_sites, "test", "train"))
+    return(if_else(clips$site %in% test_sites, "test", "train"))
   }
   if (split == "site_species_night") {
     warning("split = \"site_species_night\" draws the nights within each ",
             "site x species: a night can be training data for one species ",
             "and test data for another, so the test set is not independent.",
             call. = FALSE)
-    elegiveis <- distinct(clipes, site, .sp, night)
-    if (!is.null(guarda)) {
-      elegiveis <- anti_join(elegiveis, guarda, by = c("site", "night"))
+    eligible <- distinct(clips, site, .sp, night)
+    if (!is.null(guard)) {
+      eligible <- anti_join(eligible, guard, by = c("site", "night"))
     }
-    teste <- elegiveis |>
+    test_tab <- eligible |>
       group_by(site, .sp) |>
-      mutate(.ordem = sample.int(n())) |>
-      filter(n() >= 2, .ordem <= ceiling(n() * test_prop)) |>
+      mutate(.order = sample.int(n())) |>
+      filter(n() >= 2, .order <= ceiling(n() * test_prop)) |>
       ungroup() |>
       select(site, .sp, night)
-    chave <- c("site", ".sp", "night")
+    key_cols <- c("site", ".sp", "night")
   } else {
-    elegiveis <- distinct(clipes, site, night)
-    if (!is.null(guarda)) {
-      elegiveis <- anti_join(elegiveis, guarda, by = c("site", "night"))
+    eligible <- distinct(clips, site, night)
+    if (!is.null(guard)) {
+      eligible <- anti_join(eligible, guard, by = c("site", "night"))
     }
-    teste <- elegiveis |>
+    test_tab <- eligible |>
       group_by(site) |>
-      mutate(.ordem = sample.int(n())) |>
-      filter(.ordem <= ceiling(n() * test_prop)) |>
+      mutate(.order = sample.int(n())) |>
+      filter(.order <= ceiling(n() * test_prop)) |>
       ungroup() |>
       select(site, night)
-    chave <- c("site", "night")
+    key_cols <- c("site", "night")
   }
-  teste$.teste <- TRUE
-  marcado <- left_join(clipes[chave], teste, by = chave)$.teste
-  if_else(!is.na(marcado), "test", "train")
+  test_tab$.test <- TRUE
+  marked <- left_join(clips[key_cols], test_tab, by = key_cols)$.test
+  if_else(!is.na(marked), "test", "train")
 }
 
-# Teto de positivos do treino por local x especie: as noites cedem um
-# clipe por vez, em ordem aleatoria
-cap_positives <- function(clipes, teto) {
-  clipes |>
+#' Cap the positive training clips per site x species
+#'
+#' The nights give up one clip at a time, in random order.
+#'
+#' @param clips A data frame with `site`, `.sp`, `set`, `verdict` and
+#'   `night`.
+#' @param cap Integer scalar, maximum number of positive training clips.
+#' @return `clips` with the excess positive training clips dropped.
+#' @noRd
+cap_positives <- function(clips, cap) {
+  clips |>
     group_by(site, .sp, set, verdict) |>
     group_modify(function(d, g) {
-      if (g$set != "train" || g$verdict != "positive" || nrow(d) <= teto) {
+      if (g$set != "train" || g$verdict != "positive" || nrow(d) <= cap) {
         return(d)
       }
       d |>
         group_by(night) |>
-        mutate(.rodada = sample.int(n())) |>
+        mutate(.round = sample.int(n())) |>
         ungroup() |>
-        mutate(.desempate = sample.int(n())) |>
-        arrange(.rodada, .desempate) |>
-        slice_head(n = teto) |>
-        select(-.rodada, -.desempate)
+        mutate(.tiebreak = sample.int(n())) |>
+        arrange(.round, .tiebreak) |>
+        slice_head(n = cap) |>
+        select(-.round, -.tiebreak)
     }) |>
     ungroup()
 }
 
-# Classes sem evento do BirdNET-Analyzer (NON_EVENT_CLASSES), rotulo 0
+#' Non-event classes of BirdNET-Analyzer (NON_EVENT_CLASSES), label 0
+#' @noRd
 non_event_classes <- c("noise", "other", "background", "silence")
 
-# Contagens de vazamento entre treino e teste (e validacao)
-training_checks <- function(copia, guarda, validacao = FALSE) {
-  treino <- filter(copia, set == "train")
-  teste <- filter(copia, set == "test")
-  noites_teste <- teste |>
+#' Count leaks between training and test (and validation) sets
+#'
+#' @param copy_tab A data frame with `site`, `night`, `set`,
+#'   `species_code`, `source_audio`, `clip_start` and `clip_end`.
+#' @param guard `NULL` or a data frame of excluded `site` x `night`.
+#' @param with_val Logical scalar, add the validation checks?
+#' @return Named integer vector of counts.
+#' @noRd
+training_checks <- function(copy_tab, guard, with_val = FALSE) {
+  train_tab <- filter(copy_tab, set == "train")
+  test_tab <- filter(copy_tab, set == "test")
+  test_nights <- test_tab |>
     filter(!is.na(night)) |>
     distinct(site, night)
-  sobrepostos <- if (nrow(teste) > 0 && nrow(treino) > 0) {
-    nrow(teste) - nrow(suppressMessages(suppressWarnings(
-      exclude_training_clips(teste, treino))))
+  n_overlap <- if (nrow(test_tab) > 0 && nrow(train_tab) > 0) {
+    nrow(test_tab) - nrow(suppressMessages(suppressWarnings(
+      exclude_training_clips(test_tab, train_tab))))
   } else {
     0L
   }
   out <- c(test_nights_in_train = nrow(semi_join(
-      noites_teste, distinct(treino, site, night), by = c("site", "night"))),
-    test_nights_excluded = if (is.null(guarda)) 0L else
-      nrow(semi_join(noites_teste, guarda, by = c("site", "night"))),
-    test_clips_overlapping_train = as.integer(sobrepostos))
-  if (!validacao) return(out)
-  noites_val <- copia |>
+      test_nights, distinct(train_tab, site, night), by = c("site", "night"))),
+    test_nights_excluded = if (is.null(guard)) 0L else
+      nrow(semi_join(test_nights, guard, by = c("site", "night"))),
+    test_clips_overlapping_train = as.integer(n_overlap))
+  if (!with_val) return(out)
+  val_nights <- copy_tab |>
     filter(set == "val", !is.na(night)) |>
     distinct(site, night)
   c(out,
     val_nights_in_train = nrow(semi_join(
-      noites_val, distinct(treino, site, night), by = c("site", "night"))),
-    val_nights_excluded = if (is.null(guarda)) 0L else
-      nrow(semi_join(noites_val, guarda, by = c("site", "night"))))
+      val_nights, distinct(train_tab, site, night), by = c("site", "night"))),
+    val_nights_excluded = if (is.null(guard)) 0L else
+      nrow(semi_join(val_nights, guard, by = c("site", "night"))))
 }
 
 #' Nights and recordings of clips used to train a classifier
@@ -462,16 +515,19 @@ training_checks <- function(copia, guarda, validacao = FALSE) {
 #' test set does not hold nights another compared classifier was trained
 #' on, or to [exclude_training_clips()].
 #'
-#' @param files File names or paths of training clips. Elements that are
+#' @param files Character vector, file names or paths of training clips.
+#'   Elements that are
 #'   folders are listed recursively.
-#' @param pattern Perl regular expression with the named groups `site`,
+#' @param pattern Character scalar, Perl regular expression with the named
+#'   groups `site`,
 #'   `date` (`YYYYMMDD`) and `time` (`HHMMSS`). The default takes the
 #'   letters before the recorder number, the date and the time of names
 #'   such as `ARA01_20211016_190000` or
 #'   `..._ARA_ARA01_20230121_203000_12.0s_15.0s.wav`.
-#' @param site_map Optional named character vector to fix diverging site
+#' @param site_map `NULL` or a named character vector to fix diverging site
 #'   names, e.g. `c(BEP2 = "BEP")`, as in [read_validations()].
-#' @param night_cutoff Recordings that start before this hour belong to
+#' @param night_cutoff Numeric scalar (hour, 0-23). Recordings that start
+#'   before this hour belong to
 #'   the night of the day before, as in [detection_history()].
 #'
 #' @return A tibble with `file`, `site`, `recording` (site, date and time
@@ -488,51 +544,59 @@ training_nights <- function(files,
                             pattern = paste0("(?<site>[A-Za-z]+)[A-Za-z0-9]*",
                                              "_(?<date>\\d{8})_(?<time>\\d{6})"),
                             site_map = NULL, night_cutoff = 12) {
-  pastas <- dir.exists(files)
-  files <- c(files[!pastas],
-             unlist(lapply(files[pastas], list.files, recursive = TRUE,
+  is_dir <- dir.exists(files)
+  files <- c(files[!is_dir],
+             unlist(lapply(files[is_dir], list.files, recursive = TRUE,
                            full.names = TRUE)))
   p <- recording_parts(files, pattern)
   if (any(!p$ok)) {
-    fora <- basename(files[!p$ok])
-    warning(length(fora), " file name(s) do not match `pattern` and were ",
-            "left out: ", paste(utils::head(fora, 5), collapse = ", "),
-            if (length(fora) > 5) ", ...", call. = FALSE)
+    dropped <- basename(files[!p$ok])
+    warning(length(dropped), " file name(s) do not match `pattern` and were ",
+            "left out: ", paste(utils::head(dropped, 5), collapse = ", "),
+            if (length(dropped) > 5) ", ...", call. = FALSE)
   }
   p <- p[p$ok, ]
-  data <- as.Date(p$date, format = "%Y%m%d")
-  hora <- as.integer(substr(p$time, 1, 2))
+  dates <- as.Date(p$date, format = "%Y%m%d")
+  hour <- as.integer(substr(p$time, 1, 2))
   out <- tibble(file = files[p$ok_index],
                 site = rename_site(p$site, site_map),
                 recording = p$recording,
-                night = format(if_else(hora < night_cutoff, data - 1, data),
+                night = format(if_else(hour < night_cutoff, dates - 1, dates),
                                "%Y%m%d"))
-  # o padrao acompanha a tabela, para exclude_training_clips()
+  # the pattern goes with the table, for exclude_training_clips()
   attr(out, "pattern") <- pattern
   out
 }
 
+#' Default pattern of training_nights()
+#' @noRd
 recording_pattern <- paste0("(?<site>[A-Za-z]+)[A-Za-z0-9]*",
                             "_(?<date>\\d{8})_(?<time>\\d{6})")
 
-# Local, data e hora da gravacao de origem a partir do nome do arquivo
-# (grupos nomeados site, date, time); recording = site_date_time
+#' Site, date and time of the source recording from file names
+#'
+#' @param files Character vector of file names or paths.
+#' @param pattern Character scalar, Perl regular expression with the named
+#'   groups `site`, `date` and `time`.
+#' @return A tibble with `ok`, `ok_index`, `site`, `date`, `time` and
+#'   `recording` (`site_date_time`), one row per file.
+#' @noRd
 recording_parts <- function(files, pattern = recording_pattern) {
-  nomes <- basename(files)
-  m <- regexpr(pattern, nomes, perl = TRUE)
+  file_names <- basename(files)
+  m <- regexpr(pattern, file_names, perl = TRUE)
   if (!all(c("site", "date", "time") %in% attr(m, "capture.names"))) {
     stop("`pattern` needs the named groups `site`, `date` and `time`.",
          call. = FALSE)
   }
-  inicio <- attr(m, "capture.start")
-  tam <- attr(m, "capture.length")
-  pega <- function(g) {
-    out <- substring(nomes, inicio[, g], inicio[, g] + tam[, g] - 1)
+  starts <- attr(m, "capture.start")
+  lens <- attr(m, "capture.length")
+  grab <- function(g) {
+    out <- substring(file_names, starts[, g], starts[, g] + lens[, g] - 1)
     out[m < 0] <- NA_character_
     out
   }
-  tibble(ok = m > 0, ok_index = seq_along(nomes), site = pega("site"),
-         date = pega("date"), time = pega("time"),
+  tibble(ok = m > 0, ok_index = seq_along(file_names), site = grab("site"),
+         date = grab("date"), time = grab("time"),
          recording = if_else(m > 0, paste(site, date, time, sep = "_"),
                              NA_character_))
 }
@@ -559,13 +623,17 @@ recording_parts <- function(files, pattern = recording_pattern) {
 #' and time are read from `source_audio` of the manifest with `pattern`,
 #' which should be the one given to [training_nights()].
 #'
-#' @param manifest Clip manifest, as returned by [select_clips()] or read
+#' @param manifest A data frame, the clip manifest (one row per clip), as
+#'   returned by [select_clips()] or read
 #'   from `clip_manifest.csv`.
-#' @param training_set Table returned by [build_training_set()] or
-#'   [training_nights()], or the path to a `training_set.csv`.
-#' @param level What a training clip excludes; see Levels.
-#' @param any_species Exclude across species?
-#' @param pattern With a table of [training_nights()] and
+#' @param training_set A data frame returned by [build_training_set()] or
+#'   [training_nights()], or a character scalar, path to a
+#'   `training_set.csv`.
+#' @param level Character scalar, one of `"clip"`, `"recording"` or
+#'   `"night"`: what a training clip excludes; see Levels.
+#' @param any_species Logical scalar. If `TRUE`, exclude across species.
+#' @param pattern `NULL` or character scalar. With a table of
+#'   [training_nights()] and
 #'   `level = "recording"`, the regular expression that reads the
 #'   recordings from `source_audio`. By default, the one recorded in the
 #'   table by [training_nights()] (lost if the table was rebuilt, e.g. by
@@ -580,9 +648,9 @@ exclude_training_clips <- function(manifest, training_set,
   if (is.character(training_set)) {
     training_set <- read_csv(training_set, show_col_types = FALSE)
   }
-  de_noites <- "recording" %in% names(training_set) &&
+  from_nights <- "recording" %in% names(training_set) &&
     !"source_audio" %in% names(training_set)
-  if (de_noites) {
+  if (from_nights) {
     if (level == "clip") {
       stop("A table of training_nights() has no clip times: use level = ",
            "\"recording\" or \"night\".", call. = FALSE)
@@ -595,58 +663,60 @@ exclude_training_clips <- function(manifest, training_set,
   }
   sp <- if (any_species) character() else "species_code"
   if (level == "night") {
-    faltam <- setdiff(c("site", "night"),
+    absent <- setdiff(c("site", "night"),
                       intersect(names(manifest), names(training_set)))
-    if (length(faltam) > 0) {
+    if (length(absent) > 0) {
       stop("`manifest` and `training_set` both need `site` and `night` for ",
            "level = \"night\".", call. = FALSE)
     }
-    treino <- training_set |>
+    train_tab <- training_set |>
       filter(!is.na(night)) |>
       transmute(across(all_of(sp)), site = as.character(site),
                 night = as.character(night)) |>
       distinct()
-    chave <- c(sp, "site", "night")
-    alvo <- mutate(manifest, site = as.character(site),
-                   night = as.character(night))
-  } else if (de_noites) {
-    treino <- distinct(training_set, .rec = recording)
-    chave <- ".rec"
-    alvo <- manifest
+    key_cols <- c(sp, "site", "night")
+    target <- mutate(manifest, site = as.character(site),
+                     night = as.character(night))
+  } else if (from_nights) {
+    train_tab <- distinct(training_set, .rec = recording)
+    key_cols <- ".rec"
+    target <- manifest
     if (is.null(pattern)) {
       pattern <- attr(training_set, "pattern")
       if (is.null(pattern)) pattern <- recording_pattern
     }
-    alvo$.rec <- recording_parts(manifest$source_audio, pattern)$recording
-    if (all(is.na(alvo$.rec))) {
+    target$.rec <- recording_parts(manifest$source_audio, pattern)$recording
+    if (all(is.na(target$.rec))) {
       warning("No `source_audio` of the manifest matches `pattern`; ",
               "nothing excluded. Give the pattern used in ",
               "training_nights().", call. = FALSE)
       return(manifest)
     }
   } else {
-    treino <- training_set |>
+    train_tab <- training_set |>
       filter(!is.na(source_audio), !is.na(clip_start)) |>
-      distinct(across(all_of(sp)), source_audio, t_ini = clip_start,
-               t_fim = clip_end)
-    chave <- c(sp, "source_audio")
-    alvo <- manifest
-    if (level == "recording") treino <- distinct(treino, across(all_of(chave)))
+      distinct(across(all_of(sp)), source_audio, t_start = clip_start,
+               t_end = clip_end)
+    key_cols <- c(sp, "source_audio")
+    target <- manifest
+    if (level == "recording") {
+      train_tab <- distinct(train_tab, across(all_of(key_cols)))
+    }
   }
-  if (nrow(treino) == 0) {
+  if (nrow(train_tab) == 0) {
     warning("`training_set` has no ",
             if (level == "night") "site/night" else "source_audio/clip_start",
             "; nothing excluded.")
     return(manifest)
   }
-  junta <- alvo |>
-    mutate(.linha = row_number()) |>
-    inner_join(treino, by = chave, relationship = "many-to-many")
-  if (level == "clip") junta <- filter(junta, clip_start < t_fim,
-                                       clip_end > t_ini)
-  fora <- unique(junta$.linha)
-  message(length(fora), " clip(s) sharing a ", level, " with the training ",
+  joined <- target |>
+    mutate(.row = row_number()) |>
+    inner_join(train_tab, by = key_cols, relationship = "many-to-many")
+  if (level == "clip") joined <- filter(joined, clip_start < t_end,
+                                        clip_end > t_start)
+  dropped <- unique(joined$.row)
+  message(length(dropped), " clip(s) sharing a ", level, " with the training ",
           "clips left out of the manifest.")
-  if (length(fora) == 0) return(manifest)
-  manifest[-fora, ]
+  if (length(dropped) == 0) return(manifest)
+  manifest[-dropped, ]
 }

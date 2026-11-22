@@ -26,6 +26,11 @@
 - The README gains CRAN status, CRAN downloads and lifecycle (stable)
   badges. `data.table` is now suggested, for the tests of the table
   classes.
+- Internal code: local variables, internal arguments and comments are now
+  in English, and every internal function has a roxygen block (not
+  exported, no help page). The argument documentation of the exported
+  functions now opens with the expected type and length of each input.
+  No change to arguments, outputs or messages.
 
 - `combine_rounds()` keeps the clips of a `"score_bands"` round (or of any
   other design) as they are: their `inclusion_prob`, `n_candidates` and

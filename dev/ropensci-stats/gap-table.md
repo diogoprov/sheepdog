@@ -7,10 +7,10 @@ statistical software track. The tags themselves are in
 
 | Category | Met | Not applicable | To do |
 |---|---|---|---|
-| G | 58 | 7 | 3 |
+| G | 61 | 7 | 0 |
 | RE | 40 | 8 | 0 |
 | BS | 42 | 14 | 0 |
-| Total | 140 | 29 | 3 |
+| Total | 143 | 29 | 0 |
 
 Partially met standards are counted as to do. Counts updated after the
 first part of phase 5; they were 125 met and 19 to do after phase 4
@@ -21,7 +21,7 @@ after phase 2, and 97 met and 47 to do after phase 3.
 
 Done in phase 2: G1.1, G1.2, G1.3, G2.3b, G5.12, RE1.1, RE1.3a, RE2.0, RE3.2, RE4.3, RE4.10, RE4.12, RE4.16, BS1.2a, BS1.2c, BS1.3, BS1.3a, BS1.3b, BS1.4, BS2.7, BS2.8, BS2.12, BS4.0, BS4.3, BS6.2, plus RE1.3 and G2.3, which were waiting on RE1.3a and G2.3b. The documentation is in the help pages of `fit_calibration()` (sections on the model matrix, the maximum likelihood fit, the Bayesian computation and the methods for the fitted model), `read_validations()`, `score_detections()`, `calibration_prior()`, `prior_predictive_calibration()` and `calibration_diagnostics()`, in the package help page (glossary and option arguments), in the README (relation to existing implementations, prior, life cycle) and in `.github/CONTRIBUTING.md` (life cycle, tests that fit Stan models). The brms, Stan and R-hat references were checked against the CITATION files of the packages and Crossref.
 
-Still to do:
+Left for phase 5 (all closed there):
 
 | Standard | Gap |
 |---|---|
@@ -126,10 +126,21 @@ Done in the first part of phase 5:
   and global `glm()`).
 - RE2.3 moved to not applicable (see below).
 
-Still to do: G1.4a (roxygen of the internal functions, with the English
-names of phase 5), G2.0a and G2.1a (lengths and types in the argument
-documentation), plus the two items added on 2026-11-21: English internal
-names and a generic adapter for other classifiers.
+Part 2 (branch `claude/ropensci-stats-fase5b`):
+
+- English internal names: local variables, internal arguments, temporary
+  columns and the package object `occasion_key` (was `ocasiao_chave`) are
+  now in English, and every plain comment was translated. Column names of
+  input and output tables, exported arguments, user-facing strings and the
+  legacy names read by `legacy.R` are unchanged. `utils::globalVariables()`
+  was regenerated from `codetools` (212 names).
+- G1.4a: all 199 internal functions carry a roxygen block with `@param`,
+  `@return` and `@noRd`; `devtools::document()` writes no new `.Rd` file.
+- G2.0a and G2.1a: each `@param` of the exported functions opens with the
+  expected type and length.
+
+Still to do: the generic adapter for other classifiers (item added on
+2026-11-21), which needs a decision on the formats to support first.
 
 ## Not applicable
 

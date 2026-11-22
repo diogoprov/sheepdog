@@ -1,77 +1,106 @@
-# Reuso da revisao de outro desenho (#102): o sorteio continua independente, e
-# so o veredito que a revisao anterior ja da e herdado
+# Reuse of the review of another design (#102): the draw stays independent,
+# and only the verdict the previous review already gives is inherited
 
-# Herda vereditos para os clipes de `selecao`, a partir das revisoes de
-# `outros` (o outro desenho). Duas revisoes tratam do mesmo trecho quando sao do
-# mesmo local, especie e gravacao e seus intervalos se sobrepoem, o que cobre
-# unidades diferentes (minuto e arquivo):
-# * ouvido ausente -> toda predicao do trecho e negativa;
-# * predicao positiva -> a gravacao ou o minuto tem a especie.
-# O contrario nao vale: presente de ouvido nao diz qual predicao e verdadeira,
-# e predicoes negativas nao dizem que a especie nao cantou abaixo do limiar
-inherit_verdicts <- function(selecao, outros, modo) {
-  if (!"verdict" %in% names(outros)) {
+#' Inherit verdicts from the review of another design
+#'
+#' Two reviews cover the same stretch when they share site, species and
+#' recording and their intervals overlap, which covers different units
+#' (minute and file):
+#' * heard absent -> every prediction in the stretch is negative;
+#' * positive prediction -> the recording or minute has the species.
+#' The converse does not hold: present by ear does not say which prediction
+#' is true, and negative predictions do not say that the species did not call
+#' below the threshold.
+#'
+#' @param selection A data frame of selected clips, with columns `site`,
+#'   `species_code`, `source_audio`, `clip_start` and `clip_end`.
+#' @param others A data frame of reviewed clips of the other design (its
+#'   `validation_by_clip.csv`), with the same columns plus `verdict` and
+#'   `sampling_mode`.
+#' @param mode Character scalar, the sampling mode of `selection`.
+#' @return `selection` with columns `previously_reviewed`,
+#'   `inherited_verdict` and `source_design` added.
+#' @noRd
+inherit_verdicts <- function(selection, others, mode) {
+  if (!"verdict" %in% names(others)) {
     stop("`previous` of another design must have the verdicts: give its ",
          "validation_by_clip.csv.", call. = FALSE)
   }
-  revisados <- outros |>
+  reviewed <- others |>
     filter(verdict %in% c("positive", "negative"))
-  if ("inherited_verdict" %in% names(revisados)) {
-    revisados <- filter(revisados, is.na(inherited_verdict))
+  if ("inherited_verdict" %in% names(reviewed)) {
+    reviewed <- filter(reviewed, is.na(inherited_verdict))
   }
-  revisados <- revisados |>
+  reviewed <- reviewed |>
     transmute(site = as.character(site), species_code,
               .rec = recording_name(source_audio),
-              .ini = as.numeric(clip_start),
-              .fim = coalesce(as.numeric(clip_end), Inf),
-              .negativo = verdict == "negative", .desenho = sampling_mode)
-  sobre <- selecao |>
-    transmute(.linha = row_number(), site = as.character(site), species_code,
+              .start = as.numeric(clip_start),
+              .end = coalesce(as.numeric(clip_end), Inf),
+              .negative = verdict == "negative", .design = sampling_mode)
+  overlap <- selection |>
+    transmute(.row = row_number(), site = as.character(site), species_code,
               .rec = recording_name(source_audio),
               .a = as.numeric(clip_start),
               .b = coalesce(as.numeric(clip_end), Inf)) |>
-    inner_join(revisados, by = c("site", "species_code", ".rec"),
+    inner_join(reviewed, by = c("site", "species_code", ".rec"),
                relationship = "many-to-many") |>
-    filter(.a < .fim, .ini < .b) |>
-    group_by(.linha) |>
-    summarise(.todos_neg = all(.negativo), .algum_pos = any(!.negativo),
-              .desenho = first(.desenho), .groups = "drop")
-  selecao$previously_reviewed <- FALSE
-  selecao$inherited_verdict <- NA_character_
-  selecao$source_design <- NA_character_
-  selecao$previously_reviewed[sobre$.linha] <- TRUE
-  selecao$source_design[sobre$.linha] <- sobre$.desenho
-  selecao$inherited_verdict[sobre$.linha] <- if (modo == "random_detections") {
-    if_else(sobre$.todos_neg, "negative", NA_character_)
+    filter(.a < .end, .start < .b) |>
+    group_by(.row) |>
+    summarise(.all_neg = all(.negative), .any_pos = any(!.negative),
+              .design = first(.design), .groups = "drop")
+  selection$previously_reviewed <- FALSE
+  selection$inherited_verdict <- NA_character_
+  selection$source_design <- NA_character_
+  selection$previously_reviewed[overlap$.row] <- TRUE
+  selection$source_design[overlap$.row] <- overlap$.design
+  selection$inherited_verdict[overlap$.row] <- if (mode == "random_detections") {
+    if_else(overlap$.all_neg, "negative", NA_character_)
   } else {
-    if_else(sobre$.algum_pos, "positive", NA_character_)
+    if_else(overlap$.any_pos, "positive", NA_character_)
   }
-  selecao
+  selection
 }
 
+#' Recording name from an audio path
+#'
+#' @param path Character vector of file paths (Windows or POSIX separators).
+#' @return Character vector, the base names without extension.
+#' @noRd
 recording_name <- function(path) {
   tools::file_path_sans_ext(basename(chartr("\\", "/", path)))
 }
 
-# Clipes sem veredito proprio recebem o herdado; um veredito dado de fato
-# prevalece, e o clipe deixa de ser herdado. Sem clipe cortado, nao ha caminho
-fill_inherited <- function(tabela) {
-  if (!"inherited_verdict" %in% names(tabela)) return(tabela)
-  tabela$inherited_verdict <- as.character(tabela$inherited_verdict)
-  revisto <- tabela$verdict %in% c("positive", "negative", "uncertain")
-  tabela$inherited_verdict[revisto] <- NA_character_
-  herdado <- !is.na(tabela$inherited_verdict)
-  tabela$verdict[herdado] <- tabela$inherited_verdict[herdado]
-  if ("reviewed_path" %in% names(tabela)) {
-    tabela$reviewed_path[herdado] <- NA_character_
+#' Fill unreviewed clips with the inherited verdict
+#'
+#' Clips without their own verdict get the inherited one; a verdict actually
+#' given prevails, and the clip stops being inherited. Inherited clips have
+#' no cut clip, so their `reviewed_path` is cleared.
+#'
+#' @param table A data frame of clips with `verdict` and, optionally,
+#'   `inherited_verdict` and `reviewed_path`.
+#' @return `table` with `verdict` filled and `inherited_verdict` updated.
+#' @noRd
+fill_inherited <- function(table) {
+  if (!"inherited_verdict" %in% names(table)) return(table)
+  table$inherited_verdict <- as.character(table$inherited_verdict)
+  reviewed <- table$verdict %in% c("positive", "negative", "uncertain")
+  table$inherited_verdict[reviewed] <- NA_character_
+  inherited <- !is.na(table$inherited_verdict)
+  table$verdict[inherited] <- table$inherited_verdict[inherited]
+  if ("reviewed_path" %in% names(table)) {
+    table$reviewed_path[inherited] <- NA_character_
   }
-  tabela
+  table
 }
 
-# Linhas herdadas de uma tabela de manifesto ou de validacao
-is_inherited <- function(tabela) {
-  if (!"inherited_verdict" %in% names(tabela)) {
-    return(rep(FALSE, nrow(tabela)))
+#' Flag inherited rows of a manifest or validation table
+#'
+#' @param table A data frame, optionally with `inherited_verdict`.
+#' @return Logical vector with one element per row of `table`.
+#' @noRd
+is_inherited <- function(table) {
+  if (!"inherited_verdict" %in% names(table)) {
+    return(rep(FALSE, nrow(table)))
   }
-  !is.na(tabela$inherited_verdict)
+  !is.na(table$inherited_verdict)
 }

@@ -28,18 +28,20 @@
 #' with the first by [combine_rounds()]).
 #'
 #' @inheritParams suggest_thresholds
-#' @param n_boot Number of bootstrap replicates.
-#' @param cluster Column of `validation` that defines the resampling unit:
+#' @param n_boot Integer scalar >= 1. Number of bootstrap replicates.
+#' @param cluster Character scalar, the column of `validation` that defines
+#'   the resampling unit:
 #'   `"source_audio"` (the recording, the default), `"night"` or any other
 #'   column. Resampling is done within each site x species cell (and `by`
 #'   group), so the unit must vary within it: `"site"` is not a valid unit
 #'   here. A cell with a single unit gets `NA` in `threshold_median`,
 #'   `threshold_conservative` and `share_reached`, with a warning, since
-#'   resampling it gives no information on the uncertainty. With few units (say, fewer than 10),
-#'   the quantiles of the replicates are rough.
-#' @param conf Probability of the conservative (upper) quantile.
-#' @param seed Seed of the resampling. The global random number generator
-#'   is left as it was.
+#'   resampling it gives no information on the uncertainty. With few units
+#'   (say, fewer than 10), the quantiles of the replicates are rough.
+#' @param conf Numeric scalar in (0, 1). Probability of the conservative
+#'   (upper) quantile.
+#' @param seed Integer scalar, seed of the resampling. The global random
+#'   number generator is left as it was.
 #'
 #' @return A tibble with `site`, `species_folder`, the `by` columns,
 #'   `threshold` (from all the clips), `threshold_median`,
@@ -69,38 +71,38 @@ threshold_bootstrap <- function(validation, target_precision = 0.90,
          call. = FALSE)
   }
   check_prob(conf, "conf", open = TRUE)
-  validados <- reviewed_with_confidence(validation)
-  pesos <- has_inclusion_prob(validados)
-  check_reviewed(validados)
+  reviewed <- reviewed_with_confidence(validation)
+  has_weights <- has_inclusion_prob(reviewed)
+  check_reviewed(reviewed)
   res <- withr::with_seed(seed, {
-    validados |>
+    reviewed |>
       group_by(site, species_folder, across(all_of(by))) |>
-      group_modify(function(d, chave) {
-        limiar <- function(x) {
-          threshold_for(x, target_precision, min_n, pesos, weighted,
+      group_modify(function(d, key) {
+        thr_of <- function(x) {
+          threshold_for(x, target_precision, min_n, has_weights, weighted,
                         sustained)$threshold
         }
-        grupos <- split(seq_len(nrow(d)), d[[cluster]])
+        unit_rows <- split(seq_len(nrow(d)), d[[cluster]])
         reps <- vapply(seq_len(n_boot), function(b) {
-          escolhidos <- sample(length(grupos), replace = TRUE)
-          limiar(d[unlist(grupos[escolhidos], use.names = FALSE), ])
+          picked <- sample(length(unit_rows), replace = TRUE)
+          thr_of(d[unlist(unit_rows[picked], use.names = FALSE), ])
         }, numeric(1))
         ok <- !is.na(reps)
-        so_um <- length(grupos) < 2
+        solo <- length(unit_rows) < 2
         tibble(
-          threshold = limiar(d),
-          threshold_median = if (!so_um && any(ok)) stats::median(reps[ok]) else
+          threshold = thr_of(d),
+          threshold_median = if (!solo && any(ok)) stats::median(reps[ok]) else
             NA_real_,
-          threshold_conservative = if (!so_um && any(ok)) unname(stats::quantile(
+          threshold_conservative = if (!solo && any(ok)) unname(stats::quantile(
             reps[ok], conf, names = FALSE)) else NA_real_,
-          share_reached = if (so_um) NA_real_ else mean(ok),
-          n_clusters = length(grupos))
+          share_reached = if (solo) NA_real_ else mean(ok),
+          n_clusters = length(unit_rows))
       }) |>
       ungroup()
   })
-  um <- res$n_clusters < 2
-  if (any(um)) {
-    warning(sum(um), " cell(s) with a single `", cluster, "` unit: ",
+  single <- res$n_clusters < 2
+  if (any(single)) {
+    warning(sum(single), " cell(s) with a single `", cluster, "` unit: ",
             "no bootstrap interval for them.", call. = FALSE)
   }
   res
@@ -116,14 +118,16 @@ threshold_bootstrap <- function(validation, target_precision = 0.90,
 #' have it, and flags the groups below `target_precision`.
 #'
 #' @inheritParams suggest_thresholds
-#' @param thresholds The threshold of each cell: a table with `site`,
+#' @param thresholds A data frame (or tibble) or a numeric scalar. The
+#'   threshold of each cell: a table with `site`,
 #'   `species_folder` and a `threshold` column (e.g. from
 #'   [suggest_thresholds()]; `threshold_column` picks another column, such
 #'   as `"threshold_conservative"` of [threshold_bootstrap()]), or a single
 #'   number for every cell.
-#' @param by Columns of `validation` that define the groups, e.g.
-#'   `"recording_hour"` or a month column.
-#' @param threshold_column Column of `thresholds` with the threshold.
+#' @param by Character vector of column names of `validation` that define
+#'   the groups, e.g. `"recording_hour"` or a month column.
+#' @param threshold_column Character scalar, the column of `thresholds` with
+#'   the threshold.
 #'
 #' @return A tibble with `site`, `species_folder`, the `by` columns,
 #'   `threshold`, `n_above` (reviewed clips at or above it), `n_eff`
@@ -139,26 +143,26 @@ threshold_by_group <- function(validation, thresholds, by,
   if (length(by) == 0) {
     stop("Give the group columns in `by`.", call. = FALSE)
   }
-  validados <- reviewed_with_confidence(validation)
-  pesos <- has_inclusion_prob(validados) && !anyNA(validados$inclusion_prob)
+  reviewed <- reviewed_with_confidence(validation)
+  has_weights <- has_inclusion_prob(reviewed) && !anyNA(reviewed$inclusion_prob)
   if (is.numeric(thresholds) && length(thresholds) == 1) {
-    validados$.limiar <- thresholds
+    reviewed$.thr <- thresholds
   } else {
     check_columns(thresholds, c("site", "species_folder", threshold_column),
                   "thresholds")
     tab <- distinct(thresholds, site, species_folder,
-                    .limiar = .data[[threshold_column]])
-    validados <- inner_join(validados, tab,
+                    .thr = .data[[threshold_column]])
+    reviewed <- inner_join(reviewed, tab,
                             by = c("site", "species_folder"))
   }
-  validados |>
-    filter(!is.na(.limiar), confidence >= .limiar) |>
+  reviewed |>
+    filter(!is.na(.thr), confidence >= .thr) |>
     group_by(site, species_folder, across(all_of(by))) |>
     summarise(
-      threshold = first(.limiar),
+      threshold = first(.thr),
       n_above = n(),
-      n_eff = if (pesos) kish_n(inclusion_prob) else n(),
-      precision_above = if (pesos) {
+      n_eff = if (has_weights) kish_n(inclusion_prob) else n(),
+      precision_above = if (has_weights) {
         weighted_precision(verdict, inclusion_prob)
       } else {
         mean(verdict == "positive")
@@ -178,14 +182,20 @@ threshold_by_group <- function(validation, thresholds, by,
 #' clips (`extraction_info.csv` of [extract_validation_clips()] or of the
 #' app). With `file`, it also writes the record as a Markdown table.
 #'
-#' @param thresholds Table from [suggest_thresholds()].
-#' @param bootstrap Optional table from [threshold_bootstrap()].
-#' @param groups Optional table from [threshold_by_group()].
-#' @param extraction_info Optional path to `extraction_info.csv` (or the
-#'   table read from it): its `key`, `value` rows are written at the top of
-#'   the Markdown file.
-#' @param target_precision Target precision used, recorded in the table.
-#' @param file Optional path of a Markdown file to write.
+#' @param thresholds A data frame (or tibble) returned by
+#'   [suggest_thresholds()], with columns `site`, `species_folder` and
+#'   `threshold`.
+#' @param bootstrap `NULL` or a data frame (or tibble) returned by
+#'   [threshold_bootstrap()].
+#' @param groups `NULL` or a data frame (or tibble) returned by
+#'   [threshold_by_group()].
+#' @param extraction_info `NULL`, a character scalar with the path to
+#'   `extraction_info.csv`, or the data frame read from it: its `key`,
+#'   `value` rows are written at the top of the Markdown file.
+#' @param target_precision Numeric scalar, target precision used, recorded
+#'   in the table.
+#' @param file `NULL` or a character scalar, path of a Markdown file to
+#'   write.
 #'
 #' @return A tibble, one row per cell, with the columns of `thresholds`,
 #'   `target_precision`, the bootstrap columns and, from `groups`,
@@ -200,8 +210,8 @@ threshold_record <- function(thresholds, bootstrap = NULL, groups = NULL,
   if (!is.null(file)) file <- check_file_ext(file, "md")
   check_columns(thresholds, c("site", "species_folder", "threshold"),
                 "thresholds")
-  chave <- c("site", "species_folder")
-  ficha <- thresholds |>
+  key_cols <- c("site", "species_folder")
+  record <- thresholds |>
     group_by(site, species_folder) |>
     slice(1) |>
     ungroup() |>
@@ -211,10 +221,10 @@ threshold_record <- function(thresholds, bootstrap = NULL, groups = NULL,
       group_by(site, species_folder) |>
       slice(1) |>
       ungroup() |>
-      select(all_of(chave), any_of(c("threshold_median",
-                                     "threshold_conservative",
-                                     "share_reached", "n_clusters")))
-    ficha <- left_join(ficha, b, by = chave)
+      select(all_of(key_cols), any_of(c("threshold_median",
+                                       "threshold_conservative",
+                                       "share_reached", "n_clusters")))
+    record <- left_join(record, b, by = key_cols)
   }
   if (!is.null(groups)) {
     g <- groups |>
@@ -223,33 +233,33 @@ threshold_record <- function(thresholds, bootstrap = NULL, groups = NULL,
                 n_groups_below = sum(below_target, na.rm = TRUE),
                 worst_group_precision = min(precision_above),
                 .groups = "drop")
-    ficha <- left_join(ficha, g, by = chave)
+    record <- left_join(record, g, by = key_cols)
   }
-  if (is.null(file)) return(ficha)
+  if (is.null(file)) return(record)
 
   info <- if (is.character(extraction_info)) {
     read_csv(extraction_info, show_col_types = FALSE)
   } else {
     extraction_info
   }
-  linhas <- c("# Threshold record", "",
-              paste0("Written by sheepdog ", utils::packageVersion("sheepdog"),
-                     " on ", format(Sys.Date()), "."), "")
+  lines <- c("# Threshold record", "",
+             paste0("Written by sheepdog ", utils::packageVersion("sheepdog"),
+                    " on ", format(Sys.Date()), "."), "")
   if (!is.null(info) && all(c("key", "value") %in% names(info))) {
-    linhas <- c(linhas, "## Provenance of the clips", "",
-                "| key | value |", "|---|---|",
-                paste0("| ", info$key, " | ", info$value, " |"), "")
+    lines <- c(lines, "## Provenance of the clips", "",
+               "| key | value |", "|---|---|",
+               paste0("| ", info$key, " | ", info$value, " |"), "")
   }
   fmt <- function(x) {
     if (is.numeric(x)) format(round(x, 3), trim = TRUE) else as.character(x)
   }
-  tab <- as.data.frame(lapply(ficha, fmt))
-  linhas <- c(linhas, "## Thresholds", "",
-              paste0("| ", paste(names(tab), collapse = " | "), " |"),
-              paste0("|", paste(rep("---", ncol(tab)), collapse = "|"), "|"),
-              apply(tab, 1, \(r) paste0("| ", paste(r, collapse = " | "),
-                                        " |")))
-  writeLines(linhas, file)
+  tab <- as.data.frame(lapply(record, fmt))
+  lines <- c(lines, "## Thresholds", "",
+             paste0("| ", paste(names(tab), collapse = " | "), " |"),
+             paste0("|", paste(rep("---", ncol(tab)), collapse = "|"), "|"),
+             apply(tab, 1, \(r) paste0("| ", paste(r, collapse = " | "),
+                                       " |")))
+  writeLines(lines, file)
   message("Threshold record written to ", file)
-  invisible(ficha)
+  invisible(record)
 }

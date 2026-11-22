@@ -6,14 +6,14 @@
 #' (`validacao_por_clipe.csv`) are also read. Whole-recording clips of
 #' `"random_recordings"` have no confidence and are left out.
 #'
-#' @param files Paths to the `validation_by_clip.csv` files. Missing files
-#'   are skipped with a warning.
-#' @param site_map Optional named character vector to fix diverging site
+#' @param files Character vector, paths to the `validation_by_clip.csv` files.
+#'   Missing files are skipped with a warning.
+#' @param site_map `NULL` or a named character vector to fix diverging site
 #'   names, as `c(old = "new")`, e.g. `c(BEP2 = "BEP")`.
 #'
-#' @param keep Optional character vector of input columns to retain, e.g.
-#'   `c("source_audio", "night")` for grouped cross-validation. Missing
-#'   columns raise an error rather than silently falling back to clip folds.
+#' @param keep `NULL` or a character vector of input columns to retain, e.g.
+#'   `c("source_audio", "night")` for grouped cross-validation. Missing columns
+#'   raise an error rather than silently falling back to clip folds.
 #'
 #' @return A tibble with `site` and `species` (factors; `species` is the
 #'   species folder code), `confidence`, `logit_conf` (logit of the
@@ -56,20 +56,20 @@ read_validations <- function(files, site_map = NULL, keep = NULL) {
     stop("No reviewed clip found in `files`.", call. = FALSE)
   }
   check_confidence(val$confidence)
-  julgados <- val$verdict %in% c("positive", "negative")
-  sem_score <- sum(julgados & is.na(val$confidence))
-  if (sem_score > 0) {
-    message(sem_score, " reviewed clip(s) without a confidence score ",
+  reviewed <- val$verdict %in% c("positive", "negative")
+  no_score <- sum(reviewed & is.na(val$confidence))
+  if (no_score > 0) {
+    message(no_score, " reviewed clip(s) without a confidence score ",
             "(whole recordings of \"random_recordings\") were left out.")
   }
-  limitados <- sum(julgados & !is.na(val$confidence) &
+  n_bounded <- sum(reviewed & !is.na(val$confidence) &
                      (val$confidence < 1e-4 | val$confidence > 1 - 1e-4))
-  if (limitados > 0) {
-    message(limitados, " confidence score(s) below 1e-4 or above 1 - 1e-4 ",
+  if (n_bounded > 0) {
+    message(n_bounded, " confidence score(s) below 1e-4 or above 1 - 1e-4 ",
             "were bounded before the logit.")
   }
   val <- val |>
-    # gravacoes sorteadas (modo "random_recordings") nao tem confidence
+    # drawn recordings ("random_recordings" mode) have no confidence
     filter(verdict %in% c("positive", "negative"), !is.na(confidence)) |>
     transmute(
       site       = rename_site(site, site_map),
@@ -92,11 +92,23 @@ read_validations <- function(files, site_map = NULL, keep = NULL) {
   val
 }
 
+#' Logit bounded away from 0 and 1
+#'
+#' @param p Numeric vector in \[0, 1\], confidence scores.
+#' @return Numeric vector, `stats::qlogis()` of `p` bounded at 1e-4 and
+#'   1 - 1e-4.
+#' @noRd
 safe_logit <- function(p) stats::qlogis(pmin(pmax(p, 1e-4), 1 - 1e-4))
 
-rename_site <- function(x, mapa) {
-  if (is.null(mapa)) return(x)
-  ifelse(x %in% names(mapa), unname(mapa[x]), x)
+#' Rename sites with a lookup vector
+#'
+#' @param x Character vector of site names.
+#' @param site_map Named character vector `c(old = "new")`, or `NULL`.
+#' @return Character vector, `x` with the names in `site_map` replaced.
+#' @noRd
+rename_site <- function(x, site_map) {
+  if (is.null(site_map)) return(x)
+  ifelse(x %in% names(site_map), unname(site_map[x]), x)
 }
 
 #' Candidate calibration models
@@ -109,15 +121,16 @@ rename_site <- function(x, mapa) {
 #' The list goes from the simplest to the most complex model; that order is
 #' the complexity used by [select_calibration_model()].
 #'
-#' @param uncorrelated Add `m5_species_x_site_uncorrelated`, the m4
-#'   structure without the correlation between the species intercepts and
-#'   slopes. It avoids the singular fits of m4 when that correlation is
-#'   estimated at +-1. `FALSE` keeps the candidates of 2.0.0.
+#' @param uncorrelated Logical scalar. If `TRUE`, add
+#'   `m5_species_x_site_uncorrelated`, the m4 structure without the correlation
+#'   between the species intercepts and slopes. It avoids the singular fits of
+#'   m4 when that correlation is estimated at +-1. `FALSE` keeps the candidates
+#'   of 2.0.0.
 #'
-#' @param single_species Use a family for one species: global logistic
-#'   regression, a site intercept, and a site intercept and slope. With
-#'   `uncorrelated = TRUE`, also include independent site intercepts and
-#'   slopes. `FALSE` preserves the multispecies family.
+#' @param single_species Logical scalar. If `TRUE`, use a family for one
+#'   species: global logistic regression, a site intercept, and a site intercept
+#'   and slope. With `uncorrelated = TRUE`, also include independent site
+#'   intercepts and slopes. `FALSE` preserves the multispecies family.
 #'
 #' @return A named list of formulas: `m0_global`, `m1_species_intercept`,
 #'   `m2_species_slope`, `m3_plus_site`, `m4_species_x_site` and, with
@@ -137,7 +150,7 @@ calibration_models <- function(uncorrelated = FALSE, single_species = FALSE) {
     }
     return(models)
   }
-  modelos <- list(
+  multi <- list(
     m0_global            = tp ~ logit_conf,
     m1_species_intercept = tp ~ logit_conf + (1 | species),
     m2_species_slope     = tp ~ logit_conf + (logit_conf | species),
@@ -147,15 +160,23 @@ calibration_models <- function(uncorrelated = FALSE, single_species = FALSE) {
                                 (1 | site:species)
   )
   if (uncorrelated) {
-    modelos$m5_species_x_site_uncorrelated <-
+    multi$m5_species_x_site_uncorrelated <-
       tp ~ logit_conf + (1 | species) + (0 + logit_conf | species) +
       (1 | site:species)
   }
-  modelos
+  multi
 }
 
-# The candidate family follows observed levels, not unused factor levels.
-# Explicit model lists in compare_calibration_models() bypass this helper.
+#' Candidate calibration models for the observed species and sites
+#'
+#' The candidate family follows observed levels, not unused factor levels.
+#' Explicit model lists in compare_calibration_models() bypass this helper.
+#'
+#' @param validations A data frame with columns `site` and `species`.
+#' @param uncorrelated Logical scalar, passed to calibration_models().
+#' @return A named list of formulas: the single-species family with one
+#'   species, and without site random effects with one site.
+#' @noRd
 calibration_candidates <- function(validations, uncorrelated = FALSE) {
   n_species <- n_distinct(validations$species)
   n_sites <- n_distinct(validations$site)
@@ -181,15 +202,17 @@ calibration_candidates <- function(validations, uncorrelated = FALSE) {
 #' each species appears in each training and test set. A test fold with
 #' only one verdict has no AUC but still contributes probability scores.
 #'
-#' @param validations Calibration data including `site`, `species` and
-#'   any columns named in `fold_group`. Use `read_validations(keep = )`
-#'   to retain metadata from validation files.
-#' @param k_folds Integer number of folds, at least two.
-#' @param seed Seed of the assignment; the caller's random state is restored.
-#' @param fold_group Optional character vector of grouping columns. Do not
+#' @param validations A data frame (or tibble), the calibration data, one row
+#'   per reviewed clip, with `site`, `species` and any columns named in
+#'   `fold_group`. Use `read_validations(keep = )` to retain metadata from
+#'   validation files.
+#' @param k_folds Integer scalar >= 2, number of folds.
+#' @param seed Integer scalar, seed of the assignment; the caller's random state
+#'   is restored.
+#' @param fold_group `NULL` or a character vector of grouping columns. Do not
 #'   include `species`, verdicts or confidence scores: these would split
-#'   recordings or nights by species or by outcome. Group IDs must be
-#'   nonmissing and nonempty. `NULL` keeps the original clip folds.
+#'   recordings or nights by species or by outcome. Group IDs must be nonmissing
+#'   and nonempty. `NULL` keeps the original clip folds.
 #'
 #' @return Integer vector of fold numbers, in the input row order.
 #' @export
@@ -273,16 +296,17 @@ calibration_folds <- function(validations, k_folds = 5, seed = 2026,
 #' fold: a well calibrated model has intercept 0 and slope 1; a slope below
 #' 1 means probabilities too extreme (overfitting).
 #'
-#' @param validations Table returned by [read_validations()].
-#' @param models Named list of model formulas. `NULL` chooses the family
-#'   from the observed species and sites: site-effect models for one
+#' @param validations A data frame (or tibble) returned by [read_validations()],
+#'   one row per reviewed clip.
+#' @param models `NULL` or a named list of model formulas. `NULL` chooses the
+#'   family from the observed species and sites: site-effect models for one
 #'   species, the original family for multiple species, and no site random
 #'   effects when only one site is observed. Supply an explicit list to
 #'   reproduce a particular candidate set.
-#' @param k_folds Number of folds.
+#' @param k_folds Integer scalar >= 2, number of folds.
 #' @inheritParams calibration_folds
-#' @param seed Seed of the fold assignment. The global random number
-#'   generator is left as it was.
+#' @param seed Integer scalar, seed of the fold assignment. The global random
+#'   number generator is left as it was.
 #'
 #' @return A tibble with `model`, `formula`, `auc_mean`, `auc_sd`,
 #'   `n_failed` (folds whose fit failed, left out of the means),
@@ -315,60 +339,66 @@ compare_calibration_models <- function(validations,
 
   message("Cross-validation (", k_folds, " folds) of ", length(models),
           " models...")
-  vazio <- c(auc = NA_real_, logloss = NA_real_, brier = NA_real_,
+  empty <- c(auc = NA_real_, logloss = NA_real_, brier = NA_real_,
              cal_intercept = NA_real_, cal_slope = NA_real_,
              singular = NA_real_, failed = 1)
   map(seq_along(models), function(i) {
     nm <- names(models)[i]
     m <- map(seq_len(k_folds), function(k) {
-      treino <- filter(val, fold != k)
-      teste  <- filter(val, fold == k)
-      fit    <- tryCatch(fit_model(models[[nm]], treino),
+      train <- filter(val, fold != k)
+      test  <- filter(val, fold == k)
+      fit    <- tryCatch(fit_model(models[[nm]], train),
                          error = function(e) NULL)
-      if (is.null(fit)) return(vazio)
-      p <- predict_tp(fit, teste)
-      fold_auc <- if (n_distinct(teste$tp) == 2L) auc(teste$tp, p) else NA_real_
-      c(auc = fold_auc, score_probabilities(teste$tp, p),
+      if (is.null(fit)) return(empty)
+      p <- predict_tp(fit, test)
+      fold_auc <- if (n_distinct(test$tp) == 2L) auc(test$tp, p) else NA_real_
+      c(auc = fold_auc, score_probabilities(test$tp, p),
         singular = as.numeric(inherits(fit, "merMod") &&
                                  lme4::isSingular(fit)), failed = 0)
     }) |>
       do.call(what = rbind)
-    n_falhas <- sum(m[, "failed"] > 0)
-    if (n_falhas > 0) {
-      warning(nm, ": the fit failed in ", n_falhas, " of ", k_folds,
+    n_failed_k <- sum(m[, "failed"] > 0)
+    if (n_failed_k > 0) {
+      warning(nm, ": the fit failed in ", n_failed_k, " of ", k_folds,
               " folds, left out of the mean AUC.", call. = FALSE)
     }
-    media <- function(x) mean(x, na.rm = TRUE)
-    dp    <- function(x) stats::sd(x, na.rm = TRUE)
+    mean_na <- function(x) mean(x, na.rm = TRUE)
+    sd_na   <- function(x) stats::sd(x, na.rm = TRUE)
     tibble(model = nm, formula = deparse1(models[[nm]]),
-           auc_mean = media(m[, "auc"]), auc_sd = dp(m[, "auc"]),
-           n_failed = n_falhas,
-           logloss_mean = media(m[, "logloss"]), logloss_sd = dp(m[, "logloss"]),
-           brier_mean = media(m[, "brier"]), brier_sd = dp(m[, "brier"]),
-           cal_intercept = media(m[, "cal_intercept"]),
-           cal_slope = media(m[, "cal_slope"]),
-           prop_singular = media(m[, "singular"]),
+           auc_mean = mean_na(m[, "auc"]), auc_sd = sd_na(m[, "auc"]),
+           n_failed = n_failed_k,
+           logloss_mean = mean_na(m[, "logloss"]),
+           logloss_sd = sd_na(m[, "logloss"]),
+           brier_mean = mean_na(m[, "brier"]), brier_sd = sd_na(m[, "brier"]),
+           cal_intercept = mean_na(m[, "cal_intercept"]),
+           cal_slope = mean_na(m[, "cal_slope"]),
+           prop_singular = mean_na(m[, "singular"]),
            complexity = i)
   }) |>
     list_rbind() |>
     arrange(desc(auc_mean))
 }
 
-# Log-loss, Brier e intercepto/inclinacao de calibracao de probabilidades
-# previstas p para os vereditos tp (0/1)
+#' Score predicted probabilities against binary verdicts
+#'
+#' @param tp Integer vector of 0/1 verdicts.
+#' @param p Numeric vector of predicted probabilities, same length as `tp`.
+#' @return A named numeric vector: `logloss`, `brier`, `cal_intercept` and
+#'   `cal_slope` (the last two `NA` when their logistic fit fails or warns).
+#' @noRd
 score_probabilities <- function(tp, p) {
   p  <- pmin(pmax(p, 1e-6), 1 - 1e-6)
   lp <- stats::qlogis(p)
-  inclinacao <- tryCatch(
+  slope <- tryCatch(
     unname(stats::coef(stats::glm(tp ~ lp, family = stats::binomial))[2]),
     error = function(e) NA_real_, warning = function(w) NA_real_)
-  intercepto <- tryCatch(
+  intercept <- tryCatch(
     unname(stats::coef(stats::glm(tp ~ 1 + offset(lp),
                                   family = stats::binomial))[1]),
     error = function(e) NA_real_, warning = function(w) NA_real_)
   c(logloss = -mean(tp * log(p) + (1 - tp) * log(1 - p)),
     brier = mean((p - tp)^2),
-    cal_intercept = intercepto, cal_slope = inclinacao)
+    cal_intercept = intercept, cal_slope = slope)
 }
 
 #' Select the calibration model
@@ -385,10 +415,12 @@ score_probabilities <- function(tp, p) {
 #'   error rule prefers the simpler model when the data cannot tell the
 #'   candidates apart. This is the default of [calibrate()] since 3.0.0.
 #'
-#' @param comparison Table returned by [compare_calibration_models()].
-#' @param rule Selection rule.
-#' @param k_folds Number of folds of the comparison (for the standard
-#'   error).
+#' @param comparison A data frame (or tibble) returned by
+#'   [compare_calibration_models()].
+#' @param rule Character scalar, the selection rule: `"one_se_logloss"`
+#'   (default) or `"best_auc"`.
+#' @param k_folds Numeric scalar, number of folds of the comparison (for the
+#'   standard error).
 #'
 #' @return The name of the selected model.
 #' @export
@@ -406,17 +438,17 @@ select_calibration_model <- function(comparison,
   if (nrow(cand) == 0L) {
     stop("No finite log-loss available for model selection.", call. = FALSE)
   }
-  regulares <- filter(cand, prop_singular <= 0.5)
-  if (nrow(regulares) == 0) {
+  regular <- filter(cand, prop_singular <= 0.5)
+  if (nrow(regular) == 0) {
     warning("Every candidate model is singular in most folds; selecting ",
             "among all of them.", call. = FALSE)
   } else {
-    cand <- regulares
+    cand <- regular
   }
-  melhor <- cand[which.min(cand$logloss_mean), ]
-  limite <- melhor$logloss_mean + melhor$logloss_sd / sqrt(k_folds)
+  best <- cand[which.min(cand$logloss_mean), ]
+  limit <- best$logloss_mean + best$logloss_sd / sqrt(k_folds)
   cand |>
-    filter(logloss_mean <= limite) |>
+    filter(logloss_mean <= limit) |>
     arrange(complexity) |>
     pull(model) |>
     first()
@@ -584,18 +616,18 @@ select_calibration_model <- function(comparison,
 #'   sampler is the NUTS of Stan through 'brms', with references.
 #'
 #' @inheritParams compare_calibration_models
-#' @param formula Model formula, usually the best one of
+#' @param formula A model formula, usually the best one of
 #'   [compare_calibration_models()].
-#' @param engine `"lme4"` or `"brms"`.
-#' @param prior `engine = "brms"`: the prior (a `brmsprior` object), e.g.
-#'   from [calibration_prior()]. Required.
-#' @param control Optional settings of the fitting algorithm, a single
-#'   object: a `lme4::glmerControl()` object (formula with random effects)
-#'   or a list of `stats::glm.control()` arguments (formula without them)
-#'   with `engine = "lme4"`; a list of sampler settings passed to
-#'   `brms::brm()` with `engine = "brms"`. `NULL` (default) keeps the
-#'   settings described in "Maximum likelihood fit" and the 'brms'
-#'   defaults. See the section "Maximum likelihood fit".
+#' @param engine Character scalar, one of `"lme4"` (default) or `"brms"`.
+#' @param prior `NULL` or a `brmsprior` object. With `engine = "brms"`, the
+#'   prior, e.g. from [calibration_prior()]. Required.
+#' @param control `NULL` or a single object with settings of the fitting
+#'   algorithm: a `lme4::glmerControl()` object (formula with random effects) or
+#'   a list of `stats::glm.control()` arguments (formula without them) with
+#'   `engine = "lme4"`; a list of sampler settings passed to `brms::brm()` with
+#'   `engine = "brms"`. `NULL` (default) keeps the settings described in
+#'   "Maximum likelihood fit" and the 'brms' defaults. See the section "Maximum
+#'   likelihood fit".
 #' @param ... `engine = "brms"`: further arguments for `brms::brm()` (e.g.
 #'   `chains`, `iter`, `cores`, `backend`, `seed`). Without `seed`, one is
 #'   drawn from R's random number generator (so `set.seed()` before the
@@ -688,16 +720,31 @@ fit_calibration <- function(validations, formula,
   fit
 }
 
-# Argumentos do brms no calibrate(): o seed do calibrate() vale para o refit
-# Bayesiano quando brms_args nao traz um proprio
+#' Add the seed of calibrate() to the brms arguments
+#'
+#' The seed of calibrate() is used for the Bayesian refit when `brms_args`
+#' has none of its own.
+#'
+#' @param brms_args A list of arguments for `brms::brm()`.
+#' @param seed Integer scalar, the seed of calibrate().
+#' @return `brms_args`, with `seed` added when it was absent.
+#' @noRd
 brms_args_with_seed <- function(brms_args, seed) {
   if (is.null(brms_args$seed)) brms_args$seed <- seed
   brms_args
 }
 
-# Checks of the input of fit_calibration(): a formula with response `tp`,
-# the columns it uses, rows with missing values dropped with a message,
-# then collinearity, a single verdict class and separation
+#' Check the input of fit_calibration()
+#'
+#' Checks a formula with response `tp` and the columns it uses, drops rows
+#' with missing values with a message, then checks collinearity, a single
+#' verdict class and separation.
+#'
+#' @param validations A data frame of calibration data.
+#' @param formula A two-sided model formula with response `tp`.
+#' @return A tibble, `validations` without the rows with missing values in
+#'   the variables of `formula`.
+#' @noRd
 check_calibration_input <- function(validations, formula) {
   if (!inherits(formula, "formula") || length(formula) != 3L) {
     stop("`formula` must be a two-sided formula, e.g. one of ",
@@ -715,35 +762,59 @@ check_calibration_input <- function(validations, formula) {
   val
 }
 
-# Formula com efeitos aleatorios? (barra "|" da sintaxe do lme4; o lme4
-# fica em Suggests, entao nao da para usar lme4::findbars() aqui)
+#' Whether a formula has random effects
+#'
+#' Looks for the bar `|` of the lme4 syntax; lme4 is in Suggests, so
+#' `lme4::findbars()` cannot be used here.
+#'
+#' @param formula A model formula.
+#' @return Logical scalar.
+#' @noRd
 has_random_effects <- function(formula) {
   grepl("|", deparse1(formula), fixed = TRUE)
 }
 
-# Exige o lme4 antes de ajustes protegidos por tryCatch(), que de outro
-# modo virariam NA em silencio
+#' Require lme4 when any formula has random effects
+#'
+#' Called before fits wrapped in tryCatch(), which would otherwise turn
+#' into silent `NA`s.
+#'
+#' @param formulas A list of model formulas.
+#' @return `NULL`, invisibly; called for the error when lme4 is missing.
+#' @noRd
 need_lme4 <- function(formulas) {
   if (any(map_lgl(formulas, has_random_effects))) {
     require_suggested("lme4", "to fit calibration models with random effects")
   }
 }
 
-# Niveis de especie e local guardados por fit_calibration()
+#' Species and site levels stored by fit_calibration()
+#'
+#' @param fit A model returned by fit_calibration().
+#' @return A list with character vectors `species` and `site`.
+#' @noRd
 fit_levels <- function(fit) {
-  niveis <- attr(fit, "sheepdog_levels")
-  if (is.null(niveis)) stop("`fit` must come from fit_calibration().")
-  niveis
+  lvls <- attr(fit, "sheepdog_levels")
+  if (is.null(lvls)) stop("`fit` must come from fit_calibration().")
+  lvls
 }
 
-# Default control of lme4::glmer() in sheepdog: bobyqa with 1e5 evaluations
+#' Default control of lme4::glmer() in sheepdog
+#'
+#' @return A `glmerControl` object: bobyqa with up to 1e5 evaluations.
+#' @noRd
 default_glmer_control <- function() {
   lme4::glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))
 }
 
-# Checks `control` of fit_calibration() against the model being fitted:
-# a glmerControl object for random effects, a list of glm.control()
-# settings otherwise
+#' Check `control` of fit_calibration() against the model being fitted
+#'
+#' @param control `NULL`, a `glmerControl` object (formula with random
+#'   effects) or a list of `stats::glm.control()` arguments (otherwise).
+#' @param formula A model formula.
+#' @return `NULL`, the `glmerControl` object, or the output of
+#'   `stats::glm.control()`.
+#' @noRd
 check_fit_control <- function(control, formula) {
   if (is.null(control)) return(NULL)
   if (has_random_effects(formula)) {
@@ -761,70 +832,97 @@ check_fit_control <- function(control, formula) {
   do.call(stats::glm.control, control)
 }
 
-# Ajusta glm (sem efeitos aleatorios) ou glmer. As mensagens do glmer sao
-# guardadas no atributo `sheepdog_messages`; com quiet = FALSE, as que nao
-# tratam de ajuste singular (que vira aviso em fit_calibration()) sao
-# repassadas ao usuario. Nos folds e nas repeticoes da curva de esforco
-# ficam quietas, para nao repetir a mesma mensagem dezenas de vezes.
-fit_model <- function(formula, dados, quiet = TRUE, control = NULL) {
+#' Fit a glm (no random effects) or a glmer
+#'
+#' The messages of glmer are kept in the attribute `sheepdog_messages`;
+#' with `quiet = FALSE`, those not about a singular fit (which becomes a
+#' warning in fit_calibration()) are passed on. In the folds and in the
+#' repetitions of the effort curve they stay quiet, so that the same
+#' message is not repeated dozens of times.
+#'
+#' @param formula A model formula with response `tp`.
+#' @param data A data frame with the variables of `formula`.
+#' @param quiet Logical scalar; `FALSE` passes on the lme4 messages.
+#' @param control `NULL` or a control object for `stats::glm()` or
+#'   `lme4::glmer()`.
+#' @return A `glm` or `glmerMod` model.
+#' @noRd
+fit_model <- function(formula, data, quiet = TRUE, control = NULL) {
   if (!has_random_effects(formula)) {
     if (is.null(control)) control <- stats::glm.control()
-    return(stats::glm(formula, data = dados, family = stats::binomial,
+    return(stats::glm(formula, data = data, family = stats::binomial,
                       control = control))
   }
   require_suggested("lme4", "to fit calibration models with random effects")
   if (is.null(control)) control <- default_glmer_control()
-  mensagens <- character()
+  msgs <- character()
   fit <- withCallingHandlers(
-    lme4::glmer(formula, data = dados, family = stats::binomial,
+    lme4::glmer(formula, data = data, family = stats::binomial,
                 control = control),
     message = function(m) {
-      mensagens <<- c(mensagens, trimws(conditionMessage(m)))
+      msgs <<- c(msgs, trimws(conditionMessage(m)))
       invokeRestart("muffleMessage")
     })
-  attr(fit, "sheepdog_messages") <- mensagens
+  attr(fit, "sheepdog_messages") <- msgs
   if (!quiet) {
-    outras <- mensagens[!grepl("singular", mensagens, ignore.case = TRUE)]
-    for (m in outras) message("lme4: ", m)
+    others <- msgs[!grepl("singular", msgs, ignore.case = TRUE)]
+    for (m in others) message("lme4: ", m)
   }
   fit
 }
 
-# P(TP) prevista; niveis novos de especie/local usam so os efeitos fixos
-predict_tp <- function(modelo, dados) {
-  if (inherits(modelo, "brmsfit")) {
-    colMeans(brms::posterior_epred(modelo, newdata = dados,
+#' Predicted P(TP)
+#'
+#' New species or site levels use the fixed effects only (lme4) or draws
+#' from the random-effects distribution (brms).
+#'
+#' @param model A `glm`, `glmerMod` or `brmsfit` model.
+#' @param data A data frame of new data.
+#' @return Numeric vector with one P(TP) per row of `data` (the posterior
+#'   mean for a `brmsfit`).
+#' @noRd
+predict_tp <- function(model, data) {
+  if (inherits(model, "brmsfit")) {
+    colMeans(brms::posterior_epred(model, newdata = data,
                                    allow_new_levels = TRUE))
-  } else if (inherits(modelo, "merMod")) {
-    stats::predict(modelo, newdata = dados, type = "response",
+  } else if (inherits(model, "merMod")) {
+    stats::predict(model, newdata = data, type = "response",
                    allow.new.levels = TRUE)
   } else {
-    stats::predict(modelo, newdata = dados, type = "response")
+    stats::predict(model, newdata = data, type = "response")
   }
 }
 
-# P(TP) with a pointwise interval: Wald on the link scale for glm and,
-# from the fixed effects only, for glmerMod; posterior quantiles for brms.
-# Returns a tibble with p_tp, lower and upper, one row per row of `dados`.
-predict_tp_interval <- function(modelo, dados, level = 0.95) {
+#' P(TP) with a pointwise interval
+#'
+#' Wald on the link scale for glm and, from the fixed effects only, for
+#' glmerMod; posterior quantiles for brms.
+#'
+#' @param model A `glm`, `glmerMod` or `brmsfit` model.
+#' @param data A data frame of new data.
+#' @param level Numeric scalar in (0, 1), coverage of the interval.
+#' @return A tibble with `p_tp`, `lower` and `upper`, one row per row of
+#'   `data`.
+#' @noRd
+predict_tp_interval <- function(model, data, level = 0.95) {
   a <- (1 - level) / 2
-  if (inherits(modelo, "brmsfit")) {
-    ep <- brms::posterior_epred(modelo, newdata = dados,
+  if (inherits(model, "brmsfit")) {
+    ep <- brms::posterior_epred(model, newdata = data,
                                 allow_new_levels = TRUE)
     return(tibble(p_tp = colMeans(ep),
                   lower = apply(ep, 2, stats::quantile, probs = a),
                   upper = apply(ep, 2, stats::quantile, probs = 1 - a)))
   }
-  if (inherits(modelo, "merMod")) {
-    eta <- stats::predict(modelo, newdata = dados, type = "link",
+  if (inherits(model, "merMod")) {
+    eta <- stats::predict(model, newdata = data, type = "link",
                           allow.new.levels = TRUE)
-    fixa <- stats::formula(modelo, fixed.only = TRUE)
-    X <- stats::model.matrix(stats::delete.response(stats::terms(fixa)),
-                             dados)
-    V <- as.matrix(stats::vcov(modelo))
+    fixed_f <- stats::formula(model, fixed.only = TRUE)
+    X <- stats::model.matrix(stats::delete.response(stats::terms(fixed_f)),
+                             data)
+    V <- as.matrix(stats::vcov(model))
     se <- sqrt(rowSums((X %*% V) * X))
   } else {
-    pr <- stats::predict(modelo, newdata = dados, type = "link",
+    pr <- stats::predict(model, newdata = data, type = "link",
                          se.fit = TRUE)
     eta <- pr$fit
     se <- pr$se.fit
@@ -834,6 +932,12 @@ predict_tp_interval <- function(modelo, dados, level = 0.95) {
          upper = stats::plogis(eta + z * se))
 }
 
+#' Area under the ROC curve
+#'
+#' @param tp Integer vector of 0/1 verdicts.
+#' @param p Numeric vector of predicted probabilities or scores.
+#' @return Numeric scalar, the AUC (direction chosen by `pROC::roc()`).
+#' @noRd
 auc <- function(tp, p) {
   as.numeric(pROC::auc(pROC::roc(tp, p, quiet = TRUE)))
 }
@@ -852,10 +956,11 @@ auc <- function(tp, p) {
 #' set shrinks as `n_train` grows (`n_test_mean`), which widens `auc_sd`.
 #'
 #' @inheritParams fit_calibration
-#' @param n_train Training sizes per site x species.
-#' @param n_reps Repetitions per training size.
-#' @param seed Seed of the draws. The global random number generator is
-#'   left as it was.
+#' @param n_train Numeric vector of whole numbers, training sizes (clips) per
+#'   site x species.
+#' @param n_reps Integer scalar >= 1, repetitions per training size.
+#' @param seed Integer scalar, seed of the draws. The global random number
+#'   generator is left as it was.
 #'
 #' @return A tibble with `n_per_cell` (the requested training size),
 #'   `auc_mean`, `auc_sd`, `n_train_mean` (mean clips per cell actually
@@ -866,35 +971,35 @@ calibration_effort <- function(validations, formula,
                                n_train = c(5, 10, 15, 20, 25, 30),
                                n_reps = 50, seed = 2026) {
   need_lme4(list(formula))
-  menor <- min(count(validations, site, species)$n)
-  acima <- n_train[n_train > menor - 5]
-  if (length(acima) > 0) {
-    warning("n_train = ", paste(acima, collapse = ", "), " exceeds the ",
-            "smallest site x species cell (", menor, " clips) minus the 5 ",
+  smallest <- min(count(validations, site, species)$n)
+  above <- n_train[n_train > smallest - 5]
+  if (length(above) > 0) {
+    warning("n_train = ", paste(above, collapse = ", "), " exceeds the ",
+            "smallest site x species cell (", smallest, " clips) minus the 5 ",
             "kept for testing; see n_train_mean for the size actually used.",
             call. = FALSE)
   }
   message("Effort curve (", n_reps, " repetitions per n)...")
   withr::with_seed(seed, {
-    map(n_train, function(n_treino) {
+    map(n_train, function(n_tr) {
       reps <- map(seq_len(n_reps), function(r) {
-        amostra <- validations |>
+        sampled <- validations |>
           group_by(site, species) |>
-          mutate(.treino = seq_len(n()) %in%
-                   sample(seq_len(n()), min(n_treino, max(n() - 5, 1)))) |>
+          mutate(.train = seq_len(n()) %in%
+                   sample(seq_len(n()), min(n_tr, max(n() - 5, 1)))) |>
           ungroup()
-        treino <- filter(amostra, .treino)
-        teste  <- filter(amostra, !.treino)
-        n_cel  <- nrow(treino) / n_distinct(treino$site, treino$species)
-        falha  <- c(auc = NA_real_, n_train = n_cel, n_test = nrow(teste))
-        if (nrow(teste) < 50) return(falha)
-        fit <- tryCatch(fit_model(formula, treino), error = function(e) NULL)
-        if (is.null(fit)) return(falha)
-        c(auc = auc(teste$tp, predict_tp(fit, teste)), n_train = n_cel,
-          n_test = nrow(teste))
+        train <- filter(sampled, .train)
+        test  <- filter(sampled, !.train)
+        n_cell  <- nrow(train) / n_distinct(train$site, train$species)
+        failed  <- c(auc = NA_real_, n_train = n_cell, n_test = nrow(test))
+        if (nrow(test) < 50) return(failed)
+        fit <- tryCatch(fit_model(formula, train), error = function(e) NULL)
+        if (is.null(fit)) return(failed)
+        c(auc = auc(test$tp, predict_tp(fit, test)), n_train = n_cell,
+          n_test = nrow(test))
       }) |>
         do.call(what = rbind)
-      tibble(n_per_cell = n_treino,
+      tibble(n_per_cell = n_tr,
              auc_mean = mean(reps[, "auc"], na.rm = TRUE),
              auc_sd = stats::sd(reps[, "auc"], na.rm = TRUE),
              n_train_mean = mean(reps[, "n_train"]),
@@ -913,19 +1018,21 @@ calibration_effort <- function(validations, formula,
 #' night of each detection is its recording date, or the day before for
 #' recordings that start before `dawn_hour`.
 #'
-#' @param tables Named character vector, named by site (the site names of
-#'   the calibration): the path of the combined selection table of each
-#'   site, or the folder of its per-audio tables (see
+#' @param tables Named character vector, one element per site, named by site
+#'   (the site names of the calibration): the path of the combined selection
+#'   table of each site, or the folder of its per-audio tables (see
 #'   [read_selection_tables()]).
-#' @param fit Model returned by [fit_calibration()].
-#' @param min_confidence Detections below this confidence are not scored.
-#' @param dawn_hour Recordings that start before this hour belong to the
-#'   night before.
-#' @param p_min,lower_prob Models fitted with `engine = "brms"`: the
-#'   threshold of `pr_reliable` and the probability of the lower quantile
-#'   `p_tp_lower`.
-#' @param grid_step Models fitted with `engine = "brms"`: step of the grid
-#'   of scores on which the posterior is computed.
+#' @param fit A `glm`, `glmerMod` or `brmsfit` returned by [fit_calibration()].
+#' @param min_confidence Numeric scalar in \[0, 1\]. Detections below this
+#'   confidence are not scored.
+#' @param dawn_hour Numeric scalar in \[0, 24\]. Recordings that start before
+#'   this hour belong to the night before.
+#' @param p_min,lower_prob Numeric scalars, `p_min` in \[0, 1\] and `lower_prob`
+#'   in (0, 1). Models fitted with `engine = "brms"`: the threshold of
+#'   `pr_reliable` and the probability of the lower quantile `p_tp_lower`.
+#' @param grid_step Numeric scalar in (0, 0.5). Models fitted with
+#'   `engine = "brms"`: step of the grid of scores on which the posterior is
+#'   computed.
 #'
 #' @details With a model fitted with `engine = "brms"`, the posterior of P(TP) is
 #' computed once on a grid of scores (step `grid_step`) for each site x
@@ -967,21 +1074,21 @@ score_detections <- function(tables, fit, min_confidence = 0.1,
   check_prob(lower_prob, "lower_prob", open = TRUE)
   check_number(grid_step, "grid_step", 0, 0.5, open = TRUE)
   bayes <- inherits(fit, "brmsfit")
-  niveis <- fit_levels(fit)
-  novos <- setdiff(names(tables), niveis$site)
-  if (length(novos) > 0) {
+  lvls <- fit_levels(fit)
+  new_sites <- setdiff(names(tables), lvls$site)
+  if (length(new_sites) > 0) {
     warning("Site(s) not in the calibration, scored with the species ",
-            "effects only: ", paste(novos, collapse = ", "))
+            "effects only: ", paste(new_sites, collapse = ", "))
   }
-  imap(tables, function(caminho, loc) {
-    if (!file.exists(caminho)) {
-      warning("Table not found for ", loc, ": ", caminho)
+  imap(tables, function(path, loc) {
+    if (!file.exists(path)) {
+      warning("Table not found for ", loc, ": ", path)
       return(NULL)
     }
-    message("Scoring ", loc, " (", caminho, ")...")
-    tb <- read_score_columns(caminho)
+    message("Scoring ", loc, " (", path, ")...")
+    tb <- read_score_columns(path)
     if (is.null(tb)) {
-      warning("No table read for ", loc, ": ", caminho)
+      warning("No table read for ", loc, ": ", path)
       return(NULL)
     }
     m <- str_match(basename(tb$begin_path), "(\\d{8})_(\\d{6})")
@@ -997,34 +1104,34 @@ score_detections <- function(tables, fit, min_confidence = 0.1,
       ) |>
       filter(confidence >= min_confidence)
 
-    fora <- sum(!tb$species %in% niveis$species)
-    tb <- filter(tb, species %in% niveis$species)
-    message("  ", nrow(tb), " detections of calibrated species (", fora,
+    n_out <- sum(!tb$species %in% lvls$species)
+    tb <- filter(tb, species %in% lvls$species)
+    message("  ", nrow(tb), " detections of calibrated species (", n_out,
             " of species NOT calibrated were dropped).")
     if (nrow(tb) == 0) return(NULL)
 
     if (bayes) {
-      especies <- sort(unique(tb$species))
-      gd <- grid_draws(fit, loc, especies, min_confidence, grid_step)
-      resumo <- bind_cols(
+      spp <- sort(unique(tb$species))
+      gd <- grid_draws(fit, loc, spp, min_confidence, grid_step)
+      draw_summary <- bind_cols(
         mutate(gd$grid, species = as.character(species),
                .g = rep(seq_along(score_grid(min_confidence, grid_step)),
-                        length(especies))) |>
+                        length(spp))) |>
           select(species, .g),
         summarise_grid_draws(gd$draws, p_min, lower_prob))
       return(tb |>
         mutate(.g = snap_to_grid(confidence, min_confidence, grid_step)) |>
-        left_join(resumo, by = c("species", ".g")) |>
+        left_join(draw_summary, by = c("species", ".g")) |>
         select(site, species, date, night, hour, confidence, p_tp,
                p_tp_lower, pr_reliable, begin_path, file_offset))
     }
 
     tb |>
       mutate(logit_conf = safe_logit(confidence),
-             species = factor(species, levels = niveis$species),
-             site    = factor(site, levels = niveis$site),
+             species = factor(species, levels = lvls$species),
+             site    = factor(site, levels = lvls$site),
              p_tp    = predict_tp(fit, pick(everything())),
-             # local fora da calibracao vira NA no fator: guarda o nome
+             # site absent from the calibration is NA as factor: keep name
              site    = loc) |>
       select(site, species, date, night, hour, confidence, p_tp,
              begin_path, file_offset)
@@ -1033,28 +1140,36 @@ score_detections <- function(tables, fit, min_confidence = 0.1,
     list_rbind()
 }
 
-# Colunas usadas na pontuacao, de uma tabela combinada (arquivo) ou das
-# tabelas por audio de uma pasta
-read_score_columns <- function(caminho) {
-  colunas <- c("species_code", "confidence", "begin_path", "file_offset")
-  if (!dir.exists(caminho)) {
-    tb <- read_tsv(caminho, show_col_types = FALSE, progress = FALSE,
+#' Read the columns used for scoring
+#'
+#' From a combined selection table (a file) or from the per-audio tables
+#' of a folder.
+#'
+#' @param path Character scalar, path to a combined selection table or to
+#'   a folder of per-audio tables.
+#' @return A tibble with `species_code`, `confidence`, `begin_path` and
+#'   `file_offset`, or `NULL` when no table is found.
+#' @noRd
+read_score_columns <- function(path) {
+  cols <- c("species_code", "confidence", "begin_path", "file_offset")
+  if (!dir.exists(path)) {
+    tb <- read_tsv(path, show_col_types = FALSE, progress = FALSE,
                    col_select = c(`Species Code`, Confidence,
                                   `Begin Path`, `File Offset (s)`))
-    names(tb) <- colunas
+    names(tb) <- cols
     return(tb)
   }
-  fontes <- suppressMessages(find_selection_tables(
-    caminho, "^BirdNET_SelectionTable\\.txt$",
+  sources <- suppressMessages(find_selection_tables(
+    path, "^BirdNET_SelectionTable\\.txt$",
     "\\.BirdNET\\.selection\\.table\\.txt$"))
-  if (length(fontes) == 0) return(NULL)
-  if (length(fontes) > 1) {
-    stop("The folder ", caminho, " holds tables in ", length(fontes),
+  if (length(sources) == 0) return(NULL)
+  if (length(sources) > 1) {
+    stop("The folder ", path, " holds tables in ", length(sources),
          " folders; give one folder per site.", call. = FALSE)
   }
-  tb <- read_site_tables(fontes[[1]])
+  tb <- read_site_tables(sources[[1]])
   if (is.null(tb)) return(NULL)
-  select(tb, all_of(colunas))
+  select(tb, all_of(cols))
 }
 
 #' Nightly detection history
@@ -1065,20 +1180,22 @@ read_score_columns <- function(caminho) {
 #' `detection_k3` give the same rule with k = 1, 2 and 3, as a
 #' sensitivity analysis.
 #'
-#' @param scored Table returned by [score_detections()].
-#' @param p_min Threshold on the calibrated probability (not on the
-#'   confidence score).
-#' @param min_detections_night Repetition rule: minimum number of reliable
-#'   detections for a night with detection.
-#' @param rule When a detection is reliable: `"mean"`, its calibrated
-#'   probability (the posterior mean with `engine = "brms"`) is >= `p_min`;
-#'   `"probability"`, the posterior probability that P(TP) >= `p_min` (the
-#'   `pr_reliable` of a model fitted with `engine = "brms"`) is >=
-#'   `prob_min`. The second rule propagates the uncertainty of the
-#'   calibration and is more conservative where few clips were reviewed.
-#' @param prob_min `rule = "probability"`: threshold on `pr_reliable`.
-#'   `pr_reliable` is computed in [score_detections()] for its `p_min`;
-#'   use the same `p_min` in both.
+#' @param scored A data frame (or tibble) returned by [score_detections()], one
+#'   row per detection.
+#' @param p_min Numeric scalar in \[0, 1\], threshold on the calibrated
+#'   probability (not on the confidence score).
+#' @param min_detections_night Integer scalar >= 1, repetition rule: minimum
+#'   number of reliable detections for a night with detection.
+#' @param rule Character scalar, one of `"mean"` (default) or `"probability"`:
+#'   when a detection is reliable. `"mean"`, its calibrated probability (the
+#'   posterior mean with `engine = "brms"`) is >= `p_min`; `"probability"`, the
+#'   posterior probability that P(TP) >= `p_min` (the `pr_reliable` of a model
+#'   fitted with `engine = "brms"`) is >= `prob_min`. The second rule propagates
+#'   the uncertainty of the calibration and is more conservative where few clips
+#'   were reviewed.
+#' @param prob_min Numeric scalar in \[0, 1\]. With `rule = "probability"`,
+#'   threshold on `pr_reliable`. `pr_reliable` is computed in
+#'   [score_detections()] for its `p_min`; use the same `p_min` in both.
 #'
 #' @return A tibble with `site`, `species`, `night`, `n_detections`,
 #'   `n_reliable`, `p_tp_max`, `detection_k1`, `detection_k2`,
@@ -1095,15 +1212,15 @@ detection_history <- function(scored, p_min = 0.95,
            "score_detections() with a model fitted with engine = \"brms\".",
            call. = FALSE)
     }
-    scored <- mutate(scored, .confiavel = pr_reliable >= prob_min)
+    scored <- mutate(scored, .reliable = pr_reliable >= prob_min)
   } else {
-    scored <- mutate(scored, .confiavel = p_tp >= p_min)
+    scored <- mutate(scored, .reliable = p_tp >= p_min)
   }
   scored |>
     group_by(site, species, night) |>
     summarise(
       n_detections = n(),
-      n_reliable   = sum(.confiavel),
+      n_reliable   = sum(.reliable),
       p_tp_max     = max(p_tp),
       detection_k1 = as.integer(n_reliable >= 1),
       detection_k2 = as.integer(n_reliable >= 2),
@@ -1115,7 +1232,7 @@ detection_history <- function(scored, p_min = 0.95,
 
 #' Summarise the detection history by site and species
 #'
-#' @param history Table returned by [detection_history()].
+#' @param history A data frame (or tibble) returned by [detection_history()].
 #'
 #' @return A tibble with `site`, `species`, `nights` (nights with any
 #'   scored detection) and `nights_k1` to `nights_k3` (nights with
@@ -1138,11 +1255,12 @@ summarise_history <- function(history) {
 #' @inheritParams compare_calibration_models
 #' @inheritParams score_detections
 #' @inheritParams detection_history
-#' @param model_name Name shown in the subtitle.
-#' @param interval Draw a band around each curve: a pointwise confidence
-#'   interval of P(TP) for `glm` and `glmerMod` fits, a credible interval
-#'   for `brmsfit` fits. `FALSE` (default) draws the curves only.
-#' @param level Coverage of the band, a single number in (0, 1).
+#' @param model_name Character scalar, name shown in the subtitle.
+#' @param interval Logical scalar. If `TRUE`, draw a band around each curve: a
+#'   pointwise confidence interval of P(TP) for `glm` and `glmerMod` fits, a
+#'   credible interval for `brmsfit` fits. `FALSE` (default) draws the curves
+#'   only.
+#' @param level Numeric scalar in (0, 1), coverage of the band.
 #'
 #' @details For a `glm` fit the band is the Wald interval of the linear
 #'   predictor (`predict(se.fit = TRUE)`) transformed by `plogis()`. For a
@@ -1164,26 +1282,26 @@ plot_calibration <- function(fit, validations, min_confidence = 0.1,
   require_suggested("ggplot2", "to plot the calibration curves")
   check_flag(interval, "interval")
   check_prob(level, "level", open = TRUE)
-  niveis <- fit_levels(fit)
-  grade <- expand_grid(
-    species    = factor(niveis$species, levels = niveis$species),
-    site       = factor(niveis$site, levels = niveis$site),
+  lvls <- fit_levels(fit)
+  grid <- expand_grid(
+    species    = factor(lvls$species, levels = lvls$species),
+    site       = factor(lvls$site, levels = lvls$site),
     confidence = seq(min_confidence, 0.99, by = 0.01)
   ) |>
     mutate(logit_conf = safe_logit(confidence))
   if (interval) {
-    band <- predict_tp_interval(fit, grade, level)
-    grade <- dplyr::bind_cols(grade, band)
+    band <- predict_tp_interval(fit, grid, level)
+    grid <- dplyr::bind_cols(grid, band)
   } else {
-    grade$p_tp <- predict_tp(fit, grade)
+    grid$p_tp <- predict_tp(fit, grid)
   }
 
-  obs_faixa <- validations |>
-    mutate(faixa = pmin(floor(confidence * 10) / 10 + 0.05, 0.95)) |>
-    group_by(species, site, faixa) |>
+  obs_bin <- validations |>
+    mutate(bin = pmin(floor(confidence * 10) / 10 + 0.05, 0.95)) |>
+    group_by(species, site, bin) |>
     summarise(prec = mean(tp), n = n(), .groups = "drop")
 
-  ggplot2::ggplot(grade, ggplot2::aes(confidence, p_tp, colour = site)) +
+  ggplot2::ggplot(grid, ggplot2::aes(confidence, p_tp, colour = site)) +
     ggplot2::geom_hline(yintercept = p_min, linetype = "dashed",
                         colour = "grey50") +
     (if (interval) {
@@ -1192,8 +1310,8 @@ plot_calibration <- function(fit, validations, min_confidence = 0.1,
                            alpha = 0.15, colour = NA)
     }) +
     ggplot2::geom_line(linewidth = 0.5) +
-    ggplot2::geom_point(data = obs_faixa,
-                        ggplot2::aes(faixa, prec, size = n, colour = site),
+    ggplot2::geom_point(data = obs_bin,
+                        ggplot2::aes(bin, prec, size = n, colour = site),
                         alpha = 0.4) +
     ggplot2::scale_size_continuous(range = c(0.5, 3),
                                    name = "reviewed clips") +
@@ -1253,42 +1371,45 @@ plot_calibration <- function(fit, validations, min_confidence = 0.1,
 #' structure. This is the function form of the v1.2.0 script
 #' `calibracao.R`.
 #'
-#' @param validation_files Paths to the `validation_by_clip.csv` files of
-#'   the sites (v1.2.0 `validacao_por_clipe.csv` files are also read).
-#' @param prediction_tables Named character vector of the complete
-#'   selection tables, named by site: the path of each combined table, or
-#'   the folder of the per-audio tables of each site (see
+#' @param validation_files Character vector, paths to the
+#'   `validation_by_clip.csv` files of the sites (v1.2.0
+#'   `validacao_por_clipe.csv` files are also read).
+#' @param prediction_tables Named character vector of the complete selection
+#'   tables, one element per site, named by site: the path of each combined
+#'   table, or the folder of the per-audio tables of each site (see
 #'   [score_detections()]).
-#' @param output_dir Output folder; created if needed. The calibrated
-#'   detections of a large project can take hundreds of MB.
+#' @param output_dir Character scalar, output folder; created if needed. The
+#'   calibrated detections of a large project can take hundreds of MB.
 #' @inheritParams read_validations
 #' @inheritParams score_detections
 #' @inheritParams detection_history
 #' @inheritParams compare_calibration_models
-#' @param select Rule to choose the model; see
+#' @param select Character scalar, one of `"one_se_logloss"` (default) or
+#'   `"best_auc"`: the rule to choose the model; see
 #'   [select_calibration_model()].
-#' @param engine Engine of the final fit: `"lme4"` or `"brms"` (see
-#'   [fit_calibration()]). The comparison of the candidate models always
-#'   uses maximum likelihood (fast); with `"brms"`, the selected model is
-#'   then refitted in a Bayesian framework, its convergence diagnostics are
-#'   written to `calibration_diagnostics.csv`, and the scored detections
-#'   carry `p_tp_lower` and `pr_reliable`.
-#' @param prior `engine = "brms"`: the prior, as a `brmsprior` object or as
-#'   a function of the selected formula and the validations that returns
-#'   one, e.g. `calibration_prior` (whose classes then match the selected
-#'   model). Required with `"brms"`.
-#' @param brms_args `engine = "brms"`: list of further arguments for
-#'   `brms::brm()` (e.g. `list(chains = 4, cores = 4, backend = "cmdstanr")`).
-#'   Without `seed` in this list, `seed` is also the seed of the Bayesian
-#'   refit, so the whole run is reproducible; it is written to
-#'   `calibration_model.txt`.
+#' @param engine Character scalar, one of `"lme4"` (default) or `"brms"`: the
+#'   engine of the final fit (see [fit_calibration()]). The comparison of the
+#'   candidate models always uses maximum likelihood (fast); with `"brms"`, the
+#'   selected model is then refitted in a Bayesian framework, its convergence
+#'   diagnostics are written to `calibration_diagnostics.csv`, and the scored
+#'   detections carry `p_tp_lower` and `pr_reliable`.
+#' @param prior `NULL`, a `brmsprior` object or a function. With
+#'   `engine = "brms"`, the prior, as a `brmsprior` object or as a function of
+#'   the selected formula and the validations that returns one, e.g.
+#'   `calibration_prior` (whose classes then match the selected model). Required
+#'   with `"brms"`.
+#' @param brms_args A list. With `engine = "brms"`, list of further arguments
+#'   for `brms::brm()` (e.g.
+#'   `list(chains = 4, cores = 4, backend = "cmdstanr")`). Without `seed` in
+#'   this list, `seed` is also the seed of the Bayesian refit, so the whole run
+#'   is reproducible; it is written to `calibration_model.txt`.
 #' @inheritParams detection_history
-#' @param uncorrelated Include the m4 variant without the species
-#'   intercept-slope correlation among the candidates; see
+#' @param uncorrelated Logical scalar. If `TRUE`, include the m4 variant without
+#'   the species intercept-slope correlation among the candidates; see
 #'   [calibration_models()].
-#' @param effort_curve Draw the effort curve (slow).
-#' @param effort_n,effort_reps Training sizes and repetitions of the
-#'   effort curve.
+#' @param effort_curve Logical scalar. If `TRUE`, draw the effort curve (slow).
+#' @param effort_n,effort_reps Numeric vector of training sizes and integer
+#'   scalar >= 1 of repetitions of the effort curve.
 #'
 #' @return A list with `comparison`, `quality` (from
 #'   [calibration_quality()], by species, or by site with one species, also
@@ -1318,9 +1439,9 @@ calibrate <- function(validation_files, prediction_tables, output_dir,
   } else {
     read_validations(validation_files, site_map, keep = fold_group)
   }
-  modelos <- calibration_candidates(val, uncorrelated)
+  models <- calibration_candidates(val, uncorrelated)
 
-  cv <- compare_calibration_models(val, modelos, k_folds, seed,
+  cv <- compare_calibration_models(val, models, k_folds, seed,
                                     fold_group = fold_group)
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
   write_csv(cv, file.path(output_dir, "model_comparison.csv"))
@@ -1330,11 +1451,11 @@ calibrate <- function(validation_files, prediction_tables, output_dir,
     assignment$fold <- calibration_folds(val, k_folds, seed, fold_group)
     write_csv(assignment, file.path(output_dir, "calibration_folds.csv"))
   }
-  melhor <- select_calibration_model(cv, select, k_folds)
-  message("Selected model (", select, "): ", melhor)
+  best <- select_calibration_model(cv, select, k_folds)
+  message("Selected model (", select, "): ", best)
 
-  qualidade <- tryCatch(
-    calibration_quality(val, modelos[[melhor]], k_folds, seed, fold_group,
+  quality <- tryCatch(
+    calibration_quality(val, models[[best]], k_folds, seed, fold_group,
                         by = if (n_distinct(val$species) > 1L) "species"
                              else "site"),
     error = function(e) {
@@ -1342,31 +1463,31 @@ calibrate <- function(validation_files, prediction_tables, output_dir,
               conditionMessage(e))
       NULL
     })
-  if (!is.null(qualidade)) {
-    write_csv(qualidade, file.path(output_dir, "calibration_quality.csv"))
-    fracos <- filter(qualidade, status == "poor")
-    if (nrow(fracos) > 0) {
+  if (!is.null(quality)) {
+    write_csv(quality, file.path(output_dir, "calibration_quality.csv"))
+    poor <- filter(quality, status == "poor")
+    if (nrow(poor) > 0) {
       message("Check these groups in calibration_quality.csv before using ",
               "their probabilities: ",
-              paste(fracos[[1]], collapse = ", "), ".")
+              paste(poor[[1]], collapse = ", "), ".")
     }
   }
 
   if (engine == "brms") {
-    prior_final <- if (is.function(prior)) prior(modelos[[melhor]], val) else prior
+    prior_final <- if (is.function(prior)) prior(models[[best]], val) else prior
     fit_final <- do.call(fit_calibration,
-                         c(list(val, modelos[[melhor]], engine = "brms",
+                         c(list(val, models[[best]], engine = "brms",
                                 prior = prior_final),
                            brms_args_with_seed(brms_args, seed)))
     write_csv(calibration_diagnostics(fit_final),
               file.path(output_dir, "calibration_diagnostics.csv"))
   } else {
-    fit_final <- fit_calibration(val, modelos[[melhor]])
+    fit_final <- fit_calibration(val, models[[best]])
   }
   saveRDS(fit_final, file.path(output_dir, "calibration_model.rds"))
   utils::capture.output(summary(fit_final),
                         file = file.path(output_dir, "calibration_model.txt"))
-  # mensagens do ajuste (lme4) no fim do resumo do modelo
+  # messages of the fit (lme4) at the end of the model summary
   if (!is.null(attr(fit_final, "sheepdog_seed"))) {
     cat("\nStan seed: ", attr(fit_final, "sheepdog_seed"), "\n", sep = "",
         file = file.path(output_dir, "calibration_model.txt"), append = TRUE)
@@ -1378,7 +1499,7 @@ calibrate <- function(validation_files, prediction_tables, output_dir,
   }
 
   if (has_suggested("ggplot2")) {
-    g <- plot_calibration(fit_final, val, min_confidence, p_min, melhor)
+    g <- plot_calibration(fit_final, val, min_confidence, p_min, best)
     ggplot2::ggsave(file.path(output_dir, "calibration_curves.png"), g,
                     width = 13, height = 9, dpi = 200, bg = "white")
   } else {
@@ -1386,51 +1507,51 @@ calibrate <- function(validation_files, prediction_tables, output_dir,
             "not drawn.")
   }
 
-  esforco <- NULL
+  effort <- NULL
   if (isTRUE(effort_curve)) {
-    esforco <- calibration_effort(val, modelos[[melhor]], effort_n,
+    effort <- calibration_effort(val, models[[best]], effort_n,
                                   effort_reps, seed)
-    write_csv(esforco, file.path(output_dir, "effort_curve.csv"))
+    write_csv(effort, file.path(output_dir, "effort_curve.csv"))
   }
 
-  pontuadas <- score_detections(prediction_tables, fit_final,
+  scored <- score_detections(prediction_tables, fit_final,
                                 min_confidence, dawn_hour, p_min = p_min)
-  # limiar de score equivalente ao corte p_min em P(TP), por celula
-  limiares <- tryCatch(
+  # score threshold equivalent to the p_min cut on P(TP), by cell
+  thresholds <- tryCatch(
     calibrated_thresholds(fit_final, target = p_min,
-                          scored = if (nrow(pontuadas) > 0) pontuadas,
+                          scored = if (nrow(scored) > 0) scored,
                           min_confidence = min_confidence),
     error = function(e) {
       message("thresholds.csv was not written: ", conditionMessage(e))
       NULL
     })
-  if (!is.null(limiares)) {
-    write_csv(limiares, file.path(output_dir, "thresholds.csv"))
+  if (!is.null(thresholds)) {
+    write_csv(thresholds, file.path(output_dir, "thresholds.csv"))
   }
 
-  historico <- NULL
-  if (nrow(pontuadas) > 0) {
-    walk(split(pontuadas, pontuadas$site, drop = TRUE), function(d) {
+  history <- NULL
+  if (nrow(scored) > 0) {
+    walk(split(scored, scored$site, drop = TRUE), function(d) {
       write_csv(d, file.path(output_dir, paste0("calibrated_detections_",
                                                 d$site[1], ".csv")))
     })
-    historico <- detection_history(pontuadas, p_min, min_detections_night,
+    history <- detection_history(scored, p_min, min_detections_night,
                                    rule = rule, prob_min = prob_min)
-    write_csv(historico,
+    write_csv(history,
               file.path(output_dir, "nightly_detection_history.csv"))
-    write_csv(summarise_history(historico),
+    write_csv(summarise_history(history),
               file.path(output_dir, "detection_summary.csv"))
     message("Nights with a reliable detection (p_tp >= ", p_min, "): ",
-            sum(historico$detection_k1), " (k = 1), ",
-            sum(historico$detection_k2), " (k = 2), ",
-            sum(historico$detection_k3), " (k = 3).")
+            sum(history$detection_k1), " (k = 1), ",
+            sum(history$detection_k2), " (k = 2), ",
+            sum(history$detection_k3), " (k = 3).")
   }
 
   message("Done! Outputs in ", output_dir,
           "\nnightly_detection_history.csv is the input of the analyses; ",
           "the column 'detection' uses k = ", min_detections_night,
           "; detection_k1/k2/k3 give the sensitivity to the rule.")
-  invisible(list(comparison = cv, quality = qualidade, fit = fit_final,
-                 effort = esforco, scored = pontuadas, thresholds = limiares,
-                 history = historico))
+  invisible(list(comparison = cv, quality = quality, fit = fit_final,
+                 effort = effort, scored = scored, thresholds = thresholds,
+                 history = history))
 }

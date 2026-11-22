@@ -18,17 +18,20 @@
 #' nights in the history of the site, for any species. With dense
 #' detections, every night actually recorded appears in the history.
 #'
-#' @param history Nightly detection history, as returned by
-#'   [detection_history()] (v1.2.0 `historico_deteccao_noite.csv` tables
-#'   are also accepted).
-#' @param core_species Species codes (the `species` column) that enter the
-#'   matrix.
-#' @param k_min Repetition rule: 1, 2 or 3 reliable detections on the night.
-#' @param min_nights_month Site x month cells with fewer recorded nights are
-#'   dropped from the matrices (unstable frequencies) and flagged in
-#'   `effort`.
-#' @param drop_empty Drop the site x month rows in which no core species
-#'   was detected. Distances such as Bray-Curtis are undefined for them.
+#' @param history A data frame (or tibble), the nightly detection history
+#'   as returned by [detection_history()], one row per site x species x
+#'   night (v1.2.0 `historico_deteccao_noite.csv` tables are also
+#'   accepted).
+#' @param core_species Character vector of length >= 1, species codes (the
+#'   `species` column) that enter the matrix.
+#' @param k_min Integer scalar, one of 1, 2 or 3. Repetition rule: 1, 2 or
+#'   3 reliable detections on the night.
+#' @param min_nights_month Numeric scalar. Site x month cells with fewer
+#'   recorded nights are dropped from the matrices (unstable frequencies)
+#'   and flagged in `effort`.
+#' @param drop_empty Logical scalar. If `TRUE`, drops the site x month rows
+#'   in which no core species was detected. Distances such as Bray-Curtis
+#'   are undefined for them.
 #'
 #' @return A list with three tibbles, `frequency` and `counts` (one row per
 #'   site x month, with `site`, `month`, `n_nights_recorded` and one column
@@ -42,75 +45,75 @@
 community_matrices <- function(history, core_species, k_min = 2,
                                min_nights_month = 5, drop_empty = FALSE) {
   if (length(core_species) == 0) stop("`core_species` is empty.")
-  historico <- from_legacy(history) |>
+  hist_tbl <- from_legacy(history) |>
     mutate(night = as.character(night))
 
   col_k <- paste0("detection_k", k_min)
-  if (!col_k %in% names(historico)) {
+  if (!col_k %in% names(hist_tbl)) {
     stop("Column ", col_k, " is not in the history.")
   }
 
-  faltantes <- setdiff(core_species, unique(historico$species))
-  if (length(faltantes) > 0) {
+  missing_sp <- setdiff(core_species, unique(hist_tbl$species))
+  if (length(missing_sp) > 0) {
     warning("Core species missing from the history: ",
-            paste(faltantes, collapse = ", "))
+            paste(missing_sp, collapse = ", "))
   }
 
-  # esforco: noites gravadas por local x mes (todas as especies contam)
-  historico <- historico |>
+  # effort: nights recorded per site x month (every species counts)
+  hist_tbl <- hist_tbl |>
     mutate(month = str_c(str_sub(night, 1, 4), "-", str_sub(night, 5, 6)))
 
-  esforco <- historico |>
+  effort <- hist_tbl |>
     distinct(site, month, night) |>
     count(site, month, name = "n_nights_recorded") |>
     mutate(included = n_nights_recorded >= min_nights_month)
 
-  # noites com deteccao por local x mes x especie (regra k_min, so nucleo)
-  deteccoes <- historico |>
+  # nights with detection per site x month x species (k_min rule, core only)
+  detected <- hist_tbl |>
     filter(species %in% core_species, .data[[col_k]] == 1) |>
     count(site, month, species, name = "n_nights_detected")
 
-  longo <- esforco |>
+  long <- effort |>
     filter(included) |>
     select(site, month, n_nights_recorded) |>
     crossing(species = core_species) |>
-    left_join(deteccoes, by = c("site", "month", "species")) |>
+    left_join(detected, by = c("site", "month", "species")) |>
     mutate(
       n_nights_detected = replace_na(n_nights_detected, 0L),
       frequency = n_nights_detected / n_nights_recorded
     )
 
-  # matrizes largas (linhas = local x mes; colunas = especies)
-  frequencia <- longo |>
+  # wide matrices (rows = site x month; columns = species)
+  freq <- long |>
     select(site, month, n_nights_recorded, species, frequency) |>
     pivot_wider(names_from = species, values_from = frequency) |>
     arrange(site, month)
 
-  contagens <- longo |>
+  counts <- long |>
     select(site, month, n_nights_recorded, species, n_nights_detected) |>
     pivot_wider(names_from = species, values_from = n_nights_detected) |>
     arrange(site, month)
 
   if (drop_empty) {
-    cols <- intersect(core_species, names(contagens))
-    vazias <- rowSums(as.matrix(contagens[cols])) == 0
-    if (any(vazias)) {
-      message(sum(vazias), " site x month row(s) without any core species ",
-              "dropped: ", paste(contagens$site[vazias],
-                                 contagens$month[vazias], collapse = ", "))
-      contagens  <- contagens[!vazias, ]
-      frequencia <- frequencia[!vazias, ]
+    cols <- intersect(core_species, names(counts))
+    empty <- rowSums(as.matrix(counts[cols])) == 0
+    if (any(empty)) {
+      message(sum(empty), " site x month row(s) without any core species ",
+              "dropped: ", paste(counts$site[empty],
+                                 counts$month[empty], collapse = ", "))
+      counts  <- counts[!empty, ]
+      freq <- freq[!empty, ]
     }
   }
 
-  cols <- setdiff(names(contagens), c("site", "month", "n_nights_recorded"))
-  tentativas <- matrix(as.numeric(contagens$n_nights_recorded),
-                       nrow = nrow(contagens), ncol = length(cols),
-                       dimnames = list(paste(contagens$site, contagens$month,
+  cols <- setdiff(names(counts), c("site", "month", "n_nights_recorded"))
+  trials <- matrix(as.numeric(counts$n_nights_recorded),
+                       nrow = nrow(counts), ncol = length(cols),
+                       dimnames = list(paste(counts$site, counts$month,
                                              sep = "_"), cols))
 
-  list(frequency = frequencia, counts = contagens, effort = esforco,
-       trials = tentativas)
+  list(frequency = freq, counts = counts, effort = effort,
+       trials = trials)
 }
 
 #' Write the community matrices
@@ -123,40 +126,42 @@ community_matrices <- function(history, core_species, k_min = 2,
 #' script `gerar_matrizes_comunidade.R`.
 #'
 #' @inheritParams community_matrices
-#' @param history_file Path to `nightly_detection_history.csv` (or a v1.2.0
+#' @param history_file Character scalar, path to
+#'   `nightly_detection_history.csv` (or a v1.2.0
 #'   `historico_deteccao_noite.csv`).
-#' @param output_dir Output folder; created if needed.
+#' @param output_dir Character scalar, path to the output folder; created if
+#'   needed.
 #'
 #' @return The list returned by [community_matrices()], invisibly.
 #' @export
 build_community_matrices <- function(history_file, output_dir, core_species,
                                      k_min = 2, min_nights_month = 5) {
   if (!file.exists(history_file)) stop("History not found: ", history_file)
-  # a noite (AAAAMMDD) e lida como texto, no formato novo ou no antigo
-  cols_noite <- intersect(c("night", "noite"),
+  # the night (YYYYMMDD) is read as text, in the new or the legacy format
+  night_cols <- intersect(c("night", "noite"),
                           names(read_csv(history_file, n_max = 0,
                                          show_col_types = FALSE)))
-  historico <- read_csv(
+  hist_tbl <- read_csv(
     history_file, show_col_types = FALSE,
     col_types = readr::cols(!!!setNames(rep(list(readr::col_character()),
-                                            length(cols_noite)), cols_noite),
+                                            length(night_cols)), night_cols),
                             .default = readr::col_guess()))
-  mats <- community_matrices(historico, core_species, k_min,
+  mats <- community_matrices(hist_tbl, core_species, k_min,
                              min_nights_month)
 
   dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
-  sufixo <- paste0("site_month_k", k_min)
+  suffix <- paste0("site_month_k", k_min)
   write_csv(mats$frequency,
-            file.path(output_dir, paste0("frequency_matrix_", sufixo, ".csv")))
+            file.path(output_dir, paste0("frequency_matrix_", suffix, ".csv")))
   write_csv(mats$counts,
-            file.path(output_dir, paste0("count_matrix_", sufixo, ".csv")))
+            file.path(output_dir, paste0("count_matrix_", suffix, ".csv")))
   write_csv(mats$effort, file.path(output_dir, "effort_site_month.csv"))
 
-  n_desc <- sum(!mats$effort$included)
+  n_dropped <- sum(!mats$effort$included)
   message("Matrix: ", nrow(mats$frequency), " rows (site x month) x ",
           length(core_species), " species | rule k >= ", k_min)
   message("Effort: ", sum(mats$effort$included), " site x month cells ",
-          "included; ", n_desc, " dropped for having < ", min_nights_month,
+          "included; ", n_dropped, " dropped for having < ", min_nights_month,
           " recorded nights (see effort_site_month.csv)")
   message("Files in: ", output_dir)
   invisible(mats)

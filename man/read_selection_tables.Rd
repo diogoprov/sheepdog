@@ -12,15 +12,19 @@ read_selection_tables(
 )
 }
 \arguments{
-\item{data_dir}{Root folder, searched recursively.}
+\item{data_dir}{Character scalar, path to the root folder, searched
+recursively.}
 
-\item{table_pattern}{Regular expression for the file names of combined
+\item{table_pattern}{Character scalar, regular expression for the file
+names of combined
 tables.}
 
-\item{per_audio_pattern}{Regular expression for the file names of
+\item{per_audio_pattern}{\code{NULL} or character scalar, regular expression
+for the file names of
 per-audio tables. \code{NULL} reads only combined tables.}
 
-\item{site_pattern}{Optional regular expression with one capture group
+\item{site_pattern}{\code{NULL} or character scalar, regular expression with
+one capture group
 that takes the site from the name of the audio file in \verb{Begin Path},
 instead of from the folder of the table. For example,
 \code{"^[^_]+_([^_]+)_"} reads \code{Campus01} from

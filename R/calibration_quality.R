@@ -45,16 +45,19 @@
 #' night on the same side of the split.
 #'
 #' @inheritParams compare_calibration_models
-#' @param formula Formula of the model to check, e.g. the one chosen by
-#'   [select_calibration_model()].
-#' @param by Columns that define the groups: `"species"`, or
-#'   `c("site", "species")` for the cells of the calibration, which hold
-#'   fewer clips each.
-#' @param min_class Least number of true positives and of false positives
-#'   for a group to be judged. With fewer, `status` is `"insufficient"`.
-#' @param auc_min Lowest acceptable `auc` and `auc_score`.
-#' @param slope_range Acceptable range of `cal_slope`.
-#' @param intercept_max Largest acceptable absolute `cal_intercept`.
+#' @param formula A model formula, the formula of the model to check, e.g. the
+#'   one chosen by [select_calibration_model()].
+#' @param by Character vector of columns of `validations` that define the
+#'   groups: `"species"`, or `c("site", "species")` for the cells of the
+#'   calibration, which hold fewer clips each.
+#' @param min_class Numeric scalar, least number of true positives and of false
+#'   positives for a group to be judged. With fewer, `status` is
+#'   `"insufficient"`.
+#' @param auc_min Numeric scalar, lowest acceptable `auc` and `auc_score`.
+#' @param slope_range Numeric vector of length 2, increasing: acceptable range
+#'   of `cal_slope`.
+#' @param intercept_max Numeric scalar, largest acceptable absolute
+#'   `cal_intercept`.
 #'
 #' @return A tibble with one row per group: the `by` columns, `n`, `n_tp`,
 #'   `n_fp`, `conf_min`, `conf_max`, `auc`, `auc_score`, `logloss`,
@@ -86,86 +89,109 @@ calibration_quality <- function(validations, formula, k_folds = 5,
   need_lme4(list(formula))
 
   val <- validations
-  val$.dobra <- calibration_folds(validations, k_folds, seed, fold_group)
-  val$.grupo <- do.call(paste, c(lapply(val[by], as.character), sep = "\r"))
+  val$.fold <- calibration_folds(validations, k_folds, seed, fold_group)
+  val$.group <- do.call(paste, c(lapply(val[by], as.character), sep = "\r"))
   val$.p <- NA_real_
-  val$.p_nulo <- NA_real_
-  n_falhas <- 0L
+  val$.p_null <- NA_real_
+  n_failed <- 0L
   for (k in seq_len(k_folds)) {
-    teste <- which(val$.dobra == k)
-    treino <- val[val$.dobra != k, ]
-    fit <- tryCatch(fit_model(formula, treino), error = function(e) NULL)
+    test_idx <- which(val$.fold == k)
+    train <- val[val$.fold != k, ]
+    fit <- tryCatch(fit_model(formula, train), error = function(e) NULL)
     if (is.null(fit)) {
-      n_falhas <- n_falhas + 1L
+      n_failed <- n_failed + 1L
       next
     }
-    val$.p[teste] <- predict_tp(fit, val[teste, ])
-    # taxa do grupo no treino, suavizada para nao dar 0 ou 1; grupo ausente
-    # do treino (dobras agrupadas) recebe a taxa geral
-    taxa <- tapply(treino$tp, treino$.grupo,
+    val$.p[test_idx] <- predict_tp(fit, val[test_idx, ])
+    # group rate in the training folds, smoothed to avoid 0 or 1; a group
+    # absent from training (grouped folds) gets the overall rate
+    rate <- tapply(train$tp, train$.group,
                    function(x) (sum(x) + 1) / (length(x) + 2))
-    nulo <- unname(taxa[val$.grupo[teste]])
-    nulo[is.na(nulo)] <- mean(treino$tp)
-    val$.p_nulo[teste] <- nulo
+    p_null <- unname(rate[val$.group[test_idx]])
+    p_null[is.na(p_null)] <- mean(train$tp)
+    val$.p_null[test_idx] <- p_null
   }
-  if (n_falhas == k_folds) {
+  if (n_failed == k_folds) {
     stop("The fit failed in all the folds.", call. = FALSE)
   }
-  if (n_falhas > 0L) {
-    warning("The fit failed in ", n_falhas, " of ", k_folds,
+  if (n_failed > 0L) {
+    warning("The fit failed in ", n_failed, " of ", k_folds,
             " folds, left out of the measures.", call. = FALSE)
   }
 
   val |>
     filter(!is.na(.p)) |>
     group_by(across(all_of(by))) |>
-    group_modify(function(d, chave) {
+    group_modify(function(d, key) {
       quality_row(d, min_class, auc_min, slope_range, intercept_max)
     }) |>
     ungroup()
 }
 
-# Medidas de um grupo sobre as predicoes fora da amostra
+#' Quality measures of one group from held-out predictions
+#'
+#' @param d A data frame of the clips of one group, with columns `tp`,
+#'   `confidence`, `.p` (held-out P(TP)) and `.p_null` (null-model
+#'   probability).
+#' @param min_class Integer scalar, least number of true and of false
+#'   positives for the group to be judged.
+#' @param auc_min Numeric scalar, lowest acceptable AUC.
+#' @param slope_range Numeric vector of length 2, acceptable range of the
+#'   calibration slope.
+#' @param intercept_max Numeric scalar, largest acceptable absolute
+#'   calibration intercept.
+#' @return A one-row tibble with `n`, `n_tp`, `n_fp`, `conf_min`, `conf_max`,
+#'   `auc`, `auc_score`, `logloss`, `logloss_null`, `logloss_gain`,
+#'   `cal_intercept`, `cal_slope`, `status` and `reason`.
+#' @noRd
 quality_row <- function(d, min_class, auc_min, slope_range, intercept_max) {
-  medidas <- score_probabilities(d$tp, d$.p)
-  ll_nulo <- score_probabilities(d$tp, d$.p_nulo)[["logloss"]]
-  ganho <- ll_nulo - medidas[["logloss"]]
+  measures <- score_probabilities(d$tp, d$.p)
+  ll_null <- score_probabilities(d$tp, d$.p_null)[["logloss"]]
+  gain <- ll_null - measures[["logloss"]]
   n_tp <- sum(d$tp == 1L)
   n_fp <- sum(d$tp == 0L)
-  area <- auc_ordered(d$tp, d$.p)
-  area_score <- auc_ordered(d$tp, d$confidence)
-  inclinacao <- medidas[["cal_slope"]]
-  intercepto <- medidas[["cal_intercept"]]
+  auc_p <- auc_ordered(d$tp, d$.p)
+  auc_sc <- auc_ordered(d$tp, d$confidence)
+  slope <- measures[["cal_slope"]]
+  intercept <- measures[["cal_intercept"]]
 
-  fora <- function(teste) isTRUE(teste)
-  motivos <- c(
-    if (fora(ganho <= 0)) "no gain over the null model",
-    if (fora(area < auc_min)) "low AUC",
-    if (fora(area_score < auc_min)) "low AUC of the score",
-    if (fora(inclinacao < slope_range[1] || inclinacao > slope_range[2])) {
+  is_out <- function(x) isTRUE(x)
+  reasons <- c(
+    if (is_out(gain <= 0)) "no gain over the null model",
+    if (is_out(auc_p < auc_min)) "low AUC",
+    if (is_out(auc_sc < auc_min)) "low AUC of the score",
+    if (is_out(slope < slope_range[1] || slope > slope_range[2])) {
       "calibration slope out of range"
     },
-    if (fora(abs(intercepto) > intercept_max)) {
+    if (is_out(abs(intercept) > intercept_max)) {
       "calibration intercept out of range"
     })
-  poucos <- n_tp < min_class || n_fp < min_class
+  too_few <- n_tp < min_class || n_fp < min_class
   tibble(n = nrow(d), n_tp = n_tp, n_fp = n_fp,
          conf_min = min(d$confidence), conf_max = max(d$confidence),
-         auc = area, auc_score = area_score,
-         logloss = medidas[["logloss"]], logloss_null = ll_nulo,
-         logloss_gain = ganho, cal_intercept = intercepto,
-         cal_slope = inclinacao,
-         status = if (poucos) "insufficient"
-                  else if (length(motivos) > 0) "poor" else "ok",
-         reason = if (poucos) {
+         auc = auc_p, auc_score = auc_sc,
+         logloss = measures[["logloss"]], logloss_null = ll_null,
+         logloss_gain = gain, cal_intercept = intercept,
+         cal_slope = slope,
+         status = if (too_few) "insufficient"
+                  else if (length(reasons) > 0) "poor" else "ok",
+         reason = if (too_few) {
            paste0("fewer than ", min_class, " clips of a verdict")
          } else {
-           paste(motivos, collapse = "; ")
+           paste(reasons, collapse = "; ")
          })
 }
 
-# AUC com a direcao fixa: pROC::roc() por padrao inverte a ordem quando ela
-# da uma area abaixo de 0.5, o que esconderia um score invertido
+#' AUC with a fixed direction
+#'
+#' By default `pROC::roc()` reverses the ordering when it gives an area
+#' below 0.5, which would hide an inverted score; here the direction is
+#' fixed.
+#'
+#' @param tp Integer vector of 0/1 verdicts.
+#' @param p Numeric vector of the same length, probabilities or scores.
+#' @return Numeric scalar, the AUC, or `NA` when `tp` has a single value.
+#' @noRd
 auc_ordered <- function(tp, p) {
   if (n_distinct(tp) < 2L) return(NA_real_)
   as.numeric(pROC::auc(pROC::roc(tp, p, levels = c(0, 1), direction = "<",

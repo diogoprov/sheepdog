@@ -27,63 +27,69 @@ compare_calibration_curves(
 )
 }
 \arguments{
-\item{validation}{Reviewed clips, as for \code{\link[=suggest_thresholds]{suggest_thresholds()}}: with
-\code{verdict} (\code{"positive"} or \code{"negative"}; others are left out),
-\code{confidence} and, for weights, \code{inclusion_prob}.}
+\item{validation}{A data frame (or tibble) of the reviewed clips, one row per
+clip, as for \code{\link[=suggest_thresholds]{suggest_thresholds()}}: with \code{verdict} (\code{"positive"} or
+\code{"negative"}; others are left out), \code{confidence} and, for weights,
+\code{inclusion_prob}.}
 
-\item{target}{Target probability (\code{threshold_p_tp}) and precision
-(\code{threshold_precision}, \code{threshold_weighted}). Several targets can be
-given: the curves and the cross-validation are fitted once per group,
-and the result has one row per group x target x curve.}
+\item{target}{Numeric vector of values in (0, 1), target probability
+(\code{threshold_p_tp}) and precision (\code{threshold_precision},
+\code{threshold_weighted}). Several targets can be given: the curves and the
+cross-validation are fitted once per group, and the result has one row per
+group x target x curve.}
 
-\item{by}{Columns of \code{validation} that define the groups fitted
-separately. \code{"species_folder"} by default; \code{c("site", "species_folder")} fits each cell.}
+\item{by}{Character vector of columns of \code{validation} that define the groups
+fitted separately. \code{"species_folder"} by default;
+\code{c("site", "species_folder")} fits each cell.}
 
-\item{curves}{Curves to fit, among \code{"logistic"}, \code{"quadratic"}, \code{"gam"}
-and \code{"monotone_gam"}. \code{"gam"} needs the package \code{mgcv} and
-\code{"monotone_gam"} the package \code{scam}; a curve whose package is missing
-is left out with a message.}
+\item{curves}{Character vector, the curves to fit, among \code{"logistic"},
+\code{"quadratic"}, \code{"gam"} and \code{"monotone_gam"}. \code{"gam"} needs the package
+\code{mgcv} and \code{"monotone_gam"} the package \code{scam}; a curve whose package is
+missing is left out with a message.}
 
-\item{weighted}{\code{NULL} (weight by \code{1 / inclusion_prob} the groups whose
-clips all have it), \code{TRUE} or \code{FALSE}.}
+\item{weighted}{\code{NULL} or a logical scalar: \code{NULL} (weight by
+\code{1 / inclusion_prob} the groups whose clips all have it), \code{TRUE} or
+\code{FALSE}.}
 
-\item{k}{Basis dimension of the GAMs (reduced when the group has fewer
-distinct scores).}
+\item{k}{Integer scalar, basis dimension of the GAMs (reduced when the group
+has fewer distinct scores).}
 
-\item{k_folds}{Number of folds of the cross-validation.}
+\item{k_folds}{Integer scalar, number of folds of the cross-validation.}
 
-\item{cv}{\code{FALSE} skips the cross-validation (\code{cv_logloss},
-\code{cv_logloss_se} and \code{within_1se} are \code{NA}), when only the thresholds
-and the verdict, which does not use it, are needed.}
+\item{cv}{Logical scalar. \code{FALSE} skips the cross-validation (\code{cv_logloss},
+\code{cv_logloss_se} and \code{within_1se} are \code{NA}), when only the thresholds and
+the verdict, which does not use it, are needed.}
 
-\item{cluster}{Column of \code{validation} whose levels are kept together in
-the folds (\code{"source_audio"}, the recording, by default). Without it,
-clips are split one by one.}
+\item{cluster}{Character scalar, the column of \code{validation} whose levels are
+kept together in the folds (\code{"source_audio"}, the recording, by default).
+Without it, clips are split one by one.}
 
-\item{top_from, bin_width}{Lower limit and width of the high score bins
-of \code{top_error}.}
+\item{top_from, bin_width}{Numeric scalars in (0, 1), lower limit and width of
+the high score bins of \code{top_error}.}
 
-\item{min_n}{Minimum number of clips of a group, of (effective) clips at
-or above a cut for it to count, and of effective clips in the high
-bins.}
+\item{min_n}{Numeric scalar, minimum number of clips of a group, of
+(effective) clips at or above a cut for it to count, and of effective clips
+in the high bins.}
 
-\item{min_bin}{Minimum number of clips of a bin for it to enter
-\code{top_error}.}
+\item{min_bin}{Numeric scalar, minimum number of clips of a bin for it to
+enter \code{top_error}.}
 
-\item{max_error, tolerance}{Largest \code{top_error_excess} and largest
-difference between the logistic and the weighted thresholds, in score
-units, for \code{"keep_logistic"}.}
+\item{max_error, tolerance}{Numeric scalars, largest \code{top_error_excess} and
+largest difference between the logistic and the weighted thresholds, in
+score units, for \code{"keep_logistic"}.}
 
-\item{n_boot}{Number of bootstrap replicates of the difference between
-the logistic and the weighted thresholds (\code{0}, the default, skips it).}
+\item{n_boot}{Numeric scalar >= 0, number of bootstrap replicates of the
+difference between the logistic and the weighted thresholds (\code{0}, the
+default, skips it).}
 
-\item{conf}{Probability of the bootstrap interval of the difference.}
+\item{conf}{Numeric scalar in (0, 1), probability of the bootstrap interval
+of the difference.}
 
-\item{grid_step}{Step of the grid of scores of \code{threshold_p_tp} and of
-the curves returned.}
+\item{grid_step}{Numeric scalar in (0, 1), step of the grid of scores of
+\code{threshold_p_tp} and of the curves returned.}
 
-\item{seed}{Seed of the folds. The global random number generator is
-left as it was.}
+\item{seed}{Integer scalar, seed of the folds. The global random number
+generator is left as it was.}
 }
 \value{
 A tibble with one row per group x target x curve: the \code{by}

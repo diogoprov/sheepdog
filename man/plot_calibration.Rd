@@ -15,22 +15,25 @@ plot_calibration(
 )
 }
 \arguments{
-\item{fit}{Model returned by \code{\link[=fit_calibration]{fit_calibration()}}.}
+\item{fit}{A \code{glm}, \code{glmerMod} or \code{brmsfit} returned by \code{\link[=fit_calibration]{fit_calibration()}}.}
 
-\item{validations}{Table returned by \code{\link[=read_validations]{read_validations()}}.}
+\item{validations}{A data frame (or tibble) returned by \code{\link[=read_validations]{read_validations()}},
+one row per reviewed clip.}
 
-\item{min_confidence}{Detections below this confidence are not scored.}
+\item{min_confidence}{Numeric scalar in [0, 1]. Detections below this
+confidence are not scored.}
 
-\item{p_min}{Threshold on the calibrated probability (not on the
-confidence score).}
+\item{p_min}{Numeric scalar in [0, 1], threshold on the calibrated
+probability (not on the confidence score).}
 
-\item{model_name}{Name shown in the subtitle.}
+\item{model_name}{Character scalar, name shown in the subtitle.}
 
-\item{interval}{Draw a band around each curve: a pointwise confidence
-interval of P(TP) for \code{glm} and \code{glmerMod} fits, a credible interval
-for \code{brmsfit} fits. \code{FALSE} (default) draws the curves only.}
+\item{interval}{Logical scalar. If \code{TRUE}, draw a band around each curve: a
+pointwise confidence interval of P(TP) for \code{glm} and \code{glmerMod} fits, a
+credible interval for \code{brmsfit} fits. \code{FALSE} (default) draws the curves
+only.}
 
-\item{level}{Coverage of the band, a single number in (0, 1).}
+\item{level}{Numeric scalar in (0, 1), coverage of the band.}
 }
 \value{
 A ggplot object.

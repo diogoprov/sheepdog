@@ -7,7 +7,7 @@
 suggest_core_species(status)
 }
 \arguments{
-\item{status}{Table returned by \code{\link[=cell_status]{cell_status()}}.}
+\item{status}{A data frame (or tibble) returned by \code{\link[=cell_status]{cell_status()}}.}
 }
 \value{
 A character vector of species codes (the \code{species} column of

@@ -7,9 +7,11 @@
 calibration_prior(formula, validations)
 }
 \arguments{
-\item{formula}{Calibration formula (see \code{\link[=calibration_models]{calibration_models()}}).}
+\item{formula}{A model formula, the calibration formula (see
+\code{\link[=calibration_models]{calibration_models()}}).}
 
-\item{validations}{Table returned by \code{\link[=read_validations]{read_validations()}}.}
+\item{validations}{A data frame (or tibble) returned by \code{\link[=read_validations]{read_validations()}},
+one row per reviewed clip.}
 }
 \value{
 A \code{brmsprior} object.

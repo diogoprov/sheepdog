@@ -15,26 +15,31 @@ covariate_bins(
 )
 }
 \arguments{
-\item{covariates}{Data frame with the \code{key} columns and \code{var}, one row
+\item{covariates}{A data frame with the \code{key} columns and \code{var}, one row
 per occasion (or per night, when the covariate is nightly).}
 
-\item{var}{Name of the numeric column to cut.}
+\item{var}{Character scalar, name of the numeric column to cut.}
 
-\item{key}{Columns that identify a row of \code{covariates} and are matched
+\item{key}{Character vector, columns that identify a row of
+\code{covariates} and are matched
 against the occasions in \code{\link[=select_clips]{select_clips()}}: any of \code{site}, \code{night},
 \code{recording_date}, \code{recording_hour}, \code{source_audio} and \code{occasion_id}.
 \code{night} and \code{recording_date} are dates written as \code{YYYYMMDD}.}
 
-\item{n_bins}{Number of bins when \code{breaks} is \code{NULL}.}
+\item{n_bins}{Integer scalar >= 2, number of bins when \code{breaks} is
+\code{NULL}.}
 
-\item{breaks}{Optional numeric vector of breaks shared by all groups,
-instead of quantiles (bins are left-closed; the last one includes its
+\item{breaks}{\code{NULL} or numeric vector of length >= 2, strictly
+increasing: breaks shared by all groups, instead of quantiles (bins
+are left-closed; the last one includes its
 upper end).}
 
-\item{within}{Columns within which quantile breaks are computed (\code{NULL}
+\item{within}{\code{NULL} or character vector, columns within which quantile
+breaks are computed (\code{NULL}
 for quantiles over all rows). Ignored when \code{breaks} is given.}
 
-\item{name}{Name of the new column. Defaults to \verb{<var>_bin}.}
+\item{name}{Character scalar, name of the new column. Defaults to
+\verb{<var>_bin}.}
 }
 \value{
 The \code{key} columns (as character) and the bin, an ordered factor

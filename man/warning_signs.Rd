@@ -22,49 +22,57 @@ warning_signs(
 )
 }
 \arguments{
-\item{validation}{Reviewed clips, as for \code{\link[=suggest_thresholds]{suggest_thresholds()}}.}
+\item{validation}{A data frame (or tibble) of reviewed clips, as for
+\code{\link[=suggest_thresholds]{suggest_thresholds()}}. One row per clip.}
 
-\item{thresholds}{The threshold of each species or cell: a single
+\item{thresholds}{A numeric scalar or a data frame (or tibble). The
+threshold of each species or cell: a single
 number, or a table with \code{species_folder} (and optionally \code{site}) and a
 \code{threshold} column, such as the output of \code{\link[=suggest_thresholds]{suggest_thresholds()}}
 (\code{threshold_column} picks another column, such as
 \code{"threshold_conservative"} of \code{\link[=threshold_bootstrap]{threshold_bootstrap()}}, the threshold
 to apply).}
 
-\item{groups}{Columns of \code{validation} for signs 6 and 7, such as
-\code{"site"} or a month column. \code{NULL} uses \code{"site"} when there is more
-than one site.}
+\item{groups}{\code{NULL} or a character vector of column names of
+\code{validation} for signs 6 and 7, such as \code{"site"} or a month column.
+\code{NULL} uses \code{"site"} when there is more than one site.}
 
-\item{curves}{Optional output of \code{\link[=compare_calibration_curves]{compare_calibration_curves()}} (sign
-8). With curves fitted by site, the worst verdict of the species
+\item{curves}{\code{NULL} or a data frame (or tibble) returned by
+\code{\link[=compare_calibration_curves]{compare_calibration_curves()}} (sign 8). With curves fitted by site,
+the worst verdict of the species counts.}
+
+\item{recall}{\code{NULL} or a data frame (or tibble) returned by
+\code{\link[=recall_ceiling]{recall_ceiling()}} (sign 1). With a ceiling per site, the lowest
 counts.}
 
-\item{recall}{Optional output of \code{\link[=recall_ceiling]{recall_ceiling()}} (sign 1). With a
-ceiling per site, the lowest counts.}
+\item{target_precision}{Numeric scalar in (0, 1). Target precision of the
+threshold (sign 7).}
 
-\item{target_precision}{Target precision of the threshold (sign 7).}
+\item{min_n}{Numeric scalar. Minimum number of clips of a group for it to
+count in signs 6 and 7.}
 
-\item{min_n}{Minimum number of clips of a group for it to count in signs
-6 and 7.}
+\item{min_tp_kept}{Numeric scalar in [0, 1]. Sign 2 is raised when the
+share of the true positives kept by the threshold is below this.}
 
-\item{min_tp_kept}{Sign 2 is raised when the share of the true positives
-kept by the threshold is below this.}
-
-\item{max_fp_spread}{Sign 6 is raised when the false-positive rate of
-two levels of a group differs by more than this.}
-
-\item{min_ceiling}{Sign 1 is raised when the recall ceiling is below
+\item{max_fp_spread}{Numeric scalar in [0, 1]. Sign 6 is raised when the
+false-positive rate of two levels of a group differs by more than
 this.}
 
-\item{threshold_column}{Column of \code{thresholds} with the threshold.}
+\item{min_ceiling}{Numeric scalar in [0, 1]. Sign 1 is raised when the
+recall ceiling is below this.}
 
-\item{cluster}{Column of \code{validation} with the recording (or other unit)
-of each clip, for sign 9. A missing column leaves sign 9 \code{NA}.}
+\item{threshold_column}{Character scalar, the column of \code{thresholds} with
+the threshold.}
 
-\item{max_deff}{Sign 9 is raised when the design effect of the false
-positives above the threshold is above this.}
+\item{cluster}{\code{NULL} or a character scalar, the column of \code{validation}
+with the recording (or other unit) of each clip, for sign 9. A missing
+column leaves sign 9 \code{NA}.}
 
-\item{file}{Optional path of a Markdown file to write the report to.}
+\item{max_deff}{Numeric scalar. Sign 9 is raised when the design effect
+of the false positives above the threshold is above this.}
+
+\item{file}{\code{NULL} or a character scalar, path of a Markdown file to
+write the report to.}
 }
 \value{
 A tibble with one row per species: \code{species_folder},

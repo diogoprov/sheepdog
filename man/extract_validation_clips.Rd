@@ -17,35 +17,44 @@ extract_validation_clips(
 )
 }
 \arguments{
-\item{data_dir}{Root folder, searched recursively.}
+\item{data_dir}{Character scalar, path to the root folder, searched
+recursively.}
 
-\item{output_dir}{Output folder; created if needed.}
+\item{output_dir}{Character scalar, path to the output folder; created if
+needed.}
 
-\item{...}{Sampling design, passed to \code{\link[=select_clips]{select_clips()}} (e.g.
+\item{...}{Further arguments passed to \code{\link[=select_clips]{select_clips()}}: the sampling
+design (e.g.
 \code{sampling_mode}, \code{n_top}, \code{threshold}, \code{target_total}, \code{remap_from},
 \code{remap_to}, and \code{previous} for a further round, in a new \code{output_dir}).}
 
-\item{table_pattern}{Regular expression for the file names of combined
+\item{table_pattern}{Character scalar, regular expression for the file
+names of combined
 tables.}
 
-\item{per_audio_pattern}{Regular expression for the file names of
+\item{per_audio_pattern}{\code{NULL} or character scalar, regular expression
+for the file names of
 per-audio tables. \code{NULL} reads only combined tables.}
 
-\item{site_pattern}{Optional regular expression with one capture group
+\item{site_pattern}{\code{NULL} or character scalar, regular expression with
+one capture group
 that takes the site from the name of the audio file in \verb{Begin Path},
 instead of from the folder of the table. For example,
 \code{"^[^_]+_([^_]+)_"} reads \code{Campus01} from
 \code{Campinas_Campus01_20261003_074339.flac}. Use the same pattern in
 \code{\link[=list_recordings]{list_recordings()}}.}
 
-\item{make_zip}{Zip one package per species (skipped when \code{simulate} is
+\item{make_zip}{Logical scalar. If \code{TRUE}, zip one package per species
+(skipped when \code{simulate} is
 \code{TRUE}).}
 
-\item{simulate}{If \code{TRUE}, no audio is cut (the empty species folders
+\item{simulate}{Logical scalar. If \code{TRUE}, no audio is cut (the empty
+species folders
 are still created), but \code{status} tells what would be done. Useful to
 check a selection before cutting.}
 
-\item{classifier}{Label of the classifier that produced the selection
+\item{classifier}{\code{NULL} or character scalar, label of the classifier
+that produced the selection
 tables (e.g. \code{"DiverSons v2, BirdNET-Analyzer 2.4.0"}), recorded in
 \code{extraction_info.csv}. \code{NULL} records \code{NA}.}
 }

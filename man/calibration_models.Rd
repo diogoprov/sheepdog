@@ -7,15 +7,16 @@
 calibration_models(uncorrelated = FALSE, single_species = FALSE)
 }
 \arguments{
-\item{uncorrelated}{Add \code{m5_species_x_site_uncorrelated}, the m4
-structure without the correlation between the species intercepts and
-slopes. It avoids the singular fits of m4 when that correlation is
-estimated at +-1. \code{FALSE} keeps the candidates of 2.0.0.}
+\item{uncorrelated}{Logical scalar. If \code{TRUE}, add
+\code{m5_species_x_site_uncorrelated}, the m4 structure without the correlation
+between the species intercepts and slopes. It avoids the singular fits of
+m4 when that correlation is estimated at +-1. \code{FALSE} keeps the candidates
+of 2.0.0.}
 
-\item{single_species}{Use a family for one species: global logistic
-regression, a site intercept, and a site intercept and slope. With
-\code{uncorrelated = TRUE}, also include independent site intercepts and
-slopes. \code{FALSE} preserves the multispecies family.}
+\item{single_species}{Logical scalar. If \code{TRUE}, use a family for one
+species: global logistic regression, a site intercept, and a site intercept
+and slope. With \code{uncorrelated = TRUE}, also include independent site
+intercepts and slopes. \code{FALSE} preserves the multispecies family.}
 }
 \value{
 A named list of formulas: \code{m0_global}, \code{m1_species_intercept},

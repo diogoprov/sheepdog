@@ -58,17 +58,10 @@
 #' @srrstats {G5.12} `.github/CONTRIBUTING.md` (section "Tests that fit Stan models") documents the environment variable, the Stan backend, the suggested packages and the run time of the tests that fit Bayesian models.
 #' @srrstats {BS1.2a} The README section "Calibration" shows how to build, check and pass the prior.
 #' @srrstats {G1.6} `dev/benchmarks/scaling.R` compares the calibration with implementations in base R (`stats::glm()` for the global model, one `glm()` per species, one for all species) by log-loss on new simulated clips; the results are in `vignette("performance")`, section "Comparison with base R implementations".
+#' @srrstats {G1.4a} All 199 internal functions carry a roxygen block (title, `@param` for every argument, `@return`) ending in `@noRd`, so no `.Rd` files are generated for them; internal names and comments are in English.
+#' @srrstats {G2.0a} Each `@param` of an exported function opens with the expected length of the input (scalar, vector of a given length, one row per clip or recording), matching the checks in `R/checks.R`.
+#' @srrstats {G2.1a} Each `@param` of an exported function opens with the expected type (numeric, integer, logical, character, data frame with named columns, fitted model class) and range where the code enforces one.
 #' @srrstats {RE5.0} `dev/benchmarks/scaling.R` times `fit_calibration()` from 500 to 32,000 reviewed clips; `vignette("performance")`, section "Scaling with the number of reviewed clips", reports the times and the log-log exponent.
-#' @noRd
-NULL
-
-#' rOpenSci statistical standards: to do
-#'
-#' Standards not yet met, each with a note on the gap.
-#'
-#' @srrstatsTODO {G1.4a} *All internal (non-exported) functions should also be documented in standard [`roxygen2`](https://roxygen2.r-lib.org/) format, along with a final `@noRd` tag to suppress automatic generation of `.Rd` files or [`@keywords internal`](https://roxygen2.r-lib.org/reference/tags-index-crossref.html?q=keywords%20internal#null) if documentation is still desired.* Gap: about 170 internal functions carry plain comments, many in Portuguese; they need English roxygen blocks marked noRd.
-#' @srrstatsTODO {G2.0a} Provide explicit secondary documentation of any expectations on lengths of inputs Gap: standardise the argument documentation on expected lengths.
-#' @srrstatsTODO {G2.1a} *Provide explicit secondary documentation of expectations on data types of all vector inputs.* Gap: standardise the argument documentation on expected types.
 #' @noRd
 NULL
 

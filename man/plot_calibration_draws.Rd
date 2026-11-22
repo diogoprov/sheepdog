@@ -7,15 +7,16 @@
 plot_calibration_draws(fit, n_draws = 100, p_min = 0.95, seed = 2026)
 }
 \arguments{
-\item{fit}{Model returned by \code{\link[=fit_calibration]{fit_calibration()}} with \code{engine = "brms"}
+\item{fit}{A \code{brmsfit} returned by \code{\link[=fit_calibration]{fit_calibration()}} with \code{engine = "brms"}
 or by \code{\link[=prior_predictive_calibration]{prior_predictive_calibration()}}.}
 
-\item{n_draws}{Number of curves.}
+\item{n_draws}{Integer scalar >= 1, number of curves (at most the number of
+draws in \code{fit}).}
 
-\item{p_min}{Threshold drawn as a dashed line.}
+\item{p_min}{Numeric scalar in [0, 1], threshold drawn as a dashed line.}
 
-\item{seed}{Seed of the choice of draws. The global random number
-generator is left as it was.}
+\item{seed}{Integer scalar, seed of the choice of draws. The global random
+number generator is left as it was.}
 }
 \value{
 A ggplot object.

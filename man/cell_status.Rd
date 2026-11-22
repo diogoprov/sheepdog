@@ -7,17 +7,20 @@
 cell_status(fit, validations, p_min = 0.95, min_n = 15, by = NULL)
 }
 \arguments{
-\item{fit}{Model returned by \code{\link[=fit_calibration]{fit_calibration()}}.}
+\item{fit}{A model returned by \code{\link[=fit_calibration]{fit_calibration()}} (\code{glm}, \code{glmerMod} or
+\code{brmsfit}).}
 
-\item{validations}{Table returned by \code{\link[=read_validations]{read_validations()}}, the clips
-the model was fitted to.}
+\item{validations}{A data frame (or tibble) returned by
+\code{\link[=read_validations]{read_validations()}}, with columns \code{site}, \code{species}, \code{confidence} and
+\code{tp}: the clips the model was fitted to, one row per clip.}
 
-\item{p_min}{Calibrated probability that makes a detection reliable, as
-in \code{\link[=detection_history]{detection_history()}}.}
+\item{p_min}{Numeric scalar in (0, 1). Calibrated probability that makes
+a detection reliable, as in \code{\link[=detection_history]{detection_history()}}.}
 
-\item{min_n}{Minimum number of reviewed clips in a cell.}
+\item{min_n}{Numeric scalar. Minimum number of reviewed clips in a cell.}
 
-\item{by}{Optional columns of \code{validations} that split each cell, e.g.
+\item{by}{\code{NULL} or a character vector of column names of \code{validations}
+that split each cell, e.g.
 the bin of an environmental gradient or of an acoustic index from
 \code{\link[=covariate_bins]{covariate_bins()}} (kept by \code{read_validations(keep = )} or joined
 afterwards). Each site x species x \code{by} cell gets its own status; the

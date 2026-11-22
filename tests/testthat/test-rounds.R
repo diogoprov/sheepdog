@@ -311,6 +311,17 @@ test_that("post_validation() combines the rounds", {
     output_dir = file.path(d, "r2", "out2"), min_n = 1,
     previous = file.path(d, "r1", "out", "validation_by_clip.csv")))
   expect_equal(unique(tres$validation$inclusion_prob), 4 / 30)
+
+  # the earlier round given as a single data frame, not split into columns
+  r1_tab <- readr::read_csv(file.path(d, "r1", "out", "validation_by_clip.csv"),
+                            show_col_types = FALSE)
+  quatro <- suppressMessages(post_validation(
+    manifest_path = file.path(d, "r2", "clip_manifest.csv"),
+    verdicts_file = file.path(d, "r2", "verdicts.csv"),
+    output_dir = file.path(d, "r2", "out3"), min_n = 1,
+    previous = r1_tab, candidates = file.path(d, "r1", "candidates.csv")))
+  expect_equal(nrow(quatro$validation), nrow(r1) + nrow(r2))
+  expect_equal(unique(quatro$validation$n_rounds), 2L)
 })
 
 test_that("bad inputs of the rounds stop with a clear message", {

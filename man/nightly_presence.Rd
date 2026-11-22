@@ -7,7 +7,9 @@
 nightly_presence(validation)
 }
 \arguments{
-\item{validation}{Table returned by \code{\link[=classify_review]{classify_review()}}.}
+\item{validation}{A data frame (or tibble) returned by \code{\link[=classify_review]{classify_review()}},
+with columns \code{site}, \code{species_folder}, \code{verdict} and \code{confidence}. One
+row per clip.}
 }
 \value{
 A tibble with \code{site}, \code{species_folder}, \code{night}, \code{n_clips},

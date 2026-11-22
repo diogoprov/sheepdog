@@ -8,9 +8,12 @@
 #'
 #' Cutting uses the 'ffmpeg' library bundled with the 'av' package.
 #'
-#' @param manifest Clip manifest, as returned by [select_clips()].
-#' @param output_dir Output folder; created if needed.
-#' @param simulate If `TRUE`, no audio is cut (the empty species folders
+#' @param manifest A data frame, the clip manifest (one row per clip), as
+#'   returned by [select_clips()].
+#' @param output_dir Character scalar, path to the output folder; created if
+#'   needed.
+#' @param simulate Logical scalar. If `TRUE`, no audio is cut (the empty
+#'   species folders
 #'   are still created), but `status` tells what would be done. Useful to
 #'   check a selection before cutting.
 #'
@@ -20,20 +23,20 @@
 #' @export
 cut_clips <- function(manifest, output_dir, simulate = FALSE) {
   if (!simulate) require_suggested("av", "to cut the clips")
-  dir_clipes <- file.path(output_dir, "clips")
-  dir.create(dir_clipes, recursive = TRUE, showWarnings = FALSE)
+  clips_dir <- file.path(output_dir, "clips")
+  dir.create(clips_dir, recursive = TRUE, showWarnings = FALSE)
 
-  destino <- file.path(dir_clipes, manifest$species_folder, manifest$clip_file)
-  walk(unique(dirname(destino)),
+  dest <- file.path(clips_dir, manifest$species_folder, manifest$clip_file)
+  walk(unique(dirname(dest)),
        dir.create, recursive = TRUE, showWarnings = FALSE)
 
-  processar_linha <- function(origem, destino, inicio, duracao, herdado) {
-    if (herdado)                    return("inherited")
-    if (file.exists(destino))       return("already_exists")
-    if (!file.exists(origem))       return("audio_not_found")
+  process_row <- function(src, dest, start, duration, inherited) {
+    if (inherited)                  return("inherited")
+    if (file.exists(dest))          return("already_exists")
+    if (!file.exists(src))          return("audio_not_found")
     if (simulate)                   return("simulated")
     tryCatch({
-      cut_clip(origem, destino, inicio, duracao)
+      cut_clip(src, dest, start, duration)
       "ok"
     }, error = function(e) paste0("error: ", conditionMessage(e)))
   }
@@ -42,14 +45,14 @@ cut_clips <- function(manifest, output_dir, simulate = FALSE) {
           nrow(manifest), " clips...")
 
   manifest$status <- pmap_chr(
-    list(manifest$source_audio, destino,
+    list(manifest$source_audio, dest,
          manifest$clip_start, manifest$duration, is_inherited(manifest)),
-    processar_linha,
+    process_row,
     .progress = "clips"
   )
 
-  contagem <- count(manifest, status)
-  message(paste0("  ", contagem$status, ": ", contagem$n, collapse = "\n"))
+  counts <- count(manifest, status)
+  message(paste0("  ", counts$status, ": ", counts$n, collapse = "\n"))
   if (any(str_starts(manifest$status, "error|audio_not"))) {
     warning("Some clips were not created - check the `status` column of ",
             "the manifest and the path remapping (remap_from/remap_to).")
@@ -57,12 +60,20 @@ cut_clips <- function(manifest, output_dir, simulate = FALSE) {
   relocate(manifest, status, .after = begin_path)
 }
 
-# Corta um clipe com o ffmpeg embutido no pacote 'av' (duracao NA = ate o
-# fim do arquivo)
-cut_clip <- function(origem, destino, inicio, duracao) {
-  av::av_audio_convert(origem, destino,
-                       start_time = inicio,
-                       total_time = if (is.na(duracao)) NULL else duracao,
+#' Cut one clip with the ffmpeg bundled in the 'av' package
+#'
+#' @param src Character scalar, path to the source recording.
+#' @param dest Character scalar, path to the clip to write.
+#' @param start Numeric scalar, clip start in seconds.
+#' @param duration Numeric scalar, clip duration in seconds; `NA` cuts to
+#'   the end of the file.
+#' @return Called for its side effect (writes `dest`); returns the value of
+#'   [av::av_audio_convert()].
+#' @noRd
+cut_clip <- function(src, dest, start, duration) {
+  av::av_audio_convert(src, dest,
+                       start_time = start,
+                       total_time = if (is.na(duration)) NULL else duration,
                        verbose = FALSE)
 }
 
@@ -72,26 +83,28 @@ cut_clip <- function(origem, destino, inicio, duracao) {
 #' `<output_dir>/packages/<species_folder>.zip`: light validation packages
 #' to send to the reviewers.
 #'
-#' @param manifest Clip manifest, as returned by [cut_clips()].
-#' @param output_dir The `output_dir` given to [cut_clips()].
+#' @param manifest A data frame, the clip manifest (one row per clip), as
+#'   returned by [cut_clips()].
+#' @param output_dir Character scalar, the `output_dir` given to
+#'   [cut_clips()].
 #'
 #' @return The paths of the zip files, invisibly.
 #' @export
 pack_clips <- function(manifest, output_dir) {
-  dir_clipes  <- file.path(output_dir, "clips")
-  dir_pacotes <- file.path(output_dir, "packages")
-  dir.create(dir_pacotes, recursive = TRUE, showWarnings = FALSE)
+  clips_dir    <- file.path(output_dir, "clips")
+  packages_dir <- file.path(output_dir, "packages")
+  dir.create(packages_dir, recursive = TRUE, showWarnings = FALSE)
 
-  especies <- sort(unique(manifest$species_folder))
-  zips <- map_chr(especies, function(sp) {
-    zip_sp <- file.path(dir_pacotes, paste0(sp, ".zip"))
-    zip::zip(zipfile = zip_sp, files = sp, root = dir_clipes,
+  species <- sort(unique(manifest$species_folder))
+  zips <- map_chr(species, function(sp) {
+    zip_sp <- file.path(packages_dir, paste0(sp, ".zip"))
+    zip::zip(zipfile = zip_sp, files = sp, root = clips_dir,
              mode = "mirror")
     message("Package ", basename(zip_sp), ": ",
             round(file.size(zip_sp) / 1024^2, 1), " MB")
     zip_sp
   })
-  message(length(especies), " validation package(s) in ", dir_pacotes)
+  message(length(species), " validation package(s) in ", packages_dir)
   invisible(zips)
 }
 
@@ -124,12 +137,15 @@ pack_clips <- function(manifest, output_dir) {
 #'
 #' @inheritParams read_selection_tables
 #' @inheritParams cut_clips
-#' @param ... Sampling design, passed to [select_clips()] (e.g.
+#' @param ... Further arguments passed to [select_clips()]: the sampling
+#'   design (e.g.
 #'   `sampling_mode`, `n_top`, `threshold`, `target_total`, `remap_from`,
 #'   `remap_to`, and `previous` for a further round, in a new `output_dir`).
-#' @param make_zip Zip one package per species (skipped when `simulate` is
+#' @param make_zip Logical scalar. If `TRUE`, zip one package per species
+#'   (skipped when `simulate` is
 #'   `TRUE`).
-#' @param classifier Label of the classifier that produced the selection
+#' @param classifier `NULL` or character scalar, label of the classifier
+#'   that produced the selection
 #'   tables (e.g. `"DiverSons v2, BirdNET-Analyzer 2.4.0"`), recorded in
 #'   `extraction_info.csv`. `NULL` records `NA`.
 #'
@@ -148,37 +164,46 @@ extract_validation_clips <- function(data_dir, output_dir, ...,
                                      site_pattern = NULL,
                                      make_zip = TRUE, simulate = FALSE,
                                      classifier = NULL) {
-  caminho <- file.path(output_dir, "clip_manifest.csv")
-  anteriores <- list(...)$previous
-  if (is.character(anteriores) && file.exists(caminho) &&
-      normalizePath(caminho) %in% normalizePath(anteriores, mustWork = FALSE)) {
+  manifest_path <- file.path(output_dir, "clip_manifest.csv")
+  previous <- list(...)$previous
+  if (is.character(previous) && file.exists(manifest_path) &&
+      normalizePath(manifest_path) %in%
+        normalizePath(previous, mustWork = FALSE)) {
     stop("`output_dir` holds the manifest of an earlier round: use another ",
          "folder for this round.", call. = FALSE)
   }
-  selecao <- read_selection_tables(data_dir, table_pattern,
-                                   per_audio_pattern, site_pattern) |>
+  selection <- read_selection_tables(data_dir, table_pattern,
+                                     per_audio_pattern, site_pattern) |>
     select_clips(...)
-  candidatas <- attr(selecao, "candidates")
-  manifesto <- cut_clips(selecao, output_dir, simulate = simulate)
+  candidates <- attr(selection, "candidates")
+  manifest <- cut_clips(selection, output_dir, simulate = simulate)
 
-  write_csv(manifesto, caminho)
-  message("Manifest written to ", caminho)
-  if (!is.null(candidatas)) {
-    write_csv(candidatas, file.path(output_dir, "candidates.csv"))
+  write_csv(manifest, manifest_path)
+  message("Manifest written to ", manifest_path)
+  if (!is.null(candidates)) {
+    write_csv(candidates, file.path(output_dir, "candidates.csv"))
   }
   write_csv(extraction_info(data_dir, classifier, simulate, list(...)),
             file.path(output_dir, "extraction_info.csv"))
 
-  if (make_zip && !simulate) pack_clips(manifesto, output_dir)
+  if (make_zip && !simulate) pack_clips(manifest, output_dir)
 
   message("Done! The clips in ", file.path(output_dir, "clips"),
           " are ready for validation in the BirdNET GUI (review).")
-  invisible(manifesto)
+  invisible(manifest)
 }
 
-# Proveniencia da rodada de extracao: uma linha chave/valor por item
+#' Provenance of an extraction run
+#'
+#' @param data_dir Character scalar, folder of the selection tables.
+#' @param classifier Character scalar or `NULL`, label of the classifier.
+#' @param simulate Logical scalar, whether the cut was simulated.
+#' @param args Named list of the arguments passed to [select_clips()].
+#' @return A tibble with character columns `key` and `value`, one row per
+#'   item.
+#' @noRd
 extraction_info <- function(data_dir, classifier, simulate, args) {
-  valor <- function(x) {
+  as_value <- function(x) {
     if (is.null(x)) return("NULL")
     if (is.data.frame(x)) return(paste0("<data frame, ", nrow(x), " rows>"))
     paste(format(x), collapse = ", ")
@@ -193,5 +218,5 @@ extraction_info <- function(data_dir, classifier, simulate, args) {
               as.character(simulate)))
   if (length(args) == 0) return(base)
   bind_rows(base, tibble(key = paste0("select_clips.", names(args)),
-                         value = map_chr(args, valor)))
+                         value = map_chr(args, as_value)))
 }

@@ -13,24 +13,27 @@ threshold_history(
 )
 }
 \arguments{
-\item{detections}{Predictions, from \code{\link[=read_selection_tables]{read_selection_tables()}}, with
-\code{site}, \code{species_code}, \code{confidence} and \code{begin_path}. Use every
-prediction, not only those of the cells with a threshold.}
+\item{detections}{A data frame (or tibble) of predictions, from
+\code{\link[=read_selection_tables]{read_selection_tables()}}, with \code{site}, \code{species_code}, \code{confidence}
+and \code{begin_path}. One row per prediction. Use every prediction, not
+only those of the cells with a threshold.}
 
-\item{thresholds}{Table with \code{site}, \code{species_folder} and \code{threshold}, one
-row per cell, such as the output of \code{\link[=review_support]{review_support()}}. Cells with a
+\item{thresholds}{A data frame (or tibble) with \code{site}, \code{species_folder}
+and \code{threshold}, one row per cell, such as the output of
+\code{\link[=review_support]{review_support()}}. Cells with a
 missing threshold or without a row have no threshold. The conservative
 threshold of \code{\link[=threshold_bootstrap]{threshold_bootstrap()}} is the one to apply: pass it as
 \code{dplyr::mutate(boot, threshold = threshold_conservative)}.}
 
-\item{min_confidence}{Predictions below this confidence are left out, as
-in \code{\link[=score_detections]{score_detections()}}. This also sets which nights count as recorded.}
+\item{min_confidence}{Numeric scalar. Predictions below this confidence
+are left out, as in \code{\link[=score_detections]{score_detections()}}. This also sets which nights
+count as recorded.}
 
-\item{dawn_hour}{Recordings that start before this hour belong to the
-night before.}
+\item{dawn_hour}{Numeric scalar, an hour of the day. Recordings
+that start before this hour belong to the night before.}
 
-\item{min_detections_night}{Repetition rule: minimum number of reliable
-detections for a night with detection.}
+\item{min_detections_night}{Integer scalar. Repetition rule: minimum
+number of reliable detections for a night with detection.}
 }
 \value{
 A tibble with \code{site}, \code{species} (the short code, as in
