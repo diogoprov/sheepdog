@@ -28,21 +28,26 @@
 #' **Reuse.** Clips used here to set the threshold should not be reused as
 #' confirmation data in the occupancy model without saying so.
 #'
-#' @param validation Reviewed clips, as for [suggest_thresholds()]. For
-#'   `random_detections` clips, the empirical threshold uses the weighted
-#'   precision.
-#' @param fit Model returned by [fit_calibration()].
-#' @param scored Table returned by [score_detections()]. Needed for
-#'   `thr_model_precision`, `model_precision_at_empirical` and `flag`.
-#' @param target_p Target of the `"probability"` rule.
-#' @param target_precision Target precision of the empirical threshold and
-#'   of the `"precision"` rule.
-#' @param min_n Passed to [suggest_thresholds()].
-#' @param tolerance Largest difference between `thr_empirical` and
-#'   `thr_model_precision`, in score units, for `"agree"`.
-#' @param quality Optional table of [calibration_quality()], joined by the
-#'   columns `site` and `species` that it has.
-#' @param weighted,sustained Passed to [suggest_thresholds()].
+#' @param validation A data frame (or tibble) of reviewed clips, as for
+#'   [suggest_thresholds()]. One row per clip. For `random_detections`
+#'   clips, the empirical threshold uses the weighted precision.
+#' @param fit A model returned by [fit_calibration()] (`glm`, `glmerMod` or
+#'   `brmsfit`).
+#' @param scored `NULL` or a data frame (or tibble) returned by
+#'   [score_detections()]. Needed for `thr_model_precision`,
+#'   `model_precision_at_empirical` and `flag`.
+#' @param target_p Numeric scalar in (0, 1). Target of the `"probability"`
+#'   rule.
+#' @param target_precision Numeric scalar in (0, 1). Target precision of the
+#'   empirical threshold and of the `"precision"` rule.
+#' @param min_n Integer scalar >= 1. Passed to [suggest_thresholds()].
+#' @param tolerance Numeric scalar, in score units. Largest difference
+#'   between `thr_empirical` and `thr_model_precision` for `"agree"`.
+#' @param quality `NULL` or a data frame (or tibble) returned by
+#'   [calibration_quality()], joined by the columns `site` and `species`
+#'   that it has.
+#' @param weighted,sustained `NULL`, `TRUE` or `FALSE` (`weighted`) and
+#'   logical scalar (`sustained`). Passed to [suggest_thresholds()].
 #' @inheritParams calibrated_thresholds
 #'
 #' @return A tibble with one row per site x species: `site`, `species`,
@@ -71,8 +76,8 @@ compare_thresholds <- function(validation, fit, scored = NULL,
                                weighted = NULL, sustained = FALSE,
                                min_confidence = 0.1,
                                grid_step = 0.01, lower_prob = 0.05) {
-  celula <- c("site", "species")
-  empirico <- suggest_thresholds(validation, target_precision, min_n,
+  cell <- c("site", "species")
+  empirical <- suggest_thresholds(validation, target_precision, min_n,
                                  weighted = weighted, sustained = sustained) |>
     mutate(site = as.character(site),
            prec_empirical = if ("precision_used" %in% names(pick(everything()))) {
@@ -83,51 +88,51 @@ compare_thresholds <- function(validation, fit, scored = NULL,
            }) |>
     transmute(site, species = species_folder, thr_empirical = threshold,
               prec_empirical, n_support)
-  revisados <- reviewed_with_confidence(validation) |>
+  reviewed <- reviewed_with_confidence(validation) |>
     group_by(site = as.character(site), species = species_folder) |>
     summarise(max_reviewed = max(confidence), .groups = "drop")
 
-  celulas <- distinct(empirico, site, species)
+  cells <- distinct(empirical, site, species)
   if (!is.null(scored)) {
-    celulas <- bind_rows(celulas,
+    cells <- bind_rows(cells,
                          distinct(scored, site = as.character(site),
                                   species = as.character(species))) |>
       distinct()
   }
-  probabilidade <- calibrated_thresholds(
-    fit, target = target_p, rule = "probability", cells = celulas,
+  prob_thr <- calibrated_thresholds(
+    fit, target = target_p, rule = "probability", cells = cells,
     min_confidence = min_confidence, grid_step = grid_step,
     lower_prob = lower_prob) |>
     rename(thr_p_tp = threshold)
-  if ("threshold_lower" %in% names(probabilidade)) {
-    probabilidade <- rename(probabilidade, thr_p_tp_lower = threshold_lower)
+  if ("threshold_lower" %in% names(prob_thr)) {
+    prob_thr <- rename(prob_thr, thr_p_tp_lower = threshold_lower)
   }
 
-  saida <- celulas |>
-    left_join(empirico, by = celula) |>
-    left_join(revisados, by = celula) |>
-    left_join(probabilidade, by = celula)
+  out <- cells |>
+    left_join(empirical, by = cell) |>
+    left_join(reviewed, by = cell) |>
+    left_join(prob_thr, by = cell)
   if (is.null(scored)) {
     message("Without `scored`, there is no thr_model_precision and no `flag`.")
-    saida <- mutate(saida, thr_model_precision = NA_real_,
-                    model_precision_at_empirical = NA_real_,
-                    flag = NA_character_)
+    out <- mutate(out, thr_model_precision = NA_real_,
+                  model_precision_at_empirical = NA_real_,
+                  flag = NA_character_)
   } else {
-    pontos <- mutate(scored, site = as.character(site),
-                     species = as.character(species))
-    precisao <- calibrated_thresholds(
-      fit, target = target_precision, rule = "precision", scored = pontos,
+    scored_chr <- mutate(scored, site = as.character(site),
+                         species = as.character(species))
+    prec_thr <- calibrated_thresholds(
+      fit, target = target_precision, rule = "precision", scored = scored_chr,
       min_confidence = min_confidence, grid_step = grid_step) |>
       transmute(site = as.character(site), species = as.character(species),
                 thr_model_precision = threshold)
-    no_corte <- pontos |>
-      inner_join(select(empirico, all_of(celula), thr_empirical), by = celula) |>
+    at_cut <- scored_chr |>
+      inner_join(select(empirical, all_of(cell), thr_empirical), by = cell) |>
       filter(!is.na(thr_empirical), confidence >= thr_empirical) |>
-      group_by(across(all_of(celula))) |>
+      group_by(across(all_of(cell))) |>
       summarise(model_precision_at_empirical = mean(p_tp), .groups = "drop")
-    saida <- saida |>
-      left_join(precisao, by = celula) |>
-      left_join(no_corte, by = celula) |>
+    out <- out |>
+      left_join(prec_thr, by = cell) |>
+      left_join(at_cut, by = cell) |>
       mutate(flag = case_when(
         is.na(thr_empirical) & is.na(thr_model_precision) ~ "none",
         is.na(thr_model_precision)                        ~ "empirical_only",
@@ -135,21 +140,21 @@ compare_thresholds <- function(validation, fit, scored = NULL,
         abs(thr_empirical - thr_model_precision) <= tolerance + 1e-8 ~ "agree",
         .default = "disagree"))
   }
-  saida <- mutate(saida, above_reviewed =
-                    pmax(thr_model_precision, thr_p_tp, na.rm = TRUE) >
-                    max_reviewed)
+  out <- mutate(out, above_reviewed =
+                  pmax(thr_model_precision, thr_p_tp, na.rm = TRUE) >
+                  max_reviewed)
   if (!is.null(quality)) {
-    chave <- intersect(celula, names(quality))
-    if (!"species" %in% chave || !"status" %in% names(quality)) {
+    key_cols <- intersect(cell, names(quality))
+    if (!"species" %in% key_cols || !"status" %in% names(quality)) {
       stop("`quality` must be a table of calibration_quality(), by species.",
            call. = FALSE)
     }
-    saida <- quality |>
-      mutate(across(all_of(chave), as.character)) |>
-      select(all_of(chave), quality = status) |>
-      right_join(saida, by = chave)
+    out <- quality |>
+      mutate(across(all_of(key_cols), as.character)) |>
+      select(all_of(key_cols), quality = status) |>
+      right_join(out, by = key_cols)
   }
-  select(saida, all_of(celula), thr_empirical, prec_empirical, n_support,
+  select(out, all_of(cell), thr_empirical, prec_empirical, n_support,
          thr_model_precision, thr_p_tp, p_tp_at_threshold,
          any_of("thr_p_tp_lower"), model_precision_at_empirical, max_reviewed,
          above_reviewed, any_of("quality"), flag) |>

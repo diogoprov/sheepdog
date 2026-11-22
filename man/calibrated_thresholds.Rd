@@ -16,36 +16,40 @@ calibrated_thresholds(
 )
 }
 \arguments{
-\item{fit}{Model returned by \code{\link[=fit_calibration]{fit_calibration()}}.}
+\item{fit}{A \code{glm}, \code{glmerMod} or \code{brmsfit} returned by \code{\link[=fit_calibration]{fit_calibration()}}.}
 
-\item{target}{Target probability (\code{"probability"}) or precision
-(\code{"precision"}). The default, 0.95, is the \code{p_min} of
-\code{\link[=score_detections]{score_detections()}} and \code{\link[=calibrate]{calibrate()}}, so that the probability
-threshold is the score equivalent of the cut on P(TP) used for the
-detection histories. It is the same for both rules; the \code{"precision"}
-threshold is lower for the same target (see Details).
-\code{\link[=suggest_thresholds]{suggest_thresholds()}} uses 0.90 by default.}
+\item{target}{Numeric scalar in (0, 1), target probability (\code{"probability"})
+or precision (\code{"precision"}). The default, 0.95, is the \code{p_min} of
+\code{\link[=score_detections]{score_detections()}} and \code{\link[=calibrate]{calibrate()}}, so that the probability threshold
+is the score equivalent of the cut on P(TP) used for the detection
+histories. It is the same for both rules; the \code{"precision"} threshold is
+lower for the same target (see Details). \code{\link[=suggest_thresholds]{suggest_thresholds()}} uses 0.90
+by default.}
 
-\item{rule}{\code{"probability"} or \code{"precision"}; see Details.}
+\item{rule}{Character scalar, one of \code{"probability"} (default) or
+\code{"precision"}; see Details.}
 
-\item{scored}{Table returned by \code{\link[=score_detections]{score_detections()}}, with \code{site},
-\code{species}, \code{confidence} and \code{p_tp}. Required for \code{rule = "precision"};
-with \code{rule = "probability"}, its site x species cells are used when
-\code{cells} is \code{NULL}.}
+\item{scored}{\code{NULL} or a data frame (or tibble) returned by
+\code{\link[=score_detections]{score_detections()}}, one row per detection, with \code{site}, \code{species},
+\code{confidence} and \code{p_tp}. Required for \code{rule = "precision"}; with
+\code{rule = "probability"}, its site x species cells are used when \code{cells} is
+\code{NULL}.}
 
-\item{cells}{Data frame of the cells to threshold, with \code{site} and
-\code{species} and any other variable of the calibration formula. By default,
-the cells of \code{scored} or, without it, every site x species of the
-calibration.}
+\item{cells}{\code{NULL} or a data frame (or tibble) of the cells to threshold,
+one row per cell, with \code{site} and \code{species} and any other variable of the
+calibration formula. By default, the cells of \code{scored} or, without it,
+every site x species of the calibration.}
 
-\item{min_confidence}{Detections below this confidence are not scored.}
+\item{min_confidence}{Numeric scalar in [0, 1]. Detections below this
+confidence are not scored.}
 
-\item{grid_step}{Models fitted with \code{engine = "brms"}: step of the grid
-of scores on which the posterior is computed.}
+\item{grid_step}{Numeric scalar in (0, 0.5). Models fitted with
+\code{engine = "brms"}: step of the grid of scores on which the posterior is
+computed.}
 
-\item{lower_prob}{Models fitted with \code{engine = "brms"}: the probability of
-the lower quantile of the posterior of P(TP) used for
-\code{threshold_lower}.}
+\item{lower_prob}{Numeric scalar in (0, 1). Models fitted with
+\code{engine = "brms"}: the probability of the lower quantile of the posterior
+of P(TP) used for \code{threshold_lower}.}
 }
 \value{
 A tibble with the cell columns, \code{threshold} and, for

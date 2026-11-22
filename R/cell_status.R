@@ -17,13 +17,16 @@
 #' [suggest_core_species()] keeps the species without unreliable cells.
 #' The final choice of core species remains with the analyst.
 #'
-#' @param fit Model returned by [fit_calibration()].
-#' @param validations Table returned by [read_validations()], the clips
-#'   the model was fitted to.
-#' @param p_min Calibrated probability that makes a detection reliable, as
-#'   in [detection_history()].
-#' @param min_n Minimum number of reviewed clips in a cell.
-#' @param by Optional columns of `validations` that split each cell, e.g.
+#' @param fit A model returned by [fit_calibration()] (`glm`, `glmerMod` or
+#'   `brmsfit`).
+#' @param validations A data frame (or tibble) returned by
+#'   [read_validations()], with columns `site`, `species`, `confidence` and
+#'   `tp`: the clips the model was fitted to, one row per clip.
+#' @param p_min Numeric scalar in (0, 1). Calibrated probability that makes
+#'   a detection reliable, as in [detection_history()].
+#' @param min_n Numeric scalar. Minimum number of reviewed clips in a cell.
+#' @param by `NULL` or a character vector of column names of `validations`
+#'   that split each cell, e.g.
 #'   the bin of an environmental gradient or of an acoustic index from
 #'   [covariate_bins()] (kept by `read_validations(keep = )` or joined
 #'   afterwards). Each site x species x `by` cell gets its own status; the
@@ -40,25 +43,25 @@
 cell_status <- function(fit, validations, p_min = 0.95, min_n = 15,
                         by = NULL) {
   check_by(validations, by)
-  niveis <- fit_levels(fit)
-  resumo <- validations |>
+  lvls <- fit_levels(fit)
+  cell_summary <- validations |>
     mutate(across(c(site, species), as.character)) |>
     group_by(site, species, across(all_of(by))) |>
     summarise(n_reviewed = n(), n_tp = sum(tp),
               min_confidence = min(confidence),
               max_confidence = max(confidence), .groups = "drop")
 
-  celulas <- expand_grid(site = niveis$site, species = niveis$species)
+  cells <- expand_grid(site = lvls$site, species = lvls$species)
   if (!is.null(by)) {
-    celulas <- tidyr::crossing(celulas, distinct(validations[by]))
+    cells <- tidyr::crossing(cells, distinct(validations[by]))
   }
-  celulas <- celulas |>
-    left_join(resumo, by = c("site", "species", by)) |>
+  cells <- cells |>
+    left_join(cell_summary, by = c("site", "species", by)) |>
     mutate(n_reviewed = replace_na(n_reviewed, 0L),
            n_tp = replace_na(n_tp, 0L))
 
-  limiar <- pmap_dbl(celulas, function(site, species, n_reviewed,
-                                       min_confidence, max_confidence, ...) {
+  thr <- pmap_dbl(cells, function(site, species, n_reviewed,
+                                  min_confidence, max_confidence, ...) {
     if (n_reviewed == 0) return(NA_real_)
     extras <- list(...)[by]
     # Include both observed endpoints, without extrapolating below the
@@ -69,19 +72,19 @@ cell_status <- function(fit, validations, p_min = 0.95, min_n = 15,
                             interior[interior >= min_confidence &
                                        interior <= max_confidence],
                             max_confidence)))
-    grade <- tibble(
-      site = factor(site, levels = niveis$site),
-      species = factor(species, levels = niveis$species),
+    grid <- tibble(
+      site = factor(site, levels = lvls$site),
+      species = factor(species, levels = lvls$species),
       confidence = scores) |>
       mutate(logit_conf = safe_logit(confidence))
-    for (col in by) grade[[col]] <- extras[[col]]
-    p <- predict_tp(fit, grade)
-    if (any(p >= p_min)) min(grade$confidence[p >= p_min]) else NA_real_
+    for (col in by) grid[[col]] <- extras[[col]]
+    p <- predict_tp(fit, grid)
+    if (any(p >= p_min)) min(grid$confidence[p >= p_min]) else NA_real_
   })
 
-  celulas |>
+  cells |>
     mutate(
-      threshold = limiar,
+      threshold = thr,
       status = case_when(
         n_reviewed > 0 & n_tp == 0              ~ "probably_absent",
         n_reviewed >= min_n & !is.na(threshold) ~ "reliable",
@@ -106,7 +109,7 @@ cell_status <- function(fit, validations, p_min = 0.95, min_n = 15,
 #' [cell_status()]: reliable at every site, or reliable where present and
 #' probably absent elsewhere.
 #'
-#' @param status Table returned by [cell_status()].
+#' @param status A data frame (or tibble) returned by [cell_status()].
 #'
 #' @return A character vector of species codes (the `species` column of
 #'   the history).

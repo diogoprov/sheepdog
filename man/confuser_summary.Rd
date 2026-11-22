@@ -7,15 +7,16 @@
 confuser_summary(validation, verdicts = "negative", classes = NULL)
 }
 \arguments{
-\item{validation}{Table of verdicts with \code{species_code}, \code{verdict} and
-\code{identity}, from \code{\link[=app_verdicts]{app_verdicts()}} or \code{\link[=join_identities]{join_identities()}}.}
+\item{validation}{A data frame (or tibble) of verdicts with
+\code{species_code}, \code{verdict} and \code{identity}, from \code{\link[=app_verdicts]{app_verdicts()}} or
+\code{\link[=join_identities]{join_identities()}}.}
 
-\item{verdicts}{Verdicts counted: \code{"negative"} by default; add
-\code{"uncertain"} to include the uncertain clips.}
+\item{verdicts}{Character vector of the verdicts counted: \code{"negative"}
+by default; add \code{"uncertain"} to include the uncertain clips.}
 
-\item{classes}{Classes of the classifier, to flag identities that are
-classes themselves. By default, the \code{species_code} values of
-\code{validation}.}
+\item{classes}{\code{NULL} or a character vector of the classes of the
+classifier, to flag identities that are classes themselves. \code{NULL}
+(default) uses the \code{species_code} values of \code{validation}.}
 }
 \value{
 A tibble with one row per target class and identity:

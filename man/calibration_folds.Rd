@@ -7,18 +7,20 @@
 calibration_folds(validations, k_folds = 5, seed = 2026, fold_group = NULL)
 }
 \arguments{
-\item{validations}{Calibration data including \code{site}, \code{species} and
-any columns named in \code{fold_group}. Use \code{read_validations(keep = )}
-to retain metadata from validation files.}
+\item{validations}{A data frame (or tibble), the calibration data, one row
+per reviewed clip, with \code{site}, \code{species} and any columns named in
+\code{fold_group}. Use \code{read_validations(keep = )} to retain metadata from
+validation files.}
 
-\item{k_folds}{Integer number of folds, at least two.}
+\item{k_folds}{Integer scalar >= 2, number of folds.}
 
-\item{seed}{Seed of the assignment; the caller's random state is restored.}
+\item{seed}{Integer scalar, seed of the assignment; the caller's random state
+is restored.}
 
-\item{fold_group}{Optional character vector of grouping columns. Do not
+\item{fold_group}{\code{NULL} or a character vector of grouping columns. Do not
 include \code{species}, verdicts or confidence scores: these would split
-recordings or nights by species or by outcome. Group IDs must be
-nonmissing and nonempty. \code{NULL} keeps the original clip folds.}
+recordings or nights by species or by outcome. Group IDs must be nonmissing
+and nonempty. \code{NULL} keeps the original clip folds.}
 }
 \value{
 Integer vector of fold numbers, in the input row order.

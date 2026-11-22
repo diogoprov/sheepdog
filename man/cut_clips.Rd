@@ -7,11 +7,14 @@
 cut_clips(manifest, output_dir, simulate = FALSE)
 }
 \arguments{
-\item{manifest}{Clip manifest, as returned by \code{\link[=select_clips]{select_clips()}}.}
+\item{manifest}{A data frame, the clip manifest (one row per clip), as
+returned by \code{\link[=select_clips]{select_clips()}}.}
 
-\item{output_dir}{Output folder; created if needed.}
+\item{output_dir}{Character scalar, path to the output folder; created if
+needed.}
 
-\item{simulate}{If \code{TRUE}, no audio is cut (the empty species folders
+\item{simulate}{Logical scalar. If \code{TRUE}, no audio is cut (the empty
+species folders
 are still created), but \code{status} tells what would be done. Useful to
 check a selection before cutting.}
 }

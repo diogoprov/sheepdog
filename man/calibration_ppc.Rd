@@ -17,29 +17,31 @@ calibration_ppc(
 )
 }
 \arguments{
-\item{fit}{Model returned by \code{\link[=fit_calibration]{fit_calibration()}} with \code{engine = "brms"}.}
+\item{fit}{A \code{brmsfit} returned by \code{\link[=fit_calibration]{fit_calibration()}} with
+\code{engine = "brms"}.}
 
-\item{validations}{The calibration data the model was fitted to, in the
-same row order, with any columns named in \code{group} (keep them with
-\code{read_validations(keep = )}). \code{NULL} uses the data stored in \code{fit},
-which only hold the columns of the formula.}
+\item{validations}{\code{NULL} or a data frame (or tibble), the calibration data
+the model was fitted to, in the same row order, with any columns named in
+\code{group} (keep them with \code{read_validations(keep = )}). \code{NULL} uses the data
+stored in \code{fit}, which only hold the columns of the formula.}
 
-\item{group}{Optional character vector of columns of \code{validations} to
+\item{group}{\code{NULL} or a character vector of columns of \code{validations} to
 check within, besides score bins, sites and species.}
 
-\item{bin_width}{Width of the score bins. Bins with fewer than
-\code{min_n} clips are merged with their neighbour.}
+\item{bin_width}{Numeric scalar in (0, 1), width of the score bins. Bins with
+fewer than \code{min_n} clips are merged with their neighbour.}
 
-\item{min_n}{Smallest number of clips in a score bin.}
+\item{min_n}{Integer scalar >= 1, smallest number of clips in a score bin.}
 
-\item{prob}{Probability of the predictive interval.}
+\item{prob}{Numeric scalar in (0, 1), probability of the predictive interval.}
 
-\item{flag}{Groups with a p-value below \code{flag} or above \code{1 - flag} are
-flagged.}
+\item{flag}{Numeric scalar in (0, 1). Groups with a p-value below \code{flag} or
+above \code{1 - flag} are flagged.}
 
-\item{n_draws}{Number of posterior draws; \code{NULL} uses all.}
+\item{n_draws}{\code{NULL} or an integer scalar >= 1, number of posterior draws;
+\code{NULL} uses all.}
 
-\item{seed}{Seed of the choice of draws and of the predictive
+\item{seed}{Integer scalar, seed of the choice of draws and of the predictive
 simulation. The global random number generator is left as it was.}
 }
 \value{

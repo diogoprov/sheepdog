@@ -86,36 +86,44 @@
 #' message: clips of `"top"` are not a random sample, and the rates are
 #' then only indicative.
 #'
-#' @param validation Reviewed clips, as for [suggest_thresholds()].
-#' @param thresholds The threshold of each species or cell: a single
+#' @param validation A data frame (or tibble) of reviewed clips, as for
+#'   [suggest_thresholds()]. One row per clip.
+#' @param thresholds A numeric scalar or a data frame (or tibble). The
+#'   threshold of each species or cell: a single
 #'   number, or a table with `species_folder` (and optionally `site`) and a
 #'   `threshold` column, such as the output of [suggest_thresholds()]
 #'   (`threshold_column` picks another column, such as
 #'   `"threshold_conservative"` of [threshold_bootstrap()], the threshold
 #'   to apply).
-#' @param groups Columns of `validation` for signs 6 and 7, such as
-#'   `"site"` or a month column. `NULL` uses `"site"` when there is more
-#'   than one site.
-#' @param curves Optional output of [compare_calibration_curves()] (sign
-#'   8). With curves fitted by site, the worst verdict of the species
+#' @param groups `NULL` or a character vector of column names of
+#'   `validation` for signs 6 and 7, such as `"site"` or a month column.
+#'   `NULL` uses `"site"` when there is more than one site.
+#' @param curves `NULL` or a data frame (or tibble) returned by
+#'   [compare_calibration_curves()] (sign 8). With curves fitted by site,
+#'   the worst verdict of the species counts.
+#' @param recall `NULL` or a data frame (or tibble) returned by
+#'   [recall_ceiling()] (sign 1). With a ceiling per site, the lowest
 #'   counts.
-#' @param recall Optional output of [recall_ceiling()] (sign 1). With a
-#'   ceiling per site, the lowest counts.
-#' @param target_precision Target precision of the threshold (sign 7).
-#' @param min_n Minimum number of clips of a group for it to count in signs
-#'   6 and 7.
-#' @param min_tp_kept Sign 2 is raised when the share of the true positives
-#'   kept by the threshold is below this.
-#' @param max_fp_spread Sign 6 is raised when the false-positive rate of
-#'   two levels of a group differs by more than this.
-#' @param min_ceiling Sign 1 is raised when the recall ceiling is below
+#' @param target_precision Numeric scalar in (0, 1). Target precision of the
+#'   threshold (sign 7).
+#' @param min_n Numeric scalar. Minimum number of clips of a group for it to
+#'   count in signs 6 and 7.
+#' @param min_tp_kept Numeric scalar in \[0, 1\]. Sign 2 is raised when the
+#'   share of the true positives kept by the threshold is below this.
+#' @param max_fp_spread Numeric scalar in \[0, 1\]. Sign 6 is raised when the
+#'   false-positive rate of two levels of a group differs by more than
 #'   this.
-#' @param threshold_column Column of `thresholds` with the threshold.
-#' @param cluster Column of `validation` with the recording (or other unit)
-#'   of each clip, for sign 9. A missing column leaves sign 9 `NA`.
-#' @param max_deff Sign 9 is raised when the design effect of the false
-#'   positives above the threshold is above this.
-#' @param file Optional path of a Markdown file to write the report to.
+#' @param min_ceiling Numeric scalar in \[0, 1\]. Sign 1 is raised when the
+#'   recall ceiling is below this.
+#' @param threshold_column Character scalar, the column of `thresholds` with
+#'   the threshold.
+#' @param cluster `NULL` or a character scalar, the column of `validation`
+#'   with the recording (or other unit) of each clip, for sign 9. A missing
+#'   column leaves sign 9 `NA`.
+#' @param max_deff Numeric scalar. Sign 9 is raised when the design effect
+#'   of the false positives above the threshold is above this.
+#' @param file `NULL` or a character scalar, path of a Markdown file to
+#'   write the report to.
 #'
 #' @return A tibble with one row per species: `species_folder`,
 #'   `threshold` (the median over its cells), `sign1_ceiling`,
@@ -144,45 +152,45 @@ warning_signs <- function(validation, thresholds, groups = NULL,
                           cluster = "source_audio", max_deff = 2,
                           file = NULL) {
   if (!is.null(file)) file <- check_file_ext(file, "md")
-  validados <- reviewed_with_confidence(validation)
-  check_reviewed(validados)
-  validados <- mutate(validados, site = as.character(site))
-  if (is.null(groups) && length(unique(validados$site)) > 1) {
+  reviewed <- reviewed_with_confidence(validation)
+  check_reviewed(reviewed)
+  reviewed <- mutate(reviewed, site = as.character(site))
+  if (is.null(groups) && length(unique(reviewed$site)) > 1) {
     groups <- "site"
   }
-  check_by(validados, groups)
-  celulas <- cell_thresholds(thresholds, validados, threshold_column)
-  especies <- sort(unique(validados$species_folder))
+  check_by(reviewed, groups)
+  cells <- cell_thresholds(thresholds, reviewed, threshold_column)
+  species_list <- sort(unique(reviewed$species_folder))
 
-  # amostra probabilistica para as taxas (sinais 2 e 6)
-  com_p <- if ("inclusion_prob" %in% names(validados)) {
-    !is.na(validados$inclusion_prob)
+  # probability sample for the rates (signs 2 and 6)
+  has_p <- if ("inclusion_prob" %in% names(reviewed)) {
+    !is.na(reviewed$inclusion_prob)
   } else {
-    rep(FALSE, nrow(validados))
+    rep(FALSE, nrow(reviewed))
   }
-  if (any(com_p)) {
-    amostra <- validados[com_p, ]
-    amostra$w <- 1 / as.numeric(amostra$inclusion_prob)
+  if (any(has_p)) {
+    clips <- reviewed[has_p, ]
+    clips$w <- 1 / as.numeric(clips$inclusion_prob)
   } else {
     message("No reviewed clip has `inclusion_prob`: signs 2 and 6 use every ",
             "clip, unweighted, and are only indicative.")
-    amostra <- validados
-    amostra$w <- 1
+    clips <- reviewed
+    clips$w <- 1
   }
-  amostra <- left_join(amostra, celulas, by = c("site", "species_folder"))
+  clips <- left_join(clips, cells, by = c("site", "species_folder"))
 
-  sinal2 <- amostra |>
+  sign2_tbl <- clips |>
     filter(verdict == "positive") |>
     group_by(species_folder) |>
-    summarise(sign2_tp_kept = if (all(is.na(.limiar))) NA_real_ else
-                sum(w[!is.na(.limiar) & confidence >= .limiar]) /
-                sum(w[!is.na(.limiar)]),
+    summarise(sign2_tp_kept = if (all(is.na(.thr))) NA_real_ else
+                sum(w[!is.na(.thr) & confidence >= .thr]) /
+                sum(w[!is.na(.thr)]),
               .groups = "drop") |>
     mutate(sign2 = sign2_tp_kept < min_tp_kept)
 
-  sinal6 <- fp_spread(amostra, groups, min_n, max_fp_spread)
-  if ("identity" %in% names(validados)) {
-    confusos <- validados |>
+  sign6_tbl <- fp_spread(clips, groups, min_n, max_fp_spread)
+  if ("identity" %in% names(reviewed)) {
+    confusers <- reviewed |>
       filter(verdict == "negative", !is.na(identity), identity != "") |>
       count(species_folder, identity, sort = TRUE) |>
       group_by(species_folder) |>
@@ -191,7 +199,7 @@ warning_signs <- function(validation, thresholds, groups = NULL,
       transmute(species_folder,
                 .confuser = paste0("main confuser: ", identity, " (", n,
                                    " clips)"))
-    sinal6 <- full_join(sinal6, confusos, by = "species_folder") |>
+    sign6_tbl <- full_join(sign6_tbl, confusers, by = "species_folder") |>
       mutate(sign6_detail = case_when(
         is.na(.confuser) ~ sign6_detail,
         is.na(sign6_detail) ~ .confuser,
@@ -199,79 +207,101 @@ warning_signs <- function(validation, thresholds, groups = NULL,
       select(-".confuser")
   }
 
-  sinal7 <- group_stability(validados, celulas, groups, target_precision,
-                            min_n)
-  sinal8 <- curve_signs(curves)
-  sinal9 <- fp_design_effect(validados, celulas, cluster, min_n, max_deff)
-  sinal1 <- ceiling_signs(recall, min_ceiling)
+  sign7_tbl <- group_stability(reviewed, cells, groups, target_precision,
+                               min_n)
+  sign8_tbl <- curve_signs(curves)
+  sign9_tbl <- fp_design_effect(reviewed, cells, cluster, min_n, max_deff)
+  sign1_tbl <- ceiling_signs(recall, min_ceiling)
 
-  limiar_especie <- celulas |>
+  thr_species <- cells |>
     group_by(species_folder) |>
-    summarise(threshold = if (all(is.na(.limiar))) NA_real_ else
-                stats::median(.limiar, na.rm = TRUE), .groups = "drop")
-  saida <- tibble(species_folder = especies) |>
-    left_join(limiar_especie, by = "species_folder") |>
-    left_join(sinal1, by = "species_folder") |>
-    left_join(sinal2, by = "species_folder") |>
-    left_join(sinal6, by = "species_folder") |>
-    left_join(sinal7, by = "species_folder") |>
-    left_join(sinal8, by = "species_folder") |>
-    left_join(sinal9, by = "species_folder")
+    summarise(threshold = if (all(is.na(.thr))) NA_real_ else
+                stats::median(.thr, na.rm = TRUE), .groups = "drop")
+  out <- tibble(species_folder = species_list) |>
+    left_join(thr_species, by = "species_folder") |>
+    left_join(sign1_tbl, by = "species_folder") |>
+    left_join(sign2_tbl, by = "species_folder") |>
+    left_join(sign6_tbl, by = "species_folder") |>
+    left_join(sign7_tbl, by = "species_folder") |>
+    left_join(sign8_tbl, by = "species_folder") |>
+    left_join(sign9_tbl, by = "species_folder")
   for (col in c("sign1_ceiling", "sign2_tp_kept", "sign6_fp_spread",
                 "sign7_share_below", "sign9_deff")) {
-    if (!col %in% names(saida)) saida[[col]] <- NA_real_
+    if (!col %in% names(out)) out[[col]] <- NA_real_
   }
   for (col in c("sign1", "sign2", "sign6", "sign7", "sign8", "sign9")) {
-    if (!col %in% names(saida)) saida[[col]] <- NA
+    if (!col %in% names(out)) out[[col]] <- NA
   }
   for (col in c("sign6_detail", "sign7_detail", "sign8_verdict")) {
-    if (!col %in% names(saida)) saida[[col]] <- NA_character_
+    if (!col %in% names(out)) out[[col]] <- NA_character_
   }
-  sinais <- as.matrix(saida[c("sign1", "sign2", "sign6", "sign7", "sign8",
-                              "sign9")])
-  saida$n_checked <- rowSums(!is.na(sinais))
-  saida$n_raised <- rowSums(matrix(sinais %in% TRUE, nrow = nrow(sinais)))
-  saida$verdict <- case_when(
-    saida$n_checked == 0 ~ "not_assessed",
-    is.na(saida$threshold) |
-      saida$sign8_verdict %in% "no_curve_reaches_target" |
-      saida$n_raised >= 3 ~ "not_trustworthy",
-    saida$n_raised >= 1 ~ "use_with_caveats",
+  signs <- as.matrix(out[c("sign1", "sign2", "sign6", "sign7", "sign8",
+                           "sign9")])
+  out$n_checked <- rowSums(!is.na(signs))
+  out$n_raised <- rowSums(matrix(signs %in% TRUE, nrow = nrow(signs)))
+  out$verdict <- case_when(
+    out$n_checked == 0 ~ "not_assessed",
+    is.na(out$threshold) |
+      out$sign8_verdict %in% "no_curve_reaches_target" |
+      out$n_raised >= 3 ~ "not_trustworthy",
+    out$n_raised >= 1 ~ "use_with_caveats",
     .default = "trustworthy_with_care")
-  saida <- select(saida, species_folder, threshold, sign1_ceiling, sign1,
-                  sign2_tp_kept, sign2, sign6_fp_spread, sign6, sign6_detail,
-                  sign7_share_below, sign7, sign7_detail, sign8_verdict,
-                  sign8, sign9_deff, sign9, n_checked, n_raised, verdict)
-  if (!is.null(file)) write_warning_signs(saida, file)
-  saida
+  out <- select(out, species_folder, threshold, sign1_ceiling, sign1,
+                sign2_tp_kept, sign2, sign6_fp_spread, sign6, sign6_detail,
+                sign7_share_below, sign7, sign7_detail, sign8_verdict,
+                sign8, sign9_deff, sign9, n_checked, n_raised, verdict)
+  if (!is.null(file)) write_warning_signs(out, file)
+  out
 }
 
-# Limiar de cada local x especie: numero unico ou tabela por especie (e
-# local); uma tabela so por especie vale para todos os locais
-cell_thresholds <- function(thresholds, validados, coluna) {
-  celulas <- distinct(validados, site, species_folder)
+#' Threshold of each site x species cell
+#'
+#' A single number applies to every cell; a table by species only applies
+#' to every site of the species.
+#'
+#' @param thresholds Numeric scalar, or a data frame with `species_folder`
+#'   (optionally `site`) and the column `column`.
+#' @param reviewed A data frame of reviewed clips with `site` and
+#'   `species_folder`.
+#' @param column Character scalar, column of `thresholds` with the
+#'   threshold.
+#' @return A tibble with `site`, `species_folder` and `.thr` (numeric, `NA`
+#'   for cells without a threshold).
+#' @noRd
+cell_thresholds <- function(thresholds, reviewed, column) {
+  cells <- distinct(reviewed, site, species_folder)
   if (is.numeric(thresholds) && length(thresholds) == 1) {
-    return(mutate(celulas, .limiar = thresholds))
+    return(mutate(cells, .thr = thresholds))
   }
   if (!is.data.frame(thresholds)) {
     stop("`thresholds` must be a single number or a table.", call. = FALSE)
   }
-  check_columns(thresholds, c("species_folder", coluna), "thresholds")
-  chave <- intersect(c("site", "species_folder"), names(thresholds))
+  check_columns(thresholds, c("species_folder", column), "thresholds")
+  key_cols <- intersect(c("site", "species_folder"), names(thresholds))
   tab <- thresholds |>
-    mutate(across(all_of(chave), as.character)) |>
-    group_by(across(all_of(chave))) |>
-    summarise(.limiar = first(.data[[coluna]]), .groups = "drop")
-  left_join(celulas, tab, by = chave)
+    mutate(across(all_of(key_cols), as.character)) |>
+    group_by(across(all_of(key_cols))) |>
+    summarise(.thr = first(.data[[column]]), .groups = "drop")
+  left_join(cells, tab, by = key_cols)
 }
 
-# Sinal 6: amplitude da taxa de falso positivo entre niveis de cada grupo
-fp_spread <- function(amostra, groups, min_n, max_spread) {
+#' Sign 6: spread of the false-positive rate among the levels of each group
+#'
+#' @param clips A data frame of reviewed clips with `species_folder`,
+#'   `verdict`, the weight `w` and the `groups` columns.
+#' @param groups Character vector, grouping columns.
+#' @param min_n Numeric scalar, minimum number of clips of a level.
+#' @param max_spread Numeric scalar, largest spread that keeps the sign
+#'   clear.
+#' @return A tibble with `species_folder`, `sign6_fp_spread`,
+#'   `sign6_detail` and `sign6`; only `species_folder` without groups.
+#' @noRd
+fp_spread <- function(clips, groups, min_n, max_spread) {
   if (length(groups) == 0) return(tibble(species_folder = character()))
-  por_grupo <- lapply(groups, function(g) {
-    amostra |>
+  by_group <- lapply(groups, function(g) {
+    clips |>
       filter(!is.na(.data[[g]])) |>
-      group_by(species_folder, nivel = as.character(.data[[g]])) |>
+      group_by(species_folder, level = as.character(.data[[g]])) |>
       summarise(n = n(), fp = sum(w[verdict == "negative"]) / sum(w),
                 .groups = "drop") |>
       filter(n >= min_n) |>
@@ -279,11 +309,11 @@ fp_spread <- function(amostra, groups, min_n, max_spread) {
       filter(n() >= 2) |>
       summarise(spread = max(fp) - min(fp),
                 detail = sprintf("%s: FP rate %.2f (%s) to %.2f (%s)", g,
-                                 min(fp), nivel[which.min(fp)], max(fp),
-                                 nivel[which.max(fp)]),
+                                 min(fp), level[which.min(fp)], max(fp),
+                                 level[which.max(fp)]),
                 .groups = "drop")
   })
-  bind_rows(por_grupo) |>
+  bind_rows(by_group) |>
     group_by(species_folder) |>
     summarise(sign6_fp_spread = max(spread),
               sign6_detail = paste(detail, collapse = "; "),
@@ -291,64 +321,83 @@ fp_spread <- function(amostra, groups, min_n, max_spread) {
     mutate(sign6 = sign6_fp_spread > max_spread)
 }
 
-# Sinal 7: grupos em que o limiar da celula fica abaixo do alvo
-group_stability <- function(validados, celulas, groups, alvo, min_n) {
+#' Sign 7: groups in which the threshold of the cell falls below the target
+#'
+#' @param reviewed A data frame of reviewed clips.
+#' @param cells A tibble from cell_thresholds().
+#' @param groups Character vector, grouping columns.
+#' @param target_prec Numeric scalar in (0, 1), target precision.
+#' @param min_n Numeric scalar, minimum number of clips above the threshold
+#'   for a group to count.
+#' @return A tibble with `species_folder`, `sign7_share_below`,
+#'   `sign7_detail` and `sign7`; only `species_folder` without groups or
+#'   thresholds.
+#' @noRd
+group_stability <- function(reviewed, cells, groups, target_prec, min_n) {
   if (length(groups) == 0) return(tibble(species_folder = character()))
-  tab <- filter(celulas, !is.na(.limiar)) |>
-    rename(threshold = .limiar)
+  tab <- filter(cells, !is.na(.thr)) |>
+    rename(threshold = .thr)
   if (nrow(tab) == 0) return(tibble(species_folder = character()))
-  por_grupo <- lapply(groups, function(g) {
+  by_group <- lapply(groups, function(g) {
     if (identical(g, "site")) {
-      # o limiar ja e por local: a pergunta e se cada local atinge o alvo
-      d <- validados |>
+      # the threshold is already by site: the question is whether each
+      # site reaches the target
+      d <- reviewed |>
         inner_join(tab, by = c("site", "species_folder")) |>
         filter(confidence >= threshold)
-      pesos <- has_inclusion_prob(d) && !anyNA(d$inclusion_prob)
+      has_weights <- has_inclusion_prob(d) && !anyNA(d$inclusion_prob)
       d |>
-        group_by(species_folder, nivel = site) |>
+        group_by(species_folder, level = site) |>
         summarise(n_above = n(),
-                  precision_above = if (pesos) {
+                  precision_above = if (has_weights) {
                     weighted_precision(verdict, inclusion_prob)
                   } else {
                     mean(verdict == "positive")
                   }, .groups = "drop") |>
         mutate(below_target = if_else(n_above >= min_n,
-                                      precision_above < alvo, NA),
-               grupo = g)
+                                      precision_above < target_prec, NA),
+               group = g)
     } else {
-      threshold_by_group(validados, tab, by = g, target_precision = alvo,
+      threshold_by_group(reviewed, tab, by = g, target_precision = target_prec,
                          min_n = min_n) |>
-        mutate(nivel = paste(site, .data[[g]], sep = " / "), grupo = g)
+        mutate(level = paste(site, .data[[g]], sep = " / "), group = g)
     }
   })
-  bind_rows(lapply(por_grupo, \(d) select(d, species_folder, grupo, nivel,
-                                         precision_above, below_target))) |>
+  bind_rows(lapply(by_group, \(d) select(d, species_folder, group, level,
+                                        precision_above, below_target))) |>
     filter(!is.na(below_target)) |>
     group_by(species_folder) |>
     summarise(sign7_share_below = mean(below_target),
               sign7_detail = if (any(below_target)) paste0(
                 "below target: ",
-                paste(sprintf("%s %s (%.2f)", grupo[below_target],
-                              nivel[below_target],
+                paste(sprintf("%s %s (%.2f)", group[below_target],
+                              level[below_target],
                               precision_above[below_target]),
                       collapse = ", ")) else NA_character_,
               .groups = "drop") |>
     mutate(sign7 = sign7_share_below > 0)
 }
 
-# Sinal 8: veredito de compare_calibration_curves() (o pior da especie)
+#' Sign 8: verdict of compare_calibration_curves()
+#'
+#' The worst verdict of each species counts.
+#'
+#' @param curves `NULL` or the output of compare_calibration_curves().
+#' @return A tibble with `species_folder`, `sign8_verdict` and `sign8`;
+#'   only `species_folder` without `curves`.
+#' @noRd
 curve_signs <- function(curves) {
   if (is.null(curves)) return(tibble(species_folder = character()))
   if (!all(c("species_folder", "verdict") %in% names(curves))) {
     stop("`curves` must be the output of compare_calibration_curves(), ",
          "with species_folder among its `by` columns.", call. = FALSE)
   }
-  ordem <- c("no_curve_reaches_target", "use_monotone_or_weighted",
+  severity <- c("no_curve_reaches_target", "use_monotone_or_weighted",
              "sample_more_near_threshold", "too_few_clips", "keep_logistic")
   curves |>
     distinct(across(any_of(c("site", "species_folder"))), verdict) |>
     group_by(species_folder) |>
-    summarise(sign8_verdict = ordem[min(match(verdict, ordem))],
+    summarise(sign8_verdict = severity[min(match(verdict, severity))],
               .groups = "drop") |>
     mutate(sign8 = case_when(
       sign8_verdict %in% c("no_curve_reaches_target",
@@ -357,16 +406,27 @@ curve_signs <- function(curves) {
       .default = NA))
 }
 
-# Sinal 9: efeito de desenho dos falsos positivos acima do limiar, por
-# gravacao (ICC de ANOVA truncado em 0; tamanho medio ponderado pelo tamanho)
-fp_design_effect <- function(validados, celulas, cluster, min_n, max_deff) {
-  if (is.null(cluster) || !cluster %in% names(validados)) {
+#' Sign 9: design effect of the false positives above the threshold
+#'
+#' By recording (or other `cluster` unit) within each species.
+#'
+#' @param reviewed A data frame of reviewed clips.
+#' @param cells A tibble from cell_thresholds().
+#' @param cluster Character scalar or `NULL`, column with the unit.
+#' @param min_n Numeric scalar, minimum number of clips for an estimate.
+#' @param max_deff Numeric scalar, largest design effect that keeps the
+#'   sign clear.
+#' @return A tibble with `species_folder`, `sign9_deff` and `sign9`; only
+#'   `species_folder` without the `cluster` column.
+#' @noRd
+fp_design_effect <- function(reviewed, cells, cluster, min_n, max_deff) {
+  if (is.null(cluster) || !cluster %in% names(reviewed)) {
     return(tibble(species_folder = character()))
   }
-  validados |>
-    inner_join(filter(celulas, !is.na(.limiar)),
+  reviewed |>
+    inner_join(filter(cells, !is.na(.thr)),
                by = c("site", "species_folder")) |>
-    filter(confidence >= .limiar, !is.na(.data[[cluster]])) |>
+    filter(confidence >= .thr, !is.na(.data[[cluster]])) |>
     group_by(species_folder) |>
     summarise(sign9_deff = design_effect(verdict == "negative",
                                          paste(site, .data[[cluster]]),
@@ -375,23 +435,43 @@ fp_design_effect <- function(validados, celulas, cluster, min_n, max_deff) {
     mutate(sign9 = sign9_deff > max_deff)
 }
 
-design_effect <- function(y, unidade, min_n) {
+#' Design effect of a binary indicator by cluster
+#'
+#' ANOVA estimator of the intraclass correlation, truncated at 0, and the
+#' mean cluster size weighted by size.
+#'
+#' @param y Logical or numeric 0/1 vector.
+#' @param unit Vector of the same length as `y`, cluster of each value.
+#' @param min_n Numeric scalar, minimum length of `y` for an estimate.
+#' @return Numeric scalar, the design effect; 1 when `y` is constant, `NA`
+#'   with too few values or one value per cluster.
+#' @noRd
+design_effect <- function(y, unit, min_n) {
   y <- as.numeric(y)
   n <- length(y)
-  g <- factor(unidade)
+  g <- factor(unit)
   m <- tabulate(g)
   k <- length(m)
   if (n < min_n || k < 2 || n == k) return(NA_real_)
   if (all(y == y[1])) return(1)
-  medias <- tapply(y, g, mean)
-  msb <- sum(m * (medias - mean(y))^2) / (k - 1)
-  msw <- sum((y - medias[as.integer(g)])^2) / (n - k)
+  means <- tapply(y, g, mean)
+  msb <- sum(m * (means - mean(y))^2) / (k - 1)
+  msw <- sum((y - means[as.integer(g)])^2) / (n - k)
   m0 <- (n - sum(m^2) / n) / (k - 1)
   icc <- max(0, (msb - msw) / (msb + (m0 - 1) * msw))
   1 + (sum(m^2) / n - 1) * icc
 }
 
-# Sinal 1: teto de recall de recall_ceiling() (o menor da especie)
+#' Sign 1: recall ceiling from recall_ceiling()
+#'
+#' The lowest ceiling of each species counts.
+#'
+#' @param recall `NULL` or the output of recall_ceiling().
+#' @param min_ceiling Numeric scalar, lowest ceiling that keeps the sign
+#'   clear.
+#' @return A tibble with `species_folder`, `sign1_ceiling` and `sign1`;
+#'   only `species_folder` without `recall`.
+#' @noRd
 ceiling_signs <- function(recall, min_ceiling) {
   if (is.null(recall)) return(tibble(species_folder = character()))
   if (!all(c("species_folder", "recall_ceiling") %in% names(recall))) {
@@ -405,26 +485,32 @@ ceiling_signs <- function(recall, min_ceiling) {
     mutate(sign1 = sign1_ceiling < min_ceiling)
 }
 
-write_warning_signs <- function(saida, file) {
+#' Write the warning signs as a Markdown table
+#'
+#' @param out A tibble from warning_signs().
+#' @param file Character scalar, path of the Markdown file.
+#' @return `file`, invisibly.
+#' @noRd
+write_warning_signs <- function(out, file) {
   fmt <- function(x) {
     if (is.numeric(x)) format(round(x, 2), trim = TRUE) else
       ifelse(is.na(x), "", as.character(x))
   }
-  tab <- as.data.frame(lapply(saida, fmt))
-  linhas <- c("# Warning signs of the thresholds", "",
-              paste0("Written by sheepdog ",
-                     utils::packageVersion("sheepdog"), " on ",
-                     format(Sys.Date()), ". Signs 3 to 5 need recordings ",
-                     "annotated in full and are not checked; an empty sign ",
-                     "was not checked. The verdict sums up the ",
-                     "heterogeneity of the data, not whether the ",
-                     "threshold reaches its target: for that, use the ",
-                     "conservative threshold of threshold_bootstrap()."), "",
-              paste0("| ", paste(names(tab), collapse = " | "), " |"),
-              paste0("|", paste(rep("---", ncol(tab)), collapse = "|"), "|"),
-              apply(tab, 1, \(r) paste0("| ", paste(r, collapse = " | "),
-                                        " |")))
-  writeLines(linhas, file)
+  tab <- as.data.frame(lapply(out, fmt))
+  lines <- c("# Warning signs of the thresholds", "",
+             paste0("Written by sheepdog ",
+                    utils::packageVersion("sheepdog"), " on ",
+                    format(Sys.Date()), ". Signs 3 to 5 need recordings ",
+                    "annotated in full and are not checked; an empty sign ",
+                    "was not checked. The verdict sums up the ",
+                    "heterogeneity of the data, not whether the ",
+                    "threshold reaches its target: for that, use the ",
+                    "conservative threshold of threshold_bootstrap()."), "",
+             paste0("| ", paste(names(tab), collapse = " | "), " |"),
+             paste0("|", paste(rep("---", ncol(tab)), collapse = "|"), "|"),
+             apply(tab, 1, \(r) paste0("| ", paste(r, collapse = " | "),
+                                       " |")))
+  writeLines(lines, file)
   message("Warning signs written to ", file)
   invisible(file)
 }

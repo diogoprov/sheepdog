@@ -50,12 +50,14 @@
 #' `media.csv`. The files whose names do not carry them are reported;
 #' rename them, or the nights and hours of the occasions will be missing.
 #'
-#' @param dir Folder of the data package.
-#' @param site_column Column of `deployments.csv` that names the site:
+#' @param dir Character scalar, path to the folder of the data package.
+#' @param site_column Character scalar, column of `deployments.csv` that
+#'   names the site:
 #'   `"locationID"` (default), `"locationName"` or `"deploymentID"`.
 #'   Deployments with this column empty take their `deploymentID`, with a
 #'   message.
-#' @param audio_root Optional folder that relative `filePath` values are
+#' @param audio_root `NULL` or character scalar, folder that relative
+#'   `filePath` values are
 #'   resolved against (e.g. the folder of the audio files on this
 #'   computer). `NULL` keeps `filePath` as it is. Paths that are absolute
 #'   or URLs are never changed.
@@ -115,14 +117,14 @@ read_pamdp <- function(dir, site_column = "locationID", audio_root = NULL) {
   if (!is.character(site_column) || length(site_column) != 1) {
     stop("`site_column` must be a single column name.", call. = FALSE)
   }
-  caminhos <- pamdp_paths(dir)
-  ler <- function(x) {
+  paths <- pamdp_paths(dir)
+  read_chr <- function(x) {
     readr::read_csv(x, col_types = cols(.default = col_character()),
                     na = c("", "NA"), progress = FALSE)
   }
-  dep <- ler(caminhos[["deployments"]])
-  med <- ler(caminhos[["media"]])
-  obs <- ler(caminhos[["observations"]])
+  dep <- read_chr(paths[["deployments"]])
+  med <- read_chr(paths[["media"]])
+  obs <- read_chr(paths[["observations"]])
   pamdp_require(dep, c("deploymentID"), "deployments.csv")
   pamdp_require(med, c("mediaID", "deploymentID", "filePath"), "media.csv")
   pamdp_require(obs, c("observationID", "deploymentID", "eventStart",
@@ -132,147 +134,169 @@ read_pamdp <- function(dir, site_column = "locationID", audio_root = NULL) {
          paste(names(dep), collapse = ", "), call. = FALSE)
   }
 
-  sitio <- dep[[site_column]]
-  vazio <- is.na(sitio) | !nzchar(sitio)
-  if (any(vazio)) {
-    message(sum(vazio), " deployment(s) without `", site_column,
+  site_id <- dep[[site_column]]
+  empty <- is.na(site_id) | !nzchar(site_id)
+  if (any(empty)) {
+    message(sum(empty), " deployment(s) without `", site_column,
             "` take their deploymentID as site.")
-    sitio[vazio] <- dep$deploymentID[vazio]
+    site_id[empty] <- dep$deploymentID[empty]
   }
-  sitios <- tibble(deploymentID = dep$deploymentID, site = sitio)
+  sites <- tibble(deploymentID = dep$deploymentID, site = site_id)
 
   med$source_audio <- pamdp_resolve(med$filePath, audio_root)
-  semdep <- !med$deploymentID %in% sitios$deploymentID
-  if (any(semdep)) {
-    stop(sum(semdep), " media file(s) refer to deployments not in ",
-         "deployments.csv (e.g. ", med$deploymentID[semdep][1], ").",
+  no_dep <- !med$deploymentID %in% sites$deploymentID
+  if (any(no_dep)) {
+    stop(sum(no_dep), " media file(s) refer to deployments not in ",
+         "deployments.csv (e.g. ", med$deploymentID[no_dep][1], ").",
          call. = FALSE)
   }
   num <- function(x) suppressWarnings(as.numeric(x))
-  med$momento <- if ("timestamp" %in% names(med)) med[["timestamp"]] else NA_character_
-  med$duracao <- if ("fileLength" %in% names(med)) num(med[["fileLength"]]) else NA_real_
-  gravacoes <- med |>
-    left_join(sitios, by = "deploymentID") |>
+  med$.ts <- if ("timestamp" %in% names(med)) med[["timestamp"]] else NA_character_
+  med$.len <- if ("fileLength" %in% names(med)) num(med[["fileLength"]]) else NA_real_
+  recordings <- med |>
+    left_join(sites, by = "deploymentID") |>
     transmute(site, source_audio, media_id = mediaID,
-              deployment_id = deploymentID, timestamp = momento,
-              file_length = duracao) |>
+              deployment_id = deploymentID, timestamp = .ts,
+              file_length = .len) |>
     arrange(site, source_audio)
 
-  col <- function(nome) if (nome %in% names(obs)) obs[[nome]] else rep(NA_character_, nrow(obs))
-  metodo <- col("classificationMethod")
-  humanas <- !is.na(metodo) & metodo == "human"
-  if (any(humanas)) {
-    message(sum(humanas), " observation(s) classified by people left out: ",
+  col <- function(name) if (name %in% names(obs)) obs[[name]] else rep(NA_character_, nrow(obs))
+  method <- col("classificationMethod")
+  human <- !is.na(method) & method == "human"
+  if (any(human)) {
+    message(sum(human), " observation(s) classified by people left out: ",
             "pamDP does not link them to the predictions they check.")
   }
   prob <- num(col("classificationProbability"))
-  tipo <- col("observationType")
-  nome <- col("scientificName")
-  manter <- !humanas & (is.na(metodo) | metodo == "machine") & !is.na(prob) &
-    (is.na(tipo) | tipo == "animal") & !is.na(nome) & nzchar(nome)
-  outras <- sum(!humanas & !manter)
-  if (outras > 0) {
-    message(outras, " other observation(s) left out (not of a classifier, ",
+  type <- col("observationType")
+  sci_name <- col("scientificName")
+  keep <- !human & (is.na(method) | method == "machine") & !is.na(prob) &
+    (is.na(type) | type == "animal") & !is.na(sci_name) & nzchar(sci_name)
+  others <- sum(!human & !keep)
+  if (others > 0) {
+    message(others, " other observation(s) left out (not of a classifier, ",
             "without classificationProbability or scientificName, or not ",
             "of type \"animal\").")
   }
-  obs <- obs[manter, , drop = FALSE]
-  sem_midia <- is.na(obs$mediaID) | !obs$mediaID %in% med$mediaID
-  if (any(sem_midia)) {
-    message(sum(sem_midia), " prediction(s) without a media file in ",
+  obs <- obs[keep, , drop = FALSE]
+  no_media <- is.na(obs$mediaID) | !obs$mediaID %in% med$mediaID
+  if (any(no_media)) {
+    message(sum(no_media), " prediction(s) without a media file in ",
             "media.csv left out.")
-    obs <- obs[!sem_midia, , drop = FALSE]
+    obs <- obs[!no_media, , drop = FALSE]
   }
   if (nrow(obs) == 0) stop("No machine prediction found in ",
-                           caminhos[["observations"]], ".", call. = FALSE)
+                           paths[["observations"]], ".", call. = FALSE)
 
-  col <- function(nome) if (nome %in% names(obs)) obs[[nome]] else rep(NA_character_, nrow(obs))
-  nome <- str_squish(obs$scientificName)
-  predicoes <- tibble(
+  col <- function(name) if (name %in% names(obs)) obs[[name]] else rep(NA_character_, nrow(obs))
+  sci_name <- str_squish(obs$scientificName)
+  predictions <- tibble(
     observation_id = obs$observationID, deployment_id = obs$deploymentID,
     media_id = obs$mediaID,
     begin_time = num(obs$eventStart), end_time = num(obs$eventEnd),
     low_freq = num(col("frequencyLow")), high_freq = num(col("frequencyHigh")),
-    scientific_name = nome,
-    species_code = paste0(nome, "_",
-                          str_replace_all(str_to_lower(nome), "\\s+", "-")),
+    scientific_name = sci_name,
+    species_code = paste0(sci_name, "_",
+                          str_replace_all(str_to_lower(sci_name), "\\s+", "-")),
     confidence = num(obs$classificationProbability),
     classified_by = col("classifiedBy")) |>
     left_join(select(med, media_id = mediaID, begin_path = source_audio,
                      deployment_media = deploymentID), by = "media_id")
-  if (any(predicoes$deployment_media != predicoes$deployment_id)) {
+  if (any(predictions$deployment_media != predictions$deployment_id)) {
     warning("Some predictions have a deploymentID different from that of ",
             "their media file; the site follows the media file.",
             call. = FALSE)
   }
-  predicoes <- predicoes |>
-    left_join(rename(sitios, deployment_media = deploymentID),
+  predictions <- predictions |>
+    left_join(rename(sites, deployment_media = deploymentID),
               by = "deployment_media") |>
     mutate(file_offset = begin_time) |>
     select(site, begin_time, end_time, low_freq, high_freq, species_code,
            confidence, begin_path, file_offset, observation_id,
            deployment_id = deployment_media, media_id, scientific_name,
            classified_by)
-  ruins <- is.na(predicoes$begin_time) | is.na(predicoes$end_time) |
-    predicoes$confidence < 0 | predicoes$confidence > 1
-  if (any(ruins)) {
-    stop(sum(ruins), " prediction(s) with missing eventStart/eventEnd or ",
+  bad <- is.na(predictions$begin_time) | is.na(predictions$end_time) |
+    predictions$confidence < 0 | predictions$confidence > 1
+  if (any(bad)) {
+    stop(sum(bad), " prediction(s) with missing eventStart/eventEnd or ",
          "classificationProbability outside 0-1 (e.g. observationID ",
-         predicoes$observation_id[ruins][1], ").", call. = FALSE)
+         predictions$observation_id[bad][1], ").", call. = FALSE)
   }
 
-  sem_data <- is.na(parse_date_hour(basename(gravacoes$source_audio))$recording_date)
-  if (any(sem_data)) {
-    message(sum(sem_data), " of ", nrow(gravacoes), " audio file name(s) ",
+  no_date <- is.na(parse_date_hour(basename(recordings$source_audio))$recording_date)
+  if (any(no_date)) {
+    message(sum(no_date), " of ", nrow(recordings), " audio file name(s) ",
             "lack the date and time as YYYYMMDD_HHMMSS (e.g. ",
-            basename(gravacoes$source_audio[sem_data][1]), "); sheepdog ",
+            basename(recordings$source_audio[no_date][1]), "); sheepdog ",
             "reads them from the file name, not from `timestamp`.")
   }
-  message(nrow(predicoes), " predictions of ",
-          n_distinct(predicoes$species_code), " species read from ",
-          n_distinct(predicoes$site), " site(s); ", nrow(gravacoes),
+  message(nrow(predictions), " predictions of ",
+          n_distinct(predictions$species_code), " species read from ",
+          n_distinct(predictions$site), " site(s); ", nrow(recordings),
           " recordings.")
-  list(predictions = predicoes, recordings = gravacoes)
+  list(predictions = predictions, recordings = recordings)
 }
 
-# Caminhos das tres tabelas: pelos recursos do datapackage.json, se houver,
-# senao pelos nomes padrao
+#' Paths of the three pamDP tables
+#'
+#' Takes the paths from the resources of `datapackage.json` when there is
+#' one, otherwise the default file names; errors when a table is missing.
+#'
+#' @param dir Character scalar, folder of the data package.
+#' @return Named character vector of length 3 (`deployments`, `media`,
+#'   `observations`) with the table paths.
+#' @noRd
 pamdp_paths <- function(dir) {
-  padrao <- c(deployments = "deployments.csv", media = "media.csv",
-              observations = "observations.csv")
-  caminhos <- file.path(dir, padrao)
-  names(caminhos) <- names(padrao)
+  defaults <- c(deployments = "deployments.csv", media = "media.csv",
+                observations = "observations.csv")
+  paths <- file.path(dir, defaults)
+  names(paths) <- names(defaults)
   dp <- file.path(dir, "datapackage.json")
   if (file.exists(dp)) {
-    pacote <- jsonlite::read_json(dp)
-    for (r in pacote$resources) {
-      if (!is.null(r$name) && r$name %in% names(padrao) &&
+    pkg <- jsonlite::read_json(dp)
+    for (r in pkg$resources) {
+      if (!is.null(r$name) && r$name %in% names(defaults) &&
           is.character(r$path) && length(r$path) == 1) {
-        caminhos[[r$name]] <- file.path(dir, r$path)
+        paths[[r$name]] <- file.path(dir, r$path)
       }
     }
   }
-  falta <- !file.exists(caminhos)
-  if (any(falta)) {
+  absent <- !file.exists(paths)
+  if (any(absent)) {
     stop("pamDP table(s) not found: ",
-         paste(caminhos[falta], collapse = ", "), call. = FALSE)
+         paste(paths[absent], collapse = ", "), call. = FALSE)
   }
-  caminhos
+  paths
 }
 
-pamdp_require <- function(tb, colunas, arquivo) {
-  falta <- setdiff(colunas, names(tb))
-  if (length(falta) > 0) {
-    stop(arquivo, " lacks the column(s): ", paste(falta, collapse = ", "),
+#' Check that a pamDP table has the required columns
+#'
+#' @param tb A data frame read from a pamDP table.
+#' @param cols Character vector of required column names.
+#' @param file Character scalar, name of the table for the error message.
+#' @return Called for its side effect: errors when a column is missing.
+#' @noRd
+pamdp_require <- function(tb, cols, file) {
+  absent <- setdiff(cols, names(tb))
+  if (length(absent) > 0) {
+    stop(file, " lacks the column(s): ", paste(absent, collapse = ", "),
          call. = FALSE)
   }
 }
 
-# filePath relativo resolvido contra audio_root; absolutos e URLs ficam
-pamdp_resolve <- function(caminho, raiz) {
-  caminho <- str_replace_all(caminho, fixed("\\"), "/")
-  if (is.null(raiz)) return(caminho)
-  absoluto <- str_detect(caminho, "^(/|[A-Za-z]:/|[A-Za-z][A-Za-z0-9+.-]*://)")
-  raiz <- str_remove(str_replace_all(raiz, fixed("\\"), "/"), "/+$")
-  ifelse(absoluto, caminho, paste0(raiz, "/", str_remove(caminho, "^\\./")))
+#' Resolve relative pamDP file paths against an audio root
+#'
+#' Backslashes become slashes; absolute paths and URLs are kept as they are.
+#'
+#' @param path Character vector of `filePath` values.
+#' @param root Character scalar or `NULL`, folder the relative paths are
+#'   resolved against; `NULL` keeps the paths.
+#' @return Character vector of paths, same length as `path`.
+#' @noRd
+pamdp_resolve <- function(path, root) {
+  path <- str_replace_all(path, fixed("\\"), "/")
+  if (is.null(root)) return(path)
+  absolute <- str_detect(path, "^(/|[A-Za-z]:/|[A-Za-z][A-Za-z0-9+.-]*://)")
+  root <- str_remove(str_replace_all(root, fixed("\\"), "/"), "/+$")
+  ifelse(absolute, path, paste0(root, "/", str_remove(path, "^\\./")))
 }

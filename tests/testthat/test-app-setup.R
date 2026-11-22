@@ -67,14 +67,14 @@ test_that("load_app_state() reads the folders and writes recordings.csv", {
   expect_identical(st$clips_dir, file.path(out, "clips"))
   expect_true(file.exists(file.path(out, "recordings.csv")))
   expect_identical(nrow(st$recordings), 4L)
-  expect_null(st$fila)
+  expect_null(st$clip_queue)
   # um manifesto sem clipes cortados vira aviso, nao erro
   readr::write_csv(tibble::tibble(species_folder = "sp", clip_file = "x.wav",
                                   recording_date = "20211001"),
                    file.path(out, "clip_manifest.csv"))
   st$manifest <- NULL
   expect_warning(suppressMessages(load_app_state(st)), "without clips")
-  expect_null(st$fila)
+  expect_null(st$clip_queue)
   # so revisao: o erro continua
   st2 <- app_state(manifest = file.path(out, "clip_manifest.csv"),
                    clips_dir = file.path(out, "clips"))

@@ -20,41 +20,51 @@ review_support(
 )
 }
 \arguments{
-\item{validation}{Reviewed clips, as for \code{\link[=precision_by_bin]{precision_by_bin()}} (the
-\code{validation_by_clip.csv} tables).}
+\item{validation}{A data frame (or tibble) of reviewed clips, as for
+\code{\link[=precision_by_bin]{precision_by_bin()}} (the \code{validation_by_clip.csv} tables). One row per
+clip.}
 
-\item{detections}{Predictions, as returned by \code{\link[=read_selection_tables]{read_selection_tables()}}.}
+\item{detections}{A data frame (or tibble) of predictions, as returned by
+\code{\link[=read_selection_tables]{read_selection_tables()}}, with columns \code{site}, \code{species_code},
+\code{confidence}, \code{begin_path} and \code{file_offset}. One row per prediction.}
 
-\item{conf_high}{Score from which a prediction counts as high.}
+\item{conf_high}{Numeric scalar, score from which a prediction counts as
+high.}
 
-\item{min_n}{Minimum number of clips, as in \code{\link[=suggest_thresholds]{suggest_thresholds()}}, and
-of unreviewed high-score detections for \code{"review more"}.}
+\item{min_n}{Integer scalar >= 1. Minimum number of clips, as in
+\code{\link[=suggest_thresholds]{suggest_thresholds()}}, and of unreviewed high-score detections for
+\code{"review more"}.}
 
-\item{min_precision}{Precision at high scores below which a cell is
-\code{"unreliable"}.}
+\item{min_precision}{Numeric scalar in [0, 1]. Precision at high scores
+below which a cell is \code{"unreliable"}.}
 
-\item{target_precision}{Target precision of \code{\link[=suggest_thresholds]{suggest_thresholds()}}.}
+\item{target_precision}{Numeric scalar in (0, 1). Target precision of
+\code{\link[=suggest_thresholds]{suggest_thresholds()}}.}
 
-\item{by}{Optional columns that split each cell, e.g. \code{"temp_bin"}.
-They must be columns of \code{covariates} (joined to both tables) or of
-both tables.}
+\item{by}{\code{NULL} or a character vector of column names that split each
+cell, e.g. \code{"temp_bin"}. They must be columns of \code{covariates} (joined
+to both tables) or of both tables.}
 
-\item{covariates}{Optional table of occasion covariates, such as the
+\item{covariates}{\code{NULL} or a data frame (or tibble) of occasion
+covariates, such as the
 output of \code{\link[=covariate_bins]{covariate_bins()}}, joined to the clips and to the
 predictions by the columns it shares with them among \code{site}, \code{night},
 \code{recording_date}, \code{recording_hour}, \code{source_audio} and \code{occasion_id},
 as in \code{\link[=select_clips]{select_clips()}}.}
 
-\item{occasion_unit}{The occasion of the occupancy model: \code{"file"} (the
-whole recording) or \code{"minute"} (minute of the file, from
+\item{occasion_unit}{Character scalar, the occasion of the occupancy
+model: \code{"file"} (the whole recording) or \code{"minute"} (minute of the
+file, from
 \code{file_offset}).}
 
-\item{remap_from, remap_to}{Replace the prefix \code{remap_from} of the
+\item{remap_from, remap_to}{\code{NULL} or character scalars. Replace the
+prefix \code{remap_from} of the
 \code{begin_path} paths by \code{remap_to}, e.g. \code{"N:/"} and \code{"/Volumes/Arara/"}.
 Backslashes are turned into forward slashes first.}
 
-\item{weighted}{Passed to \code{\link[=suggest_thresholds]{suggest_thresholds()}}, so that \code{"reached"}
-follows the same rule. \code{prec_high} stays unweighted.}
+\item{weighted}{\code{NULL}, \code{TRUE} or \code{FALSE}. Passed to
+\code{\link[=suggest_thresholds]{suggest_thresholds()}}, so that \code{"reached"} follows the same rule.
+\code{prec_high} stays unweighted.}
 }
 \value{
 A tibble with \code{site}, \code{species_folder}, the \code{by} columns,

@@ -14,23 +14,24 @@ fit_calibration(
 )
 }
 \arguments{
-\item{validations}{Table returned by \code{\link[=read_validations]{read_validations()}}.}
+\item{validations}{A data frame (or tibble) returned by \code{\link[=read_validations]{read_validations()}},
+one row per reviewed clip.}
 
-\item{formula}{Model formula, usually the best one of
+\item{formula}{A model formula, usually the best one of
 \code{\link[=compare_calibration_models]{compare_calibration_models()}}.}
 
-\item{engine}{\code{"lme4"} or \code{"brms"}.}
+\item{engine}{Character scalar, one of \code{"lme4"} (default) or \code{"brms"}.}
 
-\item{prior}{\code{engine = "brms"}: the prior (a \code{brmsprior} object), e.g.
-from \code{\link[=calibration_prior]{calibration_prior()}}. Required.}
+\item{prior}{\code{NULL} or a \code{brmsprior} object. With \code{engine = "brms"}, the
+prior, e.g. from \code{\link[=calibration_prior]{calibration_prior()}}. Required.}
 
-\item{control}{Optional settings of the fitting algorithm, a single
-object: a \code{lme4::glmerControl()} object (formula with random effects)
-or a list of \code{stats::glm.control()} arguments (formula without them)
-with \code{engine = "lme4"}; a list of sampler settings passed to
-\code{brms::brm()} with \code{engine = "brms"}. \code{NULL} (default) keeps the
-settings described in "Maximum likelihood fit" and the 'brms'
-defaults. See the section "Maximum likelihood fit".}
+\item{control}{\code{NULL} or a single object with settings of the fitting
+algorithm: a \code{lme4::glmerControl()} object (formula with random effects) or
+a list of \code{stats::glm.control()} arguments (formula without them) with
+\code{engine = "lme4"}; a list of sampler settings passed to \code{brms::brm()} with
+\code{engine = "brms"}. \code{NULL} (default) keeps the settings described in
+"Maximum likelihood fit" and the 'brms' defaults. See the section "Maximum
+likelihood fit".}
 
 \item{...}{\code{engine = "brms"}: further arguments for \code{brms::brm()} (e.g.
 \code{chains}, \code{iter}, \code{cores}, \code{backend}, \code{seed}). Without \code{seed}, one is

@@ -25,62 +25,76 @@ build_training_set(
 )
 }
 \arguments{
-\item{validation}{Reviewed clips, as returned by \code{\link[=classify_review]{classify_review()}},
+\item{validation}{A data frame of reviewed clips, one row per clip, as
+returned by \code{\link[=classify_review]{classify_review()}},
 \code{\link[=post_validation]{post_validation()}} (\verb{$validation}) or \code{\link[=read_validation_tables]{read_validation_tables()}}. It
 needs \code{site}, \code{species_code}, \code{clip_file}, \code{verdict} and
 \code{reviewed_path} (the path where the review left each clip), and
 \code{night} for the splits by night.}
 
-\item{output_dir}{Output folder; \verb{train/} and, if any clip is held out,
+\item{output_dir}{Character scalar, path to the output folder; \verb{train/}
+and, if any clip is held out,
 \verb{test/} are created in it.}
 
-\item{split}{How to split the clips into training and test sets; see
-Splits.}
+\item{split}{Character scalar, one of \code{"site"}, \code{"night"},
+\code{"site_species_night"} or \code{"none"}: how to split the clips into
+training and test sets; see Splits.}
 
-\item{test_sites}{Sites held out for testing with \code{split = "site"}.
+\item{test_sites}{\code{NULL} or character vector, sites held out for testing
+with \code{split = "site"}.
 \code{NULL} puts every clip in \verb{train/}.}
 
-\item{test_prop}{Proportion of the nights of each site (or site x
+\item{test_prop}{Numeric scalar in (0, 1), proportion of the nights of
+each site (or site x
 species) drawn for the test set.}
 
-\item{seed}{Seed of the draws.}
+\item{seed}{Numeric scalar, seed of the draws.}
 
-\item{max_per_site_species}{Optional maximum number of positive
+\item{max_per_site_species}{\code{NULL} or integer scalar, maximum number of
+positive
 training clips per site x species. Larger sets are reduced by taking
 clips from the nights in turn, in random order, which keeps as many
 nights as possible. Test clips and negatives are not reduced.}
 
-\item{exclude_from_test}{Optional table with \code{site} and \code{night} (e.g.
+\item{exclude_from_test}{\code{NULL} or a data frame with \code{site} and \code{night},
+one row per night (e.g.
 from \code{\link[=training_nights]{training_nights()}}): nights that must not be in the test set,
 such as nights whose recordings trained another classifier that will
 be compared on it. They are left out of the draws of the test and
 validation sets and stay in the training set.}
 
-\item{val_prop}{Optional proportion of the training nights of each site
+\item{val_prop}{\code{NULL} or numeric scalar in (0, 1), proportion of the
+training nights of each site
 drawn for the validation set (\verb{val/}); see Splits. \code{NULL} draws none.}
 
-\item{val_seed}{Seed of the validation draw. The default, \code{seed + 1}, is
+\item{val_seed}{Numeric scalar, seed of the validation draw. The
+default, \code{seed + 1}, is
 also the seed of \code{max_per_site_species}; the two draws are separate,
 and the default reproduces the training sets of the DiverSons project.}
 
-\item{negatives}{Include the negative clips?}
+\item{negatives}{Logical scalar. If \code{TRUE}, include the negative clips.}
 
-\item{negatives_folder}{\code{NULL} puts the negatives of each class in a
+\item{negatives_folder}{\code{NULL} or character scalar. \code{NULL} puts the
+negatives of each class in a
 \verb{-<species_code>} folder. A non-event class of BirdNET-Analyzer
 (\code{"Noise"}, \code{"Other"}, \code{"Background"} or \code{"Silence"}) puts all of them
 in that folder instead; see Negatives.}
 
-\item{min_files}{Minimum number of positive training files per class
+\item{min_files}{Numeric scalar, minimum number of positive training
+files per class
 below which a warning is raised.}
 
-\item{copy}{Copy the clips? With \code{FALSE}, only \code{training_set.csv} is
+\item{copy}{Logical scalar. If \code{TRUE}, copy the clips; with \code{FALSE}, only
+\code{training_set.csv} is
 written, so that the split can be built on a computer without the
 clips and copied later.}
 
-\item{remap_from, remap_to}{Optional prefix of \code{reviewed_path} and its
+\item{remap_from, remap_to}{\code{NULL} or character scalars, prefix of
+\code{reviewed_path} and its
 replacement, for clips reviewed on another computer or drive.}
 
-\item{strict}{Raise an error if any check is above 0?}
+\item{strict}{Logical scalar. If \code{TRUE}, raise an error if any check is
+above 0.}
 }
 \value{
 A tibble with one row per clip: \code{site}, \code{species_code},

@@ -31,12 +31,16 @@
 #' e.g. `Begin Time (s)` becomes `begin_time` and `File Offset (s)` becomes
 #' `file_offset`.
 #'
-#' @param data_dir Root folder, searched recursively.
-#' @param table_pattern Regular expression for the file names of combined
+#' @param data_dir Character scalar, path to the root folder, searched
+#'   recursively.
+#' @param table_pattern Character scalar, regular expression for the file
+#'   names of combined
 #'   tables.
-#' @param per_audio_pattern Regular expression for the file names of
+#' @param per_audio_pattern `NULL` or character scalar, regular expression
+#'   for the file names of
 #'   per-audio tables. `NULL` reads only combined tables.
-#' @param site_pattern Optional regular expression with one capture group
+#' @param site_pattern `NULL` or character scalar, regular expression with
+#'   one capture group
 #'   that takes the site from the name of the audio file in `Begin Path`,
 #'   instead of from the folder of the table. For example,
 #'   `"^[^_]+_([^_]+)_"` reads `Campus01` from
@@ -52,113 +56,139 @@ read_selection_tables <- function(data_dir,
                                   table_pattern = "^BirdNET_SelectionTable\\.txt$",
                                   per_audio_pattern = "\\.BirdNET\\.selection\\.table\\.txt$",
                                   site_pattern = NULL) {
-  fontes <- find_selection_tables(data_dir, table_pattern, per_audio_pattern)
-  if (length(fontes) == 0) {
-    outras <- list.files(data_dir, pattern = "(?i)selection.?table.*\\.txt$",
+  sources <- find_selection_tables(data_dir, table_pattern, per_audio_pattern)
+  if (length(sources) == 0) {
+    others <- list.files(data_dir, pattern = "(?i)selection.?table.*\\.txt$",
                          recursive = TRUE)
-    dica <- if (length(outras) > 0) {
-      paste0("\n", length(outras), " other selection table(s) found, e.g. ",
-             outras[1], ". Set `table_pattern` (combined tables) or ",
+    hint <- if (length(others) > 0) {
+      paste0("\n", length(others), " other selection table(s) found, e.g. ",
+             others[1], ". Set `table_pattern` (combined tables) or ",
              "`per_audio_pattern` (one table per audio file) to match them.")
     } else ""
     stop("No selection table found in ", data_dir, " matching ",
          table_pattern,
          if (!is.null(per_audio_pattern)) paste0(" or ", per_audio_pattern),
-         dica)
+         hint)
   }
 
-  predicoes <- imap(fontes, function(arquivos, pasta) {
-    tb <- read_site_tables(arquivos)
+  predictions <- imap(sources, function(files, folder) {
+    tb <- read_site_tables(files)
     if (is.null(tb)) return(NULL)
-    mutate(tb, site = str_remove(basename(pasta), "^output_?"), .before = 1)
+    mutate(tb, site = str_remove(basename(folder), "^output_?"), .before = 1)
   }) |>
     list_rbind()
 
-  if (is.null(predicoes) || nrow(predicoes) == 0) {
+  if (is.null(predictions) || nrow(predictions) == 0) {
     stop("No prediction read - were all the tables found empty?")
   }
-  check_confidence(predicoes$confidence, "Confidence")
+  check_confidence(predictions$confidence, "Confidence")
   if (!is.null(site_pattern)) {
-    predicoes$site <- site_from_name(predicoes$begin_path, site_pattern)
+    predictions$site <- site_from_name(predictions$begin_path, site_pattern)
   }
-  message(nrow(predicoes), " predictions read from ",
-          n_distinct(predicoes$site), " site(s).")
-  predicoes
+  message(nrow(predictions), " predictions read from ",
+          n_distinct(predictions$site), " site(s).")
+  predictions
 }
 
-# Lista as tabelas por pasta: a combinada, se houver, senao as por audio.
-# Devolve uma lista nomeada pela pasta, cada elemento com os arquivos.
+#' List the selection tables of each folder
+#'
+#' Takes the combined table of a folder when there is one, otherwise its
+#' per-audio tables.
+#'
+#' @param data_dir Character scalar, root folder searched recursively.
+#' @param table_pattern Character scalar, regular expression for the file
+#'   names of combined tables.
+#' @param per_audio_pattern Character scalar or `NULL`, regular expression for
+#'   the file names of per-audio tables.
+#' @return A list named by folder, each element a character vector of table
+#'   paths, ordered by folder name.
+#' @noRd
 find_selection_tables <- function(data_dir, table_pattern, per_audio_pattern) {
-  combinadas <- list.files(data_dir, pattern = table_pattern,
-                           recursive = TRUE, full.names = TRUE)
-  por_audio <- if (is.null(per_audio_pattern)) character() else
+  combined <- list.files(data_dir, pattern = table_pattern,
+                         recursive = TRUE, full.names = TRUE)
+  per_audio <- if (is.null(per_audio_pattern)) character() else
     list.files(data_dir, pattern = per_audio_pattern,
                recursive = TRUE, full.names = TRUE)
-  por_audio <- setdiff(por_audio, combinadas)
+  per_audio <- setdiff(per_audio, combined)
 
-  pastas_comb <- dirname(combinadas)
-  ignoradas <- por_audio[dirname(por_audio) %in% pastas_comb]
-  if (length(ignoradas) > 0) {
-    message(length(ignoradas), " per-audio table(s) ignored in folder(s) ",
+  combined_dirs <- dirname(combined)
+  ignored <- per_audio[dirname(per_audio) %in% combined_dirs]
+  if (length(ignored) > 0) {
+    message(length(ignored), " per-audio table(s) ignored in folder(s) ",
             "that also hold a combined table: ",
-            paste(unique(dirname(ignoradas)), collapse = ", "))
+            paste(unique(dirname(ignored)), collapse = ", "))
   }
-  por_audio <- setdiff(por_audio, ignoradas)
+  per_audio <- setdiff(per_audio, ignored)
 
-  fontes <- c(split(combinadas, pastas_comb),
-              split(sort(por_audio), dirname(sort(por_audio))))
-  if (length(fontes) == 0) return(fontes)
+  sources <- c(split(combined, combined_dirs),
+               split(sort(per_audio), dirname(sort(per_audio))))
+  if (length(sources) == 0) return(sources)
 
-  message(length(combinadas), " combined table(s) and ", length(por_audio),
-          " per-audio table(s) found in ", length(fontes), " folder(s):")
-  iwalk(fontes, \(x, pasta) message("  - ", pasta, ": ",
-                                    if (length(x) == 1) basename(x) else
-                                      paste(length(x), "per-audio tables")))
-  fontes[order(names(fontes))]
+  message(length(combined), " combined table(s) and ", length(per_audio),
+          " per-audio table(s) found in ", length(sources), " folder(s):")
+  iwalk(sources, \(x, folder) message("  - ", folder, ": ",
+                                     if (length(x) == 1) basename(x) else
+                                       paste(length(x), "per-audio tables")))
+  sources[order(names(sources))]
 }
 
-# Le as tabelas de uma pasta: uma combinada, ou varias por audio empilhadas
-# com a coluna selection renumerada, como na combinada
-read_site_tables <- function(arquivos) {
-  vazias <- file.size(arquivos) == 0
-  if (any(vazias)) {
+#' Read the selection tables of one folder
+#'
+#' Reads one combined table, or stacks several per-audio tables with the
+#' `selection` column renumbered, as in the combined table. Empty files are
+#' skipped with a warning.
+#'
+#' @param files Character vector of table paths from one folder.
+#' @return A tibble of predictions, or `NULL` when every file is empty.
+#' @noRd
+read_site_tables <- function(files) {
+  empty <- file.size(files) == 0
+  if (any(empty)) {
     warning("Empty table(s) skipped: ",
-            paste(arquivos[vazias], collapse = ", "))
+            paste(files[empty], collapse = ", "))
   }
-  arquivos <- arquivos[!vazias]
-  if (length(arquivos) == 0) return(NULL)
-  if (length(arquivos) == 1) return(read_selection_table(arquivos))
+  files <- files[!empty]
+  if (length(files) == 0) return(NULL)
+  if (length(files) == 1) return(read_selection_table(files))
 
-  # tudo como texto e conversao depois: uma tabela sem predicoes so tem o
-  # cabecalho, e o readr adivinharia tipos diferentes para ela
-  tb <- map(arquivos, read_selection_table, as_text = TRUE) |>
+  # read everything as text and convert afterwards: a table without
+  # predictions has only the header, and readr would guess other types for it
+  tb <- map(files, read_selection_table, as_text = TRUE) |>
     list_rbind() |>
     type_convert(col_types = cols(), na = c("", "NA"))
   if ("selection" %in% names(tb)) tb$selection <- seq_len(nrow(tb))
   tb
 }
 
-# Le uma tabela de selecao e padroniza os nomes: minusculas, sem
-# unidades/pontuacao, espacos -> _
-read_selection_table <- function(caminho, as_text = FALSE) {
-  tb <- read_tsv(caminho, show_col_types = FALSE,
+#' Read one selection table and standardise its column names
+#'
+#' Names become lower case, without units or punctuation, with spaces
+#' replaced by `_`.
+#'
+#' @param path Character scalar, path to a tab-separated selection table.
+#' @param as_text Logical scalar; if `TRUE`, read every column as character.
+#' @return A tibble with standardised column names; errors when a required
+#'   column is missing.
+#' @noRd
+read_selection_table <- function(path, as_text = FALSE) {
+  tb <- read_tsv(path, show_col_types = FALSE,
                  col_types = if (as_text) cols(.default = col_character()),
                  na = c("", "NA"), progress = FALSE)
 
-  nomes <- names(tb) |>
+  col_names <- names(tb) |>
     str_to_lower() |>
     str_remove_all("\\((s|hz)\\)") |>
     str_trim() |>
     str_replace_all("[^a-z0-9]+", "_") |>
     str_remove("_$")
-  names(tb) <- nomes
+  names(tb) <- col_names
 
-  obrigatorias <- c("begin_time", "end_time", "species_code",
-                    "confidence", "begin_path", "file_offset")
-  faltando <- setdiff(obrigatorias, names(tb))
-  if (length(faltando) > 0) {
-    stop("Table ", caminho, " lacks the columns: ",
-         paste(faltando, collapse = ", "),
+  required <- c("begin_time", "end_time", "species_code",
+                "confidence", "begin_path", "file_offset")
+  absent <- setdiff(required, names(tb))
+  if (length(absent) > 0) {
+    stop("Table ", path, " lacks the columns: ",
+         paste(absent, collapse = ", "),
          "\nColumns found: ", paste(names(tb), collapse = ", "))
   }
   tb

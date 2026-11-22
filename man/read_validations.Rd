@@ -7,15 +7,15 @@
 read_validations(files, site_map = NULL, keep = NULL)
 }
 \arguments{
-\item{files}{Paths to the \code{validation_by_clip.csv} files. Missing files
-are skipped with a warning.}
+\item{files}{Character vector, paths to the \code{validation_by_clip.csv} files.
+Missing files are skipped with a warning.}
 
-\item{site_map}{Optional named character vector to fix diverging site
+\item{site_map}{\code{NULL} or a named character vector to fix diverging site
 names, as \code{c(old = "new")}, e.g. \code{c(BEP2 = "BEP")}.}
 
-\item{keep}{Optional character vector of input columns to retain, e.g.
-\code{c("source_audio", "night")} for grouped cross-validation. Missing
-columns raise an error rather than silently falling back to clip folds.}
+\item{keep}{\code{NULL} or a character vector of input columns to retain, e.g.
+\code{c("source_audio", "night")} for grouped cross-validation. Missing columns
+raise an error rather than silently falling back to clip folds.}
 }
 \value{
 A tibble with \code{site} and \code{species} (factors; \code{species} is the

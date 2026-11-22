@@ -16,30 +16,36 @@ list_recordings(
 )
 }
 \arguments{
-\item{audio_dir}{Root folder of the audio files, searched recursively.}
+\item{audio_dir}{Character scalar, path to the root folder of the audio
+files, searched recursively.}
 
-\item{audio_pattern}{Regular expression for the audio file names (case
+\item{audio_pattern}{Character scalar, regular expression for the audio
+file names (case
 insensitive).}
 
 \item{site}{\code{NULL} (the site is the first folder below \code{audio_dir}) or a
-single site name for every file.}
+character scalar, a single site name for every file.}
 
-\item{site_pattern}{Optional regular expression with one capture group
+\item{site_pattern}{\code{NULL} or character scalar, regular expression with
+one capture group
 that takes the site from the file name, for recordings of several sites
 in the same folder. For example, \code{"^[^_]+_([^_]+)_"} reads \code{Campus01}
 from \code{Campinas_Campus01_20261003_074339.flac}. It replaces the folder
 rule and cannot be combined with \code{site}.}
 
-\item{remap_from, remap_to}{Replace the prefix \code{remap_from} of the listed
+\item{remap_from, remap_to}{\code{NULL} or character scalars. Replace the
+prefix \code{remap_from} of the listed
 paths by \code{remap_to}, e.g. \code{"/Volumes/NAS/"} and \code{"N:/"}, so that the
 paths match \verb{Begin Path}. Backslashes are turned into forward slashes
 first.}
 
-\item{predictions}{Optional table of predictions from
+\item{predictions}{\code{NULL} or a data frame of predictions (one row per
+prediction) from
 \code{\link[=read_selection_tables]{read_selection_tables()}}, to check that its audio files are in the
 list.}
 
-\item{file}{Optional path of a CSV file to write the table to (e.g.
+\item{file}{\code{NULL} or character scalar, path of a CSV file to write the
+table to (e.g.
 \code{"recordings.csv"}).}
 }
 \value{

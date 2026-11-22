@@ -21,38 +21,45 @@ compare_thresholds(
 )
 }
 \arguments{
-\item{validation}{Reviewed clips, as for \code{\link[=suggest_thresholds]{suggest_thresholds()}}. For
-\code{random_detections} clips, the empirical threshold uses the weighted
-precision.}
+\item{validation}{A data frame (or tibble) of reviewed clips, as for
+\code{\link[=suggest_thresholds]{suggest_thresholds()}}. One row per clip. For \code{random_detections}
+clips, the empirical threshold uses the weighted precision.}
 
-\item{fit}{Model returned by \code{\link[=fit_calibration]{fit_calibration()}}.}
+\item{fit}{A model returned by \code{\link[=fit_calibration]{fit_calibration()}} (\code{glm}, \code{glmerMod} or
+\code{brmsfit}).}
 
-\item{scored}{Table returned by \code{\link[=score_detections]{score_detections()}}. Needed for
-\code{thr_model_precision}, \code{model_precision_at_empirical} and \code{flag}.}
+\item{scored}{\code{NULL} or a data frame (or tibble) returned by
+\code{\link[=score_detections]{score_detections()}}. Needed for \code{thr_model_precision},
+\code{model_precision_at_empirical} and \code{flag}.}
 
-\item{target_p}{Target of the \code{"probability"} rule.}
+\item{target_p}{Numeric scalar in (0, 1). Target of the \code{"probability"}
+rule.}
 
-\item{target_precision}{Target precision of the empirical threshold and
-of the \code{"precision"} rule.}
+\item{target_precision}{Numeric scalar in (0, 1). Target precision of the
+empirical threshold and of the \code{"precision"} rule.}
 
-\item{min_n}{Passed to \code{\link[=suggest_thresholds]{suggest_thresholds()}}.}
+\item{min_n}{Integer scalar >= 1. Passed to \code{\link[=suggest_thresholds]{suggest_thresholds()}}.}
 
-\item{tolerance}{Largest difference between \code{thr_empirical} and
-\code{thr_model_precision}, in score units, for \code{"agree"}.}
+\item{tolerance}{Numeric scalar, in score units. Largest difference
+between \code{thr_empirical} and \code{thr_model_precision} for \code{"agree"}.}
 
-\item{quality}{Optional table of \code{\link[=calibration_quality]{calibration_quality()}}, joined by the
-columns \code{site} and \code{species} that it has.}
+\item{quality}{\code{NULL} or a data frame (or tibble) returned by
+\code{\link[=calibration_quality]{calibration_quality()}}, joined by the columns \code{site} and \code{species}
+that it has.}
 
-\item{weighted, sustained}{Passed to \code{\link[=suggest_thresholds]{suggest_thresholds()}}.}
+\item{weighted, sustained}{\code{NULL}, \code{TRUE} or \code{FALSE} (\code{weighted}) and
+logical scalar (\code{sustained}). Passed to \code{\link[=suggest_thresholds]{suggest_thresholds()}}.}
 
-\item{min_confidence}{Detections below this confidence are not scored.}
+\item{min_confidence}{Numeric scalar in [0, 1]. Detections below this
+confidence are not scored.}
 
-\item{grid_step}{Models fitted with \code{engine = "brms"}: step of the grid
-of scores on which the posterior is computed.}
+\item{grid_step}{Numeric scalar in (0, 0.5). Models fitted with
+\code{engine = "brms"}: step of the grid of scores on which the posterior is
+computed.}
 
-\item{lower_prob}{Models fitted with \code{engine = "brms"}: the probability of
-the lower quantile of the posterior of P(TP) used for
-\code{threshold_lower}.}
+\item{lower_prob}{Numeric scalar in (0, 1). Models fitted with
+\code{engine = "brms"}: the probability of the lower quantile of the posterior
+of P(TP) used for \code{threshold_lower}.}
 }
 \value{
 A tibble with one row per site x species: \code{site}, \code{species},

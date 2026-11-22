@@ -18,20 +18,23 @@
 #' The threshold holds for the set of detections kept, not for each one; see
 #' [suggest_thresholds()].
 #'
-#' @param detections Predictions, from [read_selection_tables()], with
-#'   `site`, `species_code`, `confidence` and `begin_path`. Use every
-#'   prediction, not only those of the cells with a threshold.
-#' @param thresholds Table with `site`, `species_folder` and `threshold`, one
-#'   row per cell, such as the output of [review_support()]. Cells with a
+#' @param detections A data frame (or tibble) of predictions, from
+#'   [read_selection_tables()], with `site`, `species_code`, `confidence`
+#'   and `begin_path`. One row per prediction. Use every prediction, not
+#'   only those of the cells with a threshold.
+#' @param thresholds A data frame (or tibble) with `site`, `species_folder`
+#'   and `threshold`, one row per cell, such as the output of
+#'   [review_support()]. Cells with a
 #'   missing threshold or without a row have no threshold. The conservative
 #'   threshold of [threshold_bootstrap()] is the one to apply: pass it as
 #'   `dplyr::mutate(boot, threshold = threshold_conservative)`.
-#' @param min_confidence Predictions below this confidence are left out, as
-#'   in [score_detections()]. This also sets which nights count as recorded.
-#' @param dawn_hour Recordings that start before this hour belong to the
-#'   night before.
-#' @param min_detections_night Repetition rule: minimum number of reliable
-#'   detections for a night with detection.
+#' @param min_confidence Numeric scalar. Predictions below this confidence
+#'   are left out, as in [score_detections()]. This also sets which nights
+#'   count as recorded.
+#' @param dawn_hour Numeric scalar, an hour of the day. Recordings
+#'   that start before this hour belong to the night before.
+#' @param min_detections_night Integer scalar. Repetition rule: minimum
+#'   number of reliable detections for a night with detection.
 #'
 #' @return A tibble with `site`, `species` (the short code, as in
 #'   `species_folder`), `night`, `n_detections`, `n_reliable`,
@@ -53,44 +56,44 @@ threshold_history <- function(detections, thresholds, min_confidence = 0.1,
                               dawn_hour = 12, min_detections_night = 1) {
   detections <- check_detections(
     detections, c("site", "species_code", "confidence", "begin_path"))
-  faltam <- setdiff(c("site", "species_folder", "threshold"), names(thresholds))
-  if (length(faltam) > 0) {
-    stop("`thresholds` needs the column(s): ", paste(faltam, collapse = ", "),
+  absent <- setdiff(c("site", "species_folder", "threshold"), names(thresholds))
+  if (length(absent) > 0) {
+    stop("`thresholds` needs the column(s): ", paste(absent, collapse = ", "),
          ".", call. = FALSE)
   }
-  limiares <- thresholds |>
+  thr_tbl <- thresholds |>
     transmute(site = as.character(site), species = species_folder, threshold)
-  if (anyDuplicated(limiares[c("site", "species")])) {
+  if (anyDuplicated(thr_tbl[c("site", "species")])) {
     stop("`thresholds` must have one row per site x species; thresholds by ",
          "month or another `by` column are not supported.", call. = FALSE)
   }
 
-  data_hora <- parse_date_hour(basename(detections$begin_path))
-  noites <- detections |>
+  date_hour <- parse_date_hour(basename(detections$begin_path))
+  nights <- detections |>
     mutate(site = as.character(site),
            species = folder_name(species_code),
-           night = night_of(data_hora$recording_date,
-                            data_hora$recording_hour, dawn_hour)) |>
+           night = night_of(date_hour$recording_date,
+                            date_hour$recording_hour, dawn_hour)) |>
     filter(confidence >= min_confidence, !is.na(night)) |>
-    left_join(limiares, by = c("site", "species")) |>
+    left_join(thr_tbl, by = c("site", "species")) |>
     group_by(site, species, night) |>
     summarise(n_detections = n(),
               n_reliable = sum(confidence >= threshold),
               confidence_max = max(confidence),
               .groups = "drop")
 
-  historico <- noites |>
+  history <- nights |>
     mutate(detection_k1 = as.integer(n_reliable >= 1),
            detection_k2 = as.integer(n_reliable >= 2),
            detection_k3 = as.integer(n_reliable >= 3),
            detection = as.integer(n_reliable >= min_detections_night))
 
-  sem_limiar <- filter(historico, is.na(n_reliable)) |>
+  no_thr <- filter(history, is.na(n_reliable)) |>
     distinct(site, species)
-  if (nrow(sem_limiar) > 0) {
-    message(nrow(sem_limiar), " site x species cell(s) without a threshold: ",
+  if (nrow(no_thr) > 0) {
+    message(nrow(no_thr), " site x species cell(s) without a threshold: ",
             "their nights count as effort, and their detection columns are ",
             "NA.")
   }
-  historico
+  history
 }

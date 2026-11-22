@@ -18,33 +18,37 @@ calibration_quality(
 )
 }
 \arguments{
-\item{validations}{Table returned by \code{\link[=read_validations]{read_validations()}}.}
+\item{validations}{A data frame (or tibble) returned by \code{\link[=read_validations]{read_validations()}},
+one row per reviewed clip.}
 
-\item{formula}{Formula of the model to check, e.g. the one chosen by
-\code{\link[=select_calibration_model]{select_calibration_model()}}.}
+\item{formula}{A model formula, the formula of the model to check, e.g. the
+one chosen by \code{\link[=select_calibration_model]{select_calibration_model()}}.}
 
-\item{k_folds}{Number of folds.}
+\item{k_folds}{Integer scalar >= 2, number of folds.}
 
-\item{seed}{Seed of the fold assignment. The global random number
-generator is left as it was.}
+\item{seed}{Integer scalar, seed of the fold assignment. The global random
+number generator is left as it was.}
 
-\item{fold_group}{Optional character vector of grouping columns. Do not
+\item{fold_group}{\code{NULL} or a character vector of grouping columns. Do not
 include \code{species}, verdicts or confidence scores: these would split
-recordings or nights by species or by outcome. Group IDs must be
-nonmissing and nonempty. \code{NULL} keeps the original clip folds.}
+recordings or nights by species or by outcome. Group IDs must be nonmissing
+and nonempty. \code{NULL} keeps the original clip folds.}
 
-\item{by}{Columns that define the groups: \code{"species"}, or
-\code{c("site", "species")} for the cells of the calibration, which hold
-fewer clips each.}
+\item{by}{Character vector of columns of \code{validations} that define the
+groups: \code{"species"}, or \code{c("site", "species")} for the cells of the
+calibration, which hold fewer clips each.}
 
-\item{min_class}{Least number of true positives and of false positives
-for a group to be judged. With fewer, \code{status} is \code{"insufficient"}.}
+\item{min_class}{Numeric scalar, least number of true positives and of false
+positives for a group to be judged. With fewer, \code{status} is
+\code{"insufficient"}.}
 
-\item{auc_min}{Lowest acceptable \code{auc} and \code{auc_score}.}
+\item{auc_min}{Numeric scalar, lowest acceptable \code{auc} and \code{auc_score}.}
 
-\item{slope_range}{Acceptable range of \code{cal_slope}.}
+\item{slope_range}{Numeric vector of length 2, increasing: acceptable range
+of \code{cal_slope}.}
 
-\item{intercept_max}{Largest acceptable absolute \code{cal_intercept}.}
+\item{intercept_max}{Numeric scalar, largest acceptable absolute
+\code{cal_intercept}.}
 }
 \value{
 A tibble with one row per group: the \code{by} columns, \code{n}, \code{n_tp},

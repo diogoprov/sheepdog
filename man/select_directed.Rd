@@ -19,39 +19,49 @@ select_directed(
 )
 }
 \arguments{
-\item{detections}{Predictions, as returned by \code{\link[=read_selection_tables]{read_selection_tables()}}.}
+\item{detections}{A data frame of predictions, one row per BirdNET
+prediction, as returned by \code{\link[=read_selection_tables]{read_selection_tables()}} (columns \code{site},
+\code{confidence}, \code{begin_path}, \code{begin_time}, \code{end_time} and
+\code{file_offset}).}
 
-\item{units}{Data frame with one row per eligible unit: the columns
+\item{units}{A data frame with one row per eligible unit: the columns
 that define the unit (any columns of the prepared predictions, such as
 \code{site}, \code{species_code} and \code{month}) and the size column. Only listed
 units are drawn, so leave out the units that need no review, for
 instance those where a review has already confirmed the species.}
 
-\item{n_units}{Number of units to draw.}
+\item{n_units}{Integer scalar >= 1, number of units to draw.}
 
-\item{threshold}{Confidence threshold: an occasion is a candidate when
+\item{threshold}{Numeric scalar, confidence threshold: an occasion is a
+candidate when
 it has at least one prediction at or above it, and its clips are all
 such predictions. Use the threshold of the occupancy analysis.}
 
-\item{size_col}{Column of \code{units} with the size (non-negative).}
+\item{size_col}{Character scalar, column of \code{units} with the size (a
+non-negative numeric column without \code{NA}).}
 
-\item{floor}{Share of the mean size added to every size, so that a unit
+\item{floor}{Numeric scalar >= 0, share of the mean size added to every
+size, so that a unit
 with size 0 can still be drawn. Without it, a unit the model judges
 worthless is never reviewed and the model is never corrected there.}
 
-\item{occasion_unit}{The occasion of the occupancy model: \code{"file"} (the
-whole recording) or \code{"minute"} (minute of the file, from
+\item{occasion_unit}{Character scalar, the occasion of the occupancy
+model: \code{"file"} (the whole recording) or \code{"minute"} (minute of the
+file, from
 \code{file_offset}).}
 
-\item{previous}{Manifests of earlier review rounds (of any design), as
-paths or data frames. Their clips are left out, matched by recording
+\item{previous}{\code{NULL}, a character vector of paths, a data frame, or a
+list of these: manifests of earlier review rounds (of any design).
+Their clips are left out, matched by recording
 file and start: an occasion is a candidate only while it has a
 prediction at or above \code{threshold} not yet reviewed.}
 
-\item{seed}{Seed of the draws. The global random number generator is
+\item{seed}{Integer scalar, seed of the draws. The global random number
+generator is
 left as it was.}
 
-\item{remap_from, remap_to}{Replace the prefix \code{remap_from} of the
+\item{remap_from, remap_to}{\code{NULL} or character scalars. Replace the
+prefix \code{remap_from} of the
 \code{begin_path} paths by \code{remap_to}, e.g. \code{"N:/"} and \code{"/Volumes/Arara/"}.
 Backslashes are turned into forward slashes first.}
 }

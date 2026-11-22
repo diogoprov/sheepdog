@@ -7,12 +7,14 @@
 split_by_reviewer(manifest, clips_dir, output_dir)
 }
 \arguments{
-\item{manifest}{Manifest returned by \code{\link[=assign_reviewers]{assign_reviewers()}}.}
+\item{manifest}{A data frame (or tibble) returned by \code{\link[=assign_reviewers]{assign_reviewers()}},
+with columns \code{reviewer}, \code{second_reviewer}, \code{species_folder} and
+\code{clip_file}.}
 
-\item{clips_dir}{Folder of the cut clips (the \code{clips} folder written by
-\code{\link[=cut_clips]{cut_clips()}}).}
+\item{clips_dir}{Character scalar, path to the folder of the cut clips
+(the \code{clips} folder written by \code{\link[=cut_clips]{cut_clips()}}).}
 
-\item{output_dir}{Output folder.}
+\item{output_dir}{Character scalar, path to the output folder.}
 }
 \value{
 A tibble with \code{reviewer}, \code{species_folder}, \code{clip_file} and \code{to},

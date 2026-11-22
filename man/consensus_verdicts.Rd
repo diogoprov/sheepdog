@@ -7,9 +7,10 @@
 consensus_verdicts(reviews)
 }
 \arguments{
-\item{reviews}{One table of reviewed clips (as returned by
-\code{\link[=classify_review]{classify_review()}}) with a \code{reviewer} column, or a named list of
-such tables, named by reviewer.}
+\item{reviews}{A data frame (or tibble) or a named list of data frames.
+One table of reviewed clips (as returned by \code{\link[=classify_review]{classify_review()}}) with
+a \code{reviewer} column, or a named list of such tables, named by
+reviewer.}
 }
 \value{
 A tibble with one row per clip: the columns of the reviewed

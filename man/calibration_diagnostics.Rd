@@ -7,11 +7,13 @@
 calibration_diagnostics(fit, rhat_max = 1.01, ess_min = 400)
 }
 \arguments{
-\item{fit}{Model returned by \code{\link[=fit_calibration]{fit_calibration()}} with \code{engine = "brms"}.}
+\item{fit}{A \code{brmsfit} returned by \code{\link[=fit_calibration]{fit_calibration()}} with
+\code{engine = "brms"}.}
 
-\item{rhat_max}{Largest acceptable R-hat.}
+\item{rhat_max}{Numeric scalar >= 1, largest acceptable R-hat.}
 
-\item{ess_min}{Smallest acceptable bulk and tail effective sample size.}
+\item{ess_min}{Numeric scalar >= 0, smallest acceptable bulk and tail
+effective sample size.}
 }
 \value{
 A one-row tibble with \code{max_rhat}, \code{min_ess_bulk}, \code{min_ess_tail},

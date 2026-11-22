@@ -7,7 +7,7 @@
 summarise_history(history)
 }
 \arguments{
-\item{history}{Table returned by \code{\link[=detection_history]{detection_history()}}.}
+\item{history}{A data frame (or tibble) returned by \code{\link[=detection_history]{detection_history()}}.}
 }
 \value{
 A tibble with \code{site}, \code{species}, \code{nights} (nights with any

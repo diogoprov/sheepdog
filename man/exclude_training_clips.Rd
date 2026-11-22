@@ -13,17 +13,21 @@ exclude_training_clips(
 )
 }
 \arguments{
-\item{manifest}{Clip manifest, as returned by \code{\link[=select_clips]{select_clips()}} or read
+\item{manifest}{A data frame, the clip manifest (one row per clip), as
+returned by \code{\link[=select_clips]{select_clips()}} or read
 from \code{clip_manifest.csv}.}
 
-\item{training_set}{Table returned by \code{\link[=build_training_set]{build_training_set()}} or
-\code{\link[=training_nights]{training_nights()}}, or the path to a \code{training_set.csv}.}
+\item{training_set}{A data frame returned by \code{\link[=build_training_set]{build_training_set()}} or
+\code{\link[=training_nights]{training_nights()}}, or a character scalar, path to a
+\code{training_set.csv}.}
 
-\item{level}{What a training clip excludes; see Levels.}
+\item{level}{Character scalar, one of \code{"clip"}, \code{"recording"} or
+\code{"night"}: what a training clip excludes; see Levels.}
 
-\item{any_species}{Exclude across species?}
+\item{any_species}{Logical scalar. If \code{TRUE}, exclude across species.}
 
-\item{pattern}{With a table of \code{\link[=training_nights]{training_nights()}} and
+\item{pattern}{\code{NULL} or character scalar. With a table of
+\code{\link[=training_nights]{training_nights()}} and
 \code{level = "recording"}, the regular expression that reads the
 recordings from \code{source_audio}. By default, the one recorded in the
 table by \code{\link[=training_nights]{training_nights()}} (lost if the table was rebuilt, e.g. by

@@ -7,11 +7,14 @@
 prior_predictive_calibration(formula, validations, prior, ...)
 }
 \arguments{
-\item{formula}{Calibration formula (see \code{\link[=calibration_models]{calibration_models()}}).}
+\item{formula}{A model formula, the calibration formula (see
+\code{\link[=calibration_models]{calibration_models()}}).}
 
-\item{validations}{Table returned by \code{\link[=read_validations]{read_validations()}}.}
+\item{validations}{A data frame (or tibble) returned by \code{\link[=read_validations]{read_validations()}},
+one row per reviewed clip.}
 
-\item{prior}{Prior, e.g. from \code{\link[=calibration_prior]{calibration_prior()}}.}
+\item{prior}{A \code{brmsprior} object, the prior, e.g. from
+\code{\link[=calibration_prior]{calibration_prior()}}.}
 
 \item{...}{Further arguments for \code{brms::brm()} (e.g. \code{chains}, \code{iter},
 \code{backend}, \code{seed}).}

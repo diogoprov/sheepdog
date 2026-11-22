@@ -12,16 +12,20 @@ precision_by_bin(
 )
 }
 \arguments{
-\item{validation}{Table returned by \code{\link[=classify_review]{classify_review()}}.}
+\item{validation}{A data frame (or tibble) returned by \code{\link[=classify_review]{classify_review()}},
+with columns \code{site}, \code{species_folder}, \code{verdict} and \code{confidence}. One
+row per clip.}
 
-\item{bins}{Breaks of the confidence bins (left-closed).}
+\item{bins}{Numeric vector of length >= 2, increasing breaks of the
+confidence bins (left-closed).}
 
-\item{min_n}{Minimum of reviewed clips for a bin to be taken seriously;
-bins with fewer are flagged in \code{low_support}.}
+\item{min_n}{Integer scalar >= 1. Minimum of reviewed clips for a bin to
+be taken seriously; bins with fewer are flagged in \code{low_support}.}
 
-\item{by}{Optional columns of \code{validation} that split each site x
-species cell further, e.g. the bin of an environmental gradient or of
-an acoustic index joined from \code{\link[=covariate_bins]{covariate_bins()}}. They show which
+\item{by}{\code{NULL} or a character vector of column names of \code{validation}
+that split each site x species cell further, e.g. the bin of an
+environmental gradient or of an acoustic index joined from
+\code{\link[=covariate_bins]{covariate_bins()}}. They show which
 parts of the gradient lack reviewed clips.}
 }
 \value{

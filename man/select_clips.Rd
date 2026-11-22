@@ -39,25 +39,33 @@ select_clips(
 )
 }
 \arguments{
-\item{detections}{Predictions, as returned by \code{\link[=read_selection_tables]{read_selection_tables()}}.}
+\item{detections}{A data frame of predictions, one row per BirdNET
+prediction, as returned by \code{\link[=read_selection_tables]{read_selection_tables()}} (columns \code{site},
+\code{begin_path}, \code{begin_time}, \code{end_time}, \code{file_offset}, \code{confidence}
+and \code{species_code}).}
 
-\item{sampling_mode}{\code{"top"}, \code{"random_detections"},
-\code{"random_recordings"} or \code{"score_bands"}. See \emph{Sampling modes} and
+\item{sampling_mode}{Character scalar, one of \code{"top"},
+\code{"random_detections"}, \code{"random_recordings"} or \code{"score_bands"}. See
+\emph{Sampling modes} and
 \emph{Which design for which use}.}
 
-\item{occasion_unit}{The occasion of the occupancy model: \code{"file"} (the
-whole recording) or \code{"minute"} (minute of the file, from
+\item{occasion_unit}{Character scalar, the occasion of the occupancy
+model: \code{"file"} (the whole recording) or \code{"minute"} (minute of the
+file, from
 \code{file_offset}).}
 
-\item{threshold}{Confidence threshold of the occupancy analysis. It
+\item{threshold}{\code{NULL} or numeric scalar in [0, 1], confidence
+threshold of the occupancy analysis. It
 defines the candidate occasions of \code{"random_detections"} and the
 \code{n_detections_occasion} column. \code{NULL} leaves that column \code{NA}.}
 
-\item{n_top}{\code{"top"}: predictions kept per site x species x night x
+\item{n_top}{Integer scalar >= 1. \code{"top"}: predictions kept per site x
+species x night x
 hour. \code{"random_detections"}: occasions drawn per stratum (\code{strata}).
 \code{"score_bands"}: predictions drawn per stratum and score band.}
 
-\item{strata}{\code{"random_detections"} and \code{"score_bands"}: the strata of
+\item{strata}{Character scalar (a preset name) or character vector (column
+names). \code{"random_detections"} and \code{"score_bands"}: the strata of
 the draw (within each, \code{"score_bands"} also splits by score band)
 (ignored by the other modes). Either one of the presets, all within
 site x species:
@@ -99,12 +107,13 @@ random. With strata without the hour and \code{balance_by_hour = TRUE}
 under \code{target_total} or \code{max_per_species}, \code{inclusion_prob} is
 conditional on the first draw (a warning says so).}
 
-\item{score_breaks}{\code{"score_bands"}: the limits of the score bands,
-increasing, within 0 and 1. Predictions below the first limit are not
+\item{score_breaks}{Numeric vector of length >= 2, strictly increasing,
+within 0 and 1. \code{"score_bands"}: the limits of the score bands.
+Predictions below the first limit are not
 drawn; the last band includes its upper limit.}
 
-\item{covariates}{\code{"random_detections"}: optional data frame of
-occasion covariates whose columns can be used in \code{strata}, such as
+\item{covariates}{\code{NULL} or a data frame of occasion covariates.
+\code{"random_detections"}: its columns can be used in \code{strata}, such as
 the bins of an environmental gradient or of an acoustic index made by
 \code{\link[=covariate_bins]{covariate_bins()}}. It is joined to the predictions by the columns it
 shares with them among \code{site}, \code{night}, \code{recording_date},
@@ -115,51 +124,62 @@ stratum other than site, species and time may be related to the
 verdict, so the calibration should include it or weight the clips by
 \code{inclusion_prob} (a message says so).}
 
-\item{recording_fraction}{\code{"random_recordings"}: fraction of the
+\item{recording_fraction}{Numeric scalar in [0, 1].
+\code{"random_recordings"}: fraction of the
 recordings (or minutes) drawn at each site, rounded, with at least one
 per site. The default (1 \%) suits large projects: with fewer than 150
 recordings per site it draws a single recording; raise it or use
 \code{n_recordings_per_site} in small projects.}
 
-\item{n_recordings_per_site}{\code{"random_recordings"}: fixed number of
+\item{n_recordings_per_site}{\code{NULL} or integer scalar >= 1.
+\code{"random_recordings"}: fixed number of
 recordings (or minutes) per site, used instead of \code{recording_fraction}.}
 
-\item{recordings}{\code{"random_recordings"}: the list of all recordings, as a
-data frame or the path to a CSV file with the columns \code{site} and
+\item{recordings}{\code{NULL}, a data frame (one row per recording) or a
+character scalar, path to a CSV file. \code{"random_recordings"}: the list
+of all recordings, with the columns \code{site} and
 \code{source_audio} (the v1.2.0 columns \code{local} and \code{caminho_audio} are
 also read). \code{NULL} lists the files matching \code{audio_pattern} in the
 audio folders that appear in \code{begin_path}; folders without any
 prediction are then left out.}
 
-\item{audio_pattern}{Regular expression for the audio files listed when
+\item{audio_pattern}{Character scalar, regular expression for the audio
+files listed when
 \code{recordings} is \code{NULL}.}
 
-\item{recording_duration}{Length of the recordings (s), for
+\item{recording_duration}{\code{NULL} or numeric scalar, length of the
+recordings (s), for
 \code{occasion_unit = "minute"} in \code{"random_recordings"} and for the end of
 whole-recording clips. \code{NULL} reads each file with the 'av' package
 when needed (minute occasions) and leaves \code{clip_end} as \code{NA} otherwise.}
 
-\item{min_confidence}{Minimum confidence of a candidate prediction in
+\item{min_confidence}{\code{NULL} or numeric scalar in [0, 1], minimum
+confidence of a candidate prediction in
 \code{"top"}. \code{NULL} applies no filter. The random modes use \code{threshold}.}
 
-\item{sites}{Restrict to these sites (the predictions and, in
+\item{sites}{\code{NULL} or character vector of site names. Restrict to these
+sites (the predictions and, in
 \code{"random_recordings"}, the list of recordings). \code{NULL} keeps all.}
 
-\item{date_start, date_end}{Date window of the recordings (\code{"YYYYMMDD"}).
-\code{NULL} leaves that side open.}
+\item{date_start, date_end}{\code{NULL} or character scalars, date window of
+the recordings (\code{"YYYYMMDD"}). \code{NULL} leaves that side open.}
 
-\item{species}{Restrict to these short species codes (the last part of
+\item{species}{\code{NULL} or character vector. Restrict to these short
+species codes (the last part of
 \code{species_code}, e.g. \code{"boa-ran"}). \code{NULL} keeps all.}
 
-\item{hour_start, hour_end}{Hour window (0-23). It can cross midnight:
+\item{hour_start, hour_end}{\code{NULL} or integer scalars in 0-23, hour
+window. It can cross midnight:
 \verb{hour_start = 17, hour_end = 2} keeps 17h-23h and 0h-2h, and the
 grouping becomes by night (small hours count as the night before).
 \code{NULL} applies no filter.}
 
-\item{alternate_days}{Keep alternate days (or nights), anchored on the
+\item{alternate_days}{Logical scalar. If \code{TRUE}, keep alternate days (or
+nights), anchored on the
 first date of each site.}
 
-\item{target_total}{Total clips per site, split evenly among species by
+\item{target_total}{\code{NULL} or integer scalar >= 1, total clips per site,
+split evenly among species by
 water filling: species with fewer clips than the quota enter whole and
 the surplus goes to the others. In \code{"random_detections"} it counts
 occasions. Ignored in \code{"random_recordings"}. \code{NULL} sets no target.
@@ -167,36 +187,44 @@ Because the target is split evenly, rare species have higher
 inclusion probabilities than common ones: estimates pooled across
 species must weight the clips by \code{1 / inclusion_prob}.}
 
-\item{balance_by_hour}{Within each species, draw round-robin across the
+\item{balance_by_hour}{Logical scalar. If \code{TRUE}, within each species,
+draw round-robin across the
 hours of the day (covers the diel cycle) when applying \code{target_total}
 or \code{max_per_species}.}
 
-\item{max_per_species}{Simpler alternative to \code{target_total}: a fixed
+\item{max_per_species}{\code{NULL} or integer scalar >= 1. Simpler
+alternative to \code{target_total}: a fixed
 limit per site x species. Ignored when \code{target_total} is set.}
 
-\item{remap_from, remap_to}{Replace the prefix \code{remap_from} of the
+\item{remap_from, remap_to}{\code{NULL} or character scalars. Replace the
+prefix \code{remap_from} of the
 \code{begin_path} paths by \code{remap_to}, e.g. \code{"N:/"} and \code{"/Volumes/Arara/"}.
 Backslashes are turned into forward slashes first.}
 
-\item{seed}{Seed of every random draw. The global random number
+\item{seed}{Integer scalar, seed of every random draw. The global random
+number
 generator is left as it was.}
 
-\item{previous}{Earlier reviews: paths to their \code{clip_manifest.csv} or
-\code{validation_by_clip.csv}, a data frame, or a list of these. Rounds of the
+\item{previous}{\code{NULL}, a character vector of paths, a data frame, or a
+list of these. Earlier reviews: paths to their \code{clip_manifest.csv} or
+\code{validation_by_clip.csv}, or their tables. Rounds of the
 same design give another round (see Review rounds); reviews of the other
 random design, which need \code{validation_by_clip.csv}, give their verdicts
 (see Reusing the other design).}
 
-\item{candidates}{With \code{previous}, the \code{candidates.csv} of the first
-round, as a path or a data frame. \code{NULL} looks for it in the folders of
+\item{candidates}{\code{NULL}, a character scalar (path) or a data frame. With
+\code{previous}, the \code{candidates.csv} of the first round. \code{NULL} looks for
+it in the folders of
 \code{previous}.}
 
-\item{cells}{With \code{previous}, restrict the round to these cells: a data
+\item{cells}{\code{NULL} or a data frame, one row per cell. With \code{previous},
+restrict the round to these cells: a data
 frame with \code{site} and \code{species_folder} or \code{species_code}, such as the
 rows of \code{\link[=review_support]{review_support()}} with \code{diagnosis == "review more"}.}
 
-\item{inherit}{With \code{previous} of the other design, give the clips the
-verdict that the earlier review implies, so that they need no review?
+\item{inherit}{Logical scalar. With \code{previous} of the other design, give
+the clips the
+verdict that the earlier review implies, so that they need no review.
 See Reusing the other design.}
 }
 \value{

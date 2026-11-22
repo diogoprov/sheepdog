@@ -13,23 +13,24 @@ compare_calibration_models(
 )
 }
 \arguments{
-\item{validations}{Table returned by \code{\link[=read_validations]{read_validations()}}.}
+\item{validations}{A data frame (or tibble) returned by \code{\link[=read_validations]{read_validations()}},
+one row per reviewed clip.}
 
-\item{models}{Named list of model formulas. \code{NULL} chooses the family
-from the observed species and sites: site-effect models for one
+\item{models}{\code{NULL} or a named list of model formulas. \code{NULL} chooses the
+family from the observed species and sites: site-effect models for one
 species, the original family for multiple species, and no site random
 effects when only one site is observed. Supply an explicit list to
 reproduce a particular candidate set.}
 
-\item{k_folds}{Number of folds.}
+\item{k_folds}{Integer scalar >= 2, number of folds.}
 
-\item{seed}{Seed of the fold assignment. The global random number
-generator is left as it was.}
+\item{seed}{Integer scalar, seed of the fold assignment. The global random
+number generator is left as it was.}
 
-\item{fold_group}{Optional character vector of grouping columns. Do not
+\item{fold_group}{\code{NULL} or a character vector of grouping columns. Do not
 include \code{species}, verdicts or confidence scores: these would split
-recordings or nights by species or by outcome. Group IDs must be
-nonmissing and nonempty. \code{NULL} keeps the original clip folds.}
+recordings or nights by species or by outcome. Group IDs must be nonmissing
+and nonempty. \code{NULL} keeps the original clip folds.}
 }
 \value{
 A tibble with \code{model}, \code{formula}, \code{auc_mean}, \code{auc_sd},

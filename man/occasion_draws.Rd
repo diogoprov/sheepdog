@@ -15,24 +15,29 @@ occasion_draws(
 )
 }
 \arguments{
-\item{export_dir}{Folder written by \code{\link[=export_occupancy_data]{export_occupancy_data()}} with
+\item{export_dir}{Character scalar, path to the folder written by
+\code{\link[=export_occupancy_data]{export_occupancy_data()}} with
 \code{fit}.}
 
-\item{species}{Optional species to process, matched against \code{species}
+\item{species}{\code{NULL} or character vector, species to process, matched
+against \code{species}
 (the short code, e.g. \code{"phy_cuv"}) or \code{species_code} of
 \code{detections.csv}. All species with calibration draws by default.}
 
-\item{rule}{\code{"sample"} or \code{"threshold"}; see Rules.}
+\item{rule}{Character scalar, \code{"sample"} or \code{"threshold"}; see Rules.}
 
-\item{p_min}{Threshold of \code{rule = "threshold"}.}
+\item{p_min}{Numeric scalar in [0, 1], threshold of
+\code{rule = "threshold"}.}
 
-\item{n_draws}{Optional number of calibration draws to use: the first
-ones, in increasing order of their identifiers. All by default.}
+\item{n_draws}{\code{NULL} or integer scalar >= 1, number of calibration
+draws to use: the first ones, in increasing order of their
+identifiers. All by default.}
 
-\item{seed}{Seed of \code{rule = "sample"}.}
+\item{seed}{Numeric scalar, seed of \code{rule = "sample"}.}
 
-\item{write}{Write \code{occasion_draws.parquet} in \code{export_dir} and record it
-in \code{schema.json} (schema version 1.2 or later)? An existing table is replaced.}
+\item{write}{Logical scalar. If \code{TRUE}, write \code{occasion_draws.parquet}
+in \code{export_dir} and record it
+in \code{schema.json} (schema version 1.2 or later). An existing table is replaced.}
 }
 \value{
 A tibble with \code{draw}, \code{site}, \code{occasion_id}, \code{species} and \code{y}

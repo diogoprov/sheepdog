@@ -7,9 +7,11 @@
 pack_clips(manifest, output_dir)
 }
 \arguments{
-\item{manifest}{Clip manifest, as returned by \code{\link[=cut_clips]{cut_clips()}}.}
+\item{manifest}{A data frame, the clip manifest (one row per clip), as
+returned by \code{\link[=cut_clips]{cut_clips()}}.}
 
-\item{output_dir}{The \code{output_dir} given to \code{\link[=cut_clips]{cut_clips()}}.}
+\item{output_dir}{Character scalar, the \code{output_dir} given to
+\code{\link[=cut_clips]{cut_clips()}}.}
 }
 \value{
 The paths of the zip files, invisibly.

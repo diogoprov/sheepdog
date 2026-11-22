@@ -18,43 +18,49 @@ threshold_bootstrap(
 )
 }
 \arguments{
-\item{validation}{Table returned by \code{\link[=classify_review]{classify_review()}}.}
+\item{validation}{A data frame (or tibble) returned by \code{\link[=classify_review]{classify_review()}},
+with columns \code{site}, \code{species_folder}, \code{verdict} and \code{confidence}. One
+row per clip.}
 
-\item{target_precision}{Target precision.}
+\item{target_precision}{Numeric scalar in (0, 1). Target precision.}
 
-\item{min_n}{Minimum of reviewed clips for a bin to be taken seriously;
-bins with fewer are flagged in \code{low_support}.}
+\item{min_n}{Integer scalar >= 1. Minimum of reviewed clips for a bin to
+be taken seriously; bins with fewer are flagged in \code{low_support}.}
 
-\item{by}{Optional columns of \code{validation} that split each site x
-species cell further, e.g. the bin of an environmental gradient or of
-an acoustic index joined from \code{\link[=covariate_bins]{covariate_bins()}}. They show which
+\item{by}{\code{NULL} or a character vector of column names of \code{validation}
+that split each site x species cell further, e.g. the bin of an
+environmental gradient or of an acoustic index joined from
+\code{\link[=covariate_bins]{covariate_bins()}}. They show which
 parts of the gradient lack reviewed clips.}
 
-\item{weighted}{Which precision chooses the cut. \code{NULL} (default): the
+\item{weighted}{\code{NULL}, \code{TRUE} or \code{FALSE}. Which precision chooses the
+cut. \code{NULL} (default): the
 weighted one in the cells whose clips all have \code{inclusion_prob}, the
 unweighted one elsewhere. \code{TRUE}: always the weighted one; cells with
 clips without \code{inclusion_prob} get no threshold, with a warning, and
 it is an error if no clip has it. \code{FALSE}: always the unweighted one,
 and \code{n_support} for \code{min_n}.}
 
-\item{sustained}{Must the target also hold at every higher cut with at
-least \code{min_n} clips? See Sustained target.}
+\item{sustained}{Logical scalar. If \code{TRUE}, the target must also hold at
+every higher cut with at least \code{min_n} clips. See Sustained target.}
 
-\item{n_boot}{Number of bootstrap replicates.}
+\item{n_boot}{Integer scalar >= 1. Number of bootstrap replicates.}
 
-\item{cluster}{Column of \code{validation} that defines the resampling unit:
+\item{cluster}{Character scalar, the column of \code{validation} that defines
+the resampling unit:
 \code{"source_audio"} (the recording, the default), \code{"night"} or any other
 column. Resampling is done within each site x species cell (and \code{by}
 group), so the unit must vary within it: \code{"site"} is not a valid unit
 here. A cell with a single unit gets \code{NA} in \code{threshold_median},
 \code{threshold_conservative} and \code{share_reached}, with a warning, since
-resampling it gives no information on the uncertainty. With few units (say, fewer than 10),
-the quantiles of the replicates are rough.}
+resampling it gives no information on the uncertainty. With few units
+(say, fewer than 10), the quantiles of the replicates are rough.}
 
-\item{conf}{Probability of the conservative (upper) quantile.}
+\item{conf}{Numeric scalar in (0, 1). Probability of the conservative
+(upper) quantile.}
 
-\item{seed}{Seed of the resampling. The global random number generator
-is left as it was.}
+\item{seed}{Integer scalar, seed of the resampling. The global random
+number generator is left as it was.}
 }
 \value{
 A tibble with \code{site}, \code{species_folder}, the \code{by} columns,

@@ -131,13 +131,13 @@ test_that("blind review shuffles the queue and hides the score", {
                    aberta$clip_file[blind_order(nrow(aberta), "bia")])
   f <- file.path(d, "verdicts.csv")
   shiny::testServer(review_server, args = list(
-    fila = cega, verdicts_file = f, reviewer = "bia", blind = TRUE), {
+    clip_queue = cega, verdicts_file = f, reviewer = "bia", blind = TRUE), {
       session$setInputs(species = "", pending = TRUE)
       expect_false(grepl("Score|Design|rec_", output$info))
       expect_match(output$info, "Species")
     })
   shiny::testServer(review_server, args = list(
-    fila = aberta, verdicts_file = f, reviewer = "bia"), {
+    clip_queue = aberta, verdicts_file = f, reviewer = "bia"), {
       session$setInputs(species = "", pending = TRUE)
       expect_match(output$info, "Score")
     })
@@ -167,7 +167,7 @@ test_that("threshold_for() in one pass matches the cut-by-cut definition", {
       inclusion_prob = stats::runif(n, 0.1, 1))
     for (p in c(TRUE, FALSE)) for (s in c(TRUE, FALSE)) {
       expect_identical(
-        threshold_for(df, 0.8, 10, pesos = TRUE, weighted = p,
+        threshold_for(df, 0.8, 10, has_weights = TRUE, weighted = p,
                       sustained = s)$threshold,
         ref(df, 0.8, 10, p, s))
     }

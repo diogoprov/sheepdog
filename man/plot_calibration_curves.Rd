@@ -7,14 +7,14 @@
 plot_calibration_curves(x, validation = NULL, bin_width = 0.1)
 }
 \arguments{
-\item{x}{Output of \code{\link[=compare_calibration_curves]{compare_calibration_curves()}}.}
+\item{x}{A data frame (tibble), the output of \code{\link[=compare_calibration_curves]{compare_calibration_curves()}}.}
 
-\item{validation}{Optional: the reviewed clips, to show bins over the
-whole score range. Without it, only the high bins of \code{top_error} are
-shown.}
+\item{validation}{\code{NULL} or a data frame (or tibble) of the reviewed clips,
+one row per clip, to show bins over the whole score range. Without it, only
+the high bins of \code{top_error} are shown.}
 
-\item{bin_width}{Width of the bins of the observed precision, over the
-whole score range.}
+\item{bin_width}{Numeric scalar in (0, 1), width of the bins of the observed
+precision, over the whole score range.}
 }
 \value{
 A ggplot object.

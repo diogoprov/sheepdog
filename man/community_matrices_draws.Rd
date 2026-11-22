@@ -13,18 +13,20 @@ community_matrices_draws(
 )
 }
 \arguments{
-\item{history}{Table returned by \code{\link[=history_draws]{history_draws()}}.}
+\item{history}{A data frame (or tibble) returned by \code{\link[=history_draws]{history_draws()}}.}
 
-\item{core_species}{Species codes (the \code{species} column) that enter the
-matrix.}
+\item{core_species}{Character vector of length >= 1, species codes (the
+\code{species} column) that enter the matrix.}
 
-\item{k_min}{Repetition rule: 1, 2 or 3 reliable detections on the night.}
+\item{k_min}{Integer scalar, one of 1, 2 or 3. Repetition rule: 1, 2 or
+3 reliable detections on the night.}
 
-\item{min_nights_month}{Site x month cells with fewer recorded nights are
-dropped from the matrices (unstable frequencies) and flagged in
-\code{effort}.}
+\item{min_nights_month}{Numeric scalar. Site x month cells with fewer
+recorded nights are dropped from the matrices (unstable frequencies)
+and flagged in \code{effort}.}
 
-\item{probs}{Probabilities of the interval.}
+\item{probs}{Numeric vector of length 2 in [0, 1], probabilities of the
+lower and upper limits of the interval.}
 }
 \value{
 A list with \code{summary} (\code{site}, \code{month}, \code{species},

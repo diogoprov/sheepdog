@@ -48,26 +48,28 @@
 #' threshold this is what is wanted: the precision at a site depends on
 #' both. It is not a measure of the classifier alone.
 #'
-#' @param fit Model returned by [fit_calibration()].
-#' @param target Target probability (`"probability"`) or precision
-#'   (`"precision"`). The default, 0.95, is the `p_min` of
-#'   [score_detections()] and [calibrate()], so that the probability
-#'   threshold is the score equivalent of the cut on P(TP) used for the
-#'   detection histories. It is the same for both rules; the `"precision"`
-#'   threshold is lower for the same target (see Details).
-#'   [suggest_thresholds()] uses 0.90 by default.
-#' @param rule `"probability"` or `"precision"`; see Details.
-#' @param scored Table returned by [score_detections()], with `site`,
-#'   `species`, `confidence` and `p_tp`. Required for `rule = "precision"`;
-#'   with `rule = "probability"`, its site x species cells are used when
-#'   `cells` is `NULL`.
-#' @param cells Data frame of the cells to threshold, with `site` and
-#'   `species` and any other variable of the calibration formula. By default,
-#'   the cells of `scored` or, without it, every site x species of the
-#'   calibration.
-#' @param lower_prob Models fitted with `engine = "brms"`: the probability of
-#'   the lower quantile of the posterior of P(TP) used for
-#'   `threshold_lower`.
+#' @param fit A `glm`, `glmerMod` or `brmsfit` returned by [fit_calibration()].
+#' @param target Numeric scalar in (0, 1), target probability (`"probability"`)
+#'   or precision (`"precision"`). The default, 0.95, is the `p_min` of
+#'   [score_detections()] and [calibrate()], so that the probability threshold
+#'   is the score equivalent of the cut on P(TP) used for the detection
+#'   histories. It is the same for both rules; the `"precision"` threshold is
+#'   lower for the same target (see Details). [suggest_thresholds()] uses 0.90
+#'   by default.
+#' @param rule Character scalar, one of `"probability"` (default) or
+#'   `"precision"`; see Details.
+#' @param scored `NULL` or a data frame (or tibble) returned by
+#'   [score_detections()], one row per detection, with `site`, `species`,
+#'   `confidence` and `p_tp`. Required for `rule = "precision"`; with
+#'   `rule = "probability"`, its site x species cells are used when `cells` is
+#'   `NULL`.
+#' @param cells `NULL` or a data frame (or tibble) of the cells to threshold,
+#'   one row per cell, with `site` and `species` and any other variable of the
+#'   calibration formula. By default, the cells of `scored` or, without it,
+#'   every site x species of the calibration.
+#' @param lower_prob Numeric scalar in (0, 1). Models fitted with
+#'   `engine = "brms"`: the probability of the lower quantile of the posterior
+#'   of P(TP) used for `threshold_lower`.
 #' @inheritParams score_detections
 #'
 #' @return A tibble with the cell columns, `threshold` and, for
@@ -102,7 +104,7 @@ calibrated_thresholds <- function(fit, target = 0.95,
                                   min_confidence = 0.1, grid_step = 0.01,
                                   lower_prob = 0.05) {
   rule <- match.arg(rule)
-  niveis <- fit_levels(fit)
+  lvls <- fit_levels(fit)
   if (!is.numeric(target) || length(target) != 1 || target <= 0 ||
       target >= 1) {
     stop("`target` must be a single number between 0 and 1.", call. = FALSE)
@@ -122,43 +124,43 @@ calibrated_thresholds <- function(fit, target = 0.95,
       distinct(scored, site = as.character(site),
                species = as.character(species))
     } else {
-      expand_grid(site = niveis$site, species = niveis$species)
+      expand_grid(site = lvls$site, species = lvls$species)
     }
   }
-  faltam <- setdiff(c("site", "species"), names(cells))
-  if (length(faltam) > 0) {
-    stop("`cells` lacks the columns: ", paste(faltam, collapse = ", "),
+  missing_cols <- setdiff(c("site", "species"), names(cells))
+  if (length(missing_cols) > 0) {
+    stop("`cells` lacks the columns: ", paste(missing_cols, collapse = ", "),
          call. = FALSE)
   }
   cells <- distinct(cells) |>
     mutate(site = as.character(site), species = as.character(species))
-  novos <- c(setdiff(cells$site, niveis$site),
-             setdiff(cells$species, niveis$species))
-  if (length(novos) > 0) {
+  new_lvls <- c(setdiff(cells$site, lvls$site),
+                setdiff(cells$species, lvls$species))
+  if (length(new_lvls) > 0) {
     warning("Level(s) not in the calibration, thresholded with the ",
             "population-level effects only: ",
-            paste(unique(novos), collapse = ", "), call. = FALSE)
+            paste(unique(new_lvls), collapse = ", "), call. = FALSE)
   }
 
-  grade <- score_grid(min_confidence, grid_step)
+  grid <- score_grid(min_confidence, grid_step)
   nd <- cells |>
     mutate(.cell = row_number()) |>
-    tidyr::expand_grid(confidence = grade) |>
+    tidyr::expand_grid(confidence = grid) |>
     mutate(logit_conf = safe_logit(confidence),
-           site = factor(site, levels = niveis$site),
-           species = factor(species, levels = niveis$species))
+           site = factor(site, levels = lvls$site),
+           species = factor(species, levels = lvls$species))
 
   if (inherits(fit, "brmsfit")) {
     draws <- brms::posterior_epred(fit, newdata = nd,
                                    allow_new_levels = TRUE)
-    resumo <- summarise_grid_draws(draws, target, lower_prob)
-    nd$p_tp <- resumo$p_tp
-    nd$p_tp_lower <- resumo$p_tp_lower
+    draw_summary <- summarise_grid_draws(draws, target, lower_prob)
+    nd$p_tp <- draw_summary$p_tp
+    nd$p_tp_lower <- draw_summary$p_tp_lower
   } else {
     nd$p_tp <- predict_tp(fit, nd)
   }
 
-  limiares <- nd |>
+  thr <- nd |>
     group_by(.cell) |>
     summarise(
       threshold = confidence[first_sustained(p_tp, target)],
@@ -166,52 +168,72 @@ calibrated_thresholds <- function(fit, target = 0.95,
       threshold_lower = if ("p_tp_lower" %in% names(nd))
         confidence[first_sustained(p_tp_lower, target)] else NA_real_,
       .groups = "drop")
-  if (!inherits(fit, "brmsfit")) limiares$threshold_lower <- NULL
+  if (!inherits(fit, "brmsfit")) thr$threshold_lower <- NULL
 
   cells |>
     mutate(.cell = row_number()) |>
-    left_join(limiares, by = ".cell") |>
+    left_join(thr, by = ".cell") |>
     select(-".cell")
 }
 
-# Indice do primeiro ponto a partir do qual `x` fica >= `target` ate o fim
-# da grade; NA quando o ultimo ponto nao chega ao alvo. Pontos NA (sem
-# deteccoes acima, na regra "precision") nao contam.
+#' Index of the first point from which a curve stays at or above a target
+#'
+#' Points that are `NA` (no detections above, in the `"precision"` rule) do
+#' not count.
+#'
+#' @param x Numeric vector, a curve over the score grid.
+#' @param target Numeric scalar, the target value.
+#' @return Integer scalar, the index of the first point from which `x` stays
+#'   `>= target` up to the end of the grid; `NA` when the last non-missing
+#'   point does not reach the target.
+#' @noRd
 first_sustained <- function(x, target) {
   ok <- !is.na(x) & x >= target
-  validos <- which(!is.na(x))
-  if (length(validos) == 0 || !ok[max(validos)]) return(NA_integer_)
-  falhas <- validos[!ok[validos]]
-  primeiro <- if (length(falhas) == 0) min(validos) else
-    min(validos[validos > max(falhas)])
-  primeiro
+  valid <- which(!is.na(x))
+  if (length(valid) == 0 || !ok[max(valid)]) return(NA_integer_)
+  fails <- valid[!ok[valid]]
+  first <- if (length(fails) == 0) min(valid) else
+    min(valid[valid > max(fails)])
+  first
 }
 
-# Regra "precision": media de P(TP) das deteccoes com score >= c, para cada
-# ponto c da grade, por local x especie
+#' Thresholds by the expected precision of the detections kept
+#'
+#' For each point `c` of the score grid and each site x species, the mean
+#' P(TP) of the detections with score `>= c`; the threshold is where it
+#' first stays at or above `target`.
+#'
+#' @param scored A data frame with columns `site`, `species`, `confidence`
+#'   and `p_tp`, as returned by score_detections().
+#' @param target Numeric scalar in (0, 1), target precision.
+#' @param min_confidence Numeric scalar, lowest score of the grid.
+#' @param grid_step Numeric scalar, step of the score grid.
+#' @return A tibble with one row per site x species: `site`, `species`,
+#'   `threshold`, `precision_at_threshold`, `n_above` and `n_detections`.
+#' @noRd
 thresholds_by_precision <- function(scored, target, min_confidence,
                                     grid_step) {
-  faltam <- setdiff(c("site", "species", "confidence", "p_tp"),
-                    names(scored))
-  if (length(faltam) > 0) {
-    stop("`scored` lacks the columns: ", paste(faltam, collapse = ", "),
+  missing_cols <- setdiff(c("site", "species", "confidence", "p_tp"),
+                          names(scored))
+  if (length(missing_cols) > 0) {
+    stop("`scored` lacks the columns: ", paste(missing_cols, collapse = ", "),
          ". Use the output of score_detections().", call. = FALSE)
   }
-  grade <- score_grid(min_confidence, grid_step)
+  grid <- score_grid(min_confidence, grid_step)
   scored |>
     mutate(site = as.character(site), species = as.character(species)) |>
     filter(!is.na(p_tp)) |>
     group_by(site, species) |>
-    group_modify(function(d, chave) {
+    group_modify(function(d, key) {
       ord <- order(d$confidence, decreasing = TRUE)
       conf <- d$confidence[ord]
-      soma <- cumsum(d$p_tp[ord])
-      # numero de deteccoes com score >= cada ponto da grade
-      n_acima <- vapply(grade, \(g) sum(conf >= g), integer(1))
-      prec <- ifelse(n_acima > 0, soma[pmax(n_acima, 1)] / n_acima, NA_real_)
+      cum_p <- cumsum(d$p_tp[ord])
+      # number of detections with score >= each grid point
+      n_ge <- vapply(grid, \(g) sum(conf >= g), integer(1))
+      prec <- ifelse(n_ge > 0, cum_p[pmax(n_ge, 1)] / n_ge, NA_real_)
       i <- first_sustained(prec, target)
-      tibble(threshold = grade[i], precision_at_threshold = prec[i],
-             n_above = if (is.na(i)) NA_integer_ else n_acima[i],
+      tibble(threshold = grid[i], precision_at_threshold = prec[i],
+             n_above = if (is.na(i)) NA_integer_ else n_ge[i],
              n_detections = nrow(d))
     }) |>
     ungroup()

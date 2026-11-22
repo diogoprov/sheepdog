@@ -7,14 +7,16 @@
 read_pamdp(dir, site_column = "locationID", audio_root = NULL)
 }
 \arguments{
-\item{dir}{Folder of the data package.}
+\item{dir}{Character scalar, path to the folder of the data package.}
 
-\item{site_column}{Column of \code{deployments.csv} that names the site:
+\item{site_column}{Character scalar, column of \code{deployments.csv} that
+names the site:
 \code{"locationID"} (default), \code{"locationName"} or \code{"deploymentID"}.
 Deployments with this column empty take their \code{deploymentID}, with a
 message.}
 
-\item{audio_root}{Optional folder that relative \code{filePath} values are
+\item{audio_root}{\code{NULL} or character scalar, folder that relative
+\code{filePath} values are
 resolved against (e.g. the folder of the audio files on this
 computer). \code{NULL} keeps \code{filePath} as it is. Paths that are absolute
 or URLs are never changed.}

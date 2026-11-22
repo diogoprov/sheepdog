@@ -11,12 +11,14 @@ select_calibration_model(
 )
 }
 \arguments{
-\item{comparison}{Table returned by \code{\link[=compare_calibration_models]{compare_calibration_models()}}.}
+\item{comparison}{A data frame (or tibble) returned by
+\code{\link[=compare_calibration_models]{compare_calibration_models()}}.}
 
-\item{rule}{Selection rule.}
+\item{rule}{Character scalar, the selection rule: \code{"one_se_logloss"}
+(default) or \code{"best_auc"}.}
 
-\item{k_folds}{Number of folds of the comparison (for the standard
-error).}
+\item{k_folds}{Numeric scalar, number of folds of the comparison (for the
+standard error).}
 }
 \value{
 The name of the selected model.

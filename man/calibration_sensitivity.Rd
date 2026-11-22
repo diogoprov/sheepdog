@@ -7,12 +7,13 @@
 calibration_sensitivity(fit, variable = NULL, ...)
 }
 \arguments{
-\item{fit}{Model returned by \code{\link[=fit_calibration]{fit_calibration()}} with \code{engine = "brms"}.}
+\item{fit}{A \code{brmsfit} returned by \code{\link[=fit_calibration]{fit_calibration()}} with
+\code{engine = "brms"}.}
 
-\item{variable}{Parameters to analyse. \code{NULL} takes the population-level
-effects and the standard deviations and correlations of the random
-effects (\code{b_}, \code{sd_}, \code{cor_}), leaving out the individual random
-effects.}
+\item{variable}{\code{NULL} or a character vector of the names of the parameters
+to analyse. \code{NULL} takes the population-level effects and the standard
+deviations and correlations of the random effects (\code{b_}, \code{sd_}, \code{cor_}),
+leaving out the individual random effects.}
 
 \item{...}{Further arguments for \code{priorsense::powerscale_sensitivity()}.}
 }

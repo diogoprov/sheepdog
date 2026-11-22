@@ -3,8 +3,18 @@
 # changes a valid input, except check_file_ext(), which adds a missing
 # extension, and check_validations(), which returns a plain tibble.
 
-# One finite number, optionally an integer, within [lower, upper]
-# (`open` excludes the bounds)
+#' Check a single finite number within bounds
+#'
+#' Optionally an integer; `open` excludes the bounds.
+#'
+#' @param x Value to check.
+#' @param arg Character scalar, argument name used in the error message.
+#' @param lower,upper Numeric scalars, bounds of the allowed interval.
+#' @param integer Logical scalar; if `TRUE`, `x` must be a whole number.
+#' @param open Logical scalar; if `TRUE`, the bounds are excluded.
+#' @param null_ok Logical scalar; if `TRUE`, `NULL` is accepted.
+#' @return `x` without classes, invisibly; stops if the check fails.
+#' @noRd
 check_number <- function(x, arg, lower = -Inf, upper = Inf, integer = FALSE,
                          open = FALSE, null_ok = FALSE) {
   if (null_ok && is.null(x)) return(invisible(x))
@@ -28,12 +38,24 @@ check_number <- function(x, arg, lower = -Inf, upper = Inf, integer = FALSE,
   invisible(x)
 }
 
-# One probability in [0, 1] (or (0, 1) with open = TRUE)
+#' Check a single probability
+#'
+#' @param x Value to check, in \[0, 1\] (or (0, 1) with `open = TRUE`).
+#' @param arg Character scalar, argument name used in the error message.
+#' @param open Logical scalar; if `TRUE`, 0 and 1 are excluded.
+#' @param null_ok Logical scalar; if `TRUE`, `NULL` is accepted.
+#' @return `x`, invisibly; stops if the check fails.
+#' @noRd
 check_prob <- function(x, arg, open = FALSE, null_ok = FALSE) {
   check_number(x, arg, lower = 0, upper = 1, open = open, null_ok = null_ok)
 }
 
-# TRUE or FALSE
+#' Check a TRUE or FALSE flag
+#'
+#' @param x Value to check.
+#' @param arg Character scalar, argument name used in the error message.
+#' @return `x`, invisibly; stops unless `x` is `TRUE` or `FALSE`.
+#' @noRd
 check_flag <- function(x, arg) {
   if (!(isTRUE(x) || isFALSE(x))) {
     stop("`", arg, "` must be TRUE or FALSE.", call. = FALSE)
@@ -41,8 +63,15 @@ check_flag <- function(x, arg) {
   invisible(x)
 }
 
-# Confidence scores: numeric, no NaN or Inf, within [0, 1]. Missing values
-# are allowed here; the caller decides what to do with them.
+#' Check confidence scores
+#'
+#' Numeric, no NaN or Inf, within \[0, 1\]. Missing values are allowed;
+#' the caller decides what to do with them.
+#'
+#' @param x Numeric vector of BirdNET confidence scores.
+#' @param arg Character scalar, argument name used in the error message.
+#' @return `x` as a plain numeric vector, invisibly.
+#' @noRd
 check_confidence <- function(x, arg = "confidence") {
   x <- unclass(x)
   if (!is.numeric(x)) {
@@ -53,20 +82,25 @@ check_confidence <- function(x, arg = "confidence") {
     stop("`", arg, "` has NaN or infinite values; BirdNET scores lie ",
          "between 0 and 1.", call. = FALSE)
   }
-  fora <- !is.na(x) & (x < 0 | x > 1)
-  if (any(fora)) {
-    stop("`", arg, "` has ", sum(fora), " value(s) outside 0 to 1 (e.g. ",
-         signif(x[fora][1], 4), "); BirdNET scores lie between 0 and 1.",
+  outside <- !is.na(x) & (x < 0 | x > 1)
+  if (any(outside)) {
+    stop("`", arg, "` has ", sum(outside), " value(s) outside 0 to 1 (e.g. ",
+         signif(x[outside][1], 4), "); BirdNET scores lie between 0 and 1.",
          call. = FALSE)
   }
   invisible(as.numeric(x))
 }
 
-# A table of reviewed clips for the calibration functions: a data frame
-# (tibble, data.frame or data.table) with the columns `cols`. Returns a
-# plain tibble in which numeric columns have lost extra classes (such as
-# 'units'), `site` and `species` are unordered factors and `tp` is an
-# integer 0/1 without missing values.
+#' Check a table of reviewed clips for the calibration functions
+#'
+#' @param validations A data frame (tibble, data.frame or data.table) with
+#'   the columns `cols`.
+#' @param cols Character vector, required column names.
+#' @param arg Character scalar, argument name used in the error messages.
+#' @return A plain tibble in which numeric columns have lost extra classes
+#'   (such as 'units'), `site` and `species` are unordered factors and `tp`
+#'   is an integer 0/1.
+#' @noRd
 check_validations <- function(validations, cols = c("site", "species",
                                                     "logit_conf", "tp"),
                               arg = "validations") {
@@ -74,15 +108,15 @@ check_validations <- function(validations, cols = c("site", "species",
     stop("`", arg, "` must be a data frame, such as the table returned by ",
          "read_validations().", call. = FALSE)
   }
-  faltam <- setdiff(cols, names(validations))
-  if (length(faltam) > 0) {
-    stop("`", arg, "` lacks the column(s) ", paste(faltam, collapse = ", "),
+  absent <- setdiff(cols, names(validations))
+  if (length(absent) > 0) {
+    stop("`", arg, "` lacks the column(s) ", paste(absent, collapse = ", "),
          "; see read_validations().", call. = FALSE)
   }
   val <- tibble::as_tibble(as.data.frame(validations))
-  listas <- cols[map_lgl(cols, function(cl) is.list(val[[cl]]))]
-  if (length(listas) > 0) {
-    stop_list_columns(listas, arg)
+  list_cols <- cols[map_lgl(cols, function(cl) is.list(val[[cl]]))]
+  if (length(list_cols) > 0) {
+    stop_list_columns(list_cols, arg)
   }
   if (nrow(val) == 0) {
     stop("`", arg, "` has no rows.", call. = FALSE)
@@ -124,18 +158,39 @@ check_validations <- function(validations, cols = c("site", "species",
   val
 }
 
-# Errors shared by check_validations() and as_input_table()
+#' Stop on list columns
+#'
+#' Error shared by check_validations() and as_input_table().
+#'
+#' @param cols Character vector, names of the offending columns.
+#' @param arg Character scalar, argument name used in the error message.
+#' @return Does not return; always stops.
+#' @noRd
 stop_list_columns <- function(cols, arg) {
   stop("Column(s) ", paste(cols, collapse = ", "), " of `", arg,
        "` are list columns; give one value per row.", call. = FALSE)
 }
+
+#' Stop on a non-numeric column
+#'
+#' Error shared by check_validations() and as_input_table().
+#'
+#' @param col Character scalar, name of the offending column.
+#' @param arg Character scalar, argument name used in the error message.
+#' @return Does not return; always stops.
+#' @noRd
 stop_not_numeric <- function(col, arg) {
   stop("Column `", col, "` of `", arg, "` must be numeric.", call. = FALSE)
 }
 
-# Missing-value policy of the package, from the option `sheepdog.missing`:
-# "omit" (default) leaves the incomplete rows out with a message, "error"
-# stops. Imputation is never offered (see G2.14c).
+#' Missing-value policy of the package
+#'
+#' Read from the option `sheepdog.missing`: "omit" (default) leaves the
+#' incomplete rows out with a message, "error" stops. Imputation is never
+#' offered (see G2.14c).
+#'
+#' @return Character scalar, "omit" or "error".
+#' @noRd
 missing_policy <- function() {
   p <- getOption("sheepdog.missing", "omit")
   if (!is.character(p) || length(p) != 1L || !p %in% c("omit", "error")) {
@@ -145,22 +200,32 @@ missing_policy <- function() {
   p
 }
 
-# Rows with missing values in the variables `vars` follow missing_policy():
-# left out with a message, or an error. `allow_empty` returns zero rows
-# instead of stopping when no row is complete.
+#' Drop rows with missing values following missing_policy()
+#'
+#' Rows with missing values in `vars` are left out with a message, or
+#' raise an error.
+#'
+#' @param val A data frame.
+#' @param vars Character vector, columns checked for missing values; those
+#'   absent from `val` are ignored.
+#' @param arg Character scalar, argument name used in the messages.
+#' @param allow_empty Logical scalar; if `TRUE`, returns zero rows instead
+#'   of stopping when no row is complete.
+#' @return `val` without the incomplete rows.
+#' @noRd
 drop_missing <- function(val, vars, arg = "validations",
                          allow_empty = FALSE) {
   vars <- intersect(vars, names(val))
-  falta <- !stats::complete.cases(val[vars])
-  if (any(falta)) {
+  incomplete <- !stats::complete.cases(val[vars])
+  if (any(incomplete)) {
     if (missing_policy() == "error") {
-      stop("`", arg, "` has ", sum(falta), " row(s) with missing values ",
+      stop("`", arg, "` has ", sum(incomplete), " row(s) with missing values ",
            "in ", paste(vars, collapse = ", "), " (option sheepdog.missing ",
            "= \"error\").", call. = FALSE)
     }
-    message(sum(falta), " row(s) of `", arg, "` with missing values in ",
+    message(sum(incomplete), " row(s) of `", arg, "` with missing values in ",
             paste(vars, collapse = ", "), " were left out.")
-    val <- val[!falta, , drop = FALSE]
+    val <- val[!incomplete, , drop = FALSE]
   }
   if (nrow(val) == 0 && !allow_empty) {
     stop("No row of `", arg, "` is complete.", call. = FALSE)
@@ -168,19 +233,26 @@ drop_missing <- function(val, vars, arg = "validations",
   val
 }
 
-# Entry routine of the tables of the sampling and threshold functions
-# (G2.6-G2.8, G2.11, G2.12): any data frame (data.frame, tibble,
-# data.table) becomes a plain tibble; the columns `cols` must exist; the
-# columns used may not be list columns; numeric columns lose extra classes
-# such as 'units'.
+#' Entry routine for the tables of the sampling and threshold functions
+#'
+#' Implements G2.6-G2.8, G2.11 and G2.12: any data frame (data.frame,
+#' tibble, data.table) becomes a plain tibble; the used columns may not be
+#' list columns; numeric columns lose extra classes such as 'units'.
+#'
+#' @param x A data frame.
+#' @param cols Character vector, required column names.
+#' @param arg Character scalar, argument name used in the error messages.
+#' @param numeric Character vector, columns coerced to plain numeric.
+#' @return A plain tibble.
+#' @noRd
 as_input_table <- function(x, cols, arg, numeric = character()) {
   check_data_frame(x, arg)
   check_columns(x, cols, arg)
   x <- tibble::as_tibble(as.data.frame(x))
-  usadas <- intersect(unique(c(cols, numeric)), names(x))
-  listas <- usadas[map_lgl(usadas, function(cl) is.list(x[[cl]]))]
-  if (length(listas) > 0) {
-    stop_list_columns(listas, arg)
+  used <- intersect(unique(c(cols, numeric)), names(x))
+  list_cols <- used[map_lgl(used, function(cl) is.list(x[[cl]]))]
+  if (length(list_cols) > 0) {
+    stop_list_columns(list_cols, arg)
   }
   for (cl in intersect(numeric, names(x))) {
     v <- unclass(x[[cl]])
@@ -192,9 +264,17 @@ as_input_table <- function(x, cols, arg, numeric = character()) {
   x
 }
 
-# Prediction tables of select_clips(), select_directed() and
-# threshold_history(): the entry routine, then rows without a confidence
-# or an audio path follow missing_policy()
+#' Check a table of BirdNET predictions
+#'
+#' Used by select_clips(), select_directed() and threshold_history(): the
+#' entry routine, then rows without a confidence or an audio path follow
+#' missing_policy().
+#'
+#' @param detections A data frame of predictions.
+#' @param cols Character vector, required column names.
+#' @param arg Character scalar, argument name used in the messages.
+#' @return A plain tibble with the complete rows.
+#' @noRd
 check_detections <- function(detections, cols, arg = "detections") {
   det <- as_input_table(detections, cols, arg,
                         numeric = c("confidence", "begin_time", "end_time",
@@ -202,18 +282,30 @@ check_detections <- function(detections, cols, arg = "detections") {
   drop_missing(det, c("confidence", "begin_path"), arg)
 }
 
-# Fixed part of a formula with random effects in the syntax of 'lme4'
+#' Fixed part of a formula with random effects
+#'
+#' @param formula A formula in the syntax of 'lme4'.
+#' @return A formula with the same response and only the fixed terms
+#'   (an intercept if there is none).
+#' @noRd
 fixed_formula <- function(formula) {
   tl <- attr(stats::terms(formula), "term.labels")
-  fixos <- tl[!grepl("|", tl, fixed = TRUE)]
+  fixed <- tl[!grepl("|", tl, fixed = TRUE)]
   resp <- all.vars(formula)[1]
-  if (length(fixos) == 0) return(stats::reformulate("1", response = resp))
-  stats::reformulate(fixos, response = resp)
+  if (length(fixed) == 0) return(stats::reformulate("1", response = resp))
+  stats::reformulate(fixed, response = resp)
 }
 
-# Checks of the data against a calibration formula, before the fit:
-# rank of the fixed-effects model matrix (RE2.4a), a response with both
-# classes, and complete separation of `tp` by `logit_conf` (RE2.4b)
+#' Check the data against a calibration formula before the fit
+#'
+#' Checks the rank of the fixed-effects model matrix (RE2.4a), a response
+#' with both classes, grouping factors with one level per clip, and
+#' complete separation of `tp` by `logit_conf` (RE2.4b).
+#'
+#' @param val A data frame of reviewed clips with column `tp`.
+#' @param formula A calibration formula in the syntax of 'lme4'.
+#' @return `val`, invisibly; stops, warns or messages on problems.
+#' @noRd
 check_calibration_data <- function(val, formula) {
   if (n_distinct(val$tp) < 2L) {
     stop("All the reviewed clips have the same verdict (tp = ", val$tp[1],
@@ -221,20 +313,20 @@ check_calibration_data <- function(val, formula) {
          call. = FALSE)
   }
   x <- stats::model.matrix(fixed_formula(formula), data = val)
-  posto <- qr(x)$rank
-  if (posto < ncol(x)) {
+  mm_rank <- qr(x)$rank
+  if (mm_rank < ncol(x)) {
     stop("The fixed effects of ", deparse1(formula), " are collinear ",
-         "(model matrix of rank ", posto, " with ", ncol(x), " columns); ",
+         "(model matrix of rank ", mm_rank, " with ", ncol(x), " columns); ",
          "drop or combine the redundant terms.", call. = FALSE)
   }
   # grouping factors of the random effects: a level per reviewed clip
   # makes the variance of a binary response unidentifiable (RE2.4, G5.8d)
   tl <- attr(stats::terms(formula), "term.labels")
-  grupos <- unique(unlist(lapply(tl[grepl("|", tl, fixed = TRUE)],
+  groups <- unique(unlist(lapply(tl[grepl("|", tl, fixed = TRUE)],
                                  function(t) {
     all.vars(str2lang(sub("^.*\\|", "", t)))
   })))
-  for (g in intersect(grupos, names(val))) {
+  for (g in intersect(groups, names(val))) {
     if (n_distinct(val[[g]]) == nrow(val)) {
       stop("Each level of `", g, "` has a single reviewed clip: the ",
            "variance of its random effect cannot be estimated from binary ",
@@ -242,11 +334,11 @@ check_calibration_data <- function(val, formula) {
     }
   }
   if ("logit_conf" %in% names(val)) {
-    separada <- function(tp, s) {
+    separated <- function(tp, s) {
       length(unique(tp)) == 2L &&
         (max(s[tp == 0]) < min(s[tp == 1]) || max(s[tp == 1]) < min(s[tp == 0]))
     }
-    if (separada(val$tp, val$logit_conf)) {
+    if (separated(val$tp, val$logit_conf)) {
       warning("The verdicts are completely separated by the score (every ",
               "true positive scores above every false positive, or the ",
               "reverse): the maximum likelihood slope is infinite. Review ",
@@ -254,14 +346,14 @@ check_calibration_data <- function(val, formula) {
               "a prior.", call. = FALSE)
     }
     if ("species" %in% names(val) && n_distinct(val$species) > 1L) {
-      por_sp <- split(val, val$species, drop = TRUE)
-      uma <- names(por_sp)[map_lgl(por_sp, function(d) n_distinct(d$tp) < 2L)]
-      sep <- names(por_sp)[map_lgl(por_sp, function(d) {
-        separada(d$tp, d$logit_conf)
+      by_sp <- split(val, val$species, drop = TRUE)
+      single <- names(by_sp)[map_lgl(by_sp, function(d) n_distinct(d$tp) < 2L)]
+      sep <- names(by_sp)[map_lgl(by_sp, function(d) {
+        separated(d$tp, d$logit_conf)
       })]
-      if (length(uma) > 0) {
+      if (length(single) > 0) {
         message("Species with a single verdict class (estimated through ",
-                "the random effects only): ", paste(uma, collapse = ", "),
+                "the random effects only): ", paste(single, collapse = ", "),
                 ".")
       }
       if (length(sep) > 0) {
@@ -273,20 +365,28 @@ check_calibration_data <- function(val, formula) {
   invisible(val)
 }
 
-# Output file path with the expected extension: a path without extension
-# gets it (with a message); a different extension raises a warning
+#' Check an output file path and its extension
+#'
+#' A path without extension gets `ext[1]` (with a message); a different
+#' extension raises a warning.
+#'
+#' @param path Character scalar, output file path.
+#' @param ext Character vector, accepted extensions without the dot.
+#' @param arg Character scalar, argument name used in the messages.
+#' @return Character scalar, the path to write to.
+#' @noRd
 check_file_ext <- function(path, ext, arg = "file") {
   if (!is.character(path) || length(path) != 1L || is.na(path) ||
       !nzchar(path)) {
     stop("`", arg, "` must be a single file path.", call. = FALSE)
   }
-  atual <- tolower(tools::file_ext(path))
-  if (!nzchar(atual)) {
-    novo <- paste0(path, ".", ext[1])
-    message("`", arg, "` has no extension; writing to ", novo, ".")
-    return(novo)
+  current <- tolower(tools::file_ext(path))
+  if (!nzchar(current)) {
+    new_path <- paste0(path, ".", ext[1])
+    message("`", arg, "` has no extension; writing to ", new_path, ".")
+    return(new_path)
   }
-  if (!atual %in% tolower(ext)) {
+  if (!current %in% tolower(ext)) {
     warning("`", arg, "` (", basename(path), ") does not end in .",
             paste(ext, collapse = " or ."), "; the file is written as ",
             toupper(ext[1]), " anyway.", call. = FALSE)
@@ -294,18 +394,32 @@ check_file_ext <- function(path, ext, arg = "file") {
   path
 }
 
-# Columns a table must have. Every function reports missing columns with
-# this one message (G5.2a); `hint` adds where the table usually comes from.
+#' Check that a table has the required columns
+#'
+#' Every function reports missing columns with this one message (G5.2a).
+#'
+#' @param x A data frame.
+#' @param cols Character vector, required column names.
+#' @param arg Character scalar, argument name used in the error message.
+#' @param hint Character scalar or `NULL`, appended to the message (where
+#'   the table usually comes from).
+#' @return `x`, invisibly.
+#' @noRd
 check_columns <- function(x, cols, arg, hint = NULL) {
-  faltam <- setdiff(cols, names(x))
-  if (length(faltam) > 0) {
-    stop("`", arg, "` lacks the column(s): ", paste(faltam, collapse = ", "),
+  absent <- setdiff(cols, names(x))
+  if (length(absent) > 0) {
+    stop("`", arg, "` lacks the column(s): ", paste(absent, collapse = ", "),
          ".", if (!is.null(hint)) paste0(" ", hint), call. = FALSE)
   }
   invisible(x)
 }
 
-# A data frame argument
+#' Check a data frame argument
+#'
+#' @param x Value to check.
+#' @param arg Character scalar, argument name used in the error message.
+#' @return `x`, invisibly.
+#' @noRd
 check_data_frame <- function(x, arg) {
   if (!is.data.frame(x)) {
     stop("`", arg, "` must be a data frame.", call. = FALSE)
@@ -313,7 +427,12 @@ check_data_frame <- function(x, arg) {
   invisible(x)
 }
 
-# A model fitted with engine = "brms"
+#' Check a model fitted with engine = "brms"
+#'
+#' @param fit Object to check.
+#' @param arg Character scalar, argument name used in the error message.
+#' @return `fit`, invisibly.
+#' @noRd
 check_brmsfit <- function(fit, arg = "fit") {
   if (!inherits(fit, "brmsfit")) {
     stop("`", arg, "` must be a model fitted with engine = \"brms\".",
@@ -322,7 +441,12 @@ check_brmsfit <- function(fit, arg = "fit") {
   invisible(fit)
 }
 
-# Reviewed clips with a confidence score (from reviewed_with_confidence())
+#' Check that there are reviewed clips with a confidence score
+#'
+#' @param reviewed A data frame from reviewed_with_confidence().
+#' @param arg Character scalar, argument name used in the error message.
+#' @return `reviewed`, invisibly; stops if it has no rows.
+#' @noRd
 check_reviewed <- function(reviewed, arg = "validation") {
   if (nrow(reviewed) == 0) {
     stop("No reviewed clip with a confidence in `", arg, "`.", call. = FALSE)
@@ -330,7 +454,10 @@ check_reviewed <- function(reviewed, arg = "validation") {
   invisible(reviewed)
 }
 
-# `weighted = TRUE` without inclusion probabilities
+#' Stop when weighted = TRUE has no inclusion probabilities
+#'
+#' @return Does not return; always stops.
+#' @noRd
 stop_without_inclusion_prob <- function() {
   stop("`weighted = TRUE` needs `inclusion_prob`, which no reviewed clip ",
        "has.", call. = FALSE)

@@ -10,25 +10,33 @@
 #' `threshold` becomes a clip, as in `sampling_mode = "random_detections"`
 #' of [select_clips()].
 #'
-#' @param detections Predictions, as returned by [read_selection_tables()].
-#' @param units Data frame with one row per eligible unit: the columns
+#' @param detections A data frame of predictions, one row per BirdNET
+#'   prediction, as returned by [read_selection_tables()] (columns `site`,
+#'   `confidence`, `begin_path`, `begin_time`, `end_time` and
+#'   `file_offset`).
+#' @param units A data frame with one row per eligible unit: the columns
 #'   that define the unit (any columns of the prepared predictions, such as
 #'   `site`, `species_code` and `month`) and the size column. Only listed
 #'   units are drawn, so leave out the units that need no review, for
 #'   instance those where a review has already confirmed the species.
-#' @param n_units Number of units to draw.
-#' @param threshold Confidence threshold: an occasion is a candidate when
+#' @param n_units Integer scalar >= 1, number of units to draw.
+#' @param threshold Numeric scalar, confidence threshold: an occasion is a
+#'   candidate when
 #'   it has at least one prediction at or above it, and its clips are all
 #'   such predictions. Use the threshold of the occupancy analysis.
-#' @param size_col Column of `units` with the size (non-negative).
-#' @param floor Share of the mean size added to every size, so that a unit
+#' @param size_col Character scalar, column of `units` with the size (a
+#'   non-negative numeric column without `NA`).
+#' @param floor Numeric scalar >= 0, share of the mean size added to every
+#'   size, so that a unit
 #'   with size 0 can still be drawn. Without it, a unit the model judges
 #'   worthless is never reviewed and the model is never corrected there.
-#' @param previous Manifests of earlier review rounds (of any design), as
-#'   paths or data frames. Their clips are left out, matched by recording
+#' @param previous `NULL`, a character vector of paths, a data frame, or a
+#'   list of these: manifests of earlier review rounds (of any design).
+#'   Their clips are left out, matched by recording
 #'   file and start: an occasion is a candidate only while it has a
 #'   prediction at or above `threshold` not yet reviewed.
-#' @param seed Seed of the draws. The global random number generator is
+#' @param seed Integer scalar, seed of the draws. The global random number
+#'   generator is
 #'   left as it was.
 #' @inheritParams select_clips
 #'
@@ -81,7 +89,7 @@ select_directed <- function(detections, units, n_units, threshold,
                             occasion_unit = c("file", "minute"),
                             previous = NULL, seed = 2026,
                             remap_from = NULL, remap_to = NULL) {
-  unidade <- match.arg(occasion_unit)
+  occ_unit <- match.arg(occasion_unit)
   detections <- check_detections(
     detections, c("site", "confidence", "begin_path", "begin_time",
                   "end_time", "file_offset"))
@@ -89,17 +97,17 @@ select_directed <- function(detections, units, n_units, threshold,
   if (!size_col %in% names(units)) {
     stop("`units` lacks the size column `", size_col, "`.", call. = FALSE)
   }
-  chave <- setdiff(names(units), size_col)
-  if (length(chave) == 0) {
+  key_cols <- setdiff(names(units), size_col)
+  if (length(key_cols) == 0) {
     stop("`units` needs at least one column besides `", size_col,
          "` to define the unit.", call. = FALSE)
   }
-  tamanho <- units[[size_col]]
-  if (!is.numeric(tamanho) || anyNA(tamanho) || any(tamanho < 0)) {
+  sizes <- units[[size_col]]
+  if (!is.numeric(sizes) || anyNA(sizes) || any(sizes < 0)) {
     stop("`", size_col, "` must be numeric, non-negative and without NA.",
          call. = FALSE)
   }
-  if (anyDuplicated(units[chave])) {
+  if (anyDuplicated(units[key_cols])) {
     stop("`units` has more than one row for some unit.", call. = FALSE)
   }
   if (length(n_units) != 1 || is.na(n_units) || n_units < 1 ||
@@ -118,152 +126,169 @@ select_directed <- function(detections, units, n_units, threshold,
            duration     = end_time - begin_time,
            clip_start   = file_offset,
            clip_end     = file_offset + duration,
-           occasion_id  = make_occasion_id(source_audio, file_offset, unidade))
+           occasion_id  = make_occasion_id(source_audio, file_offset, occ_unit))
   pred <- bind_cols(pred, parse_date_hour(basename(pred$begin_path))) |>
     mutate(night = recording_date, site = as.character(site)) |>
-    add_period_columns(intersect(c("month", "week"), chave))
-  faltam <- setdiff(chave, names(pred))
-  if (length(faltam) > 0) {
+    add_period_columns(intersect(c("month", "week"), key_cols))
+  absent <- setdiff(key_cols, names(pred))
+  if (length(absent) > 0) {
     stop("Column(s) of `units` not in the predictions: ",
-         paste(faltam, collapse = ", "), call. = FALSE)
+         paste(absent, collapse = ", "), call. = FALSE)
   }
-  units <- mutate(units, across(all_of(chave), as.character))
-  pred <- mutate(pred, across(all_of(chave), as.character))
+  units <- mutate(units, across(all_of(key_cols), as.character))
+  pred <- mutate(pred, across(all_of(key_cols), as.character))
 
-  acima <- filter(pred, confidence >= threshold)
-  n_det_ocasiao <- count(acima, site, species_code, occasion_id,
-                         name = "n_detections_occasion")
-  rodada <- 1L
+  above <- filter(pred, confidence >= threshold)
+  n_det_occasion <- count(above, site, species_code, occasion_id,
+                          name = "n_detections_occasion")
+  round_no <- 1L
   if (!is.null(previous)) {
-    anteriores <- read_previous(previous)
-    dirigidas <- filter(anteriores, sampling_mode == "directed_pps")
-    if (nrow(dirigidas) > 0) rodada <- max(dirigidas$round) + 1L
-    check_columns(anteriores, c("source_audio", "clip_start"), "previous")
-    # o clipe e casado pelo arquivo e pelo inicio, que nao dependem da
-    # unidade de ocasiao nem do remapeamento dos caminhos de cada rodada
-    vistos <- transmute(anteriores, site, species_code,
-                        .arquivo = audio_stem(source_audio),
-                        .inicio = round(as.numeric(clip_start), 3))
-    antes <- nrow(acima)
-    acima <- acima |>
-      mutate(.arquivo = audio_stem(source_audio),
-             .inicio = round(clip_start, 3)) |>
-      anti_join(vistos, by = c("site", "species_code", ".arquivo",
-                               ".inicio")) |>
-      select(-.arquivo, -.inicio)
-    message(antes - nrow(acima), " prediction(s) >= ", threshold,
+    earlier <- read_previous(previous)
+    directed <- filter(earlier, sampling_mode == "directed_pps")
+    if (nrow(directed) > 0) round_no <- max(directed$round) + 1L
+    check_columns(earlier, c("source_audio", "clip_start"), "previous")
+    # clips are matched by file and start, which depend neither on the
+    # occasion unit nor on the path remapping of each round
+    seen <- transmute(earlier, site, species_code,
+                      .file = audio_stem(source_audio),
+                      .start = round(as.numeric(clip_start), 3))
+    n_before <- nrow(above)
+    above <- above |>
+      mutate(.file = audio_stem(source_audio),
+             .start = round(clip_start, 3)) |>
+      anti_join(seen, by = c("site", "species_code", ".file", ".start")) |>
+      select(-.file, -.start)
+    message(n_before - nrow(above), " prediction(s) >= ", threshold,
             " already reviewed in `previous` left out.")
   }
 
-  # Ocasioes candidatas de cada unidade
-  ocasioes <- acima |>
-    distinct(across(all_of(unique(c(chave, ocasiao_chave))))) |>
-    semi_join(units, by = chave)
-  if (anyDuplicated(ocasioes[ocasiao_chave])) {
+  # Candidate occasions of each unit
+  occasions <- above |>
+    distinct(across(all_of(unique(c(key_cols, occasion_key))))) |>
+    semi_join(units, by = key_cols)
+  if (anyDuplicated(occasions[occasion_key])) {
     stop("The columns of `units` must be constant within an occasion; ",
          "some occasions fall in more than one unit.", call. = FALSE)
   }
-  n_ocasioes <- count(ocasioes, across(all_of(chave)), name = "n_occasions")
+  n_occ <- count(occasions, across(all_of(key_cols)), name = "n_occasions")
   tab <- units |>
-    left_join(n_ocasioes, by = chave) |>
+    left_join(n_occ, by = key_cols) |>
     mutate(n_occasions = replace_na(n_occasions, 0L))
-  vazias <- tab$n_occasions == 0
-  if (any(vazias)) {
-    message(sum(vazias), " unit(s) without candidate occasions left out.")
+  empty <- tab$n_occasions == 0
+  if (any(empty)) {
+    message(sum(empty), " unit(s) without candidate occasions left out.")
   }
   tab$size_used <- tab[[size_col]] + floor * mean(tab[[size_col]])
   tab$inclusion_prob_unit <- 0
   tab$drawn <- FALSE
-  elegiveis <- which(!vazias & tab$size_used > 0)
-  if (length(elegiveis) == 0) {
+  eligible <- which(!empty & tab$size_used > 0)
+  if (length(eligible) == 0) {
     stop("No unit with candidate occasions and size > 0.", call. = FALSE)
   }
-  n <- min(n_units, length(elegiveis))
+  n <- min(n_units, length(eligible))
   if (n < n_units) {
     message("Only ", n, " unit(s) can be drawn; all of them are taken.")
   }
-  pis <- pps_inclusion(tab$size_used[elegiveis], n)
-  tab$inclusion_prob_unit[elegiveis] <- pis
+  pis <- pps_inclusion(tab$size_used[eligible], n)
+  tab$inclusion_prob_unit[eligible] <- pis
 
-  sorteio <- withr::with_seed(seed, {
-    sel <- elegiveis[systematic_pps(pis)]
-    alvo <- tab[sel, c(chave, "n_occasions", "inclusion_prob_unit")]
-    escolhidas <- ocasioes |>
-      inner_join(alvo, by = chave) |>
-      group_by(across(all_of(chave))) |>
+  draw_res <- withr::with_seed(seed, {
+    sel <- eligible[systematic_pps(pis)]
+    target <- tab[sel, c(key_cols, "n_occasions", "inclusion_prob_unit")]
+    chosen <- occasions |>
+      inner_join(target, by = key_cols) |>
+      group_by(across(all_of(key_cols))) |>
       slice_sample(n = 1) |>
       ungroup()
-    list(sel = sel, escolhidas = escolhidas)
+    list(sel = sel, chosen = chosen)
   })
-  tab$drawn[sorteio$sel] <- TRUE
+  tab$drawn[draw_res$sel] <- TRUE
 
-  rotulo <- do.call(paste, c(unname(as.list(sorteio$escolhidas[chave])),
-                             sep = "|"))
-  escolhidas <- sorteio$escolhidas |>
-    transmute(across(all_of(ocasiao_chave)),
+  stratum_labels <- do.call(paste,
+                            c(unname(as.list(draw_res$chosen[key_cols])),
+                              sep = "|"))
+  chosen <- draw_res$chosen |>
+    transmute(across(all_of(occasion_key)),
               inclusion_prob = inclusion_prob_unit / n_occasions,
-              stratum = rotulo, n_candidates = as.integer(n_occasions),
+              stratum = stratum_labels,
+              n_candidates = as.integer(n_occasions),
               n_drawn = 1L)
-  selecao <- acima |>
+  clips <- above |>
     select(-any_of(c("stratum", "n_candidates", "n_drawn"))) |>
-    inner_join(escolhidas, by = ocasiao_chave) |>
-    group_by(across(all_of(ocasiao_chave))) |>
+    inner_join(chosen, by = occasion_key) |>
+    group_by(across(all_of(occasion_key))) |>
     arrange(file_offset, .by_group = TRUE) |>
     mutate(rank = row_number()) |>
     ungroup() |>
-    left_join(n_det_ocasiao, by = ocasiao_chave) |>
+    left_join(n_det_occasion, by = occasion_key) |>
     mutate(species_folder = folder_name(species_code),
            clip_file = clip_name(confidence, rank, source_audio, clip_start,
                                  clip_end),
-           sampling_mode = "directed_pps", round = rodada,
+           sampling_mode = "directed_pps", round = round_no,
            inclusion_prob_round = inclusion_prob,
            previously_reviewed = FALSE, inherited_verdict = NA_character_,
            source_design = NA_character_)
-  message(nrow(selecao), " clips from ", length(sorteio$sel), " unit(s) ",
-          "drawn of ", length(elegiveis), " (round ", rodada, ").")
+  message(nrow(clips), " clips from ", length(draw_res$sel), " unit(s) ",
+          "drawn of ", length(eligible), " (round ", round_no, ").")
   if (all(pis == 1)) {
     message("Every eligible unit was taken (inclusion_prob_unit = 1): this ",
             "is a census of the units.")
   }
-  saida <- select(selecao,
-                  all_of(manifest_columns[manifest_columns != "status"]),
-                  stratum)
-  attr(saida, "units") <- tab |>
-    relocate(all_of(chave)) |>
+  out <- select(clips,
+                all_of(manifest_columns[manifest_columns != "status"]),
+                stratum)
+  attr(out, "units") <- tab |>
+    relocate(all_of(key_cols)) |>
     arrange(desc(drawn), desc(inclusion_prob_unit))
-  saida
+  out
 }
 
-# Nome do arquivo de audio sem pasta nem extensao (aceita caminhos do
-# Windows)
-audio_stem <- function(caminho) {
-  tools::file_path_sans_ext(basename(gsub("\\\\", "/", caminho)))
+#' Audio file name without folder or extension
+#'
+#' Accepts Windows paths.
+#'
+#' @param path Character vector of file paths.
+#' @return Character vector of the same length.
+#' @noRd
+audio_stem <- function(path) {
+  tools::file_path_sans_ext(basename(gsub("\\\\", "/", path)))
 }
 
-# Probabilidades de inclusao proporcionais ao tamanho para n fixo: as
-# unidades com n * x / soma(x) >= 1 entram com certeza e o resto de n e
-# repartido entre as demais, ate nenhuma passar de 1
+#' Inclusion probabilities proportional to size for a fixed n
+#'
+#' Units with `n * x / sum(x) >= 1` are taken with certainty and the rest of
+#' `n` is shared among the others, until none exceeds 1.
+#'
+#' @param x Numeric vector of non-negative sizes.
+#' @param n Integer scalar, number of units to draw.
+#' @return Numeric vector in \[0, 1\], same length as `x`, summing to `n`.
+#' @noRd
 pps_inclusion <- function(x, n) {
   p <- numeric(length(x))
-  fixa <- rep(FALSE, length(x))
+  certain <- rep(FALSE, length(x))
   repeat {
-    p[!fixa] <- (n - sum(fixa)) * x[!fixa] / sum(x[!fixa])
-    novas <- !fixa & p >= 1
-    if (!any(novas)) break
-    fixa[novas] <- TRUE
-    p[novas] <- 1
+    p[!certain] <- (n - sum(certain)) * x[!certain] / sum(x[!certain])
+    new_certain <- !certain & p >= 1
+    if (!any(new_certain)) break
+    certain[new_certain] <- TRUE
+    p[new_certain] <- 1
   }
   p
 }
 
-# Amostragem sistematica PPS em ordem aleatoria: um ponto inicial uniforme
-# e passos de 1 sobre as probabilidades acumuladas. Devolve os indices
-# sorteados; cada unidade entra com a sua probabilidade
+#' Systematic PPS sampling in random order
+#'
+#' A uniform starting point and steps of 1 over the cumulative
+#' probabilities; each unit is drawn with its own probability.
+#'
+#' @param p Numeric vector of inclusion probabilities in \[0, 1\].
+#' @return Integer vector, the indices of the drawn units.
+#' @noRd
 systematic_pps <- function(p) {
   n <- round(sum(p))
-  ordem <- sample.int(length(p))
-  acumulada <- cumsum(p[ordem])
-  pontos <- stats::runif(1) + 0:(n - 1)
-  pos <- findInterval(pontos, acumulada, left.open = TRUE) + 1L
-  ordem[pmin(pos, length(p))]
+  ord <- sample.int(length(p))
+  cum_p <- cumsum(p[ord])
+  points <- stats::runif(1) + 0:(n - 1)
+  pos <- findInterval(points, cum_p, left.open = TRUE) + 1L
+  ord[pmin(pos, length(p))]
 }

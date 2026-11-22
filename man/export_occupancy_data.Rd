@@ -36,106 +36,130 @@ export_occupancy_data(
 )
 }
 \arguments{
-\item{output_dir}{Folder to write. Created if needed.}
+\item{output_dir}{Character scalar, path to the folder to write. Created
+if needed.}
 
-\item{detections}{Predictions, as returned by \code{\link[=read_selection_tables]{read_selection_tables()}}.}
+\item{detections}{A data frame of predictions, one row per BirdNET
+prediction, as returned by \code{\link[=read_selection_tables]{read_selection_tables()}} (columns \code{site},
+\code{species_code}, \code{confidence}, \code{begin_path} and \code{file_offset}).}
 
-\item{recordings}{The list of all recordings, as a data frame or the
-path to a CSV file with the columns \code{site} and \code{source_audio}, as in
+\item{recordings}{\code{NULL}, a data frame (one row per recording) or a
+character scalar, path to a CSV file: the list of all recordings, with
+the columns \code{site} and \code{source_audio}, as in
 \code{\link[=select_clips]{select_clips()}}. \code{NULL} lists the audio files in the folders of the
 recordings that have predictions, which then must be reachable (see
 \code{remap_from}).}
 
-\item{validation}{Reviewed clips, without those with an inherited verdict
-(see \code{\link[=select_clips]{select_clips()}}): paths to \code{validation_by_clip.csv}
+\item{validation}{\code{NULL}, a character vector of paths or a data frame
+(one row per reviewed clip): reviewed clips, without those with an
+inherited verdict (see \code{\link[=select_clips]{select_clips()}}): paths to
+\code{validation_by_clip.csv}
 files (output of \code{\link[=post_validation]{post_validation()}}) or a data frame with their
 columns, e.g. from \code{\link[=read_validation_tables]{read_validation_tables()}} or
 \code{\link[=consensus_verdicts]{consensus_verdicts()}}. \code{NULL} writes no validation tables.}
 
-\item{fit}{Optional model from \code{\link[=fit_calibration]{fit_calibration()}} with
+\item{fit}{\code{NULL} or a \code{brmsfit} from \code{\link[=fit_calibration]{fit_calibration()}} with
 \code{engine = "brms"}, for \code{calibration_draws.parquet}.}
 
-\item{sites}{Optional data frame of site covariates, with a \code{site}
-column.}
+\item{sites}{\code{NULL} or a data frame of site covariates, one row per
+site, with a \code{site} column.}
 
-\item{occasion_covariates}{Optional data frame of covariates of the
+\item{occasion_covariates}{\code{NULL} or a data frame of covariates of the
 occasions (e.g. temperature or the month), with \code{site} and either
 \code{occasion_id} or \code{source_audio} (plus \code{start}, in s, for minute
 occasions). One row per occasion; occasions without a row get \code{NA}.
 Columns named like those of \code{occasions.csv} are refused.}
 
-\item{calibration_keys}{Optional grouping variables of the calibration
+\item{calibration_keys}{\code{NULL} or character vector, grouping variables of
+the calibration
 model, besides \code{site} and \code{species}, that vary between occasions (see
 Calibration keys). Only used with \code{fit}.}
 
-\item{occasion_unit}{The occasion of the occupancy model: \code{"file"} (a
+\item{occasion_unit}{Character scalar, the occasion of the occupancy
+model: \code{"file"} (a
 recording) or \code{"minute"}. Use the value of the clip extraction, so that
 the \code{occasion_id} of the reviewed clips match.}
 
-\item{recording_duration}{Length of the recordings (s). Needed for
+\item{recording_duration}{\code{NULL} or numeric scalar, length of the
+recordings (s). Needed for
 minute occasions unless the 'av' package can read the files.}
 
-\item{min_confidence}{Predictions below this confidence are not
+\item{min_confidence}{Numeric scalar in [0, 1]. Predictions below this
+confidence are not
 written; it is also the lower end of the grid of the calibration
 draws. Use the \code{min_confidence} of the BirdNET run or higher.}
 
-\item{dawn_hour}{Recordings that start before this hour belong to the
-night before.}
+\item{dawn_hour}{Numeric scalar in [0, 24]. Recordings that start before
+this hour belong to the night before.}
 
-\item{species}{Restrict to these short species codes (the last part of
+\item{species}{\code{NULL} or character vector. Restrict to these short
+species codes (the last part of
 \code{species_code}, e.g. \code{"boa-ran"}). \code{NULL} keeps all.}
 
-\item{n_draws}{Number of posterior draws of the calibration.}
+\item{n_draws}{Integer scalar >= 1, number of posterior draws of the
+calibration.}
 
-\item{grid_step}{Step of the grid of scores of the calibration draws.}
+\item{grid_step}{Numeric scalar > 0, step of the grid of scores of
+the calibration draws.}
 
-\item{seed}{Seed of the choice of draws and, with \code{n_versions}, of the
+\item{seed}{Integer scalar, seed of the choice of draws and, with
+\code{n_versions}, of the
 versions of the detections (\code{rule = "sample"}). The global random
 number generator is left as it was.}
 
-\item{n_versions}{Optional number of versions of the detections to
+\item{n_versions}{\code{NULL} or integer scalar >= 1, number of versions of
+the detections to
 write to \code{occasion_draws.parquet}, from the first calibration draws.
 Without continuous covariates, \code{occasion_draws()} is called on the
 folder. With them, the versions are always written, and
 \code{NULL} means one per calibration draw (\code{n_draws}).}
 
-\item{rule, p_min}{Rule of the versions, as in \code{\link[=occasion_draws]{occasion_draws()}}.}
+\item{rule, p_min}{Character scalar (\code{"sample"} or \code{"threshold"}) and
+numeric scalar in [0, 1]: rule of the versions, as in
+\code{\link[=occasion_draws]{occasion_draws()}}.}
 
-\item{covariate_scaling}{Optional named list recording how each
+\item{covariate_scaling}{\code{NULL} or a list named by covariate, each
+element a numeric vector with \code{center} and \code{scale}, recording how each
 continuous covariate of the calibration was standardised before the
 model was fitted, e.g. \code{list(temp = c(center = 22.4, scale = 3.1))}
 for \code{(temp_raw - 22.4) / 3.1}. It is written to \code{schema.json} so that
 a reader can map the covariate back; the values of
 \code{occasion_covariates} must already be on the scale of the model.}
 
-\item{audio_pattern}{Regular expression for the audio files listed when
+\item{audio_pattern}{Character scalar, regular expression for the audio
+files listed when
 \code{recordings} is \code{NULL}.}
 
-\item{remap_from, remap_to}{Replace the prefix \code{remap_from} of the
+\item{remap_from, remap_to}{\code{NULL} or character scalars. Replace the
+prefix \code{remap_from} of the
 \code{begin_path} paths by \code{remap_to}, e.g. \code{"N:/"} and \code{"/Volumes/Arara/"}.
 Backslashes are turned into forward slashes first.}
 
-\item{min_verified}{Species with predictions but fewer than this
+\item{min_verified}{Integer scalar. Species with predictions but
+fewer than this
 number of reviewed detection clips (positive or negative), or without
 any positive or any negative clip, are named in a warning: their
 false-positive rate will rest on the other species (a community
 model) or on the prior. The default is a floor, not a sample size
 calculation. Only used with \code{validation}.}
 
-\item{candidates}{The \code{candidates.csv} of the first round of a
-\code{"random_detections"} design, as a path or a data frame. It gives the
+\item{candidates}{\code{NULL}, a character scalar (path) or a data frame: the
+\code{candidates.csv} of the first round of a \code{"random_detections"}
+design. It gives the
 stratum of each occasion and, in \code{schema.json}, the threshold and the
 strata of the draw. \code{NULL} looks for it in the folders of \code{validation};
 without it, \code{stratum} is empty unless \code{validation} has that column, as
 after \code{\link[=combine_rounds]{combine_rounds()}}. Only used with \code{validation}.}
 
-\item{window_step}{Time between the starts of consecutive windows of the
+\item{window_step}{Numeric scalar > 0, time between the starts of
+consecutive windows of the
 classifier (s), for \code{n_windows}: 3 for BirdNET without overlap.}
 
-\item{classifier}{Optional label of the classifier, recorded in
-\code{schema.json}.}
+\item{classifier}{\code{NULL} or character scalar, label of the classifier,
+recorded in \code{schema.json}.}
 
-\item{overwrite}{Replace an existing export in \code{output_dir}?}
+\item{overwrite}{Logical scalar. If \code{TRUE}, replace an existing export in
+\code{output_dir}.}
 }
 \value{
 Invisibly, a list with the tables written (tibbles) and the

@@ -9,13 +9,14 @@
 #' Cut the clips with [cut_clips()] first, then copy each reviewer's share
 #' to their own folder with [split_by_reviewer()].
 #'
-#' @param manifest Clip manifest, as returned by [select_clips()] or
-#'   [cut_clips()].
-#' @param reviewers Names of the reviewers (at least two).
-#' @param overlap Fraction of the clips of each species reviewed by two
+#' @param manifest A data frame (or tibble), the clip manifest as returned
+#'   by [select_clips()] or [cut_clips()]. One row per clip.
+#' @param reviewers Character vector of length >= 2, unique names of the
 #'   reviewers.
-#' @param seed Seed of the draws. The global random number generator is
-#'   left as it was.
+#' @param overlap Numeric scalar in \[0, 1\]. Fraction of the clips of each
+#'   species reviewed by two reviewers.
+#' @param seed Integer scalar, seed of the draws. The global random number
+#'   generator is left as it was.
 #'
 #' @return The manifest with `reviewer` (the first reviewer of each clip)
 #'   and `second_reviewer` (`NA` for clips reviewed once).
@@ -28,22 +29,22 @@ assign_reviewers <- function(manifest, reviewers, overlap = 0.1,
   k <- length(reviewers)
   withr::with_seed(seed, {
     manifest |>
-      mutate(.linha = row_number()) |>
+      mutate(.row = row_number()) |>
       group_by(species_code) |>
       mutate(
-        .ordem = sample.int(n()),
-        # rodizio entre revisores dentro da especie, a partir de um
-        # revisor sorteado
-        .r1 = (.ordem + sample.int(k, 1) - 2) %% k + 1,
-        .dupla = .ordem <= round(overlap * n()),
-        # o segundo revisor e sempre outro
+        .order = sample.int(n()),
+        # rotation among reviewers within the species, starting from a
+        # randomly drawn reviewer
+        .r1 = (.order + sample.int(k, 1) - 2) %% k + 1,
+        .pair = .order <= round(overlap * n()),
+        # the second reviewer is always a different one
         .r2 = (.r1 + sample.int(k - 1, n(), replace = TRUE) - 1) %% k + 1
       ) |>
       ungroup() |>
       mutate(reviewer = reviewers[.r1],
-             second_reviewer = if_else(.dupla, reviewers[.r2], NA_character_)) |>
-      arrange(.linha) |>
-      select(-.linha, -.ordem, -.r1, -.r2, -.dupla)
+             second_reviewer = if_else(.pair, reviewers[.r2], NA_character_)) |>
+      arrange(.row) |>
+      select(-.row, -.order, -.r1, -.r2, -.pair)
   })
 }
 
@@ -55,10 +56,12 @@ assign_reviewers <- function(manifest, reviewers, overlap = 0.1,
 #' GUI. Clips with a second reviewer are copied to both folders. After the
 #' review, classify each reviewer's folder with [classify_review()].
 #'
-#' @param manifest Manifest returned by [assign_reviewers()].
-#' @param clips_dir Folder of the cut clips (the `clips` folder written by
-#'   [cut_clips()]).
-#' @param output_dir Output folder.
+#' @param manifest A data frame (or tibble) returned by [assign_reviewers()],
+#'   with columns `reviewer`, `second_reviewer`, `species_folder` and
+#'   `clip_file`.
+#' @param clips_dir Character scalar, path to the folder of the cut clips
+#'   (the `clips` folder written by [cut_clips()]).
+#' @param output_dir Character scalar, path to the output folder.
 #'
 #' @return A tibble with `reviewer`, `species_folder`, `clip_file` and `to`,
 #'   invisibly.
@@ -66,7 +69,7 @@ assign_reviewers <- function(manifest, reviewers, overlap = 0.1,
 split_by_reviewer <- function(manifest, clips_dir, output_dir) {
   check_columns(manifest, c("reviewer", "second_reviewer"), "manifest",
                 hint = "Use the manifest of assign_reviewers().")
-  copias <- bind_rows(
+  copies <- bind_rows(
     select(manifest, reviewer, species_folder, clip_file),
     manifest |>
       filter(!is.na(second_reviewer)) |>
@@ -74,13 +77,13 @@ split_by_reviewer <- function(manifest, clips_dir, output_dir) {
   ) |>
     mutate(from = file.path(clips_dir, species_folder, clip_file),
            to = file.path(output_dir, reviewer, species_folder, clip_file))
-  walk(unique(dirname(copias$to)), dir.create, recursive = TRUE,
+  walk(unique(dirname(copies$to)), dir.create, recursive = TRUE,
        showWarnings = FALSE)
-  ok <- file.copy(copias$from, copias$to, overwrite = TRUE)
+  ok <- file.copy(copies$from, copies$to, overwrite = TRUE)
   if (!all(ok)) warning(sum(!ok), " clip(s) not found in ", clips_dir, ".")
-  message(sum(ok), " clips copied to ", n_distinct(copias$reviewer),
+  message(sum(ok), " clips copied to ", n_distinct(copies$reviewer),
           " reviewer folders in ", output_dir)
-  invisible(select(copias[ok, ], reviewer, species_folder, clip_file, to))
+  invisible(select(copies[ok, ], reviewer, species_folder, clip_file, to))
 }
 
 #' Agreement between reviewers
@@ -94,40 +97,41 @@ split_by_reviewer <- function(manifest, clips_dir, output_dir) {
 #' clips, Fleiss' kappa (Fleiss 1971, \doi{10.1037/h0031619}). Only
 #' positive and negative verdicts count.
 #'
-#' @param reviews One table of reviewed clips (as returned by
-#'   [classify_review()]) with a `reviewer` column, or a named list of
-#'   such tables, named by reviewer.
+#' @param reviews A data frame (or tibble) or a named list of data frames.
+#'   One table of reviewed clips (as returned by [classify_review()]) with
+#'   a `reviewer` column, or a named list of such tables, named by
+#'   reviewer.
 #'
 #' @return A tibble with `species_folder`, `n_clips` (clips with at least
 #'   two verdicts), `n_reviewers`, `agreement`, `kappa` and `method`.
 #' @export
 reviewer_agreement <- function(reviews) {
-  longo <- stack_reviews(reviews)
-  multiplos <- longo |>
+  long <- stack_reviews(reviews)
+  multi <- long |>
     group_by(species_folder, clip_file) |>
     filter(n() >= 2) |>
     ungroup()
-  if (nrow(multiplos) == 0) {
+  if (nrow(multi) == 0) {
     warning("No clip has verdicts from two reviewers.")
     return(tibble(species_folder = character(), n_clips = integer(),
                   n_reviewers = integer(), agreement = double(),
                   kappa = double(), method = character()))
   }
-  multiplos |>
+  multi |>
     group_split(species_folder) |>
     map(function(df) {
       tab <- df |>
         group_by(clip_file) |>
         summarise(n_pos = sum(verdict == "positive"),
                   n_neg = sum(verdict == "negative"), .groups = "drop")
-      dois <- n_distinct(df$reviewer) == 2
+      two <- n_distinct(df$reviewer) == 2
       tibble(species_folder = df$species_folder[1],
              n_clips = nrow(tab),
              n_reviewers = n_distinct(df$reviewer),
              agreement = mean(tab$n_pos == 0 | tab$n_neg == 0),
-             kappa = if (dois) cohen_kappa(df) else
+             kappa = if (two) cohen_kappa(df) else
                        fleiss_kappa(tab$n_pos, tab$n_neg),
-             method = if (dois) "Cohen" else "Fleiss")
+             method = if (two) "Cohen" else "Fleiss")
     }) |>
     list_rbind()
 }
@@ -148,56 +152,70 @@ reviewer_agreement <- function(reviews) {
 #'   `n_reviewers` and `reviewers` (names separated by `;`).
 #' @export
 consensus_verdicts <- function(reviews) {
-  longo <- stack_reviews(reviews)
-  validos <- filter(longo, verdict %in% c("positive", "negative"))
-  resumo <- validos |>
+  long <- stack_reviews(reviews)
+  valid <- filter(long, verdict %in% c("positive", "negative"))
+  clip_summary <- valid |>
     group_by(species_folder, clip_file) |>
     summarise(
-      .veredito = if (n_distinct(verdict) == 1) first(verdict)
-                  else "disagreement",
+      .verdict = if (n_distinct(verdict) == 1) first(verdict)
+                else "disagreement",
       n_reviewers = n(),
       reviewers = paste(sort(unique(reviewer)), collapse = ";"),
       .groups = "drop")
-  conflitos <- sum(resumo$.veredito == "disagreement")
-  if (conflitos > 0) {
-    message(conflitos, " clip(s) with conflicting verdicts marked ",
+  n_conflicts <- sum(clip_summary$.verdict == "disagreement")
+  if (n_conflicts > 0) {
+    message(n_conflicts, " clip(s) with conflicting verdicts marked ",
             "\"disagreement\" for a consensus review.")
   }
-  longo |>
+  long |>
     distinct(species_folder, clip_file, .keep_all = TRUE) |>
-    left_join(resumo, by = c("species_folder", "clip_file")) |>
-    mutate(verdict = coalesce(.veredito, verdict),
+    left_join(clip_summary, by = c("species_folder", "clip_file")) |>
+    mutate(verdict = coalesce(.verdict, verdict),
            n_reviewers = replace_na(n_reviewers, 0L)) |>
-    select(-.veredito, -reviewer)
+    select(-.verdict, -reviewer)
 }
 
-# Empilha as revisoes (lista nomeada por revisor ou tabela com `reviewer`)
+#' Stack the reviews of several reviewers into one table
+#'
+#' @param reviews A data frame with a `reviewer` column, or a list of data
+#'   frames named by reviewer.
+#' @return A data frame with one row per clip and reviewer, with column
+#'   `reviewer`.
+#' @noRd
 stack_reviews <- function(reviews) {
   if (is.data.frame(reviews)) {
     if (!"reviewer" %in% names(reviews)) {
       stop("A single table needs a `reviewer` column.")
     }
-    longo <- reviews
+    long <- reviews
   } else {
     if (is.null(names(reviews)) || any(names(reviews) == "")) {
       stop("A list of reviews must be named by reviewer.")
     }
-    longo <- imap(reviews, \(df, nm) mutate(df, reviewer = nm)) |>
+    long <- imap(reviews, \(df, nm) mutate(df, reviewer = nm)) |>
       list_rbind()
   }
-  longo
+  long
 }
 
-# Kappa de Cohen para dois revisores: tabela 2 x 2 dos vereditos de cada
-# um nos clipes que os dois revisaram, com as marginais de cada revisor
+#' Cohen's kappa for two reviewers
+#'
+#' Built from the 2 x 2 table of the verdicts of each reviewer on the clips
+#' both reviewed, with the marginal frequencies of each reviewer.
+#'
+#' @param df A data frame with columns `clip_file`, `reviewer` (exactly two
+#'   distinct values) and `verdict`.
+#' @return Numeric scalar, kappa; `NA` with no shared clip or when the
+#'   expected agreement is 1.
+#' @noRd
 cohen_kappa <- function(df) {
   revs <- sort(unique(df$reviewer))
-  larga <- df |>
+  wide <- df |>
     select(clip_file, reviewer, verdict) |>
     pivot_wider(names_from = reviewer, values_from = verdict) |>
     filter(!is.na(.data[[revs[1]]]), !is.na(.data[[revs[2]]]))
-  a <- larga[[revs[1]]] == "positive"
-  b <- larga[[revs[2]]] == "positive"
+  a <- wide[[revs[1]]] == "positive"
+  b <- wide[[revs[2]]] == "positive"
   if (length(a) == 0) return(NA_real_)
   p_o <- mean(a == b)
   p_e <- mean(a) * mean(b) + (1 - mean(a)) * (1 - mean(b))
@@ -205,8 +223,16 @@ cohen_kappa <- function(df) {
   (p_o - p_e) / (1 - p_e)
 }
 
-# Kappa de Fleiss a partir das contagens de vereditos por clipe (aceita
-# revisores diferentes em clipes diferentes)
+#' Fleiss' kappa from the counts of verdicts per clip
+#'
+#' Accepts different reviewers on different clips; clips with fewer than
+#' two verdicts are dropped.
+#'
+#' @param n_pos,n_neg Integer vectors of equal length, numbers of positive
+#'   and negative verdicts of each clip.
+#' @return Numeric scalar, kappa; `NA` with no usable clip or when the
+#'   expected agreement is 1.
+#' @noRd
 fleiss_kappa <- function(n_pos, n_neg) {
   n <- n_pos + n_neg
   ok <- n >= 2

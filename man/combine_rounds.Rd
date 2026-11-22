@@ -7,13 +7,15 @@
 combine_rounds(validation, candidates = NULL)
 }
 \arguments{
-\item{validation}{The tables of all rounds: paths to the
-\code{validation_by_clip.csv} files or manifests, a data frame, or a list of
-these. Tables without \code{round} count as one round each, in the order
-given.}
+\item{validation}{A character vector of paths, a data frame, or a list
+of these: the tables of all rounds (paths to the
+\code{validation_by_clip.csv} files or manifests), one row per clip, with
+the columns \code{site}, \code{species_code}, \code{occasion_id} and \code{sampling_mode}.
+Tables without \code{round} count as one round each, in the order given.}
 
-\item{candidates}{The \code{candidates.csv} of the first round, as a path or a
-data frame. \code{NULL} looks for it in the folders of \code{validation}.}
+\item{candidates}{\code{NULL}, a character scalar (path) or a data frame: the
+\code{candidates.csv} of the first round. \code{NULL} looks for it in the
+folders of \code{validation}.}
 }
 \value{
 The stacked table, in the order of the input, with \code{stratum},

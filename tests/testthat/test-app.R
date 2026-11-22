@@ -61,16 +61,16 @@ test_that("the verdicts log keeps the last verdict of each reviewer", {
 test_that("the queue follows the reviewer of assign_reviewers()", {
   d <- withr::local_tempdir()
   man <- app_dados(d)
-  fila <- review_queue(man, file.path(d, "clips"), "bia")
+  clip_queue <- review_queue(man, file.path(d, "clips"), "bia")
   # os clipes de bia mais o da sobreposicao
-  expect_setequal(fila$clip_file, c("clip1.wav", "clip2.wav", "clip4.wav",
+  expect_setequal(clip_queue$clip_file, c("clip1.wav", "clip2.wav", "clip4.wav",
                                     "clip6.wav"))
-  expect_true(all(file.exists(fila$path)))
+  expect_true(all(file.exists(clip_queue$path)))
   expect_identical(nrow(review_queue(man, file.path(d, "clips"))), 6L)
   expect_error(review_queue(man, file.path(d, "clips"), "caio"),
                "No clip")
   expect_error(review_queue(man, file.path(d, "nada")), "None of the clips")
-  file.remove(fila$path[1])
+  file.remove(clip_queue$path[1])
   expect_warning(review_queue(man, file.path(d, "clips")), "not found")
   expect_error(suppressWarnings(review_queue(man["clip_file"], d)),
                "lacks the column")
@@ -111,9 +111,9 @@ test_that("the app writes each verdict and moves to the next clip", {
   man <- app_dados(d)
   f <- file.path(d, "verdicts.csv")
   # bia: clip1 e clip2 (sp_a), clip4 e clip6 (sp_b)
-  fila <- review_queue(man, file.path(d, "clips"), "bia")
+  clip_queue <- review_queue(man, file.path(d, "clips"), "bia")
   shiny::testServer(review_server, args = list(
-    fila = fila, verdicts_file = f, reviewer = "bia"), {
+    clip_queue = clip_queue, verdicts_file = f, reviewer = "bia"), {
     session$setInputs(species = "", pending = TRUE)
     estado <- session$returned
     expect_identical(estado$current(), 1L)
@@ -129,15 +129,15 @@ test_that("the app writes each verdict and moves to the next clip", {
     expect_match(output$progress, "3 of 4")
     # filtro por especie: so o clipe de sp_b ainda nao revisado
     session$setInputs(species = "sp_b")
-    expect_identical(fila$clip_file[estado$current()], "clip6.wav")
+    expect_identical(clip_queue$clip_file[estado$current()], "clip6.wav")
   })
   log <- read_verdict_log(f)
   expect_identical(log$verdict, c("positive", "negative", "uncertain"))
   expect_identical(log$clip_file, c("clip1.wav", "clip2.wav", "clip4.wav"))
   expect_true(all(log$reviewer == "bia"))
-  # ao reabrir, os ja revisados saem da fila
+  # ao reabrir, os ja revisados saem da clip_queue
   shiny::testServer(review_server, args = list(
-    fila = fila, verdicts_file = f, reviewer = "bia"), {
+    clip_queue = clip_queue, verdicts_file = f, reviewer = "bia"), {
     session$setInputs(species = "", pending = TRUE)
     expect_identical(session$returned$current(), 4L)
     session$setInputs(pending = FALSE)
@@ -187,20 +187,20 @@ test_that("the review queue can be a reactive that starts empty", {
   f <- file.path(d, "verdicts.csv")
   entrada <- shiny::reactiveVal(NULL)
   shiny::testServer(review_server, args = list(
-    fila = entrada, verdicts_file = f, reviewer = "ana"), {
+    clip_queue = entrada, verdicts_file = f, reviewer = "ana"), {
       session$setInputs(species = "", pending = TRUE)
-      expect_true(is.na(atual()))
+      expect_true(is.na(current_idx()))
       expect_match(output$current_verdict, "Sampling tab")
       session$setInputs(positive = 1)
       expect_false(file.exists(f))
-      # clipes recem-cortados chegam a fila
+      # clipes recem-cortados chegam a clip_queue
       entrada(cortada)
       session$flushReact()
-      expect_identical(atual(), 1L)
+      expect_identical(current_idx(), 1L)
       expect_identical(output$progress, "0 of 6 clips reviewed")
       session$setInputs(positive = 2)
       expect_identical(read_verdict_log(f)$clip_file, "clip1.wav")
-      expect_identical(atual(), 2L)
+      expect_identical(current_idx(), 2L)
     })
 })
 
@@ -237,23 +237,23 @@ test_that("the sampling tab draws, then cuts and writes the manifest", {
                         remap_from = "", remap_to = "", simulate = TRUE,
                         replace = FALSE)
       session$setInputs(cut = 1)
-      expect_match(notas(), "Draw the clips first")
+      expect_match(note_lines(), "Draw the clips first")
       expect_error(output$counts_title)
       session$setInputs(draw = 1)
       expect_match(output$counts_title$html, "Clips per site and species")
       expect_match(output$inclusion_title$html, "Inclusion probability")
-      sel <- selecao()
+      sel <- selected()
       ref <- suppressWarnings(suppressMessages(select_clips(
         det, sampling_mode = "random_detections", threshold = 0.5,
         n_top = 1, strata = "night", sites = "ARA", seed = 2026)))
       expect_identical(sel$clip_file, ref$clip_file)
       expect_true(all(sel$site == "ARA"))
       expect_match(output$counts, "ARA")
-      # simulado: nada gravado, a fila nao recarrega
+      # simulado: nada gravado, a clip_queue nao recarrega
       session$setInputs(cut = 2)
       expect_true(all(status()$status == "audio_not_found"))
       expect_false(file.exists(file.path(out, "clip_manifest.csv")))
-      expect_identical(cortes(), 0L)
+      expect_identical(n_cuts(), 0L)
       session$setInputs(simulate = FALSE, cut = 3)
       man <- readr::read_csv(file.path(out, "clip_manifest.csv"),
                              show_col_types = FALSE)
@@ -263,16 +263,16 @@ test_that("the sampling tab draws, then cuts and writes the manifest", {
       expect_identical(info$value[info$key == "select_clips.strata"],
                        "night")
       expect_identical(info$value[info$key == "classifier"], "test")
-      # sem nenhuma gravacao achada, avisa e nao recarrega a fila
-      expect_true(any(grepl("No recording was found", notas())))
-      expect_identical(cortes(), 0L)
+      # sem nenhuma gravacao achada, avisa e nao recarrega a clip_queue
+      expect_true(any(grepl("No recording was found", note_lines())))
+      expect_identical(n_cuts(), 0L)
       # nao sobrescreve o manifesto sem pedir
       session$setInputs(cut = 4)
-      expect_match(notas(), "already exists")
-      expect_identical(cortes(), 0L)
+      expect_match(note_lines(), "already exists")
+      expect_identical(n_cuts(), 0L)
       # top avisa que nao estima falsos positivos
       session$setInputs(mode = "top", draw = 2)
-      expect_true(any(grepl("false-positive rate", notas())))
+      expect_true(any(grepl("false-positive rate", note_lines())))
     })
 })
 
@@ -301,7 +301,7 @@ test_that("the export tab writes the occupancy tables with the verdicts", {
       session$setInputs(occasion_unit = "file", min_confidence = 0.1,
                         export_dir = file.path(out, "occupancy"),
                         overwrite = FALSE, export = 1)
-      r <- resultado()
+      r <- export_result()
       expect_false(is.null(r))
       expect_true(file.exists(file.path(out, "occupancy", "schema.json")))
       expect_identical(r$schema$schema, "sheepdog-occupancy")
@@ -311,7 +311,7 @@ test_that("the export tab writes the occupancy tables with the verdicts", {
       expect_match(output$tables, "validation")
       # sem overwrite, a segunda exportacao falha com aviso no app
       session$setInputs(export = 2)
-      expect_true(any(grepl("^Error", notas())))
+      expect_true(any(grepl("^Error", note_lines())))
     })
 })
 
@@ -447,10 +447,10 @@ test_that("the sampling tab offers to use the recordings of the audio folder", {
       session$setInputs(draw = 1)
       expect_length(audio()$found, length(unique(ref$source_audio)))
       session$setInputs(relocate = 1)
-      expect_true(all(file.exists(selecao()$source_audio)))
-      expect_identical(selecao()$begin_path, ref$begin_path)
-      expect_identical(realocadas()$n, length(unique(ref$source_audio)))
-      expect_match(notas()[1], "now read from")
+      expect_true(all(file.exists(selected()$source_audio)))
+      expect_identical(selected()$begin_path, ref$begin_path)
+      expect_identical(relocated()$n, length(unique(ref$source_audio)))
+      expect_match(note_lines()[1], "now read from")
     })
 })
 
@@ -598,9 +598,9 @@ test_that("the app writes the identity given before a negative verdict", {
   d <- withr::local_tempdir()
   man <- app_dados(d)
   f <- file.path(d, "verdicts.csv")
-  fila <- review_queue(man, file.path(d, "clips"), "bia")
+  clip_queue <- review_queue(man, file.path(d, "clips"), "bia")
   shiny::testServer(review_server, args = list(
-    fila = fila, verdicts_file = f, reviewer = "bia"), {
+    clip_queue = clip_queue, verdicts_file = f, reviewer = "bia"), {
     session$setInputs(species = "", pending = TRUE)
     session$setInputs(identity = c("Sp b", "insect"),
                       identity_certainty = "probable")
@@ -669,11 +669,11 @@ test_that("the sampling tab draws score bands", {
                    simulate = TRUE, replace = FALSE)
       do.call(session$setInputs, c(base, score_breaks = "0.1, x"))
       session$setInputs(draw = 1)
-      expect_match(notas(), "numbers separated by commas", all = FALSE)
+      expect_match(note_lines(), "numbers separated by commas", all = FALSE)
       session$setInputs(score_breaks = "0.1, 0.5, 1")
       session$setInputs(draw = 2)
-      expect_true(all(selecao()$sampling_mode == "score_bands"))
-      expect_match(notas(), "not false-positive occupancy models",
+      expect_true(all(selected()$sampling_mode == "score_bands"))
+      expect_match(note_lines(), "not false-positive occupancy models",
                    all = FALSE)
     })
 })
