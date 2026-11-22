@@ -128,9 +128,7 @@ calibration_prior <- function(formula, validations) {
 #'   `n_divergent` and `ok`.
 #' @export
 calibration_diagnostics <- function(fit, rhat_max = 1.01, ess_min = 400) {
-  if (!inherits(fit, "brmsfit")) {
-    stop("`fit` must be a model fitted with engine = \"brms\".")
-  }
+  check_brmsfit(fit)
   check_number(rhat_max, "rhat_max", lower = 1)
   check_number(ess_min, "ess_min", lower = 0)
   require_suggested("posterior", "for the convergence diagnostics")
@@ -200,10 +198,8 @@ prior_predictive_calibration <- function(formula, validations, prior, ...) {
 #' @return The table of `priorsense::powerscale_sensitivity()`.
 #' @export
 calibration_sensitivity <- function(fit, variable = NULL, ...) {
+  check_brmsfit(fit)
   require_suggested("priorsense", "for the prior sensitivity analysis")
-  if (!inherits(fit, "brmsfit")) {
-    stop("`fit` must be a model fitted with engine = \"brms\".")
-  }
   if (is.null(variable)) {
     todas <- posterior::variables(fit)
     variable <- grep("^(b|sd|cor)_", todas, value = TRUE)
@@ -279,9 +275,7 @@ summarise_grid_draws <- function(draws, p_min, lower_prob) {
 history_draws <- function(fit, scored, p_min = 0.95, n_draws = 200,
                           min_detections_night = 1, min_confidence = 0.1,
                           grid_step = 0.01, seed = 2026) {
-  if (!inherits(fit, "brmsfit")) {
-    stop("`fit` must be a model fitted with engine = \"brms\".")
-  }
+  check_brmsfit(fit)
   check_prob(p_min, "p_min")
   check_number(n_draws, "n_draws", lower = 1, integer = TRUE)
   check_number(min_detections_night, "min_detections_night", lower = 1,
@@ -388,9 +382,7 @@ community_matrices_draws <- function(history, core_species, k_min = 2,
 plot_calibration_draws <- function(fit, n_draws = 100, p_min = 0.95,
                                    seed = 2026) {
   require_suggested("ggplot2", "to plot the calibration curves")
-  if (!inherits(fit, "brmsfit")) {
-    stop("`fit` must be a model fitted with engine = \"brms\".")
-  }
+  check_brmsfit(fit)
   check_number(n_draws, "n_draws", lower = 1, integer = TRUE)
   check_prob(p_min, "p_min")
   check_number(seed, "seed", integer = TRUE)

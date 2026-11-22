@@ -145,10 +145,7 @@ warning_signs <- function(validation, thresholds, groups = NULL,
                           file = NULL) {
   if (!is.null(file)) file <- check_file_ext(file, "md")
   validados <- reviewed_with_confidence(validation)
-  if (nrow(validados) == 0) {
-    stop("No reviewed clip with a confidence in `validation`.",
-         call. = FALSE)
-  }
+  check_reviewed(validados)
   validados <- mutate(validados, site = as.character(site))
   if (is.null(groups) && length(unique(validados$site)) > 1) {
     groups <- "site"
@@ -259,11 +256,7 @@ cell_thresholds <- function(thresholds, validados, coluna) {
   if (!is.data.frame(thresholds)) {
     stop("`thresholds` must be a single number or a table.", call. = FALSE)
   }
-  faltam <- setdiff(c("species_folder", coluna), names(thresholds))
-  if (length(faltam) > 0) {
-    stop("`thresholds` lacks the column(s): ", paste(faltam, collapse = ", "),
-         call. = FALSE)
-  }
+  check_columns(thresholds, c("species_folder", coluna), "thresholds")
   chave <- intersect(c("site", "species_folder"), names(thresholds))
   tab <- thresholds |>
     mutate(across(all_of(chave), as.character)) |>

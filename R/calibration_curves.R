@@ -203,10 +203,7 @@ compare_calibration_curves <- function(validation, target = 0.95,
       n_boot < 0) {
     stop("`n_boot` must be a single number >= 0.", call. = FALSE)
   }
-  if (!is.numeric(conf) || length(conf) != 1 || is.na(conf) || conf <= 0 ||
-      conf >= 1) {
-    stop("`conf` must be a single number between 0 and 1.", call. = FALSE)
-  }
+  check_prob(conf, "conf", open = TRUE)
   if (!isTRUE(cv) && !isFALSE(cv)) {
     stop("`cv` must be TRUE or FALSE.", call. = FALSE)
   }
@@ -222,15 +219,11 @@ compare_calibration_curves <- function(validation, target = 0.95,
     curves <- setdiff(curves, "monotone_gam")
   }
   validados <- reviewed_with_confidence(validation)
-  if (nrow(validados) == 0) {
-    stop("No reviewed clip with a confidence in `validation`.",
-         call. = FALSE)
-  }
+  check_reviewed(validados)
   pesos <- has_inclusion_prob(validados)
   if (!pesos) validados$inclusion_prob <- NA_real_
   if (isTRUE(weighted) && !pesos) {
-    stop("`weighted = TRUE` needs `inclusion_prob`, which no reviewed clip ",
-         "has.", call. = FALSE)
+    stop_without_inclusion_prob()
   }
   sem_cluster <- !cluster %in% names(validados)
   if (sem_cluster) {
@@ -554,10 +547,7 @@ predict_curve <- function(fit, x) {
 #' @return A ggplot object.
 #' @export
 plot_calibration_curves <- function(x, validation = NULL, bin_width = 0.1) {
-  if (!requireNamespace("ggplot2", quietly = TRUE)) {
-    stop("plot_calibration_curves() needs the package ggplot2.",
-         call. = FALSE)
-  }
+  require_suggested("ggplot2", "to plot the calibration curves")
   curvas <- attr(x, "curves")
   by <- attr(x, "by")
   if (is.null(curvas) || nrow(curvas) == 0) {

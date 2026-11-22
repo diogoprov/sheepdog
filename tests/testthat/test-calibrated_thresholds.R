@@ -97,8 +97,7 @@ test_that("the precision threshold is not above the probability one", {
 
 test_that("the brms backend adds a conservative threshold", {
   skip_if_not_installed("brms")
-  skip_if_not(identical(Sys.getenv("SHEEPDOG_TEST_BRMS"), "true"),
-              "set SHEEPDOG_TEST_BRMS=true to fit brms models")
+  skip_if_not_extended()
   val <- example_validations()
   f <- tp ~ logit_conf + (1 | species)
   fit <- suppressWarnings(fit_calibration(

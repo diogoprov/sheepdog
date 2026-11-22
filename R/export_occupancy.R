@@ -203,12 +203,10 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
     stop("`output_dir` already holds an export; use overwrite = TRUE to ",
          "replace it.", call. = FALSE)
   }
-  faltam <- setdiff(c("site", "species_code", "confidence", "begin_path",
-                      "file_offset"), names(detections))
-  if (length(faltam) > 0) {
-    stop("`detections` lacks column(s): ", paste(faltam, collapse = ", "),
-         ". Read it with read_selection_tables().", call. = FALSE)
-  }
+  check_columns(detections,
+                c("site", "species_code", "confidence", "begin_path",
+                  "file_offset"),
+                "detections", hint = "Read it with read_selection_tables().")
 
   # Predicoes >= min_confidence, com a ocasiao de cada uma
   det <- detections |>
@@ -405,11 +403,7 @@ covariate_versions <- function(fit, det, ocasioes, keys, covs, n_draws,
     message("Species not in the calibration, left out of the versions: ",
             paste(fora, collapse = ", "))
   }
-  novos <- setdiff(unique(det$site), niveis$site)
-  if (length(novos) > 0) {
-    message("Site(s) not in the calibration, drawn as new levels of the ",
-            "site effect: ", paste(novos, collapse = ", "))
-  }
+  message_new_sites(det$site, niveis$site)
   ids <- withr::with_seed(seed, sort(sample.int(
     posterior_size(fit), min(n_draws, posterior_size(fit)))))
   ids <- utils::head(ids, n_versions)
@@ -621,12 +615,10 @@ export_validation <- function(validation, ocasioes, candidatas = NULL) {
     validation <- read_validation_tables(validation)
   }
   validation <- from_legacy(validation)
-  faltam <- setdiff(c("site", "species_code", "occasion_id", "sampling_mode",
-                      "verdict"), names(validation))
-  if (length(faltam) > 0) {
-    stop("`validation` lacks column(s): ", paste(faltam, collapse = ", "),
-         ". Was it written by post_validation()?", call. = FALSE)
-  }
+  check_columns(validation,
+                c("site", "species_code", "occasion_id", "sampling_mode",
+                  "verdict"),
+                "validation", hint = "Was it written by post_validation()?")
   # um veredito herdado e o mesmo julgamento do outro desenho: exporta-lo daria
   # ao modelo duas observacoes dele
   herdados <- is_inherited(validation)
@@ -813,11 +805,7 @@ calibration_draws <- function(fit, pares, min_confidence, grid_step, n_draws,
             paste(fora, collapse = ", "))
   }
   pares <- filter(pares, species %in% niveis$species)
-  novos <- setdiff(unique(pares$site), niveis$site)
-  if (length(novos) > 0) {
-    message("Site(s) not in the calibration, drawn as new levels of the ",
-            "site effect: ", paste(novos, collapse = ", "))
-  }
+  message_new_sites(pares$site, niveis$site)
   ids <- withr::with_seed(seed, sort(sample.int(
     posterior_size(fit), min(n_draws, posterior_size(fit)))))
   n_g <- length(score_grid(min_confidence, grid_step))
@@ -853,3 +841,14 @@ calibration_draws <- function(fit, pares, min_confidence, grid_step, n_draws,
 
 # Numero de amostras da posterior (funcao propria para os testes)
 posterior_size <- function(fit) brms::ndraws(fit)
+
+# Sites of the predictions absent from the calibration (drawn as new
+# levels of the site effect)
+message_new_sites <- function(sites, calibrated) {
+  novos <- setdiff(unique(sites), calibrated)
+  if (length(novos) > 0) {
+    message("Site(s) not in the calibration, drawn as new levels of the ",
+            "site effect: ", paste(novos, collapse = ", "))
+  }
+  invisible(novos)
+}

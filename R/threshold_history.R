@@ -51,12 +51,9 @@
 #' threshold_history(detections, thresholds)
 threshold_history <- function(detections, thresholds, min_confidence = 0.1,
                               dawn_hour = 12, min_detections_night = 1) {
-  faltam <- setdiff(c("site", "species_code", "confidence", "begin_path"),
-                    names(detections))
-  if (length(faltam) > 0) {
-    stop("`detections` needs the column(s): ", paste(faltam, collapse = ", "),
-         ".", call. = FALSE)
-  }
+  check_columns(detections,
+                c("site", "species_code", "confidence", "begin_path"),
+                "detections")
   faltam <- setdiff(c("site", "species_folder", "threshold"), names(thresholds))
   if (length(faltam) > 0) {
     stop("`thresholds` needs the column(s): ", paste(faltam, collapse = ", "),

@@ -42,7 +42,8 @@ test_that("threshold_bootstrap() resamples recordings around the threshold", {
                    b)
   bn <- threshold_bootstrap(val, 0.9, 10, n_boot = 50, cluster = "night")
   expect_identical(bn$n_clusters, 10L)
-  expect_error(threshold_bootstrap(val, cluster = "nada"), "not a column")
+  expect_error(threshold_bootstrap(val, cluster = "nada"),
+               "lacks the column\\(s\\): nada. See `cluster`")
   expect_error(threshold_bootstrap(val, conf = 1), "between 0 and 1")
   # unidade constante na celula: erro; uma so gravacao: NA com aviso
   expect_error(threshold_bootstrap(val, cluster = "site"), "constant")
@@ -171,4 +172,21 @@ test_that("threshold_for() in one pass matches the cut-by-cut definition", {
         ref(df, 0.8, 10, p, s))
     }
   })
+})
+
+#' @srrstats {G5.8a} A zero-row validation table raises a clear error.
+#' @srrstats {G5.9b} Different bootstrap seeds give similar thresholds.
+#' @srrstats {G5.3} The bootstrap thresholds of a cell with enough clips
+#'   have no missing values.
+test_that("threshold_bootstrap() is stable across seeds and rejects empty input", {
+  val <- validacao_sintetica(n_rec = 80)
+  expect_error(threshold_bootstrap(val[0, ]), "No reviewed clip with a")
+  r <- do.call(rbind, lapply(1:4, function(s) {
+    threshold_bootstrap(val, 0.9, 10, n_boot = 300, seed = s)
+  }))
+  expect_false(anyNA(r[c("threshold", "threshold_median",
+                         "threshold_conservative", "share_reached")]))
+  expect_lte(diff(range(r$threshold_median)), 0.03)
+  expect_lte(diff(range(r$threshold_conservative)), 0.03)
+  expect_lte(diff(range(r$share_reached)), 0.1)
 })

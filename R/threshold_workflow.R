@@ -62,24 +62,16 @@ threshold_bootstrap <- function(validation, target_precision = 0.90,
   if (!is.character(cluster) || length(cluster) != 1L) {
     stop("`cluster` must be the name of one column.", call. = FALSE)
   }
-  if (!cluster %in% names(validation)) {
-    stop("`cluster` (", cluster, ") is not a column of `validation`.",
-         call. = FALSE)
-  }
+  check_columns(validation, cluster, "validation", hint = "See `cluster`.")
   if (cluster %in% c("site", "species_folder", by)) {
     stop("`cluster` (", cluster, ") is constant within each cell; ",
          "resample a unit that varies within it, such as \"source_audio\".",
          call. = FALSE)
   }
-  if (!is.numeric(conf) || length(conf) != 1 || conf <= 0 || conf >= 1) {
-    stop("`conf` must be a single number between 0 and 1.", call. = FALSE)
-  }
+  check_prob(conf, "conf", open = TRUE)
   validados <- reviewed_with_confidence(validation)
   pesos <- has_inclusion_prob(validados)
-  if (nrow(validados) == 0) {
-    stop("No reviewed clip with a confidence in `validation`.",
-         call. = FALSE)
-  }
+  check_reviewed(validados)
   res <- withr::with_seed(seed, {
     validados |>
       group_by(site, species_folder, across(all_of(by))) |>
@@ -152,12 +144,8 @@ threshold_by_group <- function(validation, thresholds, by,
   if (is.numeric(thresholds) && length(thresholds) == 1) {
     validados$.limiar <- thresholds
   } else {
-    faltam <- setdiff(c("site", "species_folder", threshold_column),
-                      names(thresholds))
-    if (length(faltam) > 0) {
-      stop("`thresholds` lacks the column(s): ",
-           paste(faltam, collapse = ", "), call. = FALSE)
-    }
+    check_columns(thresholds, c("site", "species_folder", threshold_column),
+                  "thresholds")
     tab <- distinct(thresholds, site, species_folder,
                     .limiar = .data[[threshold_column]])
     validados <- inner_join(validados, tab,
@@ -210,12 +198,8 @@ threshold_record <- function(thresholds, bootstrap = NULL, groups = NULL,
                              extraction_info = NULL, target_precision = 0.90,
                              file = NULL) {
   if (!is.null(file)) file <- check_file_ext(file, "md")
-  faltam <- setdiff(c("site", "species_folder", "threshold"),
-                    names(thresholds))
-  if (length(faltam) > 0) {
-    stop("`thresholds` lacks the column(s): ", paste(faltam, collapse = ", "),
-         call. = FALSE)
-  }
+  check_columns(thresholds, c("site", "species_folder", "threshold"),
+                "thresholds")
   chave <- c("site", "species_folder")
   ficha <- thresholds |>
     group_by(site, species_folder) |>

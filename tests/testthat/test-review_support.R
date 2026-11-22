@@ -64,5 +64,5 @@ test_that("review_support() splits cells by covariate bins", {
   expect_error(review_support(d$raw, d$det, by = "temp_bin"),
                "not in the table")
   expect_error(review_support(d$raw, d$det[, c("site", "confidence")]),
-               "lacks column")
+               "lacks the column")
 })

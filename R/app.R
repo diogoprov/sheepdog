@@ -201,7 +201,7 @@ app_verdicts <- function(manifest, verdicts_file, clips_dir = NULL,
   out <- fill_inherited(out)
   if (!is.null(reviewer)) out$reviewer <- reviewer
   contagem <- count(out, verdict)
-  message("Clips in the manifest: ", nrow(manifesto), "\n",
+  message("Clips in the review queue: ", nrow(manifesto), "\n",
           paste0("  ", contagem$verdict, ": ", contagem$n, collapse = "\n"))
   out
 }
@@ -227,11 +227,7 @@ review_queue <- function(manifest, clips_dir, reviewer = NULL,
                          blind = FALSE) {
   fila <- read_manifest(manifest)
   fila <- fila[!is_inherited(fila), ]
-  faltam <- setdiff(c("clip_file", "species_folder"), names(fila))
-  if (length(faltam) > 0) {
-    stop("`manifest` lacks the column(s): ", paste(faltam, collapse = ", "),
-         call. = FALSE)
-  }
+  check_columns(fila, c("clip_file", "species_folder"), "manifest")
   if (!is.null(reviewer) && "reviewer" %in% names(fila)) {
     segundo <- if ("second_reviewer" %in% names(fila)) {
       fila$second_reviewer %in% reviewer
@@ -357,11 +353,7 @@ read_verdict_log <- function(file, last_only = TRUE) {
   }
   log <- read_csv(file, na = "", show_col_types = FALSE,
                   col_types = readr::cols(.default = readr::col_character()))
-  faltam <- setdiff(verdict_columns, names(log))
-  if (length(faltam) > 0) {
-    stop("`verdicts_file` lacks the column(s): ",
-         paste(faltam, collapse = ", "), call. = FALSE)
-  }
+  check_columns(log, verdict_columns, "verdicts_file")
   invalidos <- setdiff(log$verdict, c("positive", "negative", "uncertain"))
   if (length(invalidos) > 0) {
     stop("Unknown verdict(s) in `verdicts_file`: ",

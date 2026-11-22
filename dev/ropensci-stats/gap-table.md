@@ -7,14 +7,14 @@ statistical software track. The tags themselves are in
 
 | Category | Met | Not applicable | To do |
 |---|---|---|---|
-| G | 30 | 7 | 31 |
-| RE | 32 | 7 | 9 |
-| BS | 35 | 14 | 7 |
-| Total | 97 | 28 | 47 |
+| G | 46 | 7 | 15 |
+| RE | 37 | 7 | 4 |
+| BS | 42 | 14 | 0 |
+| Total | 125 | 28 | 19 |
 
-Partially met standards are counted as to do. Counts updated after phase 3
-(input checks); they were 51 met and 93 to do after phase 1, and 78 met and
-66 to do after phase 2.
+Partially met standards are counted as to do. Counts updated after phase 4
+(tests); they were 51 met and 93 to do after phase 1, 78 met and 66 to do
+after phase 2, and 97 met and 47 to do after phase 3.
 
 ## Phase 2: documentation
 
@@ -54,38 +54,44 @@ Still to do (partly done for the calibration functions only):
 
 ## Phase 4: tests
 
+Done in phase 4: G5.2, G5.2a, G5.3, G5.6, G5.6a, G5.6b, G5.7, G5.8,
+G5.8a, G5.8b, G5.8c, G5.8d, G5.9, G5.9a, G5.9b, G5.10, RE7.0, RE7.0a,
+RE7.1, RE7.2, RE7.3, BS2.1a, BS2.13, BS2.14, BS7.0, BS7.1, BS7.2, BS7.3.
+
+- Parameter recovery and performance (`tests/testthat/test-recovery.R`,
+  simulator `sim_calibration()` in `helper-calibration.R`): intercept,
+  slope and among-species standard deviation recovered within four
+  standard errors under three seeds; the error and the standard error of
+  the slope shrink with 16 times more clips; accessor methods and factor
+  levels of the fitted objects.
+- Edge conditions, noise and seeds (`test-edge-cases.R`): zero rows,
+  character, complex and non-binary input, all-missing and constant
+  columns, collinear predictors, separation, a random-effect level per
+  clip (now an error in `check_calibration_data()`), noise at machine
+  precision, and fold seeds; bootstrap seeds in
+  `test-threshold_workflow.R`.
+- Bayesian tests: pre-processing, suppression of messages and warnings
+  with a mocked `brms::brm()` (`test-bayes.R`); prior recovery, posterior
+  recovery under two seeds and scaling with the data in
+  `test-bayes-extended.R`.
+- Extended tests: `SHEEPDOG_EXTENDED_TESTS=true` (alias
+  `SHEEPDOG_TEST_BRMS`), run weekly and on demand by
+  `.github/workflows/extended-tests.yaml`.
+- Conditions: `dev/ropensci-stats/conditions.R` lists the 400 conditions
+  and whether a test matches them. Messages shared by several functions
+  now come from one helper each (`check_columns()`, `check_data_frame()`,
+  `check_brmsfit()`, `check_reviewed()`, `stop_without_inclusion_prob()`,
+  `check_strata_columns()`, `message_new_sites()`), so every message is
+  raised from one place. The untested errors and warnings are tested in
+  `test-conditions.R`. The script misses a few conditions whose test
+  pattern includes a value (e.g. "No predictions within the hour window");
+  they were checked by hand.
+
+Still to do:
+
 | Standard | Gap |
 |---|---|
-| G5.2 | 64% of the stop/warning/message conditions are matched by tests (84% of errors, 66% of warnings, 15% of messages; strict matching). |
-| G5.2a | 14 condition messages occur in more than one place. |
-| G5.2b | see G5.2. |
-| G5.3 | no-NA checks exist for several outputs but not for `threshold_bootstrap()` or for `fit_calibration()` predictions in general. |
-| G5.6 | no test checks that `fit_calibration()` recovers a known intercept and slope from `simulate_validation()`. |
-| G5.6a | see G5.6. |
-| G5.6b | simulations use a single seed. |
-| G5.7 | no test shows estimates improving as the number of reviewed clips grows. |
-| G5.8 | `fit_calibration()` does not validate zero-row input, non-binary `tp`, missing `logit_conf` or single-class `tp`. |
-| G5.8a | zero-row inputs are tested for several functions but not for `fit_calibration()`, `calibration_quality()` or `threshold_bootstrap()`. |
-| G5.8b | no test with a character `confidence` or non-binary `tp` passed to the calibration functions. |
-| G5.8c | all-TP or all-FP data and constant confidence are not tested in `fit_calibration()`. |
-| G5.8d | singular fits are tested; separation and more random-effect levels than data are not. |
-| G5.9 | no noise-susceptibility tests. |
-| G5.9a | no test perturbs inputs by machine epsilon. |
-| G5.9b | the same seed is tested to give the same result, but different seeds are not tested to give similar results. |
-| G5.10 | two brms tests are gated by `SHEEPDOG_TEST_BRMS` and never run in CI. Planned: `SHEEPDOG_EXTENDED_TESTS` with the old name as alias, and an opt-in CI job. |
-| RE1.3 | species and site levels are kept in `attr(fit, "sheepdog_levels")`, but this is neither documented nor tested. |
-| RE7.0 | no test with exactly collinear predictors. |
-| RE7.0a | see RE7.0. |
-| RE7.1 | no test with `tp` perfectly determined by `logit_conf`. |
-| RE7.2 | no test that `fit_calibration()` keeps the input factor levels in `sheepdog_levels`. |
-| RE7.3 | no test of the accessor methods on returned objects. |
-| BS2.1a | no test of input pre-processing in the brms fit. |
-| BS2.13 | messages and warnings are separate conditions, but no test checks that warnings survive `suppressMessages()` in a brms fit. |
-| BS2.14 | no dedicated test of suppressing warnings. |
-| BS7.0 | no test of prior recovery. |
-| BS7.1 | no test of prior recovery without data. |
-| BS7.2 | no test of posterior recovery with `simulate_validation()`. |
-| BS7.3 | no test of scaling with input size. |
+| G5.2b | every error and warning is matched by a test; 34 of the 108 messages are not, mostly progress reports (Scoring, Done!, the hour and date windows of `select_clips()`) and notes on missing suggested packages. |
 
 ## Phase 5: fixes and new options
 

@@ -166,6 +166,20 @@ check_calibration_data <- function(val, formula) {
          "(model matrix of rank ", posto, " with ", ncol(x), " columns); ",
          "drop or combine the redundant terms.", call. = FALSE)
   }
+  # grouping factors of the random effects: a level per reviewed clip
+  # makes the variance of a binary response unidentifiable (RE2.4, G5.8d)
+  tl <- attr(stats::terms(formula), "term.labels")
+  grupos <- unique(unlist(lapply(tl[grepl("|", tl, fixed = TRUE)],
+                                 function(t) {
+    all.vars(str2lang(sub("^.*\\|", "", t)))
+  })))
+  for (g in intersect(grupos, names(val))) {
+    if (n_distinct(val[[g]]) == nrow(val)) {
+      stop("Each level of `", g, "` has a single reviewed clip: the ",
+           "variance of its random effect cannot be estimated from binary ",
+           "verdicts. Drop the term or group the levels.", call. = FALSE)
+    }
+  }
   if ("logit_conf" %in% names(val)) {
     separada <- function(tp, s) {
       length(unique(tp)) == 2L &&
@@ -217,4 +231,46 @@ check_file_ext <- function(path, ext, arg = "file") {
             toupper(ext[1]), " anyway.", call. = FALSE)
   }
   path
+}
+
+# Columns a table must have. Every function reports missing columns with
+# this one message (G5.2a); `hint` adds where the table usually comes from.
+check_columns <- function(x, cols, arg, hint = NULL) {
+  faltam <- setdiff(cols, names(x))
+  if (length(faltam) > 0) {
+    stop("`", arg, "` lacks the column(s): ", paste(faltam, collapse = ", "),
+         ".", if (!is.null(hint)) paste0(" ", hint), call. = FALSE)
+  }
+  invisible(x)
+}
+
+# A data frame argument
+check_data_frame <- function(x, arg) {
+  if (!is.data.frame(x)) {
+    stop("`", arg, "` must be a data frame.", call. = FALSE)
+  }
+  invisible(x)
+}
+
+# A model fitted with engine = "brms"
+check_brmsfit <- function(fit, arg = "fit") {
+  if (!inherits(fit, "brmsfit")) {
+    stop("`", arg, "` must be a model fitted with engine = \"brms\".",
+         call. = FALSE)
+  }
+  invisible(fit)
+}
+
+# Reviewed clips with a confidence score (from reviewed_with_confidence())
+check_reviewed <- function(reviewed, arg = "validation") {
+  if (nrow(reviewed) == 0) {
+    stop("No reviewed clip with a confidence in `", arg, "`.", call. = FALSE)
+  }
+  invisible(reviewed)
+}
+
+# `weighted = TRUE` without inclusion probabilities
+stop_without_inclusion_prob <- function() {
+  stop("`weighted = TRUE` needs `inclusion_prob`, which no reviewed clip ",
+       "has.", call. = FALSE)
 }

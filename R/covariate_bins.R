@@ -52,9 +52,7 @@
 covariate_bins <- function(covariates, var, key = c("site", "night"),
                            n_bins = 3, breaks = NULL, within = "site",
                            name = paste0(var, "_bin")) {
-  if (!is.data.frame(covariates)) {
-    stop("`covariates` must be a data frame.", call. = FALSE)
-  }
+  check_data_frame(covariates, "covariates")
   faltam <- setdiff(c(key, var, if (is.null(breaks)) within),
                     names(covariates))
   if (length(faltam) > 0) {

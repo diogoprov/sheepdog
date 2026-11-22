@@ -177,11 +177,10 @@ build_training_set <- function(validation, output_dir,
                                remap_from = NULL, remap_to = NULL,
                                strict = FALSE) {
   split <- match.arg(split)
-  faltam <- setdiff(c("site", "species_code", "clip_file", "verdict",
-                      "reviewed_path"), names(validation))
-  if (length(faltam) > 0) {
-    stop("`validation` lacks the column(s): ", paste(faltam, collapse = ", "))
-  }
+  check_columns(validation,
+                c("site", "species_code", "clip_file", "verdict",
+                  "reviewed_path"),
+                "validation")
   por_noite <- split %in% c("night", "site_species_night")
   if ((por_noite || !is.null(exclude_from_test)) &&
       !"night" %in% names(validation)) {
@@ -353,11 +352,7 @@ with_training_seed <- function(seed, code) {
 # Noites que nao podem ir para o teste (site x night como texto)
 training_guard <- function(exclude_from_test) {
   if (is.null(exclude_from_test)) return(NULL)
-  faltam <- setdiff(c("site", "night"), names(exclude_from_test))
-  if (length(faltam) > 0) {
-    stop("`exclude_from_test` lacks the column(s): ",
-         paste(faltam, collapse = ", "), call. = FALSE)
-  }
+  check_columns(exclude_from_test, c("site", "night"), "exclude_from_test")
   exclude_from_test |>
     filter(!is.na(site), !is.na(night)) |>
     transmute(site = as.character(site), night = as.character(night)) |>
