@@ -102,29 +102,33 @@ differ is reported.</p>
 
 
 <dl><dt id="arg-validation">validation<a class="anchor" aria-label="anchor" href="#arg-validation"></a></dt>
-<dd><p>Table of verdicts with <code>clip_file</code> and <code>verdict</code>, from
-<code><a href="app_verdicts.html">app_verdicts()</a></code>, <code><a href="classify_review.html">classify_review()</a></code> or <code><a href="consensus_verdicts.html">consensus_verdicts()</a></code>.</p></dd>
+<dd><p>A data frame (or tibble) of verdicts with <code>clip_file</code>
+and <code>verdict</code>, from <code><a href="app_verdicts.html">app_verdicts()</a></code>, <code><a href="classify_review.html">classify_review()</a></code> or
+<code><a href="consensus_verdicts.html">consensus_verdicts()</a></code>.</p></dd>
 
 
 <dt id="arg-identities">identities<a class="anchor" aria-label="anchor" href="#arg-identities"></a></dt>
-<dd><p>Data frame, or the path to a CSV, with one row per
-clip. Read a spreadsheet with <code>readxl::read_excel()</code> first.</p></dd>
+<dd><p>A data frame (or tibble), or a character scalar with
+the path to a CSV, with one row per clip. Read a spreadsheet with
+<code>readxl::read_excel()</code> first.</p></dd>
 
 
 <dt id="arg-clip-col-identity-col">clip_col, identity_col<a class="anchor" aria-label="anchor" href="#arg-clip-col-identity-col"></a></dt>
-<dd><p>Columns of <code>identities</code> with the clip name
-(as in <code>clip_file</code>; a path is reduced to its file name) and the
-identity.</p></dd>
+<dd><p>Character scalars, the columns of
+<code>identities</code> with the clip name (as in <code>clip_file</code>; a path is reduced
+to its file name) and the identity.</p></dd>
 
 
 <dt id="arg-certainty-col">certainty_col<a class="anchor" aria-label="anchor" href="#arg-certainty-col"></a></dt>
-<dd><p>Optional column of <code>identities</code> with the certainty,
-<code>"sure"</code> or <code>"probable"</code>. Without it, the certainty is left <code>NA</code>.</p></dd>
+<dd><p><code>NULL</code> or a character scalar, the column of
+<code>identities</code> with the certainty, <code>"sure"</code> or <code>"probable"</code>. Without it,
+the certainty is left <code>NA</code>.</p></dd>
 
 
 <dt id="arg-reviewer">reviewer<a class="anchor" aria-label="anchor" href="#arg-reviewer"></a></dt>
-<dd><p>Optional reviewer: with a table that has one row per
-clip and reviewer, only that reviewer's rows receive the identities.</p></dd>
+<dd><p><code>NULL</code> or a character vector of reviewer names: with a
+table that has one row per clip and reviewer, only those reviewers'
+rows receive the identities.</p></dd>
 
 </dl></div>
     <div class="section level2">

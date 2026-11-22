@@ -35,14 +35,16 @@ warning_signs(
 
 - validation:
 
-  Reviewed clips, as for
+  A data frame (or tibble) of reviewed clips, as for
   [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md).
+  One row per clip.
 
 - thresholds:
 
-  The threshold of each species or cell: a single number, or a table
-  with `species_folder` (and optionally `site`) and a `threshold`
-  column, such as the output of
+  A numeric scalar or a data frame (or tibble). The threshold of each
+  species or cell: a single number, or a table with `species_folder`
+  (and optionally `site`) and a `threshold` column, such as the output
+  of
   [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
   (`threshold_column` picks another column, such as
   `"threshold_conservative"` of
@@ -51,61 +53,66 @@ warning_signs(
 
 - groups:
 
-  Columns of `validation` for signs 6 and 7, such as `"site"` or a month
-  column. `NULL` uses `"site"` when there is more than one site.
+  `NULL` or a character vector of column names of `validation` for signs
+  6 and 7, such as `"site"` or a month column. `NULL` uses `"site"` when
+  there is more than one site.
 
 - curves:
 
-  Optional output of
+  `NULL` or a data frame (or tibble) returned by
   [`compare_calibration_curves()`](https://provetelab.org/sheepdog/reference/compare_calibration_curves.md)
   (sign 8). With curves fitted by site, the worst verdict of the species
   counts.
 
 - recall:
 
-  Optional output of
+  `NULL` or a data frame (or tibble) returned by
   [`recall_ceiling()`](https://provetelab.org/sheepdog/reference/recall_ceiling.md)
   (sign 1). With a ceiling per site, the lowest counts.
 
 - target_precision:
 
-  Target precision of the threshold (sign 7).
+  Numeric scalar in (0, 1). Target precision of the threshold (sign 7).
 
 - min_n:
 
-  Minimum number of clips of a group for it to count in signs 6 and 7.
+  Numeric scalar. Minimum number of clips of a group for it to count in
+  signs 6 and 7.
 
 - min_tp_kept:
 
-  Sign 2 is raised when the share of the true positives kept by the
-  threshold is below this.
+  Numeric scalar in \[0, 1\]. Sign 2 is raised when the share of the
+  true positives kept by the threshold is below this.
 
 - max_fp_spread:
 
-  Sign 6 is raised when the false-positive rate of two levels of a group
-  differs by more than this.
+  Numeric scalar in \[0, 1\]. Sign 6 is raised when the false-positive
+  rate of two levels of a group differs by more than this.
 
 - min_ceiling:
 
-  Sign 1 is raised when the recall ceiling is below this.
+  Numeric scalar in \[0, 1\]. Sign 1 is raised when the recall ceiling
+  is below this.
 
 - threshold_column:
 
-  Column of `thresholds` with the threshold.
+  Character scalar, the column of `thresholds` with the threshold.
 
 - cluster:
 
-  Column of `validation` with the recording (or other unit) of each
-  clip, for sign 9. A missing column leaves sign 9 `NA`.
+  `NULL` or a character scalar, the column of `validation` with the
+  recording (or other unit) of each clip, for sign 9. A missing column
+  leaves sign 9 `NA`.
 
 - max_deff:
 
-  Sign 9 is raised when the design effect of the false positives above
-  the threshold is above this.
+  Numeric scalar. Sign 9 is raised when the design effect of the false
+  positives above the threshold is above this.
 
 - file:
 
-  Optional path of a Markdown file to write the report to.
+  `NULL` or a character scalar, path of a Markdown file to write the
+  report to.
 
 ## Value
 
@@ -220,7 +227,7 @@ warning_signs(val, thr, groups = "site",
               threshold_column = "threshold_conservative",
               file = tempfile(fileext = ".md"))
 #> No reviewed clip has `inclusion_prob`: signs 2 and 6 use every clip, unweighted, and are only indicative.
-#> Warning signs written to /tmp/Rtmp0jDMSU/file188d439e0a0c.md
+#> Warning signs written to /tmp/Rtmpd8vHp9/file18a45b08f6ea.md
 #> # A tibble: 8 × 19
 #>   species_folder threshold sign1_ceiling sign1 sign2_tp_kept sign2
 #>   <chr>              <dbl>         <dbl> <lgl>         <dbl> <lgl>

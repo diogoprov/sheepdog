@@ -152,7 +152,8 @@ precision, by species (<code><a href="suggest_thresholds.html">suggest_threshold
 
 
 <dl><dt id="arg-review-dir">review_dir<a class="anchor" aria-label="anchor" href="#arg-review-dir"></a></dt>
-<dd><p>Folder with the reviewed clips. For a review in the
+<dd><p><code>NULL</code> or a character scalar, path to the folder with
+the reviewed clips. For a review in the
 BirdNET GUI, the <code>clips</code> folder after the review, whose subfolders
 give the verdicts. With <code>verdicts_file</code>, optional: the folder of the
 clips, used to fill <code>reviewed_path</code> (needed by <code><a href="retraining_clips.html">retraining_clips()</a></code>
@@ -160,67 +161,76 @@ and <code><a href="build_training_set.html">build_training_set()</a></code>).</p
 
 
 <dt id="arg-manifest-path">manifest_path<a class="anchor" aria-label="anchor" href="#arg-manifest-path"></a></dt>
-<dd><p>Path to the manifest of the same run as the
-reviewed clips (<code>clip_manifest.csv</code>, or a v1.2.0
+<dd><p>Character scalar, path to the manifest of the same
+run as the reviewed clips (<code>clip_manifest.csv</code>, or a v1.2.0
 <code>manifesto_clipes.csv</code>).</p></dd>
 
 
 <dt id="arg-output-dir">output_dir<a class="anchor" aria-label="anchor" href="#arg-output-dir"></a></dt>
-<dd><p>Output folder; created if needed.</p></dd>
+<dd><p>Character scalar, path to the output folder; created if
+needed.</p></dd>
 
 
 <dt id="arg-positive-pattern-negative-pattern">positive_pattern, negative_pattern<a class="anchor" aria-label="anchor" href="#arg-positive-pattern-negative-pattern"></a></dt>
-<dd><p>Regular expressions
-(case-insensitive) that identify the positive and negative folders in
-the path of each clip.</p></dd>
+<dd><p>Character scalars, regular
+expressions (case-insensitive) that identify the positive and negative
+folders in the path of each clip.</p></dd>
 
 
 <dt id="arg-bins">bins<a class="anchor" aria-label="anchor" href="#arg-bins"></a></dt>
-<dd><p>Breaks of the confidence bins (left-closed).</p></dd>
+<dd><p>Numeric vector of length &gt;= 2, increasing breaks of the
+confidence bins (left-closed).</p></dd>
 
 
 <dt id="arg-target-precision">target_precision<a class="anchor" aria-label="anchor" href="#arg-target-precision"></a></dt>
-<dd><p>Target precision.</p></dd>
+<dd><p>Numeric scalar in (0, 1). Target precision.</p></dd>
 
 
 <dt id="arg-min-n">min_n<a class="anchor" aria-label="anchor" href="#arg-min-n"></a></dt>
-<dd><p>Minimum of reviewed clips for a bin to be taken seriously;
-bins with fewer are flagged in <code>low_support</code>.</p></dd>
+<dd><p>Integer scalar &gt;= 1. Minimum of reviewed clips for a bin to
+be taken seriously; bins with fewer are flagged in <code>low_support</code>.</p></dd>
 
 
 <dt id="arg-verdicts-file">verdicts_file<a class="anchor" aria-label="anchor" href="#arg-verdicts-file"></a></dt>
-<dd><p>Optional verdicts file written by <code><a href="run_app.html">run_app()</a></code>, used
-instead of the subfolders of <code>review_dir</code>.</p></dd>
+<dd><p><code>NULL</code> or a character scalar, path to the verdicts
+file written by <code><a href="run_app.html">run_app()</a></code>, used instead of the subfolders of
+<code>review_dir</code>.</p></dd>
 
 
 <dt id="arg-reviewer">reviewer<a class="anchor" aria-label="anchor" href="#arg-reviewer"></a></dt>
-<dd><p>With <code>verdicts_file</code>, optional reviewer(s) whose
-verdicts are used, as in <code><a href="app_verdicts.html">app_verdicts()</a></code>.</p></dd>
+<dd><p><code>NULL</code> or a character vector of reviewer names. With
+<code>verdicts_file</code>, the reviewer(s) whose verdicts are used, as in
+<code><a href="app_verdicts.html">app_verdicts()</a></code>.</p></dd>
 
 
 <dt id="arg-weighted-sustained">weighted, sustained<a class="anchor" aria-label="anchor" href="#arg-weighted-sustained"></a></dt>
-<dd><p>Passed to <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>.</p></dd>
+<dd><p><code>NULL</code>, <code>TRUE</code> or <code>FALSE</code> (<code>weighted</code>) and
+logical scalar (<code>sustained</code>). Passed to <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>.</p></dd>
 
 
 <dt id="arg-previous">previous<a class="anchor" aria-label="anchor" href="#arg-previous"></a></dt>
-<dd><p>For a later round of a design: the
+<dd><p><code>NULL</code>, a character vector of paths, a data frame, or a
+list of data frames. For a later round of a design: the
 <code>validation_by_clip.csv</code> of the earlier rounds. <code>validation_by_clip.csv</code>
 keeps the clips of this round only; the summaries and
 <code>validation_combined.csv</code> cover all rounds, from <code><a href="combine_rounds.html">combine_rounds()</a></code>.</p></dd>
 
 
 <dt id="arg-candidates">candidates<a class="anchor" aria-label="anchor" href="#arg-candidates"></a></dt>
-<dd><p>With <code>previous</code>, the <code>candidates.csv</code> of the first
-round. <code>NULL</code> looks for it beside <code>manifest_path</code> and <code>previous</code>.</p></dd>
+<dd><p><code>NULL</code>, a data frame, or a character scalar path. With
+<code>previous</code>, the <code>candidates.csv</code> of the first round. <code>NULL</code> looks for
+it beside <code>manifest_path</code> and <code>previous</code>.</p></dd>
 
 
 <dt id="arg-fit">fit<a class="anchor" aria-label="anchor" href="#arg-fit"></a></dt>
-<dd><p>Optional model of <code><a href="fit_calibration.html">fit_calibration()</a></code>. With it,
-<code><a href="compare_thresholds.html">compare_thresholds()</a></code> writes <code>thresholds_compared.csv</code>.</p></dd>
+<dd><p><code>NULL</code> or a model returned by <code><a href="fit_calibration.html">fit_calibration()</a></code> (<code>glm</code>,
+<code>glmerMod</code> or <code>brmsfit</code>). With it, <code><a href="compare_thresholds.html">compare_thresholds()</a></code> writes
+<code>thresholds_compared.csv</code>.</p></dd>
 
 
 <dt id="arg-scored-quality">scored, quality<a class="anchor" aria-label="anchor" href="#arg-scored-quality"></a></dt>
-<dd><p>With <code>fit</code>, passed to <code><a href="compare_thresholds.html">compare_thresholds()</a></code>.</p></dd>
+<dd><p><code>NULL</code> or data frames (or tibbles). With <code>fit</code>,
+passed to <code><a href="compare_thresholds.html">compare_thresholds()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

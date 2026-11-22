@@ -14,18 +14,19 @@ plot_calibration_curves(x, validation = NULL, bin_width = 0.1)
 
 - x:
 
-  Output of
+  A data frame (tibble), the output of
   [`compare_calibration_curves()`](https://provetelab.org/sheepdog/reference/compare_calibration_curves.md).
 
 - validation:
 
-  Optional: the reviewed clips, to show bins over the whole score range.
-  Without it, only the high bins of `top_error` are shown.
+  `NULL` or a data frame (or tibble) of the reviewed clips, one row per
+  clip, to show bins over the whole score range. Without it, only the
+  high bins of `top_error` are shown.
 
 - bin_width:
 
-  Width of the bins of the observed precision, over the whole score
-  range.
+  Numeric scalar in (0, 1), width of the bins of the observed precision,
+  over the whole score range.
 
 ## Value
 

@@ -97,20 +97,22 @@ Needs the 'ggplot2' package.</p>
 
 
 <dl><dt id="arg-precision">precision<a class="anchor" aria-label="anchor" href="#arg-precision"></a></dt>
-<dd><p>Table returned by <code><a href="precision_by_bin.html">precision_by_bin()</a></code>.</p></dd>
+<dd><p>A data frame (or tibble) returned by
+<code><a href="precision_by_bin.html">precision_by_bin()</a></code>.</p></dd>
 
 
 <dt id="arg-bins">bins<a class="anchor" aria-label="anchor" href="#arg-bins"></a></dt>
-<dd><p>Breaks of the confidence bins (left-closed).</p></dd>
+<dd><p>Numeric vector of length &gt;= 2, increasing breaks of the
+confidence bins (left-closed).</p></dd>
 
 
 <dt id="arg-target-precision">target_precision<a class="anchor" aria-label="anchor" href="#arg-target-precision"></a></dt>
-<dd><p>Target precision.</p></dd>
+<dd><p>Numeric scalar in (0, 1). Target precision.</p></dd>
 
 
 <dt id="arg-min-n">min_n<a class="anchor" aria-label="anchor" href="#arg-min-n"></a></dt>
-<dd><p>Minimum of reviewed clips for a bin to be taken seriously;
-bins with fewer are flagged in <code>low_support</code>.</p></dd>
+<dd><p>Integer scalar &gt;= 1. Minimum of reviewed clips for a bin to
+be taken seriously; bins with fewer are flagged in <code>low_support</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

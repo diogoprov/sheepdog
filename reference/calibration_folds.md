@@ -18,21 +18,23 @@ calibration_folds(validations, k_folds = 5, seed = 2026, fold_group = NULL)
 
 - validations:
 
-  Calibration data including `site`, `species` and any columns named in
-  `fold_group`. Use `read_validations(keep = )` to retain metadata from
-  validation files.
+  A data frame (or tibble), the calibration data, one row per reviewed
+  clip, with `site`, `species` and any columns named in `fold_group`.
+  Use `read_validations(keep = )` to retain metadata from validation
+  files.
 
 - k_folds:
 
-  Integer number of folds, at least two.
+  Integer scalar \>= 2, number of folds.
 
 - seed:
 
-  Seed of the assignment; the caller's random state is restored.
+  Integer scalar, seed of the assignment; the caller's random state is
+  restored.
 
 - fold_group:
 
-  Optional character vector of grouping columns. Do not include
+  `NULL` or a character vector of grouping columns. Do not include
   `species`, verdicts or confidence scores: these would split recordings
   or nights by species or by outcome. Group IDs must be nonmissing and
   nonempty. `NULL` keeps the original clip folds.

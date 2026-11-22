@@ -30,17 +30,17 @@ covariate_bins(
 
 - covariates:
 
-  Data frame with the `key` columns and `var`, one row per occasion (or
-  per night, when the covariate is nightly).
+  A data frame with the `key` columns and `var`, one row per occasion
+  (or per night, when the covariate is nightly).
 
 - var:
 
-  Name of the numeric column to cut.
+  Character scalar, name of the numeric column to cut.
 
 - key:
 
-  Columns that identify a row of `covariates` and are matched against
-  the occasions in
+  Character vector, columns that identify a row of `covariates` and are
+  matched against the occasions in
   [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md):
   any of `site`, `night`, `recording_date`, `recording_hour`,
   `source_audio` and `occasion_id`. `night` and `recording_date` are
@@ -48,21 +48,23 @@ covariate_bins(
 
 - n_bins:
 
-  Number of bins when `breaks` is `NULL`.
+  Integer scalar \>= 2, number of bins when `breaks` is `NULL`.
 
 - breaks:
 
-  Optional numeric vector of breaks shared by all groups, instead of
-  quantiles (bins are left-closed; the last one includes its upper end).
+  `NULL` or numeric vector of length \>= 2, strictly increasing: breaks
+  shared by all groups, instead of quantiles (bins are left-closed; the
+  last one includes its upper end).
 
 - within:
 
-  Columns within which quantile breaks are computed (`NULL` for
-  quantiles over all rows). Ignored when `breaks` is given.
+  `NULL` or character vector, columns within which quantile breaks are
+  computed (`NULL` for quantiles over all rows). Ignored when `breaks`
+  is given.
 
 - name:
 
-  Name of the new column. Defaults to `<var>_bin`.
+  Character scalar, name of the new column. Defaults to `<var>_bin`.
 
 ## Value
 

@@ -22,35 +22,38 @@ plot_calibration(
 
 - fit:
 
-  Model returned by
+  A `glm`, `glmerMod` or `brmsfit` returned by
   [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md).
 
 - validations:
 
-  Table returned by
-  [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md).
+  A data frame (or tibble) returned by
+  [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md),
+  one row per reviewed clip.
 
 - min_confidence:
 
-  Detections below this confidence are not scored.
+  Numeric scalar in \[0, 1\]. Detections below this confidence are not
+  scored.
 
 - p_min:
 
-  Threshold on the calibrated probability (not on the confidence score).
+  Numeric scalar in \[0, 1\], threshold on the calibrated probability
+  (not on the confidence score).
 
 - model_name:
 
-  Name shown in the subtitle.
+  Character scalar, name shown in the subtitle.
 
 - interval:
 
-  Draw a band around each curve: a pointwise confidence interval of
-  P(TP) for `glm` and `glmerMod` fits, a credible interval for `brmsfit`
-  fits. `FALSE` (default) draws the curves only.
+  Logical scalar. If `TRUE`, draw a band around each curve: a pointwise
+  confidence interval of P(TP) for `glm` and `glmerMod` fits, a credible
+  interval for `brmsfit` fits. `FALSE` (default) draws the curves only.
 
 - level:
 
-  Coverage of the band, a single number in (0, 1).
+  Numeric scalar in (0, 1), coverage of the band.
 
 ## Value
 

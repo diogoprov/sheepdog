@@ -89,25 +89,28 @@ species from a calibration that does not work:</p>
 
 
 <dl><dt id="arg-fit">fit<a class="anchor" aria-label="anchor" href="#arg-fit"></a></dt>
-<dd><p>Model returned by <code><a href="fit_calibration.html">fit_calibration()</a></code>.</p></dd>
+<dd><p>A model returned by <code><a href="fit_calibration.html">fit_calibration()</a></code> (<code>glm</code>, <code>glmerMod</code> or
+<code>brmsfit</code>).</p></dd>
 
 
 <dt id="arg-validations">validations<a class="anchor" aria-label="anchor" href="#arg-validations"></a></dt>
-<dd><p>Table returned by <code><a href="read_validations.html">read_validations()</a></code>, the clips
-the model was fitted to.</p></dd>
+<dd><p>A data frame (or tibble) returned by
+<code><a href="read_validations.html">read_validations()</a></code>, with columns <code>site</code>, <code>species</code>, <code>confidence</code> and
+<code>tp</code>: the clips the model was fitted to, one row per clip.</p></dd>
 
 
 <dt id="arg-p-min">p_min<a class="anchor" aria-label="anchor" href="#arg-p-min"></a></dt>
-<dd><p>Calibrated probability that makes a detection reliable, as
-in <code><a href="detection_history.html">detection_history()</a></code>.</p></dd>
+<dd><p>Numeric scalar in (0, 1). Calibrated probability that makes
+a detection reliable, as in <code><a href="detection_history.html">detection_history()</a></code>.</p></dd>
 
 
 <dt id="arg-min-n">min_n<a class="anchor" aria-label="anchor" href="#arg-min-n"></a></dt>
-<dd><p>Minimum number of reviewed clips in a cell.</p></dd>
+<dd><p>Numeric scalar. Minimum number of reviewed clips in a cell.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
-<dd><p>Optional columns of <code>validations</code> that split each cell, e.g.
+<dd><p><code>NULL</code> or a character vector of column names of <code>validations</code>
+that split each cell, e.g.
 the bin of an environmental gradient or of an acoustic index from
 <code><a href="covariate_bins.html">covariate_bins()</a></code> (kept by <code>read_validations(keep = )</code> or joined
 afterwards). Each site x species x <code>by</code> cell gets its own status; the

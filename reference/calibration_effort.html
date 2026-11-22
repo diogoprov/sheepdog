@@ -101,25 +101,27 @@ fit fails, are dropped.</p>
 
 
 <dl><dt id="arg-validations">validations<a class="anchor" aria-label="anchor" href="#arg-validations"></a></dt>
-<dd><p>Table returned by <code><a href="read_validations.html">read_validations()</a></code>.</p></dd>
+<dd><p>A data frame (or tibble) returned by <code><a href="read_validations.html">read_validations()</a></code>,
+one row per reviewed clip.</p></dd>
 
 
 <dt id="arg-formula">formula<a class="anchor" aria-label="anchor" href="#arg-formula"></a></dt>
-<dd><p>Model formula, usually the best one of
+<dd><p>A model formula, usually the best one of
 <code><a href="compare_calibration_models.html">compare_calibration_models()</a></code>.</p></dd>
 
 
 <dt id="arg-n-train">n_train<a class="anchor" aria-label="anchor" href="#arg-n-train"></a></dt>
-<dd><p>Training sizes per site x species.</p></dd>
+<dd><p>Numeric vector of whole numbers, training sizes (clips) per
+site x species.</p></dd>
 
 
 <dt id="arg-n-reps">n_reps<a class="anchor" aria-label="anchor" href="#arg-n-reps"></a></dt>
-<dd><p>Repetitions per training size.</p></dd>
+<dd><p>Integer scalar &gt;= 1, repetitions per training size.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>Seed of the draws. The global random number generator is
-left as it was.</p></dd>
+<dd><p>Integer scalar, seed of the draws. The global random number
+generator is left as it was.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -122,11 +122,13 @@ computes those that a review sample can show:</p>
 
 
 <dl><dt id="arg-validation">validation<a class="anchor" aria-label="anchor" href="#arg-validation"></a></dt>
-<dd><p>Reviewed clips, as for <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>.</p></dd>
+<dd><p>A data frame (or tibble) of reviewed clips, as for
+<code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>. One row per clip.</p></dd>
 
 
 <dt id="arg-thresholds">thresholds<a class="anchor" aria-label="anchor" href="#arg-thresholds"></a></dt>
-<dd><p>The threshold of each species or cell: a single
+<dd><p>A numeric scalar or a data frame (or tibble). The
+threshold of each species or cell: a single
 number, or a table with <code>species_folder</code> (and optionally <code>site</code>) and a
 <code>threshold</code> column, such as the output of <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>
 (<code>threshold_column</code> picks another column, such as
@@ -135,62 +137,68 @@ to apply).</p></dd>
 
 
 <dt id="arg-groups">groups<a class="anchor" aria-label="anchor" href="#arg-groups"></a></dt>
-<dd><p>Columns of <code>validation</code> for signs 6 and 7, such as
-<code>"site"</code> or a month column. <code>NULL</code> uses <code>"site"</code> when there is more
-than one site.</p></dd>
+<dd><p><code>NULL</code> or a character vector of column names of
+<code>validation</code> for signs 6 and 7, such as <code>"site"</code> or a month column.
+<code>NULL</code> uses <code>"site"</code> when there is more than one site.</p></dd>
 
 
 <dt id="arg-curves">curves<a class="anchor" aria-label="anchor" href="#arg-curves"></a></dt>
-<dd><p>Optional output of <code><a href="compare_calibration_curves.html">compare_calibration_curves()</a></code> (sign
-8). With curves fitted by site, the worst verdict of the species
-counts.</p></dd>
+<dd><p><code>NULL</code> or a data frame (or tibble) returned by
+<code><a href="compare_calibration_curves.html">compare_calibration_curves()</a></code> (sign 8). With curves fitted by site,
+the worst verdict of the species counts.</p></dd>
 
 
 <dt id="arg-recall">recall<a class="anchor" aria-label="anchor" href="#arg-recall"></a></dt>
-<dd><p>Optional output of <code><a href="recall_ceiling.html">recall_ceiling()</a></code> (sign 1). With a
-ceiling per site, the lowest counts.</p></dd>
+<dd><p><code>NULL</code> or a data frame (or tibble) returned by
+<code><a href="recall_ceiling.html">recall_ceiling()</a></code> (sign 1). With a ceiling per site, the lowest
+counts.</p></dd>
 
 
 <dt id="arg-target-precision">target_precision<a class="anchor" aria-label="anchor" href="#arg-target-precision"></a></dt>
-<dd><p>Target precision of the threshold (sign 7).</p></dd>
+<dd><p>Numeric scalar in (0, 1). Target precision of the
+threshold (sign 7).</p></dd>
 
 
 <dt id="arg-min-n">min_n<a class="anchor" aria-label="anchor" href="#arg-min-n"></a></dt>
-<dd><p>Minimum number of clips of a group for it to count in signs
-6 and 7.</p></dd>
+<dd><p>Numeric scalar. Minimum number of clips of a group for it to
+count in signs 6 and 7.</p></dd>
 
 
 <dt id="arg-min-tp-kept">min_tp_kept<a class="anchor" aria-label="anchor" href="#arg-min-tp-kept"></a></dt>
-<dd><p>Sign 2 is raised when the share of the true positives
-kept by the threshold is below this.</p></dd>
+<dd><p>Numeric scalar in [0, 1]. Sign 2 is raised when the
+share of the true positives kept by the threshold is below this.</p></dd>
 
 
 <dt id="arg-max-fp-spread">max_fp_spread<a class="anchor" aria-label="anchor" href="#arg-max-fp-spread"></a></dt>
-<dd><p>Sign 6 is raised when the false-positive rate of
-two levels of a group differs by more than this.</p></dd>
-
-
-<dt id="arg-min-ceiling">min_ceiling<a class="anchor" aria-label="anchor" href="#arg-min-ceiling"></a></dt>
-<dd><p>Sign 1 is raised when the recall ceiling is below
+<dd><p>Numeric scalar in [0, 1]. Sign 6 is raised when the
+false-positive rate of two levels of a group differs by more than
 this.</p></dd>
 
 
+<dt id="arg-min-ceiling">min_ceiling<a class="anchor" aria-label="anchor" href="#arg-min-ceiling"></a></dt>
+<dd><p>Numeric scalar in [0, 1]. Sign 1 is raised when the
+recall ceiling is below this.</p></dd>
+
+
 <dt id="arg-threshold-column">threshold_column<a class="anchor" aria-label="anchor" href="#arg-threshold-column"></a></dt>
-<dd><p>Column of <code>thresholds</code> with the threshold.</p></dd>
+<dd><p>Character scalar, the column of <code>thresholds</code> with
+the threshold.</p></dd>
 
 
 <dt id="arg-cluster">cluster<a class="anchor" aria-label="anchor" href="#arg-cluster"></a></dt>
-<dd><p>Column of <code>validation</code> with the recording (or other unit)
-of each clip, for sign 9. A missing column leaves sign 9 <code>NA</code>.</p></dd>
+<dd><p><code>NULL</code> or a character scalar, the column of <code>validation</code>
+with the recording (or other unit) of each clip, for sign 9. A missing
+column leaves sign 9 <code>NA</code>.</p></dd>
 
 
 <dt id="arg-max-deff">max_deff<a class="anchor" aria-label="anchor" href="#arg-max-deff"></a></dt>
-<dd><p>Sign 9 is raised when the design effect of the false
-positives above the threshold is above this.</p></dd>
+<dd><p>Numeric scalar. Sign 9 is raised when the design effect
+of the false positives above the threshold is above this.</p></dd>
 
 
 <dt id="arg-file">file<a class="anchor" aria-label="anchor" href="#arg-file"></a></dt>
-<dd><p>Optional path of a Markdown file to write the report to.</p></dd>
+<dd><p><code>NULL</code> or a character scalar, path of a Markdown file to
+write the report to.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -281,7 +289,7 @@ then only indicative.</p>
 <span class="r-in"><span>              threshold_column <span class="op">=</span> <span class="st">"threshold_conservative"</span>,</span></span>
 <span class="r-in"><span>              file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".md"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> No reviewed clip has `inclusion_prob`: signs 2 and 6 use every clip, unweighted, and are only indicative.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Warning signs written to /tmp/Rtmp0jDMSU/file188d439e0a0c.md</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Warning signs written to /tmp/Rtmpd8vHp9/file18a45b08f6ea.md</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 8 × 19</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   species_folder threshold sign1_ceiling sign1 sign2_tp_kept sign2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span></span>

@@ -20,21 +20,22 @@ plot_precision(
 
 - precision:
 
-  Table returned by
+  A data frame (or tibble) returned by
   [`precision_by_bin()`](https://provetelab.org/sheepdog/reference/precision_by_bin.md).
 
 - bins:
 
-  Breaks of the confidence bins (left-closed).
+  Numeric vector of length \>= 2, increasing breaks of the confidence
+  bins (left-closed).
 
 - target_precision:
 
-  Target precision.
+  Numeric scalar in (0, 1). Target precision.
 
 - min_n:
 
-  Minimum of reviewed clips for a bin to be taken seriously; bins with
-  fewer are flagged in `low_support`.
+  Integer scalar \>= 1. Minimum of reviewed clips for a bin to be taken
+  seriously; bins with fewer are flagged in `low_support`.
 
 ## Value
 

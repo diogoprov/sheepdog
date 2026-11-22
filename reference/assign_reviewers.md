@@ -17,23 +17,25 @@ assign_reviewers(manifest, reviewers, overlap = 0.1, seed = 2026)
 
 - manifest:
 
-  Clip manifest, as returned by
+  A data frame (or tibble), the clip manifest as returned by
   [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
   or
   [`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md).
+  One row per clip.
 
 - reviewers:
 
-  Names of the reviewers (at least two).
+  Character vector of length \>= 2, unique names of the reviewers.
 
 - overlap:
 
-  Fraction of the clips of each species reviewed by two reviewers.
+  Numeric scalar in \[0, 1\]. Fraction of the clips of each species
+  reviewed by two reviewers.
 
 - seed:
 
-  Seed of the draws. The global random number generator is left as it
-  was.
+  Integer scalar, seed of the draws. The global random number generator
+  is left as it was.
 
 ## Value
 

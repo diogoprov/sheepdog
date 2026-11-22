@@ -30,51 +30,55 @@ calibration_quality(
 
 - validations:
 
-  Table returned by
-  [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md).
+  A data frame (or tibble) returned by
+  [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md),
+  one row per reviewed clip.
 
 - formula:
 
-  Formula of the model to check, e.g. the one chosen by
+  A model formula, the formula of the model to check, e.g. the one
+  chosen by
   [`select_calibration_model()`](https://provetelab.org/sheepdog/reference/select_calibration_model.md).
 
 - k_folds:
 
-  Number of folds.
+  Integer scalar \>= 2, number of folds.
 
 - seed:
 
-  Seed of the fold assignment. The global random number generator is
-  left as it was.
+  Integer scalar, seed of the fold assignment. The global random number
+  generator is left as it was.
 
 - fold_group:
 
-  Optional character vector of grouping columns. Do not include
+  `NULL` or a character vector of grouping columns. Do not include
   `species`, verdicts or confidence scores: these would split recordings
   or nights by species or by outcome. Group IDs must be nonmissing and
   nonempty. `NULL` keeps the original clip folds.
 
 - by:
 
-  Columns that define the groups: `"species"`, or `c("site", "species")`
-  for the cells of the calibration, which hold fewer clips each.
+  Character vector of columns of `validations` that define the groups:
+  `"species"`, or `c("site", "species")` for the cells of the
+  calibration, which hold fewer clips each.
 
 - min_class:
 
-  Least number of true positives and of false positives for a group to
-  be judged. With fewer, `status` is `"insufficient"`.
+  Numeric scalar, least number of true positives and of false positives
+  for a group to be judged. With fewer, `status` is `"insufficient"`.
 
 - auc_min:
 
-  Lowest acceptable `auc` and `auc_score`.
+  Numeric scalar, lowest acceptable `auc` and `auc_score`.
 
 - slope_range:
 
-  Acceptable range of `cal_slope`.
+  Numeric vector of length 2, increasing: acceptable range of
+  `cal_slope`.
 
 - intercept_max:
 
-  Largest acceptable absolute `cal_intercept`.
+  Numeric scalar, largest acceptable absolute `cal_intercept`.
 
 ## Value
 

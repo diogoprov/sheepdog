@@ -25,27 +25,27 @@ training_nights(
 
 - files:
 
-  File names or paths of training clips. Elements that are folders are
-  listed recursively.
+  Character vector, file names or paths of training clips. Elements that
+  are folders are listed recursively.
 
 - pattern:
 
-  Perl regular expression with the named groups `site`, `date`
-  (`YYYYMMDD`) and `time` (`HHMMSS`). The default takes the letters
-  before the recorder number, the date and the time of names such as
-  `ARA01_20211016_190000` or
+  Character scalar, Perl regular expression with the named groups
+  `site`, `date` (`YYYYMMDD`) and `time` (`HHMMSS`). The default takes
+  the letters before the recorder number, the date and the time of names
+  such as `ARA01_20211016_190000` or
   `..._ARA_ARA01_20230121_203000_12.0s_15.0s.wav`.
 
 - site_map:
 
-  Optional named character vector to fix diverging site names, e.g.
+  `NULL` or a named character vector to fix diverging site names, e.g.
   `c(BEP2 = "BEP")`, as in
   [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md).
 
 - night_cutoff:
 
-  Recordings that start before this hour belong to the night of the day
-  before, as in
+  Numeric scalar (hour, 0-23). Recordings that start before this hour
+  belong to the night of the day before, as in
   [`detection_history()`](https://provetelab.org/sheepdog/reference/detection_history.md).
 
 ## Value

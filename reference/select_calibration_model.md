@@ -17,16 +17,18 @@ select_calibration_model(
 
 - comparison:
 
-  Table returned by
+  A data frame (or tibble) returned by
   [`compare_calibration_models()`](https://provetelab.org/sheepdog/reference/compare_calibration_models.md).
 
 - rule:
 
-  Selection rule.
+  Character scalar, the selection rule: `"one_se_logloss"` (default) or
+  `"best_auc"`.
 
 - k_folds:
 
-  Number of folds of the comparison (for the standard error).
+  Numeric scalar, number of folds of the comparison (for the standard
+  error).
 
 ## Value
 

@@ -18,17 +18,20 @@ split_by_reviewer(manifest, clips_dir, output_dir)
 
 - manifest:
 
-  Manifest returned by
-  [`assign_reviewers()`](https://provetelab.org/sheepdog/reference/assign_reviewers.md).
+  A data frame (or tibble) returned by
+  [`assign_reviewers()`](https://provetelab.org/sheepdog/reference/assign_reviewers.md),
+  with columns `reviewer`, `second_reviewer`, `species_folder` and
+  `clip_file`.
 
 - clips_dir:
 
-  Folder of the cut clips (the `clips` folder written by
+  Character scalar, path to the folder of the cut clips (the `clips`
+  folder written by
   [`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md)).
 
 - output_dir:
 
-  Output folder.
+  Character scalar, path to the output folder.
 
 ## Value
 

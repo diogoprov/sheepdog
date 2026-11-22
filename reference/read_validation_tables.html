@@ -95,13 +95,15 @@ are also read.</p>
 
 
 <dl><dt id="arg-files">files<a class="anchor" aria-label="anchor" href="#arg-files"></a></dt>
-<dd><p>Paths to the <code>validation_by_clip.csv</code> files. Missing files
+<dd><p>Character vector, paths to the <code>validation_by_clip.csv</code>
+files. Missing files
 are skipped with a warning.</p></dd>
 
 
 <dt id="arg-candidates">candidates<a class="anchor" aria-label="anchor" href="#arg-candidates"></a></dt>
-<dd><p>For the rounds of one design: the <code>candidates.csv</code> of
-the first round, passed to <code><a href="combine_rounds.html">combine_rounds()</a></code>, which gives the clips
+<dd><p><code>NULL</code>, a character scalar (path) or a data frame. For
+the rounds of one design: the <code>candidates.csv</code> of the first round,
+passed to <code><a href="combine_rounds.html">combine_rounds()</a></code>, which gives the clips
 their cumulative <code>inclusion_prob</code>. <code>NULL</code> only stacks the tables.</p></dd>
 
 </dl></div>

@@ -21,20 +21,21 @@ read_pamdp(dir, site_column = "locationID", audio_root = NULL)
 
 - dir:
 
-  Folder of the data package.
+  Character scalar, path to the folder of the data package.
 
 - site_column:
 
-  Column of `deployments.csv` that names the site: `"locationID"`
-  (default), `"locationName"` or `"deploymentID"`. Deployments with this
-  column empty take their `deploymentID`, with a message.
+  Character scalar, column of `deployments.csv` that names the site:
+  `"locationID"` (default), `"locationName"` or `"deploymentID"`.
+  Deployments with this column empty take their `deploymentID`, with a
+  message.
 
 - audio_root:
 
-  Optional folder that relative `filePath` values are resolved against
-  (e.g. the folder of the audio files on this computer). `NULL` keeps
-  `filePath` as it is. Paths that are absolute or URLs are never
-  changed.
+  `NULL` or character scalar, folder that relative `filePath` values are
+  resolved against (e.g. the folder of the audio files on this
+  computer). `NULL` keeps `filePath` as it is. Paths that are absolute
+  or URLs are never changed.
 
 ## Value
 

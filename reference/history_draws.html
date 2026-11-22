@@ -107,39 +107,44 @@ into community matrices with uncertainty by
 
 
 <dl><dt id="arg-fit">fit<a class="anchor" aria-label="anchor" href="#arg-fit"></a></dt>
-<dd><p>Model returned by <code><a href="fit_calibration.html">fit_calibration()</a></code> with <code>engine = "brms"</code>.</p></dd>
+<dd><p>A <code>brmsfit</code> returned by <code><a href="fit_calibration.html">fit_calibration()</a></code> with
+<code>engine = "brms"</code>.</p></dd>
 
 
 <dt id="arg-scored">scored<a class="anchor" aria-label="anchor" href="#arg-scored"></a></dt>
-<dd><p>Table returned by <code><a href="score_detections.html">score_detections()</a></code>.</p></dd>
+<dd><p>A data frame (or tibble) returned by <code><a href="score_detections.html">score_detections()</a></code>, one
+row per detection.</p></dd>
 
 
 <dt id="arg-p-min">p_min<a class="anchor" aria-label="anchor" href="#arg-p-min"></a></dt>
-<dd><p>Threshold on the calibrated probability (not on the
-confidence score).</p></dd>
+<dd><p>Numeric scalar in [0, 1], threshold on the calibrated
+probability (not on the confidence score).</p></dd>
 
 
 <dt id="arg-n-draws">n_draws<a class="anchor" aria-label="anchor" href="#arg-n-draws"></a></dt>
-<dd><p>Number of posterior draws.</p></dd>
+<dd><p>Integer scalar &gt;= 1, number of posterior draws (at most the
+number of draws in <code>fit</code>).</p></dd>
 
 
 <dt id="arg-min-detections-night">min_detections_night<a class="anchor" aria-label="anchor" href="#arg-min-detections-night"></a></dt>
-<dd><p>Repetition rule: minimum number of reliable
-detections for a night with detection.</p></dd>
+<dd><p>Integer scalar &gt;= 1, repetition rule: minimum
+number of reliable detections for a night with detection.</p></dd>
 
 
 <dt id="arg-min-confidence">min_confidence<a class="anchor" aria-label="anchor" href="#arg-min-confidence"></a></dt>
-<dd><p>Detections below this confidence are not scored.</p></dd>
+<dd><p>Numeric scalar in [0, 1]. Detections below this
+confidence are not scored.</p></dd>
 
 
 <dt id="arg-grid-step">grid_step<a class="anchor" aria-label="anchor" href="#arg-grid-step"></a></dt>
-<dd><p>Models fitted with <code>engine = "brms"</code>: step of the grid
-of scores on which the posterior is computed.</p></dd>
+<dd><p>Numeric scalar in (0, 0.5). Models fitted with
+<code>engine = "brms"</code>: step of the grid of scores on which the posterior is
+computed.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>Seed of the choice of draws. The global random number
-generator is left as it was.</p></dd>
+<dd><p>Integer scalar, seed of the choice of draws. The global random
+number generator is left as it was.</p></dd>
 
 </dl></div>
     <div class="section level2">

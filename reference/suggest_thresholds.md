@@ -23,39 +23,41 @@ suggest_thresholds(
 
 - validation:
 
-  Table returned by
-  [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md).
+  A data frame (or tibble) returned by
+  [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md),
+  with columns `site`, `species_folder`, `verdict` and `confidence`. One
+  row per clip.
 
 - target_precision:
 
-  Target precision.
+  Numeric scalar in (0, 1). Target precision.
 
 - min_n:
 
-  Minimum of reviewed clips for a bin to be taken seriously; bins with
-  fewer are flagged in `low_support`.
+  Integer scalar \>= 1. Minimum of reviewed clips for a bin to be taken
+  seriously; bins with fewer are flagged in `low_support`.
 
 - by:
 
-  Optional columns of `validation` that split each site x species cell
-  further, e.g. the bin of an environmental gradient or of an acoustic
-  index joined from
+  `NULL` or a character vector of column names of `validation` that
+  split each site x species cell further, e.g. the bin of an
+  environmental gradient or of an acoustic index joined from
   [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md).
   They show which parts of the gradient lack reviewed clips.
 
 - weighted:
 
-  Which precision chooses the cut. `NULL` (default): the weighted one in
-  the cells whose clips all have `inclusion_prob`, the unweighted one
-  elsewhere. `TRUE`: always the weighted one; cells with clips without
-  `inclusion_prob` get no threshold, with a warning, and it is an error
-  if no clip has it. `FALSE`: always the unweighted one, and `n_support`
-  for `min_n`.
+  `NULL`, `TRUE` or `FALSE`. Which precision chooses the cut. `NULL`
+  (default): the weighted one in the cells whose clips all have
+  `inclusion_prob`, the unweighted one elsewhere. `TRUE`: always the
+  weighted one; cells with clips without `inclusion_prob` get no
+  threshold, with a warning, and it is an error if no clip has it.
+  `FALSE`: always the unweighted one, and `n_support` for `min_n`.
 
 - sustained:
 
-  Must the target also hold at every higher cut with at least `min_n`
-  clips? See Sustained target.
+  Logical scalar. If `TRUE`, the target must also hold at every higher
+  cut with at least `min_n` clips. See Sustained target.
 
 ## Value
 

@@ -25,25 +25,29 @@ community_matrices_draws(
 
 - history:
 
-  Table returned by
+  A data frame (or tibble) returned by
   [`history_draws()`](https://provetelab.org/sheepdog/reference/history_draws.md).
 
 - core_species:
 
-  Species codes (the `species` column) that enter the matrix.
+  Character vector of length \>= 1, species codes (the `species` column)
+  that enter the matrix.
 
 - k_min:
 
-  Repetition rule: 1, 2 or 3 reliable detections on the night.
+  Integer scalar, one of 1, 2 or 3. Repetition rule: 1, 2 or 3 reliable
+  detections on the night.
 
 - min_nights_month:
 
-  Site x month cells with fewer recorded nights are dropped from the
-  matrices (unstable frequencies) and flagged in `effort`.
+  Numeric scalar. Site x month cells with fewer recorded nights are
+  dropped from the matrices (unstable frequencies) and flagged in
+  `effort`.
 
 - probs:
 
-  Probabilities of the interval.
+  Numeric vector of length 2 in \[0, 1\], probabilities of the lower and
+  upper limits of the interval.
 
 ## Value
 

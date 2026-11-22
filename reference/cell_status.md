@@ -14,28 +14,32 @@ cell_status(fit, validations, p_min = 0.95, min_n = 15, by = NULL)
 
 - fit:
 
-  Model returned by
-  [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md).
+  A model returned by
+  [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
+  (`glm`, `glmerMod` or `brmsfit`).
 
 - validations:
 
-  Table returned by
+  A data frame (or tibble) returned by
   [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md),
-  the clips the model was fitted to.
+  with columns `site`, `species`, `confidence` and `tp`: the clips the
+  model was fitted to, one row per clip.
 
 - p_min:
 
-  Calibrated probability that makes a detection reliable, as in
+  Numeric scalar in (0, 1). Calibrated probability that makes a
+  detection reliable, as in
   [`detection_history()`](https://provetelab.org/sheepdog/reference/detection_history.md).
 
 - min_n:
 
-  Minimum number of reviewed clips in a cell.
+  Numeric scalar. Minimum number of reviewed clips in a cell.
 
 - by:
 
-  Optional columns of `validations` that split each cell, e.g. the bin
-  of an environmental gradient or of an acoustic index from
+  `NULL` or a character vector of column names of `validations` that
+  split each cell, e.g. the bin of an environmental gradient or of an
+  acoustic index from
   [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md)
   (kept by `read_validations(keep = )` or joined afterwards). Each site
   x species x `by` cell gets its own status; the threshold uses the `by`

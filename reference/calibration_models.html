@@ -92,17 +92,18 @@ by species and a site x species intercept.</p>
 
 
 <dl><dt id="arg-uncorrelated">uncorrelated<a class="anchor" aria-label="anchor" href="#arg-uncorrelated"></a></dt>
-<dd><p>Add <code>m5_species_x_site_uncorrelated</code>, the m4
-structure without the correlation between the species intercepts and
-slopes. It avoids the singular fits of m4 when that correlation is
-estimated at +-1. <code>FALSE</code> keeps the candidates of 2.0.0.</p></dd>
+<dd><p>Logical scalar. If <code>TRUE</code>, add
+<code>m5_species_x_site_uncorrelated</code>, the m4 structure without the correlation
+between the species intercepts and slopes. It avoids the singular fits of
+m4 when that correlation is estimated at +-1. <code>FALSE</code> keeps the candidates
+of 2.0.0.</p></dd>
 
 
 <dt id="arg-single-species">single_species<a class="anchor" aria-label="anchor" href="#arg-single-species"></a></dt>
-<dd><p>Use a family for one species: global logistic
-regression, a site intercept, and a site intercept and slope. With
-<code>uncorrelated = TRUE</code>, also include independent site intercepts and
-slopes. <code>FALSE</code> preserves the multispecies family.</p></dd>
+<dd><p>Logical scalar. If <code>TRUE</code>, use a family for one
+species: global logistic regression, a site intercept, and a site intercept
+and slope. With <code>uncorrelated = TRUE</code>, also include independent site
+intercepts and slopes. <code>FALSE</code> preserves the multispecies family.</p></dd>
 
 </dl></div>
     <div class="section level2">

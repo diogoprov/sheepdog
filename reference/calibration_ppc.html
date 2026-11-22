@@ -114,45 +114,47 @@ would bias the detection histories built from the model.</p>
 
 
 <dl><dt id="arg-fit">fit<a class="anchor" aria-label="anchor" href="#arg-fit"></a></dt>
-<dd><p>Model returned by <code><a href="fit_calibration.html">fit_calibration()</a></code> with <code>engine = "brms"</code>.</p></dd>
+<dd><p>A <code>brmsfit</code> returned by <code><a href="fit_calibration.html">fit_calibration()</a></code> with
+<code>engine = "brms"</code>.</p></dd>
 
 
 <dt id="arg-validations">validations<a class="anchor" aria-label="anchor" href="#arg-validations"></a></dt>
-<dd><p>The calibration data the model was fitted to, in the
-same row order, with any columns named in <code>group</code> (keep them with
-<code>read_validations(keep = )</code>). <code>NULL</code> uses the data stored in <code>fit</code>,
-which only hold the columns of the formula.</p></dd>
+<dd><p><code>NULL</code> or a data frame (or tibble), the calibration data
+the model was fitted to, in the same row order, with any columns named in
+<code>group</code> (keep them with <code>read_validations(keep = )</code>). <code>NULL</code> uses the data
+stored in <code>fit</code>, which only hold the columns of the formula.</p></dd>
 
 
 <dt id="arg-group">group<a class="anchor" aria-label="anchor" href="#arg-group"></a></dt>
-<dd><p>Optional character vector of columns of <code>validations</code> to
+<dd><p><code>NULL</code> or a character vector of columns of <code>validations</code> to
 check within, besides score bins, sites and species.</p></dd>
 
 
 <dt id="arg-bin-width">bin_width<a class="anchor" aria-label="anchor" href="#arg-bin-width"></a></dt>
-<dd><p>Width of the score bins. Bins with fewer than
-<code>min_n</code> clips are merged with their neighbour.</p></dd>
+<dd><p>Numeric scalar in (0, 1), width of the score bins. Bins with
+fewer than <code>min_n</code> clips are merged with their neighbour.</p></dd>
 
 
 <dt id="arg-min-n">min_n<a class="anchor" aria-label="anchor" href="#arg-min-n"></a></dt>
-<dd><p>Smallest number of clips in a score bin.</p></dd>
+<dd><p>Integer scalar &gt;= 1, smallest number of clips in a score bin.</p></dd>
 
 
 <dt id="arg-prob">prob<a class="anchor" aria-label="anchor" href="#arg-prob"></a></dt>
-<dd><p>Probability of the predictive interval.</p></dd>
+<dd><p>Numeric scalar in (0, 1), probability of the predictive interval.</p></dd>
 
 
 <dt id="arg-flag">flag<a class="anchor" aria-label="anchor" href="#arg-flag"></a></dt>
-<dd><p>Groups with a p-value below <code>flag</code> or above <code>1 - flag</code> are
-flagged.</p></dd>
+<dd><p>Numeric scalar in (0, 1). Groups with a p-value below <code>flag</code> or
+above <code>1 - flag</code> are flagged.</p></dd>
 
 
 <dt id="arg-n-draws">n_draws<a class="anchor" aria-label="anchor" href="#arg-n-draws"></a></dt>
-<dd><p>Number of posterior draws; <code>NULL</code> uses all.</p></dd>
+<dd><p><code>NULL</code> or an integer scalar &gt;= 1, number of posterior draws;
+<code>NULL</code> uses all.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>Seed of the choice of draws and of the predictive
+<dd><p>Integer scalar, seed of the choice of draws and of the predictive
 simulation. The global random number generator is left as it was.</p></dd>
 
 </dl></div>

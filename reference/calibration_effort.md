@@ -22,26 +22,28 @@ calibration_effort(
 
 - validations:
 
-  Table returned by
-  [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md).
+  A data frame (or tibble) returned by
+  [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md),
+  one row per reviewed clip.
 
 - formula:
 
-  Model formula, usually the best one of
+  A model formula, usually the best one of
   [`compare_calibration_models()`](https://provetelab.org/sheepdog/reference/compare_calibration_models.md).
 
 - n_train:
 
-  Training sizes per site x species.
+  Numeric vector of whole numbers, training sizes (clips) per site x
+  species.
 
 - n_reps:
 
-  Repetitions per training size.
+  Integer scalar \>= 1, repetitions per training size.
 
 - seed:
 
-  Seed of the draws. The global random number generator is left as it
-  was.
+  Integer scalar, seed of the draws. The global random number generator
+  is left as it was.
 
 ## Value
 

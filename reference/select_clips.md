@@ -49,34 +49,41 @@ select_clips(
 
 - detections:
 
-  Predictions, as returned by
-  [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md).
+  A data frame of predictions, one row per BirdNET prediction, as
+  returned by
+  [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)
+  (columns `site`, `begin_path`, `begin_time`, `end_time`,
+  `file_offset`, `confidence` and `species_code`).
 
 - sampling_mode:
 
-  `"top"`, `"random_detections"`, `"random_recordings"` or
-  `"score_bands"`. See *Sampling modes* and *Which design for which
-  use*.
+  Character scalar, one of `"top"`, `"random_detections"`,
+  `"random_recordings"` or `"score_bands"`. See *Sampling modes* and
+  *Which design for which use*.
 
 - occasion_unit:
 
-  The occasion of the occupancy model: `"file"` (the whole recording) or
-  `"minute"` (minute of the file, from `file_offset`).
+  Character scalar, the occasion of the occupancy model: `"file"` (the
+  whole recording) or `"minute"` (minute of the file, from
+  `file_offset`).
 
 - threshold:
 
-  Confidence threshold of the occupancy analysis. It defines the
-  candidate occasions of `"random_detections"` and the
-  `n_detections_occasion` column. `NULL` leaves that column `NA`.
+  `NULL` or numeric scalar in \[0, 1\], confidence threshold of the
+  occupancy analysis. It defines the candidate occasions of
+  `"random_detections"` and the `n_detections_occasion` column. `NULL`
+  leaves that column `NA`.
 
 - n_top:
 
-  `"top"`: predictions kept per site x species x night x hour.
-  `"random_detections"`: occasions drawn per stratum (`strata`).
-  `"score_bands"`: predictions drawn per stratum and score band.
+  Integer scalar \>= 1. `"top"`: predictions kept per site x species x
+  night x hour. `"random_detections"`: occasions drawn per stratum
+  (`strata`). `"score_bands"`: predictions drawn per stratum and score
+  band.
 
 - strata:
 
+  Character scalar (a preset name) or character vector (column names).
   `"random_detections"` and `"score_bands"`: the strata of the draw
   (within each, `"score_bands"` also splits by score band) (ignored by
   the other modes). Either one of the presets, all within site x
@@ -125,14 +132,14 @@ select_clips(
 
 - score_breaks:
 
-  `"score_bands"`: the limits of the score bands, increasing, within 0
-  and 1. Predictions below the first limit are not drawn; the last band
-  includes its upper limit.
+  Numeric vector of length \>= 2, strictly increasing, within 0 and 1.
+  `"score_bands"`: the limits of the score bands. Predictions below the
+  first limit are not drawn; the last band includes its upper limit.
 
 - covariates:
 
-  `"random_detections"`: optional data frame of occasion covariates
-  whose columns can be used in `strata`, such as the bins of an
+  `NULL` or a data frame of occasion covariates. `"random_detections"`:
+  its columns can be used in `strata`, such as the bins of an
   environmental gradient or of an acoustic index made by
   [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md).
   It is joined to the predictions by the columns it shares with them
@@ -146,127 +153,136 @@ select_clips(
 
 - recording_fraction:
 
-  `"random_recordings"`: fraction of the recordings (or minutes) drawn
-  at each site, rounded, with at least one per site. The default (1 %)
-  suits large projects: with fewer than 150 recordings per site it draws
-  a single recording; raise it or use `n_recordings_per_site` in small
-  projects.
+  Numeric scalar in \[0, 1\]. `"random_recordings"`: fraction of the
+  recordings (or minutes) drawn at each site, rounded, with at least one
+  per site. The default (1 %) suits large projects: with fewer than 150
+  recordings per site it draws a single recording; raise it or use
+  `n_recordings_per_site` in small projects.
 
 - n_recordings_per_site:
 
-  `"random_recordings"`: fixed number of recordings (or minutes) per
-  site, used instead of `recording_fraction`.
+  `NULL` or integer scalar \>= 1. `"random_recordings"`: fixed number of
+  recordings (or minutes) per site, used instead of
+  `recording_fraction`.
 
 - recordings:
 
-  `"random_recordings"`: the list of all recordings, as a data frame or
-  the path to a CSV file with the columns `site` and `source_audio` (the
-  v1.2.0 columns `local` and `caminho_audio` are also read). `NULL`
-  lists the files matching `audio_pattern` in the audio folders that
-  appear in `begin_path`; folders without any prediction are then left
-  out.
+  `NULL`, a data frame (one row per recording) or a character scalar,
+  path to a CSV file. `"random_recordings"`: the list of all recordings,
+  with the columns `site` and `source_audio` (the v1.2.0 columns `local`
+  and `caminho_audio` are also read). `NULL` lists the files matching
+  `audio_pattern` in the audio folders that appear in `begin_path`;
+  folders without any prediction are then left out.
 
 - audio_pattern:
 
-  Regular expression for the audio files listed when `recordings` is
-  `NULL`.
+  Character scalar, regular expression for the audio files listed when
+  `recordings` is `NULL`.
 
 - recording_duration:
 
-  Length of the recordings (s), for `occasion_unit = "minute"` in
-  `"random_recordings"` and for the end of whole-recording clips. `NULL`
-  reads each file with the 'av' package when needed (minute occasions)
-  and leaves `clip_end` as `NA` otherwise.
+  `NULL` or numeric scalar, length of the recordings (s), for
+  `occasion_unit = "minute"` in `"random_recordings"` and for the end of
+  whole-recording clips. `NULL` reads each file with the 'av' package
+  when needed (minute occasions) and leaves `clip_end` as `NA`
+  otherwise.
 
 - min_confidence:
 
-  Minimum confidence of a candidate prediction in `"top"`. `NULL`
-  applies no filter. The random modes use `threshold`.
+  `NULL` or numeric scalar in \[0, 1\], minimum confidence of a
+  candidate prediction in `"top"`. `NULL` applies no filter. The random
+  modes use `threshold`.
 
 - sites:
 
-  Restrict to these sites (the predictions and, in
-  `"random_recordings"`, the list of recordings). `NULL` keeps all.
+  `NULL` or character vector of site names. Restrict to these sites (the
+  predictions and, in `"random_recordings"`, the list of recordings).
+  `NULL` keeps all.
 
 - date_start, date_end:
 
-  Date window of the recordings (`"YYYYMMDD"`). `NULL` leaves that side
-  open.
+  `NULL` or character scalars, date window of the recordings
+  (`"YYYYMMDD"`). `NULL` leaves that side open.
 
 - species:
 
-  Restrict to these short species codes (the last part of
-  `species_code`, e.g. `"boa-ran"`). `NULL` keeps all.
+  `NULL` or character vector. Restrict to these short species codes (the
+  last part of `species_code`, e.g. `"boa-ran"`). `NULL` keeps all.
 
 - hour_start, hour_end:
 
-  Hour window (0-23). It can cross midnight:
+  `NULL` or integer scalars in 0-23, hour window. It can cross midnight:
   `hour_start = 17, hour_end = 2` keeps 17h-23h and 0h-2h, and the
   grouping becomes by night (small hours count as the night before).
   `NULL` applies no filter.
 
 - alternate_days:
 
-  Keep alternate days (or nights), anchored on the first date of each
-  site.
+  Logical scalar. If `TRUE`, keep alternate days (or nights), anchored
+  on the first date of each site.
 
 - target_total:
 
-  Total clips per site, split evenly among species by water filling:
-  species with fewer clips than the quota enter whole and the surplus
-  goes to the others. In `"random_detections"` it counts occasions.
-  Ignored in `"random_recordings"`. `NULL` sets no target. Because the
-  target is split evenly, rare species have higher inclusion
-  probabilities than common ones: estimates pooled across species must
-  weight the clips by `1 / inclusion_prob`.
+  `NULL` or integer scalar \>= 1, total clips per site, split evenly
+  among species by water filling: species with fewer clips than the
+  quota enter whole and the surplus goes to the others. In
+  `"random_detections"` it counts occasions. Ignored in
+  `"random_recordings"`. `NULL` sets no target. Because the target is
+  split evenly, rare species have higher inclusion probabilities than
+  common ones: estimates pooled across species must weight the clips by
+  `1 / inclusion_prob`.
 
 - balance_by_hour:
 
-  Within each species, draw round-robin across the hours of the day
-  (covers the diel cycle) when applying `target_total` or
-  `max_per_species`.
+  Logical scalar. If `TRUE`, within each species, draw round-robin
+  across the hours of the day (covers the diel cycle) when applying
+  `target_total` or `max_per_species`.
 
 - max_per_species:
 
-  Simpler alternative to `target_total`: a fixed limit per site x
-  species. Ignored when `target_total` is set.
+  `NULL` or integer scalar \>= 1. Simpler alternative to `target_total`:
+  a fixed limit per site x species. Ignored when `target_total` is set.
 
 - remap_from, remap_to:
 
-  Replace the prefix `remap_from` of the `begin_path` paths by
-  `remap_to`, e.g. `"N:/"` and `"/Volumes/Arara/"`. Backslashes are
-  turned into forward slashes first.
+  `NULL` or character scalars. Replace the prefix `remap_from` of the
+  `begin_path` paths by `remap_to`, e.g. `"N:/"` and
+  `"/Volumes/Arara/"`. Backslashes are turned into forward slashes
+  first.
 
 - seed:
 
-  Seed of every random draw. The global random number generator is left
-  as it was.
+  Integer scalar, seed of every random draw. The global random number
+  generator is left as it was.
 
 - previous:
 
+  `NULL`, a character vector of paths, a data frame, or a list of these.
   Earlier reviews: paths to their `clip_manifest.csv` or
-  `validation_by_clip.csv`, a data frame, or a list of these. Rounds of
-  the same design give another round (see Review rounds); reviews of the
-  other random design, which need `validation_by_clip.csv`, give their
-  verdicts (see Reusing the other design).
+  `validation_by_clip.csv`, or their tables. Rounds of the same design
+  give another round (see Review rounds); reviews of the other random
+  design, which need `validation_by_clip.csv`, give their verdicts (see
+  Reusing the other design).
 
 - candidates:
 
-  With `previous`, the `candidates.csv` of the first round, as a path or
-  a data frame. `NULL` looks for it in the folders of `previous`.
+  `NULL`, a character scalar (path) or a data frame. With `previous`,
+  the `candidates.csv` of the first round. `NULL` looks for it in the
+  folders of `previous`.
 
 - cells:
 
-  With `previous`, restrict the round to these cells: a data frame with
-  `site` and `species_folder` or `species_code`, such as the rows of
+  `NULL` or a data frame, one row per cell. With `previous`, restrict
+  the round to these cells: a data frame with `site` and
+  `species_folder` or `species_code`, such as the rows of
   [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md)
   with `diagnosis == "review more"`.
 
 - inherit:
 
-  With `previous` of the other design, give the clips the verdict that
-  the earlier review implies, so that they need no review? See Reusing
-  the other design.
+  Logical scalar. With `previous` of the other design, give the clips
+  the verdict that the earlier review implies, so that they need no
+  review. See Reusing the other design.
 
 ## Value
 

@@ -98,14 +98,15 @@ sensitivity to both.</p>
 
 
 <dl><dt id="arg-fit">fit<a class="anchor" aria-label="anchor" href="#arg-fit"></a></dt>
-<dd><p>Model returned by <code><a href="fit_calibration.html">fit_calibration()</a></code> with <code>engine = "brms"</code>.</p></dd>
+<dd><p>A <code>brmsfit</code> returned by <code><a href="fit_calibration.html">fit_calibration()</a></code> with
+<code>engine = "brms"</code>.</p></dd>
 
 
 <dt id="arg-variable">variable<a class="anchor" aria-label="anchor" href="#arg-variable"></a></dt>
-<dd><p>Parameters to analyse. <code>NULL</code> takes the population-level
-effects and the standard deviations and correlations of the random
-effects (<code>b_</code>, <code>sd_</code>, <code>cor_</code>), leaving out the individual random
-effects.</p></dd>
+<dd><p><code>NULL</code> or a character vector of the names of the parameters
+to analyse. <code>NULL</code> takes the population-level effects and the standard
+deviations and correlations of the random effects (<code>b_</code>, <code>sd_</code>, <code>cor_</code>),
+leaving out the individual random effects.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

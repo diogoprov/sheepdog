@@ -102,31 +102,37 @@ species. This is the function form of the v1.2.0 script
 
 
 <dl><dt id="arg-data-dir">data_dir<a class="anchor" aria-label="anchor" href="#arg-data-dir"></a></dt>
-<dd><p>Root folder, searched recursively.</p></dd>
+<dd><p>Character scalar, path to the root folder, searched
+recursively.</p></dd>
 
 
 <dt id="arg-output-dir">output_dir<a class="anchor" aria-label="anchor" href="#arg-output-dir"></a></dt>
-<dd><p>Output folder; created if needed.</p></dd>
+<dd><p>Character scalar, path to the output folder; created if
+needed.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Sampling design, passed to <code><a href="select_clips.html">select_clips()</a></code> (e.g.
+<dd><p>Further arguments passed to <code><a href="select_clips.html">select_clips()</a></code>: the sampling
+design (e.g.
 <code>sampling_mode</code>, <code>n_top</code>, <code>threshold</code>, <code>target_total</code>, <code>remap_from</code>,
 <code>remap_to</code>, and <code>previous</code> for a further round, in a new <code>output_dir</code>).</p></dd>
 
 
 <dt id="arg-table-pattern">table_pattern<a class="anchor" aria-label="anchor" href="#arg-table-pattern"></a></dt>
-<dd><p>Regular expression for the file names of combined
+<dd><p>Character scalar, regular expression for the file
+names of combined
 tables.</p></dd>
 
 
 <dt id="arg-per-audio-pattern">per_audio_pattern<a class="anchor" aria-label="anchor" href="#arg-per-audio-pattern"></a></dt>
-<dd><p>Regular expression for the file names of
+<dd><p><code>NULL</code> or character scalar, regular expression
+for the file names of
 per-audio tables. <code>NULL</code> reads only combined tables.</p></dd>
 
 
 <dt id="arg-site-pattern">site_pattern<a class="anchor" aria-label="anchor" href="#arg-site-pattern"></a></dt>
-<dd><p>Optional regular expression with one capture group
+<dd><p><code>NULL</code> or character scalar, regular expression with
+one capture group
 that takes the site from the name of the audio file in <code>Begin Path</code>,
 instead of from the folder of the table. For example,
 <code>"^[^_]+_([^_]+)_"</code> reads <code>Campus01</code> from
@@ -135,18 +141,21 @@ instead of from the folder of the table. For example,
 
 
 <dt id="arg-make-zip">make_zip<a class="anchor" aria-label="anchor" href="#arg-make-zip"></a></dt>
-<dd><p>Zip one package per species (skipped when <code>simulate</code> is
+<dd><p>Logical scalar. If <code>TRUE</code>, zip one package per species
+(skipped when <code>simulate</code> is
 <code>TRUE</code>).</p></dd>
 
 
 <dt id="arg-simulate">simulate<a class="anchor" aria-label="anchor" href="#arg-simulate"></a></dt>
-<dd><p>If <code>TRUE</code>, no audio is cut (the empty species folders
+<dd><p>Logical scalar. If <code>TRUE</code>, no audio is cut (the empty
+species folders
 are still created), but <code>status</code> tells what would be done. Useful to
 check a selection before cutting.</p></dd>
 
 
 <dt id="arg-classifier">classifier<a class="anchor" aria-label="anchor" href="#arg-classifier"></a></dt>
-<dd><p>Label of the classifier that produced the selection
+<dd><p><code>NULL</code> or character scalar, label of the classifier
+that produced the selection
 tables (e.g. <code>"DiverSons v2, BirdNET-Analyzer 2.4.0"</code>), recorded in
 <code>extraction_info.csv</code>. <code>NULL</code> records <code>NA</code>.</p></dd>
 
@@ -192,8 +201,8 @@ reads it, so keep it with the manifest.</p>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Simulating the cut of 4099 clips...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   audio_not_found: 4099</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Some clips were not created - check the `status` column of the manifest and the path remapping (remap_from/remap_to).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Manifest written to /tmp/Rtmp0jDMSU/validation/clip_manifest.csv</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Done! The clips in /tmp/Rtmp0jDMSU/validation/clips are ready for validation in the BirdNET GUI (review).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Manifest written to /tmp/Rtmpd8vHp9/validation/clip_manifest.csv</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Done! The clips in /tmp/Rtmpd8vHp9/validation/clips are ready for validation in the BirdNET GUI (review).</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">man</span><span class="op">$</span><span class="va">status</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> audio_not_found </span>

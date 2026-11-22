@@ -37,7 +37,7 @@ build_training_set(
 
 - validation:
 
-  Reviewed clips, as returned by
+  A data frame of reviewed clips, one row per clip, as returned by
   [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md),
   [`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md)
   (`$validation`) or
@@ -48,37 +48,40 @@ build_training_set(
 
 - output_dir:
 
-  Output folder; `train/` and, if any clip is held out, `test/` are
-  created in it.
+  Character scalar, path to the output folder; `train/` and, if any clip
+  is held out, `test/` are created in it.
 
 - split:
 
-  How to split the clips into training and test sets; see Splits.
+  Character scalar, one of `"site"`, `"night"`, `"site_species_night"`
+  or `"none"`: how to split the clips into training and test sets; see
+  Splits.
 
 - test_sites:
 
-  Sites held out for testing with `split = "site"`. `NULL` puts every
-  clip in `train/`.
+  `NULL` or character vector, sites held out for testing with
+  `split = "site"`. `NULL` puts every clip in `train/`.
 
 - test_prop:
 
-  Proportion of the nights of each site (or site x species) drawn for
-  the test set.
+  Numeric scalar in (0, 1), proportion of the nights of each site (or
+  site x species) drawn for the test set.
 
 - seed:
 
-  Seed of the draws.
+  Numeric scalar, seed of the draws.
 
 - max_per_site_species:
 
-  Optional maximum number of positive training clips per site x species.
-  Larger sets are reduced by taking clips from the nights in turn, in
-  random order, which keeps as many nights as possible. Test clips and
-  negatives are not reduced.
+  `NULL` or integer scalar, maximum number of positive training clips
+  per site x species. Larger sets are reduced by taking clips from the
+  nights in turn, in random order, which keeps as many nights as
+  possible. Test clips and negatives are not reduced.
 
 - exclude_from_test:
 
-  Optional table with `site` and `night` (e.g. from
+  `NULL` or a data frame with `site` and `night`, one row per night
+  (e.g. from
   [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md)):
   nights that must not be in the test set, such as nights whose
   recordings trained another classifier that will be compared on it.
@@ -87,45 +90,47 @@ build_training_set(
 
 - val_prop:
 
-  Optional proportion of the training nights of each site drawn for the
-  validation set (`val/`); see Splits. `NULL` draws none.
+  `NULL` or numeric scalar in (0, 1), proportion of the training nights
+  of each site drawn for the validation set (`val/`); see Splits. `NULL`
+  draws none.
 
 - val_seed:
 
-  Seed of the validation draw. The default, `seed + 1`, is also the seed
-  of `max_per_site_species`; the two draws are separate, and the default
-  reproduces the training sets of the DiverSons project.
+  Numeric scalar, seed of the validation draw. The default, `seed + 1`,
+  is also the seed of `max_per_site_species`; the two draws are
+  separate, and the default reproduces the training sets of the
+  DiverSons project.
 
 - negatives:
 
-  Include the negative clips?
+  Logical scalar. If `TRUE`, include the negative clips.
 
 - negatives_folder:
 
-  `NULL` puts the negatives of each class in a `-<species_code>` folder.
-  A non-event class of BirdNET-Analyzer (`"Noise"`, `"Other"`,
-  `"Background"` or `"Silence"`) puts all of them in that folder
-  instead; see Negatives.
+  `NULL` or character scalar. `NULL` puts the negatives of each class in
+  a `-<species_code>` folder. A non-event class of BirdNET-Analyzer
+  (`"Noise"`, `"Other"`, `"Background"` or `"Silence"`) puts all of them
+  in that folder instead; see Negatives.
 
 - min_files:
 
-  Minimum number of positive training files per class below which a
-  warning is raised.
+  Numeric scalar, minimum number of positive training files per class
+  below which a warning is raised.
 
 - copy:
 
-  Copy the clips? With `FALSE`, only `training_set.csv` is written, so
-  that the split can be built on a computer without the clips and copied
-  later.
+  Logical scalar. If `TRUE`, copy the clips; with `FALSE`, only
+  `training_set.csv` is written, so that the split can be built on a
+  computer without the clips and copied later.
 
 - remap_from, remap_to:
 
-  Optional prefix of `reviewed_path` and its replacement, for clips
-  reviewed on another computer or drive.
+  `NULL` or character scalars, prefix of `reviewed_path` and its
+  replacement, for clips reviewed on another computer or drive.
 
 - strict:
 
-  Raise an error if any check is above 0?
+  Logical scalar. If `TRUE`, raise an error if any check is above 0.
 
 ## Value
 

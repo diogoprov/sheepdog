@@ -29,47 +29,49 @@ calibration_ppc(
 
 - fit:
 
-  Model returned by
+  A `brmsfit` returned by
   [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
   with `engine = "brms"`.
 
 - validations:
 
-  The calibration data the model was fitted to, in the same row order,
-  with any columns named in `group` (keep them with
-  `read_validations(keep = )`). `NULL` uses the data stored in `fit`,
-  which only hold the columns of the formula.
+  `NULL` or a data frame (or tibble), the calibration data the model was
+  fitted to, in the same row order, with any columns named in `group`
+  (keep them with `read_validations(keep = )`). `NULL` uses the data
+  stored in `fit`, which only hold the columns of the formula.
 
 - group:
 
-  Optional character vector of columns of `validations` to check within,
-  besides score bins, sites and species.
+  `NULL` or a character vector of columns of `validations` to check
+  within, besides score bins, sites and species.
 
 - bin_width:
 
-  Width of the score bins. Bins with fewer than `min_n` clips are merged
-  with their neighbour.
+  Numeric scalar in (0, 1), width of the score bins. Bins with fewer
+  than `min_n` clips are merged with their neighbour.
 
 - min_n:
 
-  Smallest number of clips in a score bin.
+  Integer scalar \>= 1, smallest number of clips in a score bin.
 
 - prob:
 
-  Probability of the predictive interval.
+  Numeric scalar in (0, 1), probability of the predictive interval.
 
 - flag:
 
-  Groups with a p-value below `flag` or above `1 - flag` are flagged.
+  Numeric scalar in (0, 1). Groups with a p-value below `flag` or above
+  `1 - flag` are flagged.
 
 - n_draws:
 
-  Number of posterior draws; `NULL` uses all.
+  `NULL` or an integer scalar \>= 1, number of posterior draws; `NULL`
+  uses all.
 
 - seed:
 
-  Seed of the choice of draws and of the predictive simulation. The
-  global random number generator is left as it was.
+  Integer scalar, seed of the choice of draws and of the predictive
+  simulation. The global random number generator is left as it was.
 
 ## Value
 

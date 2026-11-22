@@ -24,33 +24,36 @@ score_detections(
 
 - tables:
 
-  Named character vector, named by site (the site names of the
-  calibration): the path of the combined selection table of each site,
-  or the folder of its per-audio tables (see
+  Named character vector, one element per site, named by site (the site
+  names of the calibration): the path of the combined selection table of
+  each site, or the folder of its per-audio tables (see
   [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)).
 
 - fit:
 
-  Model returned by
+  A `glm`, `glmerMod` or `brmsfit` returned by
   [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md).
 
 - min_confidence:
 
-  Detections below this confidence are not scored.
+  Numeric scalar in \[0, 1\]. Detections below this confidence are not
+  scored.
 
 - dawn_hour:
 
-  Recordings that start before this hour belong to the night before.
+  Numeric scalar in \[0, 24\]. Recordings that start before this hour
+  belong to the night before.
 
 - p_min, lower_prob:
 
+  Numeric scalars, `p_min` in \[0, 1\] and `lower_prob` in (0, 1).
   Models fitted with `engine = "brms"`: the threshold of `pr_reliable`
   and the probability of the lower quantile `p_tp_lower`.
 
 - grid_step:
 
-  Models fitted with `engine = "brms"`: step of the grid of scores on
-  which the posterior is computed.
+  Numeric scalar in (0, 0.5). Models fitted with `engine = "brms"`: step
+  of the grid of scores on which the posterior is computed.
 
 ## Value
 

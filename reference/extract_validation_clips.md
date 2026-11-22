@@ -25,52 +25,55 @@ extract_validation_clips(
 
 - data_dir:
 
-  Root folder, searched recursively.
+  Character scalar, path to the root folder, searched recursively.
 
 - output_dir:
 
-  Output folder; created if needed.
+  Character scalar, path to the output folder; created if needed.
 
 - ...:
 
-  Sampling design, passed to
-  [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
-  (e.g. `sampling_mode`, `n_top`, `threshold`, `target_total`,
-  `remap_from`, `remap_to`, and `previous` for a further round, in a new
-  `output_dir`).
+  Further arguments passed to
+  [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md):
+  the sampling design (e.g. `sampling_mode`, `n_top`, `threshold`,
+  `target_total`, `remap_from`, `remap_to`, and `previous` for a further
+  round, in a new `output_dir`).
 
 - table_pattern:
 
-  Regular expression for the file names of combined tables.
+  Character scalar, regular expression for the file names of combined
+  tables.
 
 - per_audio_pattern:
 
-  Regular expression for the file names of per-audio tables. `NULL`
-  reads only combined tables.
+  `NULL` or character scalar, regular expression for the file names of
+  per-audio tables. `NULL` reads only combined tables.
 
 - site_pattern:
 
-  Optional regular expression with one capture group that takes the site
-  from the name of the audio file in `Begin Path`, instead of from the
-  folder of the table. For example, `"^[^_]+_([^_]+)_"` reads `Campus01`
-  from `Campinas_Campus01_20261003_074339.flac`. Use the same pattern in
+  `NULL` or character scalar, regular expression with one capture group
+  that takes the site from the name of the audio file in `Begin Path`,
+  instead of from the folder of the table. For example,
+  `"^[^_]+_([^_]+)_"` reads `Campus01` from
+  `Campinas_Campus01_20261003_074339.flac`. Use the same pattern in
   [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md).
 
 - make_zip:
 
-  Zip one package per species (skipped when `simulate` is `TRUE`).
+  Logical scalar. If `TRUE`, zip one package per species (skipped when
+  `simulate` is `TRUE`).
 
 - simulate:
 
-  If `TRUE`, no audio is cut (the empty species folders are still
-  created), but `status` tells what would be done. Useful to check a
-  selection before cutting.
+  Logical scalar. If `TRUE`, no audio is cut (the empty species folders
+  are still created), but `status` tells what would be done. Useful to
+  check a selection before cutting.
 
 - classifier:
 
-  Label of the classifier that produced the selection tables (e.g.
-  `"DiverSons v2, BirdNET-Analyzer 2.4.0"`), recorded in
-  `extraction_info.csv`. `NULL` records `NA`.
+  `NULL` or character scalar, label of the classifier that produced the
+  selection tables (e.g. `"DiverSons v2, BirdNET-Analyzer 2.4.0"`),
+  recorded in `extraction_info.csv`. `NULL` records `NA`.
 
 ## Value
 
@@ -119,8 +122,8 @@ man <- extract_validation_clips(file.path(ex, "birdnet"),
 #> Simulating the cut of 4099 clips...
 #>   audio_not_found: 4099
 #> Warning: Some clips were not created - check the `status` column of the manifest and the path remapping (remap_from/remap_to).
-#> Manifest written to /tmp/Rtmp0jDMSU/validation/clip_manifest.csv
-#> Done! The clips in /tmp/Rtmp0jDMSU/validation/clips are ready for validation in the BirdNET GUI (review).
+#> Manifest written to /tmp/Rtmpd8vHp9/validation/clip_manifest.csv
+#> Done! The clips in /tmp/Rtmpd8vHp9/validation/clips are ready for validation in the BirdNET GUI (review).
 table(man$status)
 #> 
 #> audio_not_found 

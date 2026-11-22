@@ -24,13 +24,16 @@ threshold_by_group(
 
 - validation:
 
-  Table returned by
-  [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md).
+  A data frame (or tibble) returned by
+  [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md),
+  with columns `site`, `species_folder`, `verdict` and `confidence`. One
+  row per clip.
 
 - thresholds:
 
-  The threshold of each cell: a table with `site`, `species_folder` and
-  a `threshold` column (e.g. from
+  A data frame (or tibble) or a numeric scalar. The threshold of each
+  cell: a table with `site`, `species_folder` and a `threshold` column
+  (e.g. from
   [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md);
   `threshold_column` picks another column, such as
   `"threshold_conservative"` of
@@ -39,21 +42,21 @@ threshold_by_group(
 
 - by:
 
-  Columns of `validation` that define the groups, e.g.
-  `"recording_hour"` or a month column.
+  Character vector of column names of `validation` that define the
+  groups, e.g. `"recording_hour"` or a month column.
 
 - target_precision:
 
-  Target precision.
+  Numeric scalar in (0, 1). Target precision.
 
 - min_n:
 
-  Minimum of reviewed clips for a bin to be taken seriously; bins with
-  fewer are flagged in `low_support`.
+  Integer scalar \>= 1. Minimum of reviewed clips for a bin to be taken
+  seriously; bins with fewer are flagged in `low_support`.
 
 - threshold_column:
 
-  Column of `thresholds` with the threshold.
+  Character scalar, the column of `thresholds` with the threshold.
 
 ## Value
 

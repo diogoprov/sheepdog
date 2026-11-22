@@ -119,11 +119,14 @@ of <code><a href="select_clips.html">select_clips()</a></code>.</p>
 
 
 <dl><dt id="arg-detections">detections<a class="anchor" aria-label="anchor" href="#arg-detections"></a></dt>
-<dd><p>Predictions, as returned by <code><a href="read_selection_tables.html">read_selection_tables()</a></code>.</p></dd>
+<dd><p>A data frame of predictions, one row per BirdNET
+prediction, as returned by <code><a href="read_selection_tables.html">read_selection_tables()</a></code> (columns <code>site</code>,
+<code>confidence</code>, <code>begin_path</code>, <code>begin_time</code>, <code>end_time</code> and
+<code>file_offset</code>).</p></dd>
 
 
 <dt id="arg-units">units<a class="anchor" aria-label="anchor" href="#arg-units"></a></dt>
-<dd><p>Data frame with one row per eligible unit: the columns
+<dd><p>A data frame with one row per eligible unit: the columns
 that define the unit (any columns of the prepared predictions, such as
 <code>site</code>, <code>species_code</code> and <code>month</code>) and the size column. Only listed
 units are drawn, so leave out the units that need no review, for
@@ -131,45 +134,52 @@ instance those where a review has already confirmed the species.</p></dd>
 
 
 <dt id="arg-n-units">n_units<a class="anchor" aria-label="anchor" href="#arg-n-units"></a></dt>
-<dd><p>Number of units to draw.</p></dd>
+<dd><p>Integer scalar &gt;= 1, number of units to draw.</p></dd>
 
 
 <dt id="arg-threshold">threshold<a class="anchor" aria-label="anchor" href="#arg-threshold"></a></dt>
-<dd><p>Confidence threshold: an occasion is a candidate when
+<dd><p>Numeric scalar, confidence threshold: an occasion is a
+candidate when
 it has at least one prediction at or above it, and its clips are all
 such predictions. Use the threshold of the occupancy analysis.</p></dd>
 
 
 <dt id="arg-size-col">size_col<a class="anchor" aria-label="anchor" href="#arg-size-col"></a></dt>
-<dd><p>Column of <code>units</code> with the size (non-negative).</p></dd>
+<dd><p>Character scalar, column of <code>units</code> with the size (a
+non-negative numeric column without <code>NA</code>).</p></dd>
 
 
 <dt id="arg-floor">floor<a class="anchor" aria-label="anchor" href="#arg-floor"></a></dt>
-<dd><p>Share of the mean size added to every size, so that a unit
+<dd><p>Numeric scalar &gt;= 0, share of the mean size added to every
+size, so that a unit
 with size 0 can still be drawn. Without it, a unit the model judges
 worthless is never reviewed and the model is never corrected there.</p></dd>
 
 
 <dt id="arg-occasion-unit">occasion_unit<a class="anchor" aria-label="anchor" href="#arg-occasion-unit"></a></dt>
-<dd><p>The occasion of the occupancy model: <code>"file"</code> (the
-whole recording) or <code>"minute"</code> (minute of the file, from
+<dd><p>Character scalar, the occasion of the occupancy
+model: <code>"file"</code> (the whole recording) or <code>"minute"</code> (minute of the
+file, from
 <code>file_offset</code>).</p></dd>
 
 
 <dt id="arg-previous">previous<a class="anchor" aria-label="anchor" href="#arg-previous"></a></dt>
-<dd><p>Manifests of earlier review rounds (of any design), as
-paths or data frames. Their clips are left out, matched by recording
+<dd><p><code>NULL</code>, a character vector of paths, a data frame, or a
+list of these: manifests of earlier review rounds (of any design).
+Their clips are left out, matched by recording
 file and start: an occasion is a candidate only while it has a
 prediction at or above <code>threshold</code> not yet reviewed.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>Seed of the draws. The global random number generator is
+<dd><p>Integer scalar, seed of the draws. The global random number
+generator is
 left as it was.</p></dd>
 
 
 <dt id="arg-remap-from-remap-to">remap_from, remap_to<a class="anchor" aria-label="anchor" href="#arg-remap-from-remap-to"></a></dt>
-<dd><p>Replace the prefix <code>remap_from</code> of the
+<dd><p><code>NULL</code> or character scalars. Replace the
+prefix <code>remap_from</code> of the
 <code>begin_path</code> paths by <code>remap_to</code>, e.g. <code>"N:/"</code> and <code>"/Volumes/Arara/"</code>.
 Backslashes are turned into forward slashes first.</p></dd>
 

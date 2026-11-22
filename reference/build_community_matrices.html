@@ -104,27 +104,30 @@ script <code>gerar_matrizes_comunidade.R</code>.</p>
 
 
 <dl><dt id="arg-history-file">history_file<a class="anchor" aria-label="anchor" href="#arg-history-file"></a></dt>
-<dd><p>Path to <code>nightly_detection_history.csv</code> (or a v1.2.0
+<dd><p>Character scalar, path to
+<code>nightly_detection_history.csv</code> (or a v1.2.0
 <code>historico_deteccao_noite.csv</code>).</p></dd>
 
 
 <dt id="arg-output-dir">output_dir<a class="anchor" aria-label="anchor" href="#arg-output-dir"></a></dt>
-<dd><p>Output folder; created if needed.</p></dd>
+<dd><p>Character scalar, path to the output folder; created if
+needed.</p></dd>
 
 
 <dt id="arg-core-species">core_species<a class="anchor" aria-label="anchor" href="#arg-core-species"></a></dt>
-<dd><p>Species codes (the <code>species</code> column) that enter the
-matrix.</p></dd>
+<dd><p>Character vector of length &gt;= 1, species codes (the
+<code>species</code> column) that enter the matrix.</p></dd>
 
 
 <dt id="arg-k-min">k_min<a class="anchor" aria-label="anchor" href="#arg-k-min"></a></dt>
-<dd><p>Repetition rule: 1, 2 or 3 reliable detections on the night.</p></dd>
+<dd><p>Integer scalar, one of 1, 2 or 3. Repetition rule: 1, 2 or
+3 reliable detections on the night.</p></dd>
 
 
 <dt id="arg-min-nights-month">min_nights_month<a class="anchor" aria-label="anchor" href="#arg-min-nights-month"></a></dt>
-<dd><p>Site x month cells with fewer recorded nights are
-dropped from the matrices (unstable frequencies) and flagged in
-<code>effort</code>.</p></dd>
+<dd><p>Numeric scalar. Site x month cells with fewer
+recorded nights are dropped from the matrices (unstable frequencies)
+and flagged in <code>effort</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -112,51 +112,55 @@ questions before the probabilities are used:</p>
 
 
 <dl><dt id="arg-validations">validations<a class="anchor" aria-label="anchor" href="#arg-validations"></a></dt>
-<dd><p>Table returned by <code><a href="read_validations.html">read_validations()</a></code>.</p></dd>
+<dd><p>A data frame (or tibble) returned by <code><a href="read_validations.html">read_validations()</a></code>,
+one row per reviewed clip.</p></dd>
 
 
 <dt id="arg-formula">formula<a class="anchor" aria-label="anchor" href="#arg-formula"></a></dt>
-<dd><p>Formula of the model to check, e.g. the one chosen by
-<code><a href="select_calibration_model.html">select_calibration_model()</a></code>.</p></dd>
+<dd><p>A model formula, the formula of the model to check, e.g. the
+one chosen by <code><a href="select_calibration_model.html">select_calibration_model()</a></code>.</p></dd>
 
 
 <dt id="arg-k-folds">k_folds<a class="anchor" aria-label="anchor" href="#arg-k-folds"></a></dt>
-<dd><p>Number of folds.</p></dd>
+<dd><p>Integer scalar &gt;= 2, number of folds.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>Seed of the fold assignment. The global random number
-generator is left as it was.</p></dd>
+<dd><p>Integer scalar, seed of the fold assignment. The global random
+number generator is left as it was.</p></dd>
 
 
 <dt id="arg-fold-group">fold_group<a class="anchor" aria-label="anchor" href="#arg-fold-group"></a></dt>
-<dd><p>Optional character vector of grouping columns. Do not
+<dd><p><code>NULL</code> or a character vector of grouping columns. Do not
 include <code>species</code>, verdicts or confidence scores: these would split
-recordings or nights by species or by outcome. Group IDs must be
-nonmissing and nonempty. <code>NULL</code> keeps the original clip folds.</p></dd>
+recordings or nights by species or by outcome. Group IDs must be nonmissing
+and nonempty. <code>NULL</code> keeps the original clip folds.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
-<dd><p>Columns that define the groups: <code>"species"</code>, or
-<code>c("site", "species")</code> for the cells of the calibration, which hold
-fewer clips each.</p></dd>
+<dd><p>Character vector of columns of <code>validations</code> that define the
+groups: <code>"species"</code>, or <code>c("site", "species")</code> for the cells of the
+calibration, which hold fewer clips each.</p></dd>
 
 
 <dt id="arg-min-class">min_class<a class="anchor" aria-label="anchor" href="#arg-min-class"></a></dt>
-<dd><p>Least number of true positives and of false positives
-for a group to be judged. With fewer, <code>status</code> is <code>"insufficient"</code>.</p></dd>
+<dd><p>Numeric scalar, least number of true positives and of false
+positives for a group to be judged. With fewer, <code>status</code> is
+<code>"insufficient"</code>.</p></dd>
 
 
 <dt id="arg-auc-min">auc_min<a class="anchor" aria-label="anchor" href="#arg-auc-min"></a></dt>
-<dd><p>Lowest acceptable <code>auc</code> and <code>auc_score</code>.</p></dd>
+<dd><p>Numeric scalar, lowest acceptable <code>auc</code> and <code>auc_score</code>.</p></dd>
 
 
 <dt id="arg-slope-range">slope_range<a class="anchor" aria-label="anchor" href="#arg-slope-range"></a></dt>
-<dd><p>Acceptable range of <code>cal_slope</code>.</p></dd>
+<dd><p>Numeric vector of length 2, increasing: acceptable range
+of <code>cal_slope</code>.</p></dd>
 
 
 <dt id="arg-intercept-max">intercept_max<a class="anchor" aria-label="anchor" href="#arg-intercept-max"></a></dt>
-<dd><p>Largest acceptable absolute <code>cal_intercept</code>.</p></dd>
+<dd><p>Numeric scalar, largest acceptable absolute
+<code>cal_intercept</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

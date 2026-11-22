@@ -97,21 +97,25 @@ output folders is removed, so <code>output_UEM/</code> becomes site <code>UEM</c
 
 
 <dl><dt id="arg-data-dir">data_dir<a class="anchor" aria-label="anchor" href="#arg-data-dir"></a></dt>
-<dd><p>Root folder, searched recursively.</p></dd>
+<dd><p>Character scalar, path to the root folder, searched
+recursively.</p></dd>
 
 
 <dt id="arg-table-pattern">table_pattern<a class="anchor" aria-label="anchor" href="#arg-table-pattern"></a></dt>
-<dd><p>Regular expression for the file names of combined
+<dd><p>Character scalar, regular expression for the file
+names of combined
 tables.</p></dd>
 
 
 <dt id="arg-per-audio-pattern">per_audio_pattern<a class="anchor" aria-label="anchor" href="#arg-per-audio-pattern"></a></dt>
-<dd><p>Regular expression for the file names of
+<dd><p><code>NULL</code> or character scalar, regular expression
+for the file names of
 per-audio tables. <code>NULL</code> reads only combined tables.</p></dd>
 
 
 <dt id="arg-site-pattern">site_pattern<a class="anchor" aria-label="anchor" href="#arg-site-pattern"></a></dt>
-<dd><p>Optional regular expression with one capture group
+<dd><p><code>NULL</code> or character scalar, regular expression with
+one capture group
 that takes the site from the name of the audio file in <code>Begin Path</code>,
 instead of from the folder of the table. For example,
 <code>"^[^_]+_([^_]+)_"</code> reads <code>Campus01</code> from

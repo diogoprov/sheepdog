@@ -17,17 +17,17 @@ read_validations(files, site_map = NULL, keep = NULL)
 
 - files:
 
-  Paths to the `validation_by_clip.csv` files. Missing files are skipped
-  with a warning.
+  Character vector, paths to the `validation_by_clip.csv` files. Missing
+  files are skipped with a warning.
 
 - site_map:
 
-  Optional named character vector to fix diverging site names, as
+  `NULL` or a named character vector to fix diverging site names, as
   `c(old = "new")`, e.g. `c(BEP2 = "BEP")`.
 
 - keep:
 
-  Optional character vector of input columns to retain, e.g.
+  `NULL` or a character vector of input columns to retain, e.g.
   `c("source_audio", "night")` for grouped cross-validation. Missing
   columns raise an error rather than silently falling back to clip
   folds.

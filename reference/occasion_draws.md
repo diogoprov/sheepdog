@@ -29,38 +29,39 @@ occasion_draws(
 
 - export_dir:
 
-  Folder written by
+  Character scalar, path to the folder written by
   [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
   with `fit`.
 
 - species:
 
-  Optional species to process, matched against `species` (the short
-  code, e.g. `"phy_cuv"`) or `species_code` of `detections.csv`. All
-  species with calibration draws by default.
+  `NULL` or character vector, species to process, matched against
+  `species` (the short code, e.g. `"phy_cuv"`) or `species_code` of
+  `detections.csv`. All species with calibration draws by default.
 
 - rule:
 
-  `"sample"` or `"threshold"`; see Rules.
+  Character scalar, `"sample"` or `"threshold"`; see Rules.
 
 - p_min:
 
-  Threshold of `rule = "threshold"`.
+  Numeric scalar in \[0, 1\], threshold of `rule = "threshold"`.
 
 - n_draws:
 
-  Optional number of calibration draws to use: the first ones, in
-  increasing order of their identifiers. All by default.
+  `NULL` or integer scalar \>= 1, number of calibration draws to use:
+  the first ones, in increasing order of their identifiers. All by
+  default.
 
 - seed:
 
-  Seed of `rule = "sample"`.
+  Numeric scalar, seed of `rule = "sample"`.
 
 - write:
 
-  Write `occasion_draws.parquet` in `export_dir` and record it in
-  `schema.json` (schema version 1.2 or later)? An existing table is
-  replaced.
+  Logical scalar. If `TRUE`, write `occasion_draws.parquet` in
+  `export_dir` and record it in `schema.json` (schema version 1.2 or
+  later). An existing table is replaced.
 
 ## Value
 

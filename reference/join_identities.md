@@ -24,7 +24,8 @@ join_identities(
 
 - validation:
 
-  Table of verdicts with `clip_file` and `verdict`, from
+  A data frame (or tibble) of verdicts with `clip_file` and `verdict`,
+  from
   [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md),
   [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md)
   or
@@ -32,23 +33,26 @@ join_identities(
 
 - identities:
 
-  Data frame, or the path to a CSV, with one row per clip. Read a
-  spreadsheet with `readxl::read_excel()` first.
+  A data frame (or tibble), or a character scalar with the path to a
+  CSV, with one row per clip. Read a spreadsheet with
+  `readxl::read_excel()` first.
 
 - clip_col, identity_col:
 
-  Columns of `identities` with the clip name (as in `clip_file`; a path
-  is reduced to its file name) and the identity.
+  Character scalars, the columns of `identities` with the clip name (as
+  in `clip_file`; a path is reduced to its file name) and the identity.
 
 - certainty_col:
 
-  Optional column of `identities` with the certainty, `"sure"` or
-  `"probable"`. Without it, the certainty is left `NA`.
+  `NULL` or a character scalar, the column of `identities` with the
+  certainty, `"sure"` or `"probable"`. Without it, the certainty is left
+  `NA`.
 
 - reviewer:
 
-  Optional reviewer: with a table that has one row per clip and
-  reviewer, only that reviewer's rows receive the identities.
+  `NULL` or a character vector of reviewer names: with a table that has
+  one row per clip and reviewer, only those reviewers' rows receive the
+  identities.
 
 ## Value
 

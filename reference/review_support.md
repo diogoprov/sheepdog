@@ -29,42 +29,47 @@ review_support(
 
 - validation:
 
-  Reviewed clips, as for
+  A data frame (or tibble) of reviewed clips, as for
   [`precision_by_bin()`](https://provetelab.org/sheepdog/reference/precision_by_bin.md)
-  (the `validation_by_clip.csv` tables).
+  (the `validation_by_clip.csv` tables). One row per clip.
 
 - detections:
 
-  Predictions, as returned by
-  [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md).
+  A data frame (or tibble) of predictions, as returned by
+  [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md),
+  with columns `site`, `species_code`, `confidence`, `begin_path` and
+  `file_offset`. One row per prediction.
 
 - conf_high:
 
-  Score from which a prediction counts as high.
+  Numeric scalar, score from which a prediction counts as high.
 
 - min_n:
 
-  Minimum number of clips, as in
+  Integer scalar \>= 1. Minimum number of clips, as in
   [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md),
   and of unreviewed high-score detections for `"review more"`.
 
 - min_precision:
 
-  Precision at high scores below which a cell is `"unreliable"`.
+  Numeric scalar in \[0, 1\]. Precision at high scores below which a
+  cell is `"unreliable"`.
 
 - target_precision:
 
-  Target precision of
+  Numeric scalar in (0, 1). Target precision of
   [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md).
 
 - by:
 
-  Optional columns that split each cell, e.g. `"temp_bin"`. They must be
-  columns of `covariates` (joined to both tables) or of both tables.
+  `NULL` or a character vector of column names that split each cell,
+  e.g. `"temp_bin"`. They must be columns of `covariates` (joined to
+  both tables) or of both tables.
 
 - covariates:
 
-  Optional table of occasion covariates, such as the output of
+  `NULL` or a data frame (or tibble) of occasion covariates, such as the
+  output of
   [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md),
   joined to the clips and to the predictions by the columns it shares
   with them among `site`, `night`, `recording_date`, `recording_hour`,
@@ -73,18 +78,20 @@ review_support(
 
 - occasion_unit:
 
-  The occasion of the occupancy model: `"file"` (the whole recording) or
-  `"minute"` (minute of the file, from `file_offset`).
+  Character scalar, the occasion of the occupancy model: `"file"` (the
+  whole recording) or `"minute"` (minute of the file, from
+  `file_offset`).
 
 - remap_from, remap_to:
 
-  Replace the prefix `remap_from` of the `begin_path` paths by
-  `remap_to`, e.g. `"N:/"` and `"/Volumes/Arara/"`. Backslashes are
-  turned into forward slashes first.
+  `NULL` or character scalars. Replace the prefix `remap_from` of the
+  `begin_path` paths by `remap_to`, e.g. `"N:/"` and
+  `"/Volumes/Arara/"`. Backslashes are turned into forward slashes
+  first.
 
 - weighted:
 
-  Passed to
+  `NULL`, `TRUE` or `FALSE`. Passed to
   [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md),
   so that `"reached"` follows the same rule. `prec_high` stays
   unweighted.

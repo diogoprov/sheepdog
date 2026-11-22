@@ -95,19 +95,19 @@ verdict and a confidence score. Tables written by v1.2.0
 
 
 <dl><dt id="arg-files">files<a class="anchor" aria-label="anchor" href="#arg-files"></a></dt>
-<dd><p>Paths to the <code>validation_by_clip.csv</code> files. Missing files
-are skipped with a warning.</p></dd>
+<dd><p>Character vector, paths to the <code>validation_by_clip.csv</code> files.
+Missing files are skipped with a warning.</p></dd>
 
 
 <dt id="arg-site-map">site_map<a class="anchor" aria-label="anchor" href="#arg-site-map"></a></dt>
-<dd><p>Optional named character vector to fix diverging site
+<dd><p><code>NULL</code> or a named character vector to fix diverging site
 names, as <code>c(old = "new")</code>, e.g. <code>c(BEP2 = "BEP")</code>.</p></dd>
 
 
 <dt id="arg-keep">keep<a class="anchor" aria-label="anchor" href="#arg-keep"></a></dt>
-<dd><p>Optional character vector of input columns to retain, e.g.
-<code>c("source_audio", "night")</code> for grouped cross-validation. Missing
-columns raise an error rather than silently falling back to clip folds.</p></dd>
+<dd><p><code>NULL</code> or a character vector of input columns to retain, e.g.
+<code>c("source_audio", "night")</code> for grouped cross-validation. Missing columns
+raise an error rather than silently falling back to clip folds.</p></dd>
 
 </dl></div>
     <div class="section level2">

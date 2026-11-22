@@ -89,18 +89,18 @@ curves should pass through the points near the target.</p>
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>Output of <code><a href="compare_calibration_curves.html">compare_calibration_curves()</a></code>.</p></dd>
+<dd><p>A data frame (tibble), the output of <code><a href="compare_calibration_curves.html">compare_calibration_curves()</a></code>.</p></dd>
 
 
 <dt id="arg-validation">validation<a class="anchor" aria-label="anchor" href="#arg-validation"></a></dt>
-<dd><p>Optional: the reviewed clips, to show bins over the
-whole score range. Without it, only the high bins of <code>top_error</code> are
-shown.</p></dd>
+<dd><p><code>NULL</code> or a data frame (or tibble) of the reviewed clips,
+one row per clip, to show bins over the whole score range. Without it, only
+the high bins of <code>top_error</code> are shown.</p></dd>
 
 
 <dt id="arg-bin-width">bin_width<a class="anchor" aria-label="anchor" href="#arg-bin-width"></a></dt>
-<dd><p>Width of the bins of the observed precision, over the
-whole score range.</p></dd>
+<dd><p>Numeric scalar in (0, 1), width of the bins of the observed
+precision, over the whole score range.</p></dd>
 
 </dl></div>
     <div class="section level2">

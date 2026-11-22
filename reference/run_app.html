@@ -101,84 +101,87 @@ workflow. The tabs depend on the arguments:</p>
 
 
 <dl><dt id="arg-manifest">manifest<a class="anchor" aria-label="anchor" href="#arg-manifest"></a></dt>
-<dd><p>Clip manifest: a data frame or the path to
-<code>clip_manifest.csv</code> (from <code><a href="select_clips.html">select_clips()</a></code>, <code><a href="cut_clips.html">cut_clips()</a></code> or
-<code><a href="assign_reviewers.html">assign_reviewers()</a></code>). With <code>output_dir</code>, by default
-<code>&lt;output_dir&gt;/clip_manifest.csv</code> when it exists.</p></dd>
+<dd><p><code>NULL</code>, a data frame (or tibble) or a character scalar path
+to <code>clip_manifest.csv</code>: the clip manifest (from <code><a href="select_clips.html">select_clips()</a></code>,
+<code><a href="cut_clips.html">cut_clips()</a></code> or <code><a href="assign_reviewers.html">assign_reviewers()</a></code>), one row per clip. With
+<code>output_dir</code>, by default <code>&lt;output_dir&gt;/clip_manifest.csv</code> when it exists.</p></dd>
 
 
 <dt id="arg-clips-dir">clips_dir<a class="anchor" aria-label="anchor" href="#arg-clips-dir"></a></dt>
-<dd><p>Folder of the cut clips, with one subfolder per
-species (<code>&lt;clips_dir&gt;/&lt;species_folder&gt;/&lt;clip_file&gt;</code>, as written by
-<code><a href="cut_clips.html">cut_clips()</a></code>). With <code>output_dir</code>, <code>&lt;output_dir&gt;/clips</code> by default.</p></dd>
+<dd><p><code>NULL</code> or a character scalar, folder of the cut clips, with
+one subfolder per species (<code>&lt;clips_dir&gt;/&lt;species_folder&gt;/&lt;clip_file&gt;</code>, as
+written by <code><a href="cut_clips.html">cut_clips()</a></code>). With <code>output_dir</code>, <code>&lt;output_dir&gt;/clips</code> by
+default.</p></dd>
 
 
 <dt id="arg-verdicts-file">verdicts_file<a class="anchor" aria-label="anchor" href="#arg-verdicts-file"></a></dt>
-<dd><p>CSV where the verdicts are written. By default,
-<code>verdicts.csv</code> in <code>output_dir</code> or next to <code>manifest</code> when it is a
-path.</p></dd>
+<dd><p><code>NULL</code> or a character scalar, path to the CSV (<code>.csv</code>)
+where the verdicts are written. By default, <code>verdicts.csv</code> in <code>output_dir</code>
+or next to <code>manifest</code> when it is a path.</p></dd>
 
 
 <dt id="arg-reviewer">reviewer<a class="anchor" aria-label="anchor" href="#arg-reviewer"></a></dt>
-<dd><p>Name of the reviewer, written with each verdict. With a
-manifest from <code><a href="assign_reviewers.html">assign_reviewers()</a></code>, only the clips assigned to this
-reviewer (as first or second reviewer) are shown.</p></dd>
+<dd><p><code>NULL</code> or a character scalar, name of the reviewer, written
+with each verdict. With a manifest from <code><a href="assign_reviewers.html">assign_reviewers()</a></code>, only the
+clips assigned to this reviewer (as first or second reviewer) are shown.</p></dd>
 
 
 <dt id="arg-max-freq">max_freq<a class="anchor" aria-label="anchor" href="#arg-max-freq"></a></dt>
-<dd><p>Upper limit of the spectrogram, in kHz: 12 by default
-(e.g. <code>8</code> for most anuran calls). <code>NULL</code> shows the whole band. It can
-also be changed in the Review tab.</p></dd>
+<dd><p><code>NULL</code> or a numeric scalar, upper limit of the spectrogram,
+in kHz: 12 by default (e.g. <code>8</code> for most anuran calls). <code>NULL</code> shows the
+whole band. It can also be changed in the Review tab.</p></dd>
 
 
 <dt id="arg-selection-dir">selection_dir<a class="anchor" aria-label="anchor" href="#arg-selection-dir"></a></dt>
-<dd><p>Folder of the BirdNET selection tables (as in
-<code><a href="read_selection_tables.html">read_selection_tables()</a></code>). Opens the Sampling and Export tabs.</p></dd>
+<dd><p><code>NULL</code> or a character scalar, folder of the BirdNET
+selection tables (as in <code><a href="read_selection_tables.html">read_selection_tables()</a></code>). Opens the Sampling and
+Export tabs.</p></dd>
 
 
 <dt id="arg-output-dir">output_dir<a class="anchor" aria-label="anchor" href="#arg-output-dir"></a></dt>
-<dd><p>Folder of the validation round: the clips, the
-manifest, the verdicts and the export (<code>&lt;output_dir&gt;/occupancy</code> by
-default) are written there.</p></dd>
+<dd><p><code>NULL</code> or a character scalar, folder of the validation
+round: the clips, the manifest, the verdicts and the export
+(<code>&lt;output_dir&gt;/occupancy</code> by default) are written there.</p></dd>
 
 
 <dt id="arg-recordings">recordings<a class="anchor" aria-label="anchor" href="#arg-recordings"></a></dt>
-<dd><p>Optional table of all recordings (columns <code>site</code> and
-<code>source_audio</code>), or the path to its CSV: needed by
-<code>"random_recordings"</code> and, in the export, to keep the occasions
-without detections (see <code><a href="export_occupancy_data.html">export_occupancy_data()</a></code>).</p></dd>
+<dd><p><code>NULL</code>, a data frame (or tibble) of all recordings (columns
+<code>site</code> and <code>source_audio</code>, one row per recording) or a character scalar
+path to its CSV: needed by <code>"random_recordings"</code> and, in the export, to
+keep the occasions without detections (see <code><a href="export_occupancy_data.html">export_occupancy_data()</a></code>).</p></dd>
 
 
 <dt id="arg-audio-dir">audio_dir<a class="anchor" aria-label="anchor" href="#arg-audio-dir"></a></dt>
-<dd><p>Optional folder of the recordings, subfolders included.
-Every recording is listed with <code><a href="list_recordings.html">list_recordings()</a></code> and written to the
-<code>recordings</code> CSV when it is a path, or else to
-<code>&lt;output_dir&gt;/recordings.csv</code>; the list is used as <code>recordings</code>.
-Can also be chosen in the app (Intro &gt; Audio panel).</p></dd>
+<dd><p><code>NULL</code> or a character scalar, folder of the recordings,
+subfolders included. Every recording is listed with <code><a href="list_recordings.html">list_recordings()</a></code> and
+written to the <code>recordings</code> CSV when it is a path, or else to
+<code>&lt;output_dir&gt;/recordings.csv</code>; the list is used as <code>recordings</code>. Can also
+be chosen in the app (Intro &gt; Audio panel).</p></dd>
 
 
 <dt id="arg-site-pattern">site_pattern<a class="anchor" aria-label="anchor" href="#arg-site-pattern"></a></dt>
-<dd><p>Optional regular expression with one capture group
-that takes the site from the file names, when the recordings or the
-selection tables of several sites share a folder (see
-<code><a href="list_recordings.html">list_recordings()</a></code> and <code><a href="read_selection_tables.html">read_selection_tables()</a></code>). Can also be set in
-the Audio panel.</p></dd>
+<dd><p><code>NULL</code> or a character scalar, regular expression with one
+capture group that takes the site from the file names, when the recordings
+or the selection tables of several sites share a folder (see
+<code><a href="list_recordings.html">list_recordings()</a></code> and <code><a href="read_selection_tables.html">read_selection_tables()</a></code>). Can also be set in the
+Audio panel.</p></dd>
 
 
 <dt id="arg-blind">blind<a class="anchor" aria-label="anchor" href="#arg-blind"></a></dt>
-<dd><p>Blind review: the Review tab hides the score, the sampling
-design and the clip file name (which starts with the score), and shows
-the clips in an order shuffled once per reviewer instead of the order
-of the manifest, so that the verdict does not lean on the score.</p></dd>
+<dd><p>Logical scalar. If <code>TRUE</code>, blind review: the Review tab hides
+the score, the sampling design and the clip file name (which starts with
+the score), and shows the clips in an order shuffled once per reviewer
+instead of the order of the manifest, so that the verdict does not lean on
+the score.</p></dd>
 
 
 <dt id="arg-classifier">classifier<a class="anchor" aria-label="anchor" href="#arg-classifier"></a></dt>
-<dd><p>Label of the classifier, recorded in
-<code>extraction_info.csv</code> and <code>schema.json</code>.</p></dd>
+<dd><p><code>NULL</code> or a character scalar, label of the classifier,
+recorded in <code>extraction_info.csv</code> and <code>schema.json</code>.</p></dd>
 
 
 <dt id="arg-launch-browser">launch.browser<a class="anchor" aria-label="anchor" href="#arg-launch-browser"></a></dt>
-<dd><p>Open the app in the browser? Passed to
+<dd><p>Logical scalar: open the app in the browser? Passed to
 <code><a href="https://rdrr.io/pkg/shiny/man/runApp.html" class="external-link">shiny::runApp()</a></code>.</p></dd>
 
 

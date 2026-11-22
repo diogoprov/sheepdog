@@ -72,69 +72,75 @@ calibrate(
 
 - validation_files:
 
-  Paths to the `validation_by_clip.csv` files of the sites (v1.2.0
-  `validacao_por_clipe.csv` files are also read).
+  Character vector, paths to the `validation_by_clip.csv` files of the
+  sites (v1.2.0 `validacao_por_clipe.csv` files are also read).
 
 - prediction_tables:
 
-  Named character vector of the complete selection tables, named by
-  site: the path of each combined table, or the folder of the per-audio
-  tables of each site (see
+  Named character vector of the complete selection tables, one element
+  per site, named by site: the path of each combined table, or the
+  folder of the per-audio tables of each site (see
   [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md)).
 
 - output_dir:
 
-  Output folder; created if needed. The calibrated detections of a large
-  project can take hundreds of MB.
+  Character scalar, output folder; created if needed. The calibrated
+  detections of a large project can take hundreds of MB.
 
 - site_map:
 
-  Optional named character vector to fix diverging site names, as
+  `NULL` or a named character vector to fix diverging site names, as
   `c(old = "new")`, e.g. `c(BEP2 = "BEP")`.
 
 - min_confidence:
 
-  Detections below this confidence are not scored.
+  Numeric scalar in \[0, 1\]. Detections below this confidence are not
+  scored.
 
 - p_min:
 
-  Threshold on the calibrated probability (not on the confidence score).
+  Numeric scalar in \[0, 1\], threshold on the calibrated probability
+  (not on the confidence score).
 
 - min_detections_night:
 
-  Repetition rule: minimum number of reliable detections for a night
-  with detection.
+  Integer scalar \>= 1, repetition rule: minimum number of reliable
+  detections for a night with detection.
 
 - dawn_hour:
 
-  Recordings that start before this hour belong to the night before.
+  Numeric scalar in \[0, 24\]. Recordings that start before this hour
+  belong to the night before.
 
 - k_folds:
 
-  Number of folds.
+  Integer scalar \>= 2, number of folds.
 
 - select:
 
-  Rule to choose the model; see
+  Character scalar, one of `"one_se_logloss"` (default) or `"best_auc"`:
+  the rule to choose the model; see
   [`select_calibration_model()`](https://provetelab.org/sheepdog/reference/select_calibration_model.md).
 
 - uncorrelated:
 
-  Include the m4 variant without the species intercept-slope correlation
-  among the candidates; see
+  Logical scalar. If `TRUE`, include the m4 variant without the species
+  intercept-slope correlation among the candidates; see
   [`calibration_models()`](https://provetelab.org/sheepdog/reference/calibration_models.md).
 
 - effort_curve:
 
-  Draw the effort curve (slow).
+  Logical scalar. If `TRUE`, draw the effort curve (slow).
 
 - effort_n, effort_reps:
 
-  Training sizes and repetitions of the effort curve.
+  Numeric vector of training sizes and integer scalar \>= 1 of
+  repetitions of the effort curve.
 
 - engine:
 
-  Engine of the final fit: `"lme4"` or `"brms"` (see
+  Character scalar, one of `"lme4"` (default) or `"brms"`: the engine of
+  the final fit (see
   [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)).
   The comparison of the candidate models always uses maximum likelihood
   (fast); with `"brms"`, the selected model is then refitted in a
@@ -144,14 +150,14 @@ calibrate(
 
 - prior:
 
-  `engine = "brms"`: the prior, as a `brmsprior` object or as a function
-  of the selected formula and the validations that returns one, e.g.
-  `calibration_prior` (whose classes then match the selected model).
-  Required with `"brms"`.
+  `NULL`, a `brmsprior` object or a function. With `engine = "brms"`,
+  the prior, as a `brmsprior` object or as a function of the selected
+  formula and the validations that returns one, e.g. `calibration_prior`
+  (whose classes then match the selected model). Required with `"brms"`.
 
 - brms_args:
 
-  `engine = "brms"`: list of further arguments for
+  A list. With `engine = "brms"`, list of further arguments for
   [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html)
   (e.g. `list(chains = 4, cores = 4, backend = "cmdstanr")`). Without
   `seed` in this list, `seed` is also the seed of the Bayesian refit, so
@@ -160,8 +166,9 @@ calibrate(
 
 - rule:
 
-  When a detection is reliable: `"mean"`, its calibrated probability
-  (the posterior mean with `engine = "brms"`) is \>= `p_min`;
+  Character scalar, one of `"mean"` (default) or `"probability"`: when a
+  detection is reliable. `"mean"`, its calibrated probability (the
+  posterior mean with `engine = "brms"`) is \>= `p_min`;
   `"probability"`, the posterior probability that P(TP) \>= `p_min` (the
   `pr_reliable` of a model fitted with `engine = "brms"`) is \>=
   `prob_min`. The second rule propagates the uncertainty of the
@@ -169,19 +176,19 @@ calibrate(
 
 - prob_min:
 
-  `rule = "probability"`: threshold on `pr_reliable`. `pr_reliable` is
-  computed in
+  Numeric scalar in \[0, 1\]. With `rule = "probability"`, threshold on
+  `pr_reliable`. `pr_reliable` is computed in
   [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md)
   for its `p_min`; use the same `p_min` in both.
 
 - seed:
 
-  Seed of the fold assignment. The global random number generator is
-  left as it was.
+  Integer scalar, seed of the fold assignment. The global random number
+  generator is left as it was.
 
 - fold_group:
 
-  Optional character vector of grouping columns. Do not include
+  `NULL` or a character vector of grouping columns. Do not include
   `species`, verdicts or confidence scores: these would split recordings
   or nights by species or by outcome. Group IDs must be nonmissing and
   nonempty. `NULL` keeps the original clip folds.

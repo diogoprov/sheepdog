@@ -124,95 +124,101 @@ weighted precision (<code><a href="suggest_thresholds.html">suggest_thresholds()
 
 
 <dl><dt id="arg-validation">validation<a class="anchor" aria-label="anchor" href="#arg-validation"></a></dt>
-<dd><p>Reviewed clips, as for <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>: with
-<code>verdict</code> (<code>"positive"</code> or <code>"negative"</code>; others are left out),
-<code>confidence</code> and, for weights, <code>inclusion_prob</code>.</p></dd>
+<dd><p>A data frame (or tibble) of the reviewed clips, one row per
+clip, as for <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>: with <code>verdict</code> (<code>"positive"</code> or
+<code>"negative"</code>; others are left out), <code>confidence</code> and, for weights,
+<code>inclusion_prob</code>.</p></dd>
 
 
 <dt id="arg-target">target<a class="anchor" aria-label="anchor" href="#arg-target"></a></dt>
-<dd><p>Target probability (<code>threshold_p_tp</code>) and precision
-(<code>threshold_precision</code>, <code>threshold_weighted</code>). Several targets can be
-given: the curves and the cross-validation are fitted once per group,
-and the result has one row per group x target x curve.</p></dd>
+<dd><p>Numeric vector of values in (0, 1), target probability
+(<code>threshold_p_tp</code>) and precision (<code>threshold_precision</code>,
+<code>threshold_weighted</code>). Several targets can be given: the curves and the
+cross-validation are fitted once per group, and the result has one row per
+group x target x curve.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
-<dd><p>Columns of <code>validation</code> that define the groups fitted
-separately. <code>"species_folder"</code> by default; <code>c("site", "species_folder")</code> fits each cell.</p></dd>
+<dd><p>Character vector of columns of <code>validation</code> that define the groups
+fitted separately. <code>"species_folder"</code> by default;
+<code>c("site", "species_folder")</code> fits each cell.</p></dd>
 
 
 <dt id="arg-curves">curves<a class="anchor" aria-label="anchor" href="#arg-curves"></a></dt>
-<dd><p>Curves to fit, among <code>"logistic"</code>, <code>"quadratic"</code>, <code>"gam"</code>
-and <code>"monotone_gam"</code>. <code>"gam"</code> needs the package <code>mgcv</code> and
-<code>"monotone_gam"</code> the package <code>scam</code>; a curve whose package is missing
-is left out with a message.</p></dd>
+<dd><p>Character vector, the curves to fit, among <code>"logistic"</code>,
+<code>"quadratic"</code>, <code>"gam"</code> and <code>"monotone_gam"</code>. <code>"gam"</code> needs the package
+<code>mgcv</code> and <code>"monotone_gam"</code> the package <code>scam</code>; a curve whose package is
+missing is left out with a message.</p></dd>
 
 
 <dt id="arg-weighted">weighted<a class="anchor" aria-label="anchor" href="#arg-weighted"></a></dt>
-<dd><p><code>NULL</code> (weight by <code>1 / inclusion_prob</code> the groups whose
-clips all have it), <code>TRUE</code> or <code>FALSE</code>.</p></dd>
+<dd><p><code>NULL</code> or a logical scalar: <code>NULL</code> (weight by
+<code>1 / inclusion_prob</code> the groups whose clips all have it), <code>TRUE</code> or
+<code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-k">k<a class="anchor" aria-label="anchor" href="#arg-k"></a></dt>
-<dd><p>Basis dimension of the GAMs (reduced when the group has fewer
-distinct scores).</p></dd>
+<dd><p>Integer scalar, basis dimension of the GAMs (reduced when the group
+has fewer distinct scores).</p></dd>
 
 
 <dt id="arg-k-folds">k_folds<a class="anchor" aria-label="anchor" href="#arg-k-folds"></a></dt>
-<dd><p>Number of folds of the cross-validation.</p></dd>
+<dd><p>Integer scalar, number of folds of the cross-validation.</p></dd>
 
 
 <dt id="arg-cv">cv<a class="anchor" aria-label="anchor" href="#arg-cv"></a></dt>
-<dd><p><code>FALSE</code> skips the cross-validation (<code>cv_logloss</code>,
-<code>cv_logloss_se</code> and <code>within_1se</code> are <code>NA</code>), when only the thresholds
-and the verdict, which does not use it, are needed.</p></dd>
+<dd><p>Logical scalar. <code>FALSE</code> skips the cross-validation (<code>cv_logloss</code>,
+<code>cv_logloss_se</code> and <code>within_1se</code> are <code>NA</code>), when only the thresholds and
+the verdict, which does not use it, are needed.</p></dd>
 
 
 <dt id="arg-cluster">cluster<a class="anchor" aria-label="anchor" href="#arg-cluster"></a></dt>
-<dd><p>Column of <code>validation</code> whose levels are kept together in
-the folds (<code>"source_audio"</code>, the recording, by default). Without it,
-clips are split one by one.</p></dd>
+<dd><p>Character scalar, the column of <code>validation</code> whose levels are
+kept together in the folds (<code>"source_audio"</code>, the recording, by default).
+Without it, clips are split one by one.</p></dd>
 
 
 <dt id="arg-top-from-bin-width">top_from, bin_width<a class="anchor" aria-label="anchor" href="#arg-top-from-bin-width"></a></dt>
-<dd><p>Lower limit and width of the high score bins
-of <code>top_error</code>.</p></dd>
+<dd><p>Numeric scalars in (0, 1), lower limit and width of
+the high score bins of <code>top_error</code>.</p></dd>
 
 
 <dt id="arg-min-n">min_n<a class="anchor" aria-label="anchor" href="#arg-min-n"></a></dt>
-<dd><p>Minimum number of clips of a group, of (effective) clips at
-or above a cut for it to count, and of effective clips in the high
-bins.</p></dd>
+<dd><p>Numeric scalar, minimum number of clips of a group, of
+(effective) clips at or above a cut for it to count, and of effective clips
+in the high bins.</p></dd>
 
 
 <dt id="arg-min-bin">min_bin<a class="anchor" aria-label="anchor" href="#arg-min-bin"></a></dt>
-<dd><p>Minimum number of clips of a bin for it to enter
-<code>top_error</code>.</p></dd>
+<dd><p>Numeric scalar, minimum number of clips of a bin for it to
+enter <code>top_error</code>.</p></dd>
 
 
 <dt id="arg-max-error-tolerance">max_error, tolerance<a class="anchor" aria-label="anchor" href="#arg-max-error-tolerance"></a></dt>
-<dd><p>Largest <code>top_error_excess</code> and largest
-difference between the logistic and the weighted thresholds, in score
-units, for <code>"keep_logistic"</code>.</p></dd>
+<dd><p>Numeric scalars, largest <code>top_error_excess</code> and
+largest difference between the logistic and the weighted thresholds, in
+score units, for <code>"keep_logistic"</code>.</p></dd>
 
 
 <dt id="arg-n-boot">n_boot<a class="anchor" aria-label="anchor" href="#arg-n-boot"></a></dt>
-<dd><p>Number of bootstrap replicates of the difference between
-the logistic and the weighted thresholds (<code>0</code>, the default, skips it).</p></dd>
+<dd><p>Numeric scalar &gt;= 0, number of bootstrap replicates of the
+difference between the logistic and the weighted thresholds (<code>0</code>, the
+default, skips it).</p></dd>
 
 
 <dt id="arg-conf">conf<a class="anchor" aria-label="anchor" href="#arg-conf"></a></dt>
-<dd><p>Probability of the bootstrap interval of the difference.</p></dd>
+<dd><p>Numeric scalar in (0, 1), probability of the bootstrap interval
+of the difference.</p></dd>
 
 
 <dt id="arg-grid-step">grid_step<a class="anchor" aria-label="anchor" href="#arg-grid-step"></a></dt>
-<dd><p>Step of the grid of scores of <code>threshold_p_tp</code> and of
-the curves returned.</p></dd>
+<dd><p>Numeric scalar in (0, 1), step of the grid of scores of
+<code>threshold_p_tp</code> and of the curves returned.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>Seed of the folds. The global random number generator is
-left as it was.</p></dd>
+<dd><p>Integer scalar, seed of the folds. The global random number
+generator is left as it was.</p></dd>
 
 </dl></div>
     <div class="section level2">

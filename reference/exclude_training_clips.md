@@ -24,29 +24,30 @@ exclude_training_clips(
 
 - manifest:
 
-  Clip manifest, as returned by
+  A data frame, the clip manifest (one row per clip), as returned by
   [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
   or read from `clip_manifest.csv`.
 
 - training_set:
 
-  Table returned by
+  A data frame returned by
   [`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md)
   or
   [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md),
-  or the path to a `training_set.csv`.
+  or a character scalar, path to a `training_set.csv`.
 
 - level:
 
-  What a training clip excludes; see Levels.
+  Character scalar, one of `"clip"`, `"recording"` or `"night"`: what a
+  training clip excludes; see Levels.
 
 - any_species:
 
-  Exclude across species?
+  Logical scalar. If `TRUE`, exclude across species.
 
 - pattern:
 
-  With a table of
+  `NULL` or character scalar. With a table of
   [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md)
   and `level = "recording"`, the regular expression that reads the
   recordings from `source_audio`. By default, the one recorded in the

@@ -23,29 +23,30 @@ compare_calibration_models(
 
 - validations:
 
-  Table returned by
-  [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md).
+  A data frame (or tibble) returned by
+  [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md),
+  one row per reviewed clip.
 
 - models:
 
-  Named list of model formulas. `NULL` chooses the family from the
-  observed species and sites: site-effect models for one species, the
-  original family for multiple species, and no site random effects when
-  only one site is observed. Supply an explicit list to reproduce a
-  particular candidate set.
+  `NULL` or a named list of model formulas. `NULL` chooses the family
+  from the observed species and sites: site-effect models for one
+  species, the original family for multiple species, and no site random
+  effects when only one site is observed. Supply an explicit list to
+  reproduce a particular candidate set.
 
 - k_folds:
 
-  Number of folds.
+  Integer scalar \>= 2, number of folds.
 
 - seed:
 
-  Seed of the fold assignment. The global random number generator is
-  left as it was.
+  Integer scalar, seed of the fold assignment. The global random number
+  generator is left as it was.
 
 - fold_group:
 
-  Optional character vector of grouping columns. Do not include
+  `NULL` or a character vector of grouping columns. Do not include
   `species`, verdicts or confidence scores: these would split recordings
   or nights by species or by outcome. Group IDs must be nonmissing and
   nonempty. `NULL` keeps the original clip folds.

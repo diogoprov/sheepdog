@@ -34,27 +34,32 @@ community_matrices(
 
 - history:
 
-  Nightly detection history, as returned by
-  [`detection_history()`](https://provetelab.org/sheepdog/reference/detection_history.md)
-  (v1.2.0 `historico_deteccao_noite.csv` tables are also accepted).
+  A data frame (or tibble), the nightly detection history as returned by
+  [`detection_history()`](https://provetelab.org/sheepdog/reference/detection_history.md),
+  one row per site x species x night (v1.2.0
+  `historico_deteccao_noite.csv` tables are also accepted).
 
 - core_species:
 
-  Species codes (the `species` column) that enter the matrix.
+  Character vector of length \>= 1, species codes (the `species` column)
+  that enter the matrix.
 
 - k_min:
 
-  Repetition rule: 1, 2 or 3 reliable detections on the night.
+  Integer scalar, one of 1, 2 or 3. Repetition rule: 1, 2 or 3 reliable
+  detections on the night.
 
 - min_nights_month:
 
-  Site x month cells with fewer recorded nights are dropped from the
-  matrices (unstable frequencies) and flagged in `effort`.
+  Numeric scalar. Site x month cells with fewer recorded nights are
+  dropped from the matrices (unstable frequencies) and flagged in
+  `effort`.
 
 - drop_empty:
 
-  Drop the site x month rows in which no core species was detected.
-  Distances such as Bray-Curtis are undefined for them.
+  Logical scalar. If `TRUE`, drops the site x month rows in which no
+  core species was detected. Distances such as Bray-Curtis are undefined
+  for them.
 
 ## Value
 

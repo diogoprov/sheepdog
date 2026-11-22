@@ -16,17 +16,17 @@ calibration_models(uncorrelated = FALSE, single_species = FALSE)
 
 - uncorrelated:
 
-  Add `m5_species_x_site_uncorrelated`, the m4 structure without the
-  correlation between the species intercepts and slopes. It avoids the
-  singular fits of m4 when that correlation is estimated at +-1. `FALSE`
-  keeps the candidates of 2.0.0.
+  Logical scalar. If `TRUE`, add `m5_species_x_site_uncorrelated`, the
+  m4 structure without the correlation between the species intercepts
+  and slopes. It avoids the singular fits of m4 when that correlation is
+  estimated at +-1. `FALSE` keeps the candidates of 2.0.0.
 
 - single_species:
 
-  Use a family for one species: global logistic regression, a site
-  intercept, and a site intercept and slope. With `uncorrelated = TRUE`,
-  also include independent site intercepts and slopes. `FALSE` preserves
-  the multispecies family.
+  Logical scalar. If `TRUE`, use a family for one species: global
+  logistic regression, a site intercept, and a site intercept and slope.
+  With `uncorrelated = TRUE`, also include independent site intercepts
+  and slopes. `FALSE` preserves the multispecies family.
 
 ## Value
 

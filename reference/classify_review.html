@@ -100,20 +100,20 @@ where it is found. Clips still in the species folder are not reviewed.</p>
 
 
 <dl><dt id="arg-manifest">manifest<a class="anchor" aria-label="anchor" href="#arg-manifest"></a></dt>
-<dd><p>Clip manifest: a data frame or the path to
-<code>clip_manifest.csv</code>. Manifests written by v1.2.0
-(<code>manifesto_clipes.csv</code>) are also read.</p></dd>
+<dd><p>A data frame (or tibble) or a character scalar. The clip
+manifest, one row per clip, or the path to <code>clip_manifest.csv</code>.
+Manifests written by v1.2.0 (<code>manifesto_clipes.csv</code>) are also read.</p></dd>
 
 
 <dt id="arg-review-dir">review_dir<a class="anchor" aria-label="anchor" href="#arg-review-dir"></a></dt>
-<dd><p>Folder with the reviewed clips (the <code>clips</code> folder of
-the validation package, after the review).</p></dd>
+<dd><p>Character scalar, path to the folder with the reviewed
+clips (the <code>clips</code> folder of the validation package, after the review).</p></dd>
 
 
 <dt id="arg-positive-pattern-negative-pattern">positive_pattern, negative_pattern<a class="anchor" aria-label="anchor" href="#arg-positive-pattern-negative-pattern"></a></dt>
-<dd><p>Regular expressions
-(case-insensitive) that identify the positive and negative folders in
-the path of each clip.</p></dd>
+<dd><p>Character scalars, regular
+expressions (case-insensitive) that identify the positive and negative
+folders in the path of each clip.</p></dd>
 
 </dl></div>
     <div class="section level2">

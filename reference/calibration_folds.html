@@ -101,24 +101,26 @@ than clip counts. Each site must have at least <code>k_folds</code> groups.</p>
 
 
 <dl><dt id="arg-validations">validations<a class="anchor" aria-label="anchor" href="#arg-validations"></a></dt>
-<dd><p>Calibration data including <code>site</code>, <code>species</code> and
-any columns named in <code>fold_group</code>. Use <code>read_validations(keep = )</code>
-to retain metadata from validation files.</p></dd>
+<dd><p>A data frame (or tibble), the calibration data, one row
+per reviewed clip, with <code>site</code>, <code>species</code> and any columns named in
+<code>fold_group</code>. Use <code>read_validations(keep = )</code> to retain metadata from
+validation files.</p></dd>
 
 
 <dt id="arg-k-folds">k_folds<a class="anchor" aria-label="anchor" href="#arg-k-folds"></a></dt>
-<dd><p>Integer number of folds, at least two.</p></dd>
+<dd><p>Integer scalar &gt;= 2, number of folds.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>Seed of the assignment; the caller's random state is restored.</p></dd>
+<dd><p>Integer scalar, seed of the assignment; the caller's random state
+is restored.</p></dd>
 
 
 <dt id="arg-fold-group">fold_group<a class="anchor" aria-label="anchor" href="#arg-fold-group"></a></dt>
-<dd><p>Optional character vector of grouping columns. Do not
+<dd><p><code>NULL</code> or a character vector of grouping columns. Do not
 include <code>species</code>, verdicts or confidence scores: these would split
-recordings or nights by species or by outcome. Group IDs must be
-nonmissing and nonempty. <code>NULL</code> keeps the original clip folds.</p></dd>
+recordings or nights by species or by outcome. Group IDs must be nonmissing
+and nonempty. <code>NULL</code> keeps the original clip folds.</p></dd>
 
 </dl></div>
     <div class="section level2">

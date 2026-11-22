@@ -17,15 +17,16 @@ calibration_sensitivity(fit, variable = NULL, ...)
 
 - fit:
 
-  Model returned by
+  A `brmsfit` returned by
   [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
   with `engine = "brms"`.
 
 - variable:
 
-  Parameters to analyse. `NULL` takes the population-level effects and
-  the standard deviations and correlations of the random effects (`b_`,
-  `sd_`, `cor_`), leaving out the individual random effects.
+  `NULL` or a character vector of the names of the parameters to
+  analyse. `NULL` takes the population-level effects and the standard
+  deviations and correlations of the random effects (`b_`, `sd_`,
+  `cor_`), leaving out the individual random effects.
 
 - ...:
 

@@ -12,7 +12,7 @@ summarise_history(history)
 
 - history:
 
-  Table returned by
+  A data frame (or tibble) returned by
   [`detection_history()`](https://provetelab.org/sheepdog/reference/detection_history.md).
 
 ## Value

@@ -109,36 +109,41 @@ occasion-level counterpart of <code><a href="history_draws.html">history_draws()
 
 
 <dl><dt id="arg-export-dir">export_dir<a class="anchor" aria-label="anchor" href="#arg-export-dir"></a></dt>
-<dd><p>Folder written by <code><a href="export_occupancy_data.html">export_occupancy_data()</a></code> with
+<dd><p>Character scalar, path to the folder written by
+<code><a href="export_occupancy_data.html">export_occupancy_data()</a></code> with
 <code>fit</code>.</p></dd>
 
 
 <dt id="arg-species">species<a class="anchor" aria-label="anchor" href="#arg-species"></a></dt>
-<dd><p>Optional species to process, matched against <code>species</code>
+<dd><p><code>NULL</code> or character vector, species to process, matched
+against <code>species</code>
 (the short code, e.g. <code>"phy_cuv"</code>) or <code>species_code</code> of
 <code>detections.csv</code>. All species with calibration draws by default.</p></dd>
 
 
 <dt id="arg-rule">rule<a class="anchor" aria-label="anchor" href="#arg-rule"></a></dt>
-<dd><p><code>"sample"</code> or <code>"threshold"</code>; see Rules.</p></dd>
+<dd><p>Character scalar, <code>"sample"</code> or <code>"threshold"</code>; see Rules.</p></dd>
 
 
 <dt id="arg-p-min">p_min<a class="anchor" aria-label="anchor" href="#arg-p-min"></a></dt>
-<dd><p>Threshold of <code>rule = "threshold"</code>.</p></dd>
+<dd><p>Numeric scalar in [0, 1], threshold of
+<code>rule = "threshold"</code>.</p></dd>
 
 
 <dt id="arg-n-draws">n_draws<a class="anchor" aria-label="anchor" href="#arg-n-draws"></a></dt>
-<dd><p>Optional number of calibration draws to use: the first
-ones, in increasing order of their identifiers. All by default.</p></dd>
+<dd><p><code>NULL</code> or integer scalar &gt;= 1, number of calibration
+draws to use: the first ones, in increasing order of their
+identifiers. All by default.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>Seed of <code>rule = "sample"</code>.</p></dd>
+<dd><p>Numeric scalar, seed of <code>rule = "sample"</code>.</p></dd>
 
 
 <dt id="arg-write">write<a class="anchor" aria-label="anchor" href="#arg-write"></a></dt>
-<dd><p>Write <code>occasion_draws.parquet</code> in <code>export_dir</code> and record it
-in <code>schema.json</code> (schema version 1.2 or later)? An existing table is replaced.</p></dd>
+<dd><p>Logical scalar. If <code>TRUE</code>, write <code>occasion_draws.parquet</code>
+in <code>export_dir</code> and record it
+in <code>schema.json</code> (schema version 1.2 or later). An existing table is replaced.</p></dd>
 
 </dl></div>
     <div class="section level2">

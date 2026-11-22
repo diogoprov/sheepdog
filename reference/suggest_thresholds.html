@@ -102,27 +102,31 @@ observed confidences rounded to two decimals.</p>
 
 
 <dl><dt id="arg-validation">validation<a class="anchor" aria-label="anchor" href="#arg-validation"></a></dt>
-<dd><p>Table returned by <code><a href="classify_review.html">classify_review()</a></code>.</p></dd>
+<dd><p>A data frame (or tibble) returned by <code><a href="classify_review.html">classify_review()</a></code>,
+with columns <code>site</code>, <code>species_folder</code>, <code>verdict</code> and <code>confidence</code>. One
+row per clip.</p></dd>
 
 
 <dt id="arg-target-precision">target_precision<a class="anchor" aria-label="anchor" href="#arg-target-precision"></a></dt>
-<dd><p>Target precision.</p></dd>
+<dd><p>Numeric scalar in (0, 1). Target precision.</p></dd>
 
 
 <dt id="arg-min-n">min_n<a class="anchor" aria-label="anchor" href="#arg-min-n"></a></dt>
-<dd><p>Minimum of reviewed clips for a bin to be taken seriously;
-bins with fewer are flagged in <code>low_support</code>.</p></dd>
+<dd><p>Integer scalar &gt;= 1. Minimum of reviewed clips for a bin to
+be taken seriously; bins with fewer are flagged in <code>low_support</code>.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
-<dd><p>Optional columns of <code>validation</code> that split each site x
-species cell further, e.g. the bin of an environmental gradient or of
-an acoustic index joined from <code><a href="covariate_bins.html">covariate_bins()</a></code>. They show which
+<dd><p><code>NULL</code> or a character vector of column names of <code>validation</code>
+that split each site x species cell further, e.g. the bin of an
+environmental gradient or of an acoustic index joined from
+<code><a href="covariate_bins.html">covariate_bins()</a></code>. They show which
 parts of the gradient lack reviewed clips.</p></dd>
 
 
 <dt id="arg-weighted">weighted<a class="anchor" aria-label="anchor" href="#arg-weighted"></a></dt>
-<dd><p>Which precision chooses the cut. <code>NULL</code> (default): the
+<dd><p><code>NULL</code>, <code>TRUE</code> or <code>FALSE</code>. Which precision chooses the
+cut. <code>NULL</code> (default): the
 weighted one in the cells whose clips all have <code>inclusion_prob</code>, the
 unweighted one elsewhere. <code>TRUE</code>: always the weighted one; cells with
 clips without <code>inclusion_prob</code> get no threshold, with a warning, and
@@ -131,8 +135,8 @@ and <code>n_support</code> for <code>min_n</code>.</p></dd>
 
 
 <dt id="arg-sustained">sustained<a class="anchor" aria-label="anchor" href="#arg-sustained"></a></dt>
-<dd><p>Must the target also hold at every higher cut with at
-least <code>min_n</code> clips? See Sustained target.</p></dd>
+<dd><p>Logical scalar. If <code>TRUE</code>, the target must also hold at
+every higher cut with at least <code>min_n</code> clips. See Sustained target.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -15,7 +15,7 @@ suggest_core_species(status)
 
 - status:
 
-  Table returned by
+  A data frame (or tibble) returned by
   [`cell_status()`](https://provetelab.org/sheepdog/reference/cell_status.md).
 
 ## Value

@@ -28,31 +28,33 @@ threshold_record(
 
 - thresholds:
 
-  Table from
-  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md).
+  A data frame (or tibble) returned by
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md),
+  with columns `site`, `species_folder` and `threshold`.
 
 - bootstrap:
 
-  Optional table from
+  `NULL` or a data frame (or tibble) returned by
   [`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md).
 
 - groups:
 
-  Optional table from
+  `NULL` or a data frame (or tibble) returned by
   [`threshold_by_group()`](https://provetelab.org/sheepdog/reference/threshold_by_group.md).
 
 - extraction_info:
 
-  Optional path to `extraction_info.csv` (or the table read from it):
-  its `key`, `value` rows are written at the top of the Markdown file.
+  `NULL`, a character scalar with the path to `extraction_info.csv`, or
+  the data frame read from it: its `key`, `value` rows are written at
+  the top of the Markdown file.
 
 - target_precision:
 
-  Target precision used, recorded in the table.
+  Numeric scalar, target precision used, recorded in the table.
 
 - file:
 
-  Optional path of a Markdown file to write.
+  `NULL` or a character scalar, path of a Markdown file to write.
 
 ## Value
 

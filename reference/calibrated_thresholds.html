@@ -113,50 +113,54 @@ cell with few reviewed clips borrows strength from the others.</p>
 
 
 <dl><dt id="arg-fit">fit<a class="anchor" aria-label="anchor" href="#arg-fit"></a></dt>
-<dd><p>Model returned by <code><a href="fit_calibration.html">fit_calibration()</a></code>.</p></dd>
+<dd><p>A <code>glm</code>, <code>glmerMod</code> or <code>brmsfit</code> returned by <code><a href="fit_calibration.html">fit_calibration()</a></code>.</p></dd>
 
 
 <dt id="arg-target">target<a class="anchor" aria-label="anchor" href="#arg-target"></a></dt>
-<dd><p>Target probability (<code>"probability"</code>) or precision
-(<code>"precision"</code>). The default, 0.95, is the <code>p_min</code> of
-<code><a href="score_detections.html">score_detections()</a></code> and <code><a href="calibrate.html">calibrate()</a></code>, so that the probability
-threshold is the score equivalent of the cut on P(TP) used for the
-detection histories. It is the same for both rules; the <code>"precision"</code>
-threshold is lower for the same target (see Details).
-<code><a href="suggest_thresholds.html">suggest_thresholds()</a></code> uses 0.90 by default.</p></dd>
+<dd><p>Numeric scalar in (0, 1), target probability (<code>"probability"</code>)
+or precision (<code>"precision"</code>). The default, 0.95, is the <code>p_min</code> of
+<code><a href="score_detections.html">score_detections()</a></code> and <code><a href="calibrate.html">calibrate()</a></code>, so that the probability threshold
+is the score equivalent of the cut on P(TP) used for the detection
+histories. It is the same for both rules; the <code>"precision"</code> threshold is
+lower for the same target (see Details). <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code> uses 0.90
+by default.</p></dd>
 
 
 <dt id="arg-rule">rule<a class="anchor" aria-label="anchor" href="#arg-rule"></a></dt>
-<dd><p><code>"probability"</code> or <code>"precision"</code>; see Details.</p></dd>
+<dd><p>Character scalar, one of <code>"probability"</code> (default) or
+<code>"precision"</code>; see Details.</p></dd>
 
 
 <dt id="arg-scored">scored<a class="anchor" aria-label="anchor" href="#arg-scored"></a></dt>
-<dd><p>Table returned by <code><a href="score_detections.html">score_detections()</a></code>, with <code>site</code>,
-<code>species</code>, <code>confidence</code> and <code>p_tp</code>. Required for <code>rule = "precision"</code>;
-with <code>rule = "probability"</code>, its site x species cells are used when
-<code>cells</code> is <code>NULL</code>.</p></dd>
+<dd><p><code>NULL</code> or a data frame (or tibble) returned by
+<code><a href="score_detections.html">score_detections()</a></code>, one row per detection, with <code>site</code>, <code>species</code>,
+<code>confidence</code> and <code>p_tp</code>. Required for <code>rule = "precision"</code>; with
+<code>rule = "probability"</code>, its site x species cells are used when <code>cells</code> is
+<code>NULL</code>.</p></dd>
 
 
 <dt id="arg-cells">cells<a class="anchor" aria-label="anchor" href="#arg-cells"></a></dt>
-<dd><p>Data frame of the cells to threshold, with <code>site</code> and
-<code>species</code> and any other variable of the calibration formula. By default,
-the cells of <code>scored</code> or, without it, every site x species of the
-calibration.</p></dd>
+<dd><p><code>NULL</code> or a data frame (or tibble) of the cells to threshold,
+one row per cell, with <code>site</code> and <code>species</code> and any other variable of the
+calibration formula. By default, the cells of <code>scored</code> or, without it,
+every site x species of the calibration.</p></dd>
 
 
 <dt id="arg-min-confidence">min_confidence<a class="anchor" aria-label="anchor" href="#arg-min-confidence"></a></dt>
-<dd><p>Detections below this confidence are not scored.</p></dd>
+<dd><p>Numeric scalar in [0, 1]. Detections below this
+confidence are not scored.</p></dd>
 
 
 <dt id="arg-grid-step">grid_step<a class="anchor" aria-label="anchor" href="#arg-grid-step"></a></dt>
-<dd><p>Models fitted with <code>engine = "brms"</code>: step of the grid
-of scores on which the posterior is computed.</p></dd>
+<dd><p>Numeric scalar in (0, 0.5). Models fitted with
+<code>engine = "brms"</code>: step of the grid of scores on which the posterior is
+computed.</p></dd>
 
 
 <dt id="arg-lower-prob">lower_prob<a class="anchor" aria-label="anchor" href="#arg-lower-prob"></a></dt>
-<dd><p>Models fitted with <code>engine = "brms"</code>: the probability of
-the lower quantile of the posterior of P(TP) used for
-<code>threshold_lower</code>.</p></dd>
+<dd><p>Numeric scalar in (0, 1). Models fitted with
+<code>engine = "brms"</code>: the probability of the lower quantile of the posterior
+of P(TP) used for <code>threshold_lower</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

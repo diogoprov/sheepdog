@@ -128,29 +128,32 @@ effort: nights with detection / nights recorded at that site x month.</p></li>
 
 
 <dl><dt id="arg-history">history<a class="anchor" aria-label="anchor" href="#arg-history"></a></dt>
-<dd><p>Nightly detection history, as returned by
-<code><a href="detection_history.html">detection_history()</a></code> (v1.2.0 <code>historico_deteccao_noite.csv</code> tables
-are also accepted).</p></dd>
+<dd><p>A data frame (or tibble), the nightly detection history
+as returned by <code><a href="detection_history.html">detection_history()</a></code>, one row per site x species x
+night (v1.2.0 <code>historico_deteccao_noite.csv</code> tables are also
+accepted).</p></dd>
 
 
 <dt id="arg-core-species">core_species<a class="anchor" aria-label="anchor" href="#arg-core-species"></a></dt>
-<dd><p>Species codes (the <code>species</code> column) that enter the
-matrix.</p></dd>
+<dd><p>Character vector of length &gt;= 1, species codes (the
+<code>species</code> column) that enter the matrix.</p></dd>
 
 
 <dt id="arg-k-min">k_min<a class="anchor" aria-label="anchor" href="#arg-k-min"></a></dt>
-<dd><p>Repetition rule: 1, 2 or 3 reliable detections on the night.</p></dd>
+<dd><p>Integer scalar, one of 1, 2 or 3. Repetition rule: 1, 2 or
+3 reliable detections on the night.</p></dd>
 
 
 <dt id="arg-min-nights-month">min_nights_month<a class="anchor" aria-label="anchor" href="#arg-min-nights-month"></a></dt>
-<dd><p>Site x month cells with fewer recorded nights are
-dropped from the matrices (unstable frequencies) and flagged in
-<code>effort</code>.</p></dd>
+<dd><p>Numeric scalar. Site x month cells with fewer
+recorded nights are dropped from the matrices (unstable frequencies)
+and flagged in <code>effort</code>.</p></dd>
 
 
 <dt id="arg-drop-empty">drop_empty<a class="anchor" aria-label="anchor" href="#arg-drop-empty"></a></dt>
-<dd><p>Drop the site x month rows in which no core species
-was detected. Distances such as Bray-Curtis are undefined for them.</p></dd>
+<dd><p>Logical scalar. If <code>TRUE</code>, drops the site x month rows
+in which no core species was detected. Distances such as Bray-Curtis
+are undefined for them.</p></dd>
 
 </dl></div>
     <div class="section level2">

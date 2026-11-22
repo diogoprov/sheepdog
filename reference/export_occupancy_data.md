@@ -49,24 +49,30 @@ export_occupancy_data(
 
 - output_dir:
 
-  Folder to write. Created if needed.
+  Character scalar, path to the folder to write. Created if needed.
 
 - detections:
 
-  Predictions, as returned by
-  [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md).
+  A data frame of predictions, one row per BirdNET prediction, as
+  returned by
+  [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)
+  (columns `site`, `species_code`, `confidence`, `begin_path` and
+  `file_offset`).
 
 - recordings:
 
-  The list of all recordings, as a data frame or the path to a CSV file
-  with the columns `site` and `source_audio`, as in
+  `NULL`, a data frame (one row per recording) or a character scalar,
+  path to a CSV file: the list of all recordings, with the columns
+  `site` and `source_audio`, as in
   [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md).
   `NULL` lists the audio files in the folders of the recordings that
   have predictions, which then must be reachable (see `remap_from`).
 
 - validation:
 
-  Reviewed clips, without those with an inherited verdict (see
+  `NULL`, a character vector of paths or a data frame (one row per
+  reviewed clip): reviewed clips, without those with an inherited
+  verdict (see
   [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)):
   paths to `validation_by_clip.csv` files (output of
   [`post_validation()`](https://provetelab.org/sheepdog/reference/post_validation.md))
@@ -78,86 +84,91 @@ export_occupancy_data(
 
 - fit:
 
-  Optional model from
+  `NULL` or a `brmsfit` from
   [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
   with `engine = "brms"`, for `calibration_draws.parquet`.
 
 - sites:
 
-  Optional data frame of site covariates, with a `site` column.
+  `NULL` or a data frame of site covariates, one row per site, with a
+  `site` column.
 
 - occasion_covariates:
 
-  Optional data frame of covariates of the occasions (e.g. temperature
-  or the month), with `site` and either `occasion_id` or `source_audio`
-  (plus `start`, in s, for minute occasions). One row per occasion;
-  occasions without a row get `NA`. Columns named like those of
-  `occasions.csv` are refused.
+  `NULL` or a data frame of covariates of the occasions (e.g.
+  temperature or the month), with `site` and either `occasion_id` or
+  `source_audio` (plus `start`, in s, for minute occasions). One row per
+  occasion; occasions without a row get `NA`. Columns named like those
+  of `occasions.csv` are refused.
 
 - calibration_keys:
 
-  Optional grouping variables of the calibration model, besides `site`
-  and `species`, that vary between occasions (see Calibration keys).
-  Only used with `fit`.
+  `NULL` or character vector, grouping variables of the calibration
+  model, besides `site` and `species`, that vary between occasions (see
+  Calibration keys). Only used with `fit`.
 
 - occasion_unit:
 
-  The occasion of the occupancy model: `"file"` (a recording) or
-  `"minute"`. Use the value of the clip extraction, so that the
-  `occasion_id` of the reviewed clips match.
+  Character scalar, the occasion of the occupancy model: `"file"` (a
+  recording) or `"minute"`. Use the value of the clip extraction, so
+  that the `occasion_id` of the reviewed clips match.
 
 - recording_duration:
 
-  Length of the recordings (s). Needed for minute occasions unless the
-  'av' package can read the files.
+  `NULL` or numeric scalar, length of the recordings (s). Needed for
+  minute occasions unless the 'av' package can read the files.
 
 - min_confidence:
 
-  Predictions below this confidence are not written; it is also the
-  lower end of the grid of the calibration draws. Use the
-  `min_confidence` of the BirdNET run or higher.
+  Numeric scalar in \[0, 1\]. Predictions below this confidence are not
+  written; it is also the lower end of the grid of the calibration
+  draws. Use the `min_confidence` of the BirdNET run or higher.
 
 - dawn_hour:
 
-  Recordings that start before this hour belong to the night before.
+  Numeric scalar in \[0, 24\]. Recordings that start before this hour
+  belong to the night before.
 
 - species:
 
-  Restrict to these short species codes (the last part of
-  `species_code`, e.g. `"boa-ran"`). `NULL` keeps all.
+  `NULL` or character vector. Restrict to these short species codes (the
+  last part of `species_code`, e.g. `"boa-ran"`). `NULL` keeps all.
 
 - n_draws:
 
-  Number of posterior draws of the calibration.
+  Integer scalar \>= 1, number of posterior draws of the calibration.
 
 - grid_step:
 
-  Step of the grid of scores of the calibration draws.
+  Numeric scalar \> 0, step of the grid of scores of the calibration
+  draws.
 
 - seed:
 
-  Seed of the choice of draws and, with `n_versions`, of the versions of
-  the detections (`rule = "sample"`). The global random number generator
-  is left as it was.
+  Integer scalar, seed of the choice of draws and, with `n_versions`, of
+  the versions of the detections (`rule = "sample"`). The global random
+  number generator is left as it was.
 
 - n_versions:
 
-  Optional number of versions of the detections to write to
-  `occasion_draws.parquet`, from the first calibration draws. Without
-  continuous covariates,
+  `NULL` or integer scalar \>= 1, number of versions of the detections
+  to write to `occasion_draws.parquet`, from the first calibration
+  draws. Without continuous covariates,
   [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md)
   is called on the folder. With them, the versions are always written,
   and `NULL` means one per calibration draw (`n_draws`).
 
 - rule, p_min:
 
-  Rule of the versions, as in
+  Character scalar (`"sample"` or `"threshold"`) and numeric scalar in
+  \[0, 1\]: rule of the versions, as in
   [`occasion_draws()`](https://provetelab.org/sheepdog/reference/occasion_draws.md).
 
 - covariate_scaling:
 
-  Optional named list recording how each continuous covariate of the
-  calibration was standardised before the model was fitted, e.g.
+  `NULL` or a list named by covariate, each element a numeric vector
+  with `center` and `scale`, recording how each continuous covariate of
+  the calibration was standardised before the model was fitted, e.g.
   `list(temp = c(center = 22.4, scale = 3.1))` for
   `(temp_raw - 22.4) / 3.1`. It is written to `schema.json` so that a
   reader can map the covariate back; the values of `occasion_covariates`
@@ -165,46 +176,49 @@ export_occupancy_data(
 
 - audio_pattern:
 
-  Regular expression for the audio files listed when `recordings` is
-  `NULL`.
+  Character scalar, regular expression for the audio files listed when
+  `recordings` is `NULL`.
 
 - remap_from, remap_to:
 
-  Replace the prefix `remap_from` of the `begin_path` paths by
-  `remap_to`, e.g. `"N:/"` and `"/Volumes/Arara/"`. Backslashes are
-  turned into forward slashes first.
+  `NULL` or character scalars. Replace the prefix `remap_from` of the
+  `begin_path` paths by `remap_to`, e.g. `"N:/"` and
+  `"/Volumes/Arara/"`. Backslashes are turned into forward slashes
+  first.
 
 - min_verified:
 
-  Species with predictions but fewer than this number of reviewed
-  detection clips (positive or negative), or without any positive or any
-  negative clip, are named in a warning: their false-positive rate will
-  rest on the other species (a community model) or on the prior. The
-  default is a floor, not a sample size calculation. Only used with
-  `validation`.
+  Integer scalar. Species with predictions but fewer than this number of
+  reviewed detection clips (positive or negative), or without any
+  positive or any negative clip, are named in a warning: their
+  false-positive rate will rest on the other species (a community model)
+  or on the prior. The default is a floor, not a sample size
+  calculation. Only used with `validation`.
 
 - candidates:
 
-  The `candidates.csv` of the first round of a `"random_detections"`
-  design, as a path or a data frame. It gives the stratum of each
-  occasion and, in `schema.json`, the threshold and the strata of the
-  draw. `NULL` looks for it in the folders of `validation`; without it,
-  `stratum` is empty unless `validation` has that column, as after
+  `NULL`, a character scalar (path) or a data frame: the
+  `candidates.csv` of the first round of a `"random_detections"` design.
+  It gives the stratum of each occasion and, in `schema.json`, the
+  threshold and the strata of the draw. `NULL` looks for it in the
+  folders of `validation`; without it, `stratum` is empty unless
+  `validation` has that column, as after
   [`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md).
   Only used with `validation`.
 
 - window_step:
 
-  Time between the starts of consecutive windows of the classifier (s),
-  for `n_windows`: 3 for BirdNET without overlap.
+  Numeric scalar \> 0, time between the starts of consecutive windows of
+  the classifier (s), for `n_windows`: 3 for BirdNET without overlap.
 
 - classifier:
 
-  Optional label of the classifier, recorded in `schema.json`.
+  `NULL` or character scalar, label of the classifier, recorded in
+  `schema.json`.
 
 - overwrite:
 
-  Replace an existing export in `output_dir`?
+  Logical scalar. If `TRUE`, replace an existing export in `output_dir`.
 
 ## Value
 

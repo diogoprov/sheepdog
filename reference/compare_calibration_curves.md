@@ -41,93 +41,101 @@ compare_calibration_curves(
 
 - validation:
 
-  Reviewed clips, as for
+  A data frame (or tibble) of the reviewed clips, one row per clip, as
+  for
   [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md):
   with `verdict` (`"positive"` or `"negative"`; others are left out),
   `confidence` and, for weights, `inclusion_prob`.
 
 - target:
 
-  Target probability (`threshold_p_tp`) and precision
-  (`threshold_precision`, `threshold_weighted`). Several targets can be
-  given: the curves and the cross-validation are fitted once per group,
-  and the result has one row per group x target x curve.
+  Numeric vector of values in (0, 1), target probability
+  (`threshold_p_tp`) and precision (`threshold_precision`,
+  `threshold_weighted`). Several targets can be given: the curves and
+  the cross-validation are fitted once per group, and the result has one
+  row per group x target x curve.
 
 - by:
 
-  Columns of `validation` that define the groups fitted separately.
-  `"species_folder"` by default; `c("site", "species_folder")` fits each
-  cell.
+  Character vector of columns of `validation` that define the groups
+  fitted separately. `"species_folder"` by default;
+  `c("site", "species_folder")` fits each cell.
 
 - curves:
 
-  Curves to fit, among `"logistic"`, `"quadratic"`, `"gam"` and
-  `"monotone_gam"`. `"gam"` needs the package `mgcv` and
-  `"monotone_gam"` the package `scam`; a curve whose package is missing
-  is left out with a message.
+  Character vector, the curves to fit, among `"logistic"`,
+  `"quadratic"`, `"gam"` and `"monotone_gam"`. `"gam"` needs the package
+  `mgcv` and `"monotone_gam"` the package `scam`; a curve whose package
+  is missing is left out with a message.
 
 - weighted:
 
-  `NULL` (weight by `1 / inclusion_prob` the groups whose clips all have
-  it), `TRUE` or `FALSE`.
+  `NULL` or a logical scalar: `NULL` (weight by `1 / inclusion_prob` the
+  groups whose clips all have it), `TRUE` or `FALSE`.
 
 - k:
 
-  Basis dimension of the GAMs (reduced when the group has fewer distinct
-  scores).
+  Integer scalar, basis dimension of the GAMs (reduced when the group
+  has fewer distinct scores).
 
 - k_folds:
 
-  Number of folds of the cross-validation.
+  Integer scalar, number of folds of the cross-validation.
 
 - cv:
 
-  `FALSE` skips the cross-validation (`cv_logloss`, `cv_logloss_se` and
-  `within_1se` are `NA`), when only the thresholds and the verdict,
-  which does not use it, are needed.
+  Logical scalar. `FALSE` skips the cross-validation (`cv_logloss`,
+  `cv_logloss_se` and `within_1se` are `NA`), when only the thresholds
+  and the verdict, which does not use it, are needed.
 
 - cluster:
 
-  Column of `validation` whose levels are kept together in the folds
-  (`"source_audio"`, the recording, by default). Without it, clips are
-  split one by one.
+  Character scalar, the column of `validation` whose levels are kept
+  together in the folds (`"source_audio"`, the recording, by default).
+  Without it, clips are split one by one.
 
 - top_from, bin_width:
 
-  Lower limit and width of the high score bins of `top_error`.
+  Numeric scalars in (0, 1), lower limit and width of the high score
+  bins of `top_error`.
 
 - min_n:
 
-  Minimum number of clips of a group, of (effective) clips at or above a
-  cut for it to count, and of effective clips in the high bins.
+  Numeric scalar, minimum number of clips of a group, of (effective)
+  clips at or above a cut for it to count, and of effective clips in the
+  high bins.
 
 - min_bin:
 
-  Minimum number of clips of a bin for it to enter `top_error`.
+  Numeric scalar, minimum number of clips of a bin for it to enter
+  `top_error`.
 
 - max_error, tolerance:
 
-  Largest `top_error_excess` and largest difference between the logistic
-  and the weighted thresholds, in score units, for `"keep_logistic"`.
+  Numeric scalars, largest `top_error_excess` and largest difference
+  between the logistic and the weighted thresholds, in score units, for
+  `"keep_logistic"`.
 
 - n_boot:
 
-  Number of bootstrap replicates of the difference between the logistic
-  and the weighted thresholds (`0`, the default, skips it).
+  Numeric scalar \>= 0, number of bootstrap replicates of the difference
+  between the logistic and the weighted thresholds (`0`, the default,
+  skips it).
 
 - conf:
 
-  Probability of the bootstrap interval of the difference.
+  Numeric scalar in (0, 1), probability of the bootstrap interval of the
+  difference.
 
 - grid_step:
 
-  Step of the grid of scores of `threshold_p_tp` and of the curves
-  returned.
+  Numeric scalar in (0, 1), step of the grid of scores of
+  `threshold_p_tp` and of the curves returned.
 
 - seed:
 
-  Seed of the folds. The global random number generator is left as it
-  was.
+  Integer scalar, seed of the folds. The global random number generator
+  is left as it was.
 
 ## Value
 

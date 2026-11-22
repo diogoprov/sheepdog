@@ -105,29 +105,35 @@ app). With <code>file</code>, it also writes the record as a Markdown table.</p>
 
 
 <dl><dt id="arg-thresholds">thresholds<a class="anchor" aria-label="anchor" href="#arg-thresholds"></a></dt>
-<dd><p>Table from <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>.</p></dd>
+<dd><p>A data frame (or tibble) returned by
+<code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>, with columns <code>site</code>, <code>species_folder</code> and
+<code>threshold</code>.</p></dd>
 
 
 <dt id="arg-bootstrap">bootstrap<a class="anchor" aria-label="anchor" href="#arg-bootstrap"></a></dt>
-<dd><p>Optional table from <code><a href="threshold_bootstrap.html">threshold_bootstrap()</a></code>.</p></dd>
+<dd><p><code>NULL</code> or a data frame (or tibble) returned by
+<code><a href="threshold_bootstrap.html">threshold_bootstrap()</a></code>.</p></dd>
 
 
 <dt id="arg-groups">groups<a class="anchor" aria-label="anchor" href="#arg-groups"></a></dt>
-<dd><p>Optional table from <code><a href="threshold_by_group.html">threshold_by_group()</a></code>.</p></dd>
+<dd><p><code>NULL</code> or a data frame (or tibble) returned by
+<code><a href="threshold_by_group.html">threshold_by_group()</a></code>.</p></dd>
 
 
 <dt id="arg-extraction-info">extraction_info<a class="anchor" aria-label="anchor" href="#arg-extraction-info"></a></dt>
-<dd><p>Optional path to <code>extraction_info.csv</code> (or the
-table read from it): its <code>key</code>, <code>value</code> rows are written at the top of
-the Markdown file.</p></dd>
+<dd><p><code>NULL</code>, a character scalar with the path to
+<code>extraction_info.csv</code>, or the data frame read from it: its <code>key</code>,
+<code>value</code> rows are written at the top of the Markdown file.</p></dd>
 
 
 <dt id="arg-target-precision">target_precision<a class="anchor" aria-label="anchor" href="#arg-target-precision"></a></dt>
-<dd><p>Target precision used, recorded in the table.</p></dd>
+<dd><p>Numeric scalar, target precision used, recorded
+in the table.</p></dd>
 
 
 <dt id="arg-file">file<a class="anchor" aria-label="anchor" href="#arg-file"></a></dt>
-<dd><p>Optional path of a Markdown file to write.</p></dd>
+<dd><p><code>NULL</code> or a character scalar, path of a Markdown file to
+write.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -14,17 +14,18 @@ calibration_diagnostics(fit, rhat_max = 1.01, ess_min = 400)
 
 - fit:
 
-  Model returned by
+  A `brmsfit` returned by
   [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
   with `engine = "brms"`.
 
 - rhat_max:
 
-  Largest acceptable R-hat.
+  Numeric scalar \>= 1, largest acceptable R-hat.
 
 - ess_min:
 
-  Smallest acceptable bulk and tail effective sample size.
+  Numeric scalar \>= 0, smallest acceptable bulk and tail effective
+  sample size.
 
 ## Value
 

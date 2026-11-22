@@ -16,13 +16,14 @@ calibration_prior(formula, validations)
 
 - formula:
 
-  Calibration formula (see
+  A model formula, the calibration formula (see
   [`calibration_models()`](https://provetelab.org/sheepdog/reference/calibration_models.md)).
 
 - validations:
 
-  Table returned by
-  [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md).
+  A data frame (or tibble) returned by
+  [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md),
+  one row per reviewed clip.
 
 ## Value
 

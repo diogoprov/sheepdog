@@ -18,23 +18,24 @@ plot_calibration_draws(fit, n_draws = 100, p_min = 0.95, seed = 2026)
 
 - fit:
 
-  Model returned by
+  A `brmsfit` returned by
   [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
   with `engine = "brms"` or by
   [`prior_predictive_calibration()`](https://provetelab.org/sheepdog/reference/prior_predictive_calibration.md).
 
 - n_draws:
 
-  Number of curves.
+  Integer scalar \>= 1, number of curves (at most the number of draws in
+  `fit`).
 
 - p_min:
 
-  Threshold drawn as a dashed line.
+  Numeric scalar in \[0, 1\], threshold drawn as a dashed line.
 
 - seed:
 
-  Seed of the choice of draws. The global random number generator is
-  left as it was.
+  Integer scalar, seed of the choice of draws. The global random number
+  generator is left as it was.
 
 ## Value
 

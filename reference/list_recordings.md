@@ -28,41 +28,44 @@ list_recordings(
 
 - audio_dir:
 
-  Root folder of the audio files, searched recursively.
+  Character scalar, path to the root folder of the audio files, searched
+  recursively.
 
 - audio_pattern:
 
-  Regular expression for the audio file names (case insensitive).
+  Character scalar, regular expression for the audio file names (case
+  insensitive).
 
 - site:
 
-  `NULL` (the site is the first folder below `audio_dir`) or a single
-  site name for every file.
+  `NULL` (the site is the first folder below `audio_dir`) or a character
+  scalar, a single site name for every file.
 
 - site_pattern:
 
-  Optional regular expression with one capture group that takes the site
-  from the file name, for recordings of several sites in the same
-  folder. For example, `"^[^_]+_([^_]+)_"` reads `Campus01` from
-  `Campinas_Campus01_20261003_074339.flac`. It replaces the folder rule
-  and cannot be combined with `site`.
+  `NULL` or character scalar, regular expression with one capture group
+  that takes the site from the file name, for recordings of several
+  sites in the same folder. For example, `"^[^_]+_([^_]+)_"` reads
+  `Campus01` from `Campinas_Campus01_20261003_074339.flac`. It replaces
+  the folder rule and cannot be combined with `site`.
 
 - remap_from, remap_to:
 
-  Replace the prefix `remap_from` of the listed paths by `remap_to`,
-  e.g. `"/Volumes/NAS/"` and `"N:/"`, so that the paths match
-  `Begin Path`. Backslashes are turned into forward slashes first.
+  `NULL` or character scalars. Replace the prefix `remap_from` of the
+  listed paths by `remap_to`, e.g. `"/Volumes/NAS/"` and `"N:/"`, so
+  that the paths match `Begin Path`. Backslashes are turned into forward
+  slashes first.
 
 - predictions:
 
-  Optional table of predictions from
+  `NULL` or a data frame of predictions (one row per prediction) from
   [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md),
   to check that its audio files are in the list.
 
 - file:
 
-  Optional path of a CSV file to write the table to (e.g.
-  `"recordings.csv"`).
+  `NULL` or character scalar, path of a CSV file to write the table to
+  (e.g. `"recordings.csv"`).
 
 ## Value
 
@@ -110,7 +113,7 @@ list_recordings(audio)
 #> # A tibble: 3 × 2
 #>   site  source_audio                                       
 #>   <chr> <chr>                                              
-#> 1 ARA   /tmp/Rtmp0jDMSU/audio/ARA/ARA01_20211001_190000.wav
-#> 2 ARA   /tmp/Rtmp0jDMSU/audio/ARA/ARA01_20211001_200000.wav
-#> 3 BAI   /tmp/Rtmp0jDMSU/audio/BAI/BAI01_20211001_190000.wav
+#> 1 ARA   /tmp/Rtmpd8vHp9/audio/ARA/ARA01_20211001_190000.wav
+#> 2 ARA   /tmp/Rtmpd8vHp9/audio/ARA/ARA01_20211001_200000.wav
+#> 3 BAI   /tmp/Rtmpd8vHp9/audio/BAI/BAI01_20211001_190000.wav
 ```

@@ -20,28 +20,31 @@ app_verdicts(manifest, verdicts_file, clips_dir = NULL, reviewer = NULL)
 
 - manifest:
 
-  Clip manifest: a data frame or the path to `clip_manifest.csv` (from
+  `NULL`, a data frame (or tibble) or a character scalar path to
+  `clip_manifest.csv`: the clip manifest (from
   [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md),
   [`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md)
   or
-  [`assign_reviewers()`](https://provetelab.org/sheepdog/reference/assign_reviewers.md)).
-  With `output_dir`, by default `<output_dir>/clip_manifest.csv` when it
-  exists.
+  [`assign_reviewers()`](https://provetelab.org/sheepdog/reference/assign_reviewers.md)),
+  one row per clip. With `output_dir`, by default
+  `<output_dir>/clip_manifest.csv` when it exists.
 
 - verdicts_file:
 
-  CSV written by
+  Character scalar, path to the CSV written by
   [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md).
 
 - clips_dir:
 
-  Optional folder of the clips, to fill `reviewed_path` (needed by
+  `NULL` or a character scalar, folder of the clips, to fill
+  `reviewed_path` (needed by
   [`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md)).
 
 - reviewer:
 
-  Optional reviewer: only their verdicts are used. With `NULL`, every
-  reviewer's verdicts are kept, one row per clip and reviewer, ready for
+  `NULL` or a character scalar, the reviewer: only their verdicts are
+  used. With `NULL`, every reviewer's verdicts are kept, one row per
+  clip and reviewer, ready for
   [`reviewer_agreement()`](https://provetelab.org/sheepdog/reference/reviewer_agreement.md)
   and
   [`consensus_verdicts()`](https://provetelab.org/sheepdog/reference/consensus_verdicts.md).

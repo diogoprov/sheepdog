@@ -98,21 +98,22 @@ uncertainty of the curve. Needs the 'ggplot2' package.</p>
 
 
 <dl><dt id="arg-fit">fit<a class="anchor" aria-label="anchor" href="#arg-fit"></a></dt>
-<dd><p>Model returned by <code><a href="fit_calibration.html">fit_calibration()</a></code> with <code>engine = "brms"</code>
+<dd><p>A <code>brmsfit</code> returned by <code><a href="fit_calibration.html">fit_calibration()</a></code> with <code>engine = "brms"</code>
 or by <code><a href="prior_predictive_calibration.html">prior_predictive_calibration()</a></code>.</p></dd>
 
 
 <dt id="arg-n-draws">n_draws<a class="anchor" aria-label="anchor" href="#arg-n-draws"></a></dt>
-<dd><p>Number of curves.</p></dd>
+<dd><p>Integer scalar &gt;= 1, number of curves (at most the number of
+draws in <code>fit</code>).</p></dd>
 
 
 <dt id="arg-p-min">p_min<a class="anchor" aria-label="anchor" href="#arg-p-min"></a></dt>
-<dd><p>Threshold drawn as a dashed line.</p></dd>
+<dd><p>Numeric scalar in [0, 1], threshold drawn as a dashed line.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>Seed of the choice of draws. The global random number
-generator is left as it was.</p></dd>
+<dd><p>Integer scalar, seed of the choice of draws. The global random
+number generator is left as it was.</p></dd>
 
 </dl></div>
     <div class="section level2">

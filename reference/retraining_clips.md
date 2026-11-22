@@ -12,8 +12,10 @@ retraining_clips(validation)
 
 - validation:
 
-  Table returned by
-  [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md).
+  A data frame (or tibble) returned by
+  [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md),
+  with columns `site`, `species_folder`, `verdict` and `confidence`. One
+  row per clip.
 
 ## Value
 

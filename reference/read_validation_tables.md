@@ -18,13 +18,13 @@ read_validation_tables(files, candidates = NULL)
 
 - files:
 
-  Paths to the `validation_by_clip.csv` files. Missing files are skipped
-  with a warning.
+  Character vector, paths to the `validation_by_clip.csv` files. Missing
+  files are skipped with a warning.
 
 - candidates:
 
-  For the rounds of one design: the `candidates.csv` of the first round,
-  passed to
+  `NULL`, a character scalar (path) or a data frame. For the rounds of
+  one design: the `candidates.csv` of the first round, passed to
   [`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md),
   which gives the clips their cumulative `inclusion_prob`. `NULL` only
   stacks the tables.

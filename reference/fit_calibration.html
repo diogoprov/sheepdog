@@ -96,31 +96,32 @@ site levels of <code>validations</code> are stored with the model, so that
 
 
 <dl><dt id="arg-validations">validations<a class="anchor" aria-label="anchor" href="#arg-validations"></a></dt>
-<dd><p>Table returned by <code><a href="read_validations.html">read_validations()</a></code>.</p></dd>
+<dd><p>A data frame (or tibble) returned by <code><a href="read_validations.html">read_validations()</a></code>,
+one row per reviewed clip.</p></dd>
 
 
 <dt id="arg-formula">formula<a class="anchor" aria-label="anchor" href="#arg-formula"></a></dt>
-<dd><p>Model formula, usually the best one of
+<dd><p>A model formula, usually the best one of
 <code><a href="compare_calibration_models.html">compare_calibration_models()</a></code>.</p></dd>
 
 
 <dt id="arg-engine">engine<a class="anchor" aria-label="anchor" href="#arg-engine"></a></dt>
-<dd><p><code>"lme4"</code> or <code>"brms"</code>.</p></dd>
+<dd><p>Character scalar, one of <code>"lme4"</code> (default) or <code>"brms"</code>.</p></dd>
 
 
 <dt id="arg-prior">prior<a class="anchor" aria-label="anchor" href="#arg-prior"></a></dt>
-<dd><p><code>engine = "brms"</code>: the prior (a <code>brmsprior</code> object), e.g.
-from <code><a href="calibration_prior.html">calibration_prior()</a></code>. Required.</p></dd>
+<dd><p><code>NULL</code> or a <code>brmsprior</code> object. With <code>engine = "brms"</code>, the
+prior, e.g. from <code><a href="calibration_prior.html">calibration_prior()</a></code>. Required.</p></dd>
 
 
 <dt id="arg-control">control<a class="anchor" aria-label="anchor" href="#arg-control"></a></dt>
-<dd><p>Optional settings of the fitting algorithm, a single
-object: a <code><a href="https://rdrr.io/pkg/lme4/man/lmerControl.html" class="external-link">lme4::glmerControl()</a></code> object (formula with random effects)
-or a list of <code><a href="https://rdrr.io/r/stats/glm.control.html" class="external-link">stats::glm.control()</a></code> arguments (formula without them)
-with <code>engine = "lme4"</code>; a list of sampler settings passed to
-<code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code> with <code>engine = "brms"</code>. <code>NULL</code> (default) keeps the
-settings described in "Maximum likelihood fit" and the 'brms'
-defaults. See the section "Maximum likelihood fit".</p></dd>
+<dd><p><code>NULL</code> or a single object with settings of the fitting
+algorithm: a <code><a href="https://rdrr.io/pkg/lme4/man/lmerControl.html" class="external-link">lme4::glmerControl()</a></code> object (formula with random effects) or
+a list of <code><a href="https://rdrr.io/r/stats/glm.control.html" class="external-link">stats::glm.control()</a></code> arguments (formula without them) with
+<code>engine = "lme4"</code>; a list of sampler settings passed to <code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code> with
+<code>engine = "brms"</code>. <code>NULL</code> (default) keeps the settings described in
+"Maximum likelihood fit" and the 'brms' defaults. See the section "Maximum
+likelihood fit".</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -279,10 +280,10 @@ binned posterior predictive check of <code><a href="calibration_ppc.html">calibr
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">fit</span>, method <span class="op">=</span> <span class="st">"Wald"</span>, parm <span class="op">=</span> <span class="st">"beta_"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  logit_conf </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.2060526   1.6030184 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.2060523   1.6030183 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  2.5 %    97.5 %</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept) -0.9305439 0.5184387</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> logit_conf   1.4584249 1.7476119</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept) -0.9305499 0.5184454</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> logit_conf   1.4584248 1.7476119</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Bayesian fit: the prior is always given explicitly. Fitting compiles a</span></span></span>
 <span class="r-in"><span><span class="co"># Stan model, which takes minutes, so this part is not run here.</span></span></span>

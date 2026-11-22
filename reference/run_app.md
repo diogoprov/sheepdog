@@ -28,62 +28,68 @@ run_app(
 
 - manifest:
 
-  Clip manifest: a data frame or the path to `clip_manifest.csv` (from
+  `NULL`, a data frame (or tibble) or a character scalar path to
+  `clip_manifest.csv`: the clip manifest (from
   [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md),
   [`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md)
   or
-  [`assign_reviewers()`](https://provetelab.org/sheepdog/reference/assign_reviewers.md)).
-  With `output_dir`, by default `<output_dir>/clip_manifest.csv` when it
-  exists.
+  [`assign_reviewers()`](https://provetelab.org/sheepdog/reference/assign_reviewers.md)),
+  one row per clip. With `output_dir`, by default
+  `<output_dir>/clip_manifest.csv` when it exists.
 
 - clips_dir:
 
-  Folder of the cut clips, with one subfolder per species
-  (`<clips_dir>/<species_folder>/<clip_file>`, as written by
+  `NULL` or a character scalar, folder of the cut clips, with one
+  subfolder per species (`<clips_dir>/<species_folder>/<clip_file>`, as
+  written by
   [`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md)).
   With `output_dir`, `<output_dir>/clips` by default.
 
 - verdicts_file:
 
-  CSV where the verdicts are written. By default, `verdicts.csv` in
-  `output_dir` or next to `manifest` when it is a path.
+  `NULL` or a character scalar, path to the CSV (`.csv`) where the
+  verdicts are written. By default, `verdicts.csv` in `output_dir` or
+  next to `manifest` when it is a path.
 
 - reviewer:
 
-  Name of the reviewer, written with each verdict. With a manifest from
+  `NULL` or a character scalar, name of the reviewer, written with each
+  verdict. With a manifest from
   [`assign_reviewers()`](https://provetelab.org/sheepdog/reference/assign_reviewers.md),
   only the clips assigned to this reviewer (as first or second reviewer)
   are shown.
 
 - max_freq:
 
-  Upper limit of the spectrogram, in kHz: 12 by default (e.g. `8` for
-  most anuran calls). `NULL` shows the whole band. It can also be
-  changed in the Review tab.
+  `NULL` or a numeric scalar, upper limit of the spectrogram, in kHz: 12
+  by default (e.g. `8` for most anuran calls). `NULL` shows the whole
+  band. It can also be changed in the Review tab.
 
 - selection_dir:
 
-  Folder of the BirdNET selection tables (as in
+  `NULL` or a character scalar, folder of the BirdNET selection tables
+  (as in
   [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)).
   Opens the Sampling and Export tabs.
 
 - output_dir:
 
-  Folder of the validation round: the clips, the manifest, the verdicts
-  and the export (`<output_dir>/occupancy` by default) are written
-  there.
+  `NULL` or a character scalar, folder of the validation round: the
+  clips, the manifest, the verdicts and the export
+  (`<output_dir>/occupancy` by default) are written there.
 
 - recordings:
 
-  Optional table of all recordings (columns `site` and `source_audio`),
-  or the path to its CSV: needed by `"random_recordings"` and, in the
-  export, to keep the occasions without detections (see
+  `NULL`, a data frame (or tibble) of all recordings (columns `site` and
+  `source_audio`, one row per recording) or a character scalar path to
+  its CSV: needed by `"random_recordings"` and, in the export, to keep
+  the occasions without detections (see
   [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)).
 
 - audio_dir:
 
-  Optional folder of the recordings, subfolders included. Every
-  recording is listed with
+  `NULL` or a character scalar, folder of the recordings, subfolders
+  included. Every recording is listed with
   [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md)
   and written to the `recordings` CSV when it is a path, or else to
   `<output_dir>/recordings.csv`; the list is used as `recordings`. Can
@@ -91,9 +97,9 @@ run_app(
 
 - site_pattern:
 
-  Optional regular expression with one capture group that takes the site
-  from the file names, when the recordings or the selection tables of
-  several sites share a folder (see
+  `NULL` or a character scalar, regular expression with one capture
+  group that takes the site from the file names, when the recordings or
+  the selection tables of several sites share a folder (see
   [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md)
   and
   [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)).
@@ -101,19 +107,20 @@ run_app(
 
 - blind:
 
-  Blind review: the Review tab hides the score, the sampling design and
-  the clip file name (which starts with the score), and shows the clips
-  in an order shuffled once per reviewer instead of the order of the
-  manifest, so that the verdict does not lean on the score.
+  Logical scalar. If `TRUE`, blind review: the Review tab hides the
+  score, the sampling design and the clip file name (which starts with
+  the score), and shows the clips in an order shuffled once per reviewer
+  instead of the order of the manifest, so that the verdict does not
+  lean on the score.
 
 - classifier:
 
-  Label of the classifier, recorded in `extraction_info.csv` and
-  `schema.json`.
+  `NULL` or a character scalar, label of the classifier, recorded in
+  `extraction_info.csv` and `schema.json`.
 
 - launch.browser:
 
-  Open the app in the browser? Passed to
+  Logical scalar: open the app in the browser? Passed to
   [`shiny::runApp()`](https://rdrr.io/pkg/shiny/man/runApp.html).
 
 - ...:

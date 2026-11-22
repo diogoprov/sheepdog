@@ -108,40 +108,47 @@ cell:</p>
 
 
 <dl><dt id="arg-validation">validation<a class="anchor" aria-label="anchor" href="#arg-validation"></a></dt>
-<dd><p>Reviewed clips, as for <code><a href="precision_by_bin.html">precision_by_bin()</a></code> (the
-<code>validation_by_clip.csv</code> tables).</p></dd>
+<dd><p>A data frame (or tibble) of reviewed clips, as for
+<code><a href="precision_by_bin.html">precision_by_bin()</a></code> (the <code>validation_by_clip.csv</code> tables). One row per
+clip.</p></dd>
 
 
 <dt id="arg-detections">detections<a class="anchor" aria-label="anchor" href="#arg-detections"></a></dt>
-<dd><p>Predictions, as returned by <code><a href="read_selection_tables.html">read_selection_tables()</a></code>.</p></dd>
+<dd><p>A data frame (or tibble) of predictions, as returned by
+<code><a href="read_selection_tables.html">read_selection_tables()</a></code>, with columns <code>site</code>, <code>species_code</code>,
+<code>confidence</code>, <code>begin_path</code> and <code>file_offset</code>. One row per prediction.</p></dd>
 
 
 <dt id="arg-conf-high">conf_high<a class="anchor" aria-label="anchor" href="#arg-conf-high"></a></dt>
-<dd><p>Score from which a prediction counts as high.</p></dd>
+<dd><p>Numeric scalar, score from which a prediction counts as
+high.</p></dd>
 
 
 <dt id="arg-min-n">min_n<a class="anchor" aria-label="anchor" href="#arg-min-n"></a></dt>
-<dd><p>Minimum number of clips, as in <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>, and
-of unreviewed high-score detections for <code>"review more"</code>.</p></dd>
+<dd><p>Integer scalar &gt;= 1. Minimum number of clips, as in
+<code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>, and of unreviewed high-score detections for
+<code>"review more"</code>.</p></dd>
 
 
 <dt id="arg-min-precision">min_precision<a class="anchor" aria-label="anchor" href="#arg-min-precision"></a></dt>
-<dd><p>Precision at high scores below which a cell is
-<code>"unreliable"</code>.</p></dd>
+<dd><p>Numeric scalar in [0, 1]. Precision at high scores
+below which a cell is <code>"unreliable"</code>.</p></dd>
 
 
 <dt id="arg-target-precision">target_precision<a class="anchor" aria-label="anchor" href="#arg-target-precision"></a></dt>
-<dd><p>Target precision of <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>.</p></dd>
+<dd><p>Numeric scalar in (0, 1). Target precision of
+<code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
-<dd><p>Optional columns that split each cell, e.g. <code>"temp_bin"</code>.
-They must be columns of <code>covariates</code> (joined to both tables) or of
-both tables.</p></dd>
+<dd><p><code>NULL</code> or a character vector of column names that split each
+cell, e.g. <code>"temp_bin"</code>. They must be columns of <code>covariates</code> (joined
+to both tables) or of both tables.</p></dd>
 
 
 <dt id="arg-covariates">covariates<a class="anchor" aria-label="anchor" href="#arg-covariates"></a></dt>
-<dd><p>Optional table of occasion covariates, such as the
+<dd><p><code>NULL</code> or a data frame (or tibble) of occasion
+covariates, such as the
 output of <code><a href="covariate_bins.html">covariate_bins()</a></code>, joined to the clips and to the
 predictions by the columns it shares with them among <code>site</code>, <code>night</code>,
 <code>recording_date</code>, <code>recording_hour</code>, <code>source_audio</code> and <code>occasion_id</code>,
@@ -149,20 +156,23 @@ as in <code><a href="select_clips.html">select_clips()</a></code>.</p></dd>
 
 
 <dt id="arg-occasion-unit">occasion_unit<a class="anchor" aria-label="anchor" href="#arg-occasion-unit"></a></dt>
-<dd><p>The occasion of the occupancy model: <code>"file"</code> (the
-whole recording) or <code>"minute"</code> (minute of the file, from
+<dd><p>Character scalar, the occasion of the occupancy
+model: <code>"file"</code> (the whole recording) or <code>"minute"</code> (minute of the
+file, from
 <code>file_offset</code>).</p></dd>
 
 
 <dt id="arg-remap-from-remap-to">remap_from, remap_to<a class="anchor" aria-label="anchor" href="#arg-remap-from-remap-to"></a></dt>
-<dd><p>Replace the prefix <code>remap_from</code> of the
+<dd><p><code>NULL</code> or character scalars. Replace the
+prefix <code>remap_from</code> of the
 <code>begin_path</code> paths by <code>remap_to</code>, e.g. <code>"N:/"</code> and <code>"/Volumes/Arara/"</code>.
 Backslashes are turned into forward slashes first.</p></dd>
 
 
 <dt id="arg-weighted">weighted<a class="anchor" aria-label="anchor" href="#arg-weighted"></a></dt>
-<dd><p>Passed to <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>, so that <code>"reached"</code>
-follows the same rule. <code>prec_high</code> stays unweighted.</p></dd>
+<dd><p><code>NULL</code>, <code>TRUE</code> or <code>FALSE</code>. Passed to
+<code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>, so that <code>"reached"</code> follows the same rule.
+<code>prec_high</code> stays unweighted.</p></dd>
 
 </dl></div>
     <div class="section level2">

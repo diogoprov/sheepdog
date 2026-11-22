@@ -31,13 +31,13 @@ calibrated_thresholds(
 
 - fit:
 
-  Model returned by
+  A `glm`, `glmerMod` or `brmsfit` returned by
   [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md).
 
 - target:
 
-  Target probability (`"probability"`) or precision (`"precision"`). The
-  default, 0.95, is the `p_min` of
+  Numeric scalar in (0, 1), target probability (`"probability"`) or
+  precision (`"precision"`). The default, 0.95, is the `p_min` of
   [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md)
   and
   [`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md),
@@ -50,35 +50,40 @@ calibrated_thresholds(
 
 - rule:
 
-  `"probability"` or `"precision"`; see Details.
+  Character scalar, one of `"probability"` (default) or `"precision"`;
+  see Details.
 
 - scored:
 
-  Table returned by
+  `NULL` or a data frame (or tibble) returned by
   [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md),
-  with `site`, `species`, `confidence` and `p_tp`. Required for
-  `rule = "precision"`; with `rule = "probability"`, its site x species
-  cells are used when `cells` is `NULL`.
+  one row per detection, with `site`, `species`, `confidence` and
+  `p_tp`. Required for `rule = "precision"`; with
+  `rule = "probability"`, its site x species cells are used when `cells`
+  is `NULL`.
 
 - cells:
 
-  Data frame of the cells to threshold, with `site` and `species` and
-  any other variable of the calibration formula. By default, the cells
-  of `scored` or, without it, every site x species of the calibration.
+  `NULL` or a data frame (or tibble) of the cells to threshold, one row
+  per cell, with `site` and `species` and any other variable of the
+  calibration formula. By default, the cells of `scored` or, without it,
+  every site x species of the calibration.
 
 - min_confidence:
 
-  Detections below this confidence are not scored.
+  Numeric scalar in \[0, 1\]. Detections below this confidence are not
+  scored.
 
 - grid_step:
 
-  Models fitted with `engine = "brms"`: step of the grid of scores on
-  which the posterior is computed.
+  Numeric scalar in (0, 0.5). Models fitted with `engine = "brms"`: step
+  of the grid of scores on which the posterior is computed.
 
 - lower_prob:
 
-  Models fitted with `engine = "brms"`: the probability of the lower
-  quantile of the posterior of P(TP) used for `threshold_lower`.
+  Numeric scalar in (0, 1). Models fitted with `engine = "brms"`: the
+  probability of the lower quantile of the posterior of P(TP) used for
+  `threshold_lower`.
 
 ## Value
 

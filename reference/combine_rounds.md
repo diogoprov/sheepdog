@@ -21,14 +21,17 @@ combine_rounds(validation, candidates = NULL)
 
 - validation:
 
-  The tables of all rounds: paths to the `validation_by_clip.csv` files
-  or manifests, a data frame, or a list of these. Tables without `round`
-  count as one round each, in the order given.
+  A character vector of paths, a data frame, or a list of these: the
+  tables of all rounds (paths to the `validation_by_clip.csv` files or
+  manifests), one row per clip, with the columns `site`, `species_code`,
+  `occasion_id` and `sampling_mode`. Tables without `round` count as one
+  round each, in the order given.
 
 - candidates:
 
-  The `candidates.csv` of the first round, as a path or a data frame.
-  `NULL` looks for it in the folders of `validation`.
+  `NULL`, a character scalar (path) or a data frame: the
+  `candidates.csv` of the first round. `NULL` looks for it in the
+  folders of `validation`.
 
 ## Value
 

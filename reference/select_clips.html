@@ -124,35 +124,43 @@ audio is read or written; cut the clips with <code><a href="cut_clips.html">cut_
 
 
 <dl><dt id="arg-detections">detections<a class="anchor" aria-label="anchor" href="#arg-detections"></a></dt>
-<dd><p>Predictions, as returned by <code><a href="read_selection_tables.html">read_selection_tables()</a></code>.</p></dd>
+<dd><p>A data frame of predictions, one row per BirdNET
+prediction, as returned by <code><a href="read_selection_tables.html">read_selection_tables()</a></code> (columns <code>site</code>,
+<code>begin_path</code>, <code>begin_time</code>, <code>end_time</code>, <code>file_offset</code>, <code>confidence</code>
+and <code>species_code</code>).</p></dd>
 
 
 <dt id="arg-sampling-mode">sampling_mode<a class="anchor" aria-label="anchor" href="#arg-sampling-mode"></a></dt>
-<dd><p><code>"top"</code>, <code>"random_detections"</code>,
-<code>"random_recordings"</code> or <code>"score_bands"</code>. See <em>Sampling modes</em> and
+<dd><p>Character scalar, one of <code>"top"</code>,
+<code>"random_detections"</code>, <code>"random_recordings"</code> or <code>"score_bands"</code>. See
+<em>Sampling modes</em> and
 <em>Which design for which use</em>.</p></dd>
 
 
 <dt id="arg-occasion-unit">occasion_unit<a class="anchor" aria-label="anchor" href="#arg-occasion-unit"></a></dt>
-<dd><p>The occasion of the occupancy model: <code>"file"</code> (the
-whole recording) or <code>"minute"</code> (minute of the file, from
+<dd><p>Character scalar, the occasion of the occupancy
+model: <code>"file"</code> (the whole recording) or <code>"minute"</code> (minute of the
+file, from
 <code>file_offset</code>).</p></dd>
 
 
 <dt id="arg-threshold">threshold<a class="anchor" aria-label="anchor" href="#arg-threshold"></a></dt>
-<dd><p>Confidence threshold of the occupancy analysis. It
+<dd><p><code>NULL</code> or numeric scalar in [0, 1], confidence
+threshold of the occupancy analysis. It
 defines the candidate occasions of <code>"random_detections"</code> and the
 <code>n_detections_occasion</code> column. <code>NULL</code> leaves that column <code>NA</code>.</p></dd>
 
 
 <dt id="arg-n-top">n_top<a class="anchor" aria-label="anchor" href="#arg-n-top"></a></dt>
-<dd><p><code>"top"</code>: predictions kept per site x species x night x
+<dd><p>Integer scalar &gt;= 1. <code>"top"</code>: predictions kept per site x
+species x night x
 hour. <code>"random_detections"</code>: occasions drawn per stratum (<code>strata</code>).
 <code>"score_bands"</code>: predictions drawn per stratum and score band.</p></dd>
 
 
 <dt id="arg-strata">strata<a class="anchor" aria-label="anchor" href="#arg-strata"></a></dt>
-<dd><p><code>"random_detections"</code> and <code>"score_bands"</code>: the strata of
+<dd><p>Character scalar (a preset name) or character vector (column
+names). <code>"random_detections"</code> and <code>"score_bands"</code>: the strata of
 the draw (within each, <code>"score_bands"</code> also splits by score band)
 (ignored by the other modes). Either one of the presets, all within
 site x species:</p><ul><li><p><code>"night_hour"</code>: night x hour (the rule of 2.0.0);</p></li>
@@ -191,14 +199,15 @@ conditional on the first draw (a warning says so).</p></dd>
 
 
 <dt id="arg-score-breaks">score_breaks<a class="anchor" aria-label="anchor" href="#arg-score-breaks"></a></dt>
-<dd><p><code>"score_bands"</code>: the limits of the score bands,
-increasing, within 0 and 1. Predictions below the first limit are not
+<dd><p>Numeric vector of length &gt;= 2, strictly increasing,
+within 0 and 1. <code>"score_bands"</code>: the limits of the score bands.
+Predictions below the first limit are not
 drawn; the last band includes its upper limit.</p></dd>
 
 
 <dt id="arg-covariates">covariates<a class="anchor" aria-label="anchor" href="#arg-covariates"></a></dt>
-<dd><p><code>"random_detections"</code>: optional data frame of
-occasion covariates whose columns can be used in <code>strata</code>, such as
+<dd><p><code>NULL</code> or a data frame of occasion covariates.
+<code>"random_detections"</code>: its columns can be used in <code>strata</code>, such as
 the bins of an environmental gradient or of an acoustic index made by
 <code><a href="covariate_bins.html">covariate_bins()</a></code>. It is joined to the predictions by the columns it
 shares with them among <code>site</code>, <code>night</code>, <code>recording_date</code>,
@@ -211,7 +220,8 @@ verdict, so the calibration should include it or weight the clips by
 
 
 <dt id="arg-recording-fraction">recording_fraction<a class="anchor" aria-label="anchor" href="#arg-recording-fraction"></a></dt>
-<dd><p><code>"random_recordings"</code>: fraction of the
+<dd><p>Numeric scalar in [0, 1].
+<code>"random_recordings"</code>: fraction of the
 recordings (or minutes) drawn at each site, rounded, with at least one
 per site. The default (1 %) suits large projects: with fewer than 150
 recordings per site it draws a single recording; raise it or use
@@ -219,13 +229,15 @@ recordings per site it draws a single recording; raise it or use
 
 
 <dt id="arg-n-recordings-per-site">n_recordings_per_site<a class="anchor" aria-label="anchor" href="#arg-n-recordings-per-site"></a></dt>
-<dd><p><code>"random_recordings"</code>: fixed number of
+<dd><p><code>NULL</code> or integer scalar &gt;= 1.
+<code>"random_recordings"</code>: fixed number of
 recordings (or minutes) per site, used instead of <code>recording_fraction</code>.</p></dd>
 
 
 <dt id="arg-recordings">recordings<a class="anchor" aria-label="anchor" href="#arg-recordings"></a></dt>
-<dd><p><code>"random_recordings"</code>: the list of all recordings, as a
-data frame or the path to a CSV file with the columns <code>site</code> and
+<dd><p><code>NULL</code>, a data frame (one row per recording) or a
+character scalar, path to a CSV file. <code>"random_recordings"</code>: the list
+of all recordings, with the columns <code>site</code> and
 <code>source_audio</code> (the v1.2.0 columns <code>local</code> and <code>caminho_audio</code> are
 also read). <code>NULL</code> lists the files matching <code>audio_pattern</code> in the
 audio folders that appear in <code>begin_path</code>; folders without any
@@ -233,51 +245,59 @@ prediction are then left out.</p></dd>
 
 
 <dt id="arg-audio-pattern">audio_pattern<a class="anchor" aria-label="anchor" href="#arg-audio-pattern"></a></dt>
-<dd><p>Regular expression for the audio files listed when
+<dd><p>Character scalar, regular expression for the audio
+files listed when
 <code>recordings</code> is <code>NULL</code>.</p></dd>
 
 
 <dt id="arg-recording-duration">recording_duration<a class="anchor" aria-label="anchor" href="#arg-recording-duration"></a></dt>
-<dd><p>Length of the recordings (s), for
+<dd><p><code>NULL</code> or numeric scalar, length of the
+recordings (s), for
 <code>occasion_unit = "minute"</code> in <code>"random_recordings"</code> and for the end of
 whole-recording clips. <code>NULL</code> reads each file with the 'av' package
 when needed (minute occasions) and leaves <code>clip_end</code> as <code>NA</code> otherwise.</p></dd>
 
 
 <dt id="arg-min-confidence">min_confidence<a class="anchor" aria-label="anchor" href="#arg-min-confidence"></a></dt>
-<dd><p>Minimum confidence of a candidate prediction in
+<dd><p><code>NULL</code> or numeric scalar in [0, 1], minimum
+confidence of a candidate prediction in
 <code>"top"</code>. <code>NULL</code> applies no filter. The random modes use <code>threshold</code>.</p></dd>
 
 
 <dt id="arg-sites">sites<a class="anchor" aria-label="anchor" href="#arg-sites"></a></dt>
-<dd><p>Restrict to these sites (the predictions and, in
+<dd><p><code>NULL</code> or character vector of site names. Restrict to these
+sites (the predictions and, in
 <code>"random_recordings"</code>, the list of recordings). <code>NULL</code> keeps all.</p></dd>
 
 
 <dt id="arg-date-start-date-end">date_start, date_end<a class="anchor" aria-label="anchor" href="#arg-date-start-date-end"></a></dt>
-<dd><p>Date window of the recordings (<code>"YYYYMMDD"</code>).
-<code>NULL</code> leaves that side open.</p></dd>
+<dd><p><code>NULL</code> or character scalars, date window of
+the recordings (<code>"YYYYMMDD"</code>). <code>NULL</code> leaves that side open.</p></dd>
 
 
 <dt id="arg-species">species<a class="anchor" aria-label="anchor" href="#arg-species"></a></dt>
-<dd><p>Restrict to these short species codes (the last part of
+<dd><p><code>NULL</code> or character vector. Restrict to these short
+species codes (the last part of
 <code>species_code</code>, e.g. <code>"boa-ran"</code>). <code>NULL</code> keeps all.</p></dd>
 
 
 <dt id="arg-hour-start-hour-end">hour_start, hour_end<a class="anchor" aria-label="anchor" href="#arg-hour-start-hour-end"></a></dt>
-<dd><p>Hour window (0-23). It can cross midnight:
+<dd><p><code>NULL</code> or integer scalars in 0-23, hour
+window. It can cross midnight:
 <code>hour_start = 17, hour_end = 2</code> keeps 17h-23h and 0h-2h, and the
 grouping becomes by night (small hours count as the night before).
 <code>NULL</code> applies no filter.</p></dd>
 
 
 <dt id="arg-alternate-days">alternate_days<a class="anchor" aria-label="anchor" href="#arg-alternate-days"></a></dt>
-<dd><p>Keep alternate days (or nights), anchored on the
+<dd><p>Logical scalar. If <code>TRUE</code>, keep alternate days (or
+nights), anchored on the
 first date of each site.</p></dd>
 
 
 <dt id="arg-target-total">target_total<a class="anchor" aria-label="anchor" href="#arg-target-total"></a></dt>
-<dd><p>Total clips per site, split evenly among species by
+<dd><p><code>NULL</code> or integer scalar &gt;= 1, total clips per site,
+split evenly among species by
 water filling: species with fewer clips than the quota enter whole and
 the surplus goes to the others. In <code>"random_detections"</code> it counts
 occasions. Ignored in <code>"random_recordings"</code>. <code>NULL</code> sets no target.
@@ -287,50 +307,58 @@ species must weight the clips by <code>1 / inclusion_prob</code>.</p></dd>
 
 
 <dt id="arg-balance-by-hour">balance_by_hour<a class="anchor" aria-label="anchor" href="#arg-balance-by-hour"></a></dt>
-<dd><p>Within each species, draw round-robin across the
+<dd><p>Logical scalar. If <code>TRUE</code>, within each species,
+draw round-robin across the
 hours of the day (covers the diel cycle) when applying <code>target_total</code>
 or <code>max_per_species</code>.</p></dd>
 
 
 <dt id="arg-max-per-species">max_per_species<a class="anchor" aria-label="anchor" href="#arg-max-per-species"></a></dt>
-<dd><p>Simpler alternative to <code>target_total</code>: a fixed
+<dd><p><code>NULL</code> or integer scalar &gt;= 1. Simpler
+alternative to <code>target_total</code>: a fixed
 limit per site x species. Ignored when <code>target_total</code> is set.</p></dd>
 
 
 <dt id="arg-remap-from-remap-to">remap_from, remap_to<a class="anchor" aria-label="anchor" href="#arg-remap-from-remap-to"></a></dt>
-<dd><p>Replace the prefix <code>remap_from</code> of the
+<dd><p><code>NULL</code> or character scalars. Replace the
+prefix <code>remap_from</code> of the
 <code>begin_path</code> paths by <code>remap_to</code>, e.g. <code>"N:/"</code> and <code>"/Volumes/Arara/"</code>.
 Backslashes are turned into forward slashes first.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>Seed of every random draw. The global random number
+<dd><p>Integer scalar, seed of every random draw. The global random
+number
 generator is left as it was.</p></dd>
 
 
 <dt id="arg-previous">previous<a class="anchor" aria-label="anchor" href="#arg-previous"></a></dt>
-<dd><p>Earlier reviews: paths to their <code>clip_manifest.csv</code> or
-<code>validation_by_clip.csv</code>, a data frame, or a list of these. Rounds of the
+<dd><p><code>NULL</code>, a character vector of paths, a data frame, or a
+list of these. Earlier reviews: paths to their <code>clip_manifest.csv</code> or
+<code>validation_by_clip.csv</code>, or their tables. Rounds of the
 same design give another round (see Review rounds); reviews of the other
 random design, which need <code>validation_by_clip.csv</code>, give their verdicts
 (see Reusing the other design).</p></dd>
 
 
 <dt id="arg-candidates">candidates<a class="anchor" aria-label="anchor" href="#arg-candidates"></a></dt>
-<dd><p>With <code>previous</code>, the <code>candidates.csv</code> of the first
-round, as a path or a data frame. <code>NULL</code> looks for it in the folders of
+<dd><p><code>NULL</code>, a character scalar (path) or a data frame. With
+<code>previous</code>, the <code>candidates.csv</code> of the first round. <code>NULL</code> looks for
+it in the folders of
 <code>previous</code>.</p></dd>
 
 
 <dt id="arg-cells">cells<a class="anchor" aria-label="anchor" href="#arg-cells"></a></dt>
-<dd><p>With <code>previous</code>, restrict the round to these cells: a data
+<dd><p><code>NULL</code> or a data frame, one row per cell. With <code>previous</code>,
+restrict the round to these cells: a data
 frame with <code>site</code> and <code>species_folder</code> or <code>species_code</code>, such as the
 rows of <code><a href="review_support.html">review_support()</a></code> with <code>diagnosis == "review more"</code>.</p></dd>
 
 
 <dt id="arg-inherit">inherit<a class="anchor" aria-label="anchor" href="#arg-inherit"></a></dt>
-<dd><p>With <code>previous</code> of the other design, give the clips the
-verdict that the earlier review implies, so that they need no review?
+<dd><p>Logical scalar. With <code>previous</code> of the other design, give
+the clips the
+verdict that the earlier review implies, so that they need no review.
 See Reusing the other design.</p></dd>
 
 </dl></div>

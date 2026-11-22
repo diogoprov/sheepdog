@@ -17,18 +17,18 @@ cut_clips(manifest, output_dir, simulate = FALSE)
 
 - manifest:
 
-  Clip manifest, as returned by
+  A data frame, the clip manifest (one row per clip), as returned by
   [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md).
 
 - output_dir:
 
-  Output folder; created if needed.
+  Character scalar, path to the output folder; created if needed.
 
 - simulate:
 
-  If `TRUE`, no audio is cut (the empty species folders are still
-  created), but `status` tells what would be done. Useful to check a
-  selection before cutting.
+  Logical scalar. If `TRUE`, no audio is cut (the empty species folders
+  are still created), but `status` tells what would be done. Useful to
+  check a selection before cutting.
 
 ## Value
 

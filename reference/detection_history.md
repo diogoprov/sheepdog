@@ -22,22 +22,25 @@ detection_history(
 
 - scored:
 
-  Table returned by
-  [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md).
+  A data frame (or tibble) returned by
+  [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md),
+  one row per detection.
 
 - p_min:
 
-  Threshold on the calibrated probability (not on the confidence score).
+  Numeric scalar in \[0, 1\], threshold on the calibrated probability
+  (not on the confidence score).
 
 - min_detections_night:
 
-  Repetition rule: minimum number of reliable detections for a night
-  with detection.
+  Integer scalar \>= 1, repetition rule: minimum number of reliable
+  detections for a night with detection.
 
 - rule:
 
-  When a detection is reliable: `"mean"`, its calibrated probability
-  (the posterior mean with `engine = "brms"`) is \>= `p_min`;
+  Character scalar, one of `"mean"` (default) or `"probability"`: when a
+  detection is reliable. `"mean"`, its calibrated probability (the
+  posterior mean with `engine = "brms"`) is \>= `p_min`;
   `"probability"`, the posterior probability that P(TP) \>= `p_min` (the
   `pr_reliable` of a model fitted with `engine = "brms"`) is \>=
   `prob_min`. The second rule propagates the uncertainty of the
@@ -45,8 +48,8 @@ detection_history(
 
 - prob_min:
 
-  `rule = "probability"`: threshold on `pr_reliable`. `pr_reliable` is
-  computed in
+  Numeric scalar in \[0, 1\]. With `rule = "probability"`, threshold on
+  `pr_reliable`. `pr_reliable` is computed in
   [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md)
   for its `p_min`; use the same `p_min` in both.
 

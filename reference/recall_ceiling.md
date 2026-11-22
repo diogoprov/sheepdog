@@ -30,24 +30,27 @@ recall_ceiling(
 
 - validation:
 
-  Reviewed clips (e.g. from
+  A data frame (or tibble) of reviewed clips (e.g. from
   [`read_validation_tables()`](https://provetelab.org/sheepdog/reference/read_validation_tables.md)),
-  with the occasions of `"random_recordings"`: `site`, `species_code`,
-  `occasion_id`, `sampling_mode`, `verdict` (`"positive"` when the
-  species was heard in the occasion, `"negative"` when not; other
-  verdicts are left out), `inclusion_prob` and the `cluster` column.
-  Clips of other designs are ignored.
+  one row per clip, with the occasions of `"random_recordings"`: `site`,
+  `species_code`, `occasion_id`, `sampling_mode`, `verdict`
+  (`"positive"` when the species was heard in the occasion, `"negative"`
+  when not; other verdicts are left out), `inclusion_prob` and the
+  `cluster` column. Clips of other designs are ignored.
 
 - detections:
 
-  Predictions, as returned by
-  [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md).
+  A data frame (or tibble) of predictions, as returned by
+  [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md),
+  with columns `site`, `species_code`, `confidence`, `begin_path` and
+  `file_offset`.
 
 - thresholds:
 
-  Thresholds at which the recall is computed: a numeric vector (the same
-  for every group), or a table with the `by` columns and a `threshold`
-  column, such as the output of
+  `NULL`, a numeric vector in \[0, 1\], or a data frame. Thresholds at
+  which the recall is computed: a numeric vector (the same for every
+  group), or a table with the `by` columns and a `threshold` column,
+  such as the output of
   [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
   (`threshold_column` picks another column, such as
   `"threshold_conservative"` of
@@ -56,44 +59,50 @@ recall_ceiling(
 
 - by:
 
-  Columns that define the groups: `"species_folder"` (the default, every
-  site pooled) or `c("site", "species_folder")`.
+  Character vector of column names that define the groups:
+  `"species_folder"` (the default, every site pooled) or
+  `c("site", "species_folder")`.
 
 - min_confidence:
 
-  The lowest score kept in the selection tables (the minimum confidence
-  BirdNET was run with). Predictions below it are not counted.
+  Numeric scalar, the lowest score kept in the selection tables (the
+  minimum confidence BirdNET was run with). Predictions below it are not
+  counted.
 
 - occasion_unit:
 
-  The occasion of the draw: `"file"` or `"minute"`.
+  Character scalar, one of `"file"` or `"minute"`. The occasion of the
+  draw.
 
 - remap_from, remap_to:
 
-  Remapping of the audio paths of `detections`, as in
+  `NULL` or character scalars. Remapping of the audio paths of
+  `detections`, as in
   [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md).
 
 - threshold_column:
 
-  Column of `thresholds` with the threshold.
+  Character scalar, the column of `thresholds` with the threshold.
 
 - n_boot:
 
-  Number of bootstrap replicates; 0 skips the intervals.
+  Integer scalar \>= 0. Number of bootstrap replicates; 0 skips the
+  intervals.
 
 - cluster:
 
-  Column of `validation` whose levels are resampled whole:
-  `"source_audio"` (the recording, the default) or `"night"`.
+  Character scalar, the column of `validation` whose levels are
+  resampled whole: `"source_audio"` (the recording, the default) or
+  `"night"`.
 
 - conf:
 
-  Probability of the intervals.
+  Numeric scalar in (0, 1). Probability of the intervals.
 
 - seed:
 
-  Seed of the bootstrap. The global random number generator is left as
-  it was.
+  Integer scalar, seed of the bootstrap. The global random number
+  generator is left as it was.
 
 ## Value
 

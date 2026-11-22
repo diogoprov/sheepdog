@@ -101,32 +101,34 @@ sensitivity analysis.</p>
 
 
 <dl><dt id="arg-scored">scored<a class="anchor" aria-label="anchor" href="#arg-scored"></a></dt>
-<dd><p>Table returned by <code><a href="score_detections.html">score_detections()</a></code>.</p></dd>
+<dd><p>A data frame (or tibble) returned by <code><a href="score_detections.html">score_detections()</a></code>, one
+row per detection.</p></dd>
 
 
 <dt id="arg-p-min">p_min<a class="anchor" aria-label="anchor" href="#arg-p-min"></a></dt>
-<dd><p>Threshold on the calibrated probability (not on the
-confidence score).</p></dd>
+<dd><p>Numeric scalar in [0, 1], threshold on the calibrated
+probability (not on the confidence score).</p></dd>
 
 
 <dt id="arg-min-detections-night">min_detections_night<a class="anchor" aria-label="anchor" href="#arg-min-detections-night"></a></dt>
-<dd><p>Repetition rule: minimum number of reliable
-detections for a night with detection.</p></dd>
+<dd><p>Integer scalar &gt;= 1, repetition rule: minimum
+number of reliable detections for a night with detection.</p></dd>
 
 
 <dt id="arg-rule">rule<a class="anchor" aria-label="anchor" href="#arg-rule"></a></dt>
-<dd><p>When a detection is reliable: <code>"mean"</code>, its calibrated
-probability (the posterior mean with <code>engine = "brms"</code>) is &gt;= <code>p_min</code>;
-<code>"probability"</code>, the posterior probability that P(TP) &gt;= <code>p_min</code> (the
-<code>pr_reliable</code> of a model fitted with <code>engine = "brms"</code>) is &gt;=
-<code>prob_min</code>. The second rule propagates the uncertainty of the
-calibration and is more conservative where few clips were reviewed.</p></dd>
+<dd><p>Character scalar, one of <code>"mean"</code> (default) or <code>"probability"</code>:
+when a detection is reliable. <code>"mean"</code>, its calibrated probability (the
+posterior mean with <code>engine = "brms"</code>) is &gt;= <code>p_min</code>; <code>"probability"</code>, the
+posterior probability that P(TP) &gt;= <code>p_min</code> (the <code>pr_reliable</code> of a model
+fitted with <code>engine = "brms"</code>) is &gt;= <code>prob_min</code>. The second rule propagates
+the uncertainty of the calibration and is more conservative where few clips
+were reviewed.</p></dd>
 
 
 <dt id="arg-prob-min">prob_min<a class="anchor" aria-label="anchor" href="#arg-prob-min"></a></dt>
-<dd><p><code>rule = "probability"</code>: threshold on <code>pr_reliable</code>.
-<code>pr_reliable</code> is computed in <code><a href="score_detections.html">score_detections()</a></code> for its <code>p_min</code>;
-use the same <code>p_min</code> in both.</p></dd>
+<dd><p>Numeric scalar in [0, 1]. With <code>rule = "probability"</code>,
+threshold on <code>pr_reliable</code>. <code>pr_reliable</code> is computed in
+<code><a href="score_detections.html">score_detections()</a></code> for its <code>p_min</code>; use the same <code>p_min</code> in both.</p></dd>
 
 </dl></div>
     <div class="section level2">

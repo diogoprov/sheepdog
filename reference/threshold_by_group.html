@@ -105,11 +105,14 @@ have it, and flags the groups below <code>target_precision</code>.</p>
 
 
 <dl><dt id="arg-validation">validation<a class="anchor" aria-label="anchor" href="#arg-validation"></a></dt>
-<dd><p>Table returned by <code><a href="classify_review.html">classify_review()</a></code>.</p></dd>
+<dd><p>A data frame (or tibble) returned by <code><a href="classify_review.html">classify_review()</a></code>,
+with columns <code>site</code>, <code>species_folder</code>, <code>verdict</code> and <code>confidence</code>. One
+row per clip.</p></dd>
 
 
 <dt id="arg-thresholds">thresholds<a class="anchor" aria-label="anchor" href="#arg-thresholds"></a></dt>
-<dd><p>The threshold of each cell: a table with <code>site</code>,
+<dd><p>A data frame (or tibble) or a numeric scalar. The
+threshold of each cell: a table with <code>site</code>,
 <code>species_folder</code> and a <code>threshold</code> column (e.g. from
 <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>; <code>threshold_column</code> picks another column, such
 as <code>"threshold_conservative"</code> of <code><a href="threshold_bootstrap.html">threshold_bootstrap()</a></code>), or a single
@@ -117,21 +120,22 @@ number for every cell.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
-<dd><p>Columns of <code>validation</code> that define the groups, e.g.
-<code>"recording_hour"</code> or a month column.</p></dd>
+<dd><p>Character vector of column names of <code>validation</code> that define
+the groups, e.g. <code>"recording_hour"</code> or a month column.</p></dd>
 
 
 <dt id="arg-target-precision">target_precision<a class="anchor" aria-label="anchor" href="#arg-target-precision"></a></dt>
-<dd><p>Target precision.</p></dd>
+<dd><p>Numeric scalar in (0, 1). Target precision.</p></dd>
 
 
 <dt id="arg-min-n">min_n<a class="anchor" aria-label="anchor" href="#arg-min-n"></a></dt>
-<dd><p>Minimum of reviewed clips for a bin to be taken seriously;
-bins with fewer are flagged in <code>low_support</code>.</p></dd>
+<dd><p>Integer scalar &gt;= 1. Minimum of reviewed clips for a bin to
+be taken seriously; bins with fewer are flagged in <code>low_support</code>.</p></dd>
 
 
 <dt id="arg-threshold-column">threshold_column<a class="anchor" aria-label="anchor" href="#arg-threshold-column"></a></dt>
-<dd><p>Column of <code>thresholds</code> with the threshold.</p></dd>
+<dd><p>Character scalar, the column of <code>thresholds</code> with
+the threshold.</p></dd>
 
 </dl></div>
     <div class="section level2">

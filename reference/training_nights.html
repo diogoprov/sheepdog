@@ -104,12 +104,14 @@ on, or to <code><a href="exclude_training_clips.html">exclude_training_clips()</
 
 
 <dl><dt id="arg-files">files<a class="anchor" aria-label="anchor" href="#arg-files"></a></dt>
-<dd><p>File names or paths of training clips. Elements that are
+<dd><p>Character vector, file names or paths of training clips.
+Elements that are
 folders are listed recursively.</p></dd>
 
 
 <dt id="arg-pattern">pattern<a class="anchor" aria-label="anchor" href="#arg-pattern"></a></dt>
-<dd><p>Perl regular expression with the named groups <code>site</code>,
+<dd><p>Character scalar, Perl regular expression with the named
+groups <code>site</code>,
 <code>date</code> (<code>YYYYMMDD</code>) and <code>time</code> (<code>HHMMSS</code>). The default takes the
 letters before the recorder number, the date and the time of names
 such as <code>ARA01_20211016_190000</code> or
@@ -117,12 +119,13 @@ such as <code>ARA01_20211016_190000</code> or
 
 
 <dt id="arg-site-map">site_map<a class="anchor" aria-label="anchor" href="#arg-site-map"></a></dt>
-<dd><p>Optional named character vector to fix diverging site
+<dd><p><code>NULL</code> or a named character vector to fix diverging site
 names, e.g. <code>c(BEP2 = "BEP")</code>, as in <code><a href="read_validations.html">read_validations()</a></code>.</p></dd>
 
 
 <dt id="arg-night-cutoff">night_cutoff<a class="anchor" aria-label="anchor" href="#arg-night-cutoff"></a></dt>
-<dd><p>Recordings that start before this hour belong to
+<dd><p>Numeric scalar (hour, 0-23). Recordings that start
+before this hour belong to
 the night of the day before, as in <code><a href="detection_history.html">detection_history()</a></code>.</p></dd>
 
 </dl></div>

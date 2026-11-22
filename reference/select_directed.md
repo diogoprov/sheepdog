@@ -32,59 +32,67 @@ select_directed(
 
 - detections:
 
-  Predictions, as returned by
-  [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md).
+  A data frame of predictions, one row per BirdNET prediction, as
+  returned by
+  [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)
+  (columns `site`, `confidence`, `begin_path`, `begin_time`, `end_time`
+  and `file_offset`).
 
 - units:
 
-  Data frame with one row per eligible unit: the columns that define the
-  unit (any columns of the prepared predictions, such as `site`,
+  A data frame with one row per eligible unit: the columns that define
+  the unit (any columns of the prepared predictions, such as `site`,
   `species_code` and `month`) and the size column. Only listed units are
   drawn, so leave out the units that need no review, for instance those
   where a review has already confirmed the species.
 
 - n_units:
 
-  Number of units to draw.
+  Integer scalar \>= 1, number of units to draw.
 
 - threshold:
 
-  Confidence threshold: an occasion is a candidate when it has at least
-  one prediction at or above it, and its clips are all such predictions.
-  Use the threshold of the occupancy analysis.
+  Numeric scalar, confidence threshold: an occasion is a candidate when
+  it has at least one prediction at or above it, and its clips are all
+  such predictions. Use the threshold of the occupancy analysis.
 
 - size_col:
 
-  Column of `units` with the size (non-negative).
+  Character scalar, column of `units` with the size (a non-negative
+  numeric column without `NA`).
 
 - floor:
 
-  Share of the mean size added to every size, so that a unit with size 0
-  can still be drawn. Without it, a unit the model judges worthless is
-  never reviewed and the model is never corrected there.
+  Numeric scalar \>= 0, share of the mean size added to every size, so
+  that a unit with size 0 can still be drawn. Without it, a unit the
+  model judges worthless is never reviewed and the model is never
+  corrected there.
 
 - occasion_unit:
 
-  The occasion of the occupancy model: `"file"` (the whole recording) or
-  `"minute"` (minute of the file, from `file_offset`).
+  Character scalar, the occasion of the occupancy model: `"file"` (the
+  whole recording) or `"minute"` (minute of the file, from
+  `file_offset`).
 
 - previous:
 
-  Manifests of earlier review rounds (of any design), as paths or data
-  frames. Their clips are left out, matched by recording file and start:
-  an occasion is a candidate only while it has a prediction at or above
-  `threshold` not yet reviewed.
+  `NULL`, a character vector of paths, a data frame, or a list of these:
+  manifests of earlier review rounds (of any design). Their clips are
+  left out, matched by recording file and start: an occasion is a
+  candidate only while it has a prediction at or above `threshold` not
+  yet reviewed.
 
 - seed:
 
-  Seed of the draws. The global random number generator is left as it
-  was.
+  Integer scalar, seed of the draws. The global random number generator
+  is left as it was.
 
 - remap_from, remap_to:
 
-  Replace the prefix `remap_from` of the `begin_path` paths by
-  `remap_to`, e.g. `"N:/"` and `"/Volumes/Arara/"`. Backslashes are
-  turned into forward slashes first.
+  `NULL` or character scalars. Replace the prefix `remap_from` of the
+  `begin_path` paths by `remap_to`, e.g. `"N:/"` and
+  `"/Volumes/Arara/"`. Backslashes are turned into forward slashes
+  first.
 
 ## Value
 

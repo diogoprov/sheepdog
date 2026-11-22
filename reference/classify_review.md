@@ -21,18 +21,19 @@ classify_review(
 
 - manifest:
 
-  Clip manifest: a data frame or the path to `clip_manifest.csv`.
-  Manifests written by v1.2.0 (`manifesto_clipes.csv`) are also read.
+  A data frame (or tibble) or a character scalar. The clip manifest, one
+  row per clip, or the path to `clip_manifest.csv`. Manifests written by
+  v1.2.0 (`manifesto_clipes.csv`) are also read.
 
 - review_dir:
 
-  Folder with the reviewed clips (the `clips` folder of the validation
-  package, after the review).
+  Character scalar, path to the folder with the reviewed clips (the
+  `clips` folder of the validation package, after the review).
 
 - positive_pattern, negative_pattern:
 
-  Regular expressions (case-insensitive) that identify the positive and
-  negative folders in the path of each clip.
+  Character scalars, regular expressions (case-insensitive) that
+  identify the positive and negative folders in the path of each clip.
 
 ## Value
 

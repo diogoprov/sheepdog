@@ -16,20 +16,22 @@ confuser_summary(validation, verdicts = "negative", classes = NULL)
 
 - validation:
 
-  Table of verdicts with `species_code`, `verdict` and `identity`, from
+  A data frame (or tibble) of verdicts with `species_code`, `verdict`
+  and `identity`, from
   [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md)
   or
   [`join_identities()`](https://provetelab.org/sheepdog/reference/join_identities.md).
 
 - verdicts:
 
-  Verdicts counted: `"negative"` by default; add `"uncertain"` to
-  include the uncertain clips.
+  Character vector of the verdicts counted: `"negative"` by default; add
+  `"uncertain"` to include the uncertain clips.
 
 - classes:
 
-  Classes of the classifier, to flag identities that are classes
-  themselves. By default, the `species_code` values of `validation`.
+  `NULL` or a character vector of the classes of the classifier, to flag
+  identities that are classes themselves. `NULL` (default) uses the
+  `species_code` values of `validation`.
 
 ## Value
 

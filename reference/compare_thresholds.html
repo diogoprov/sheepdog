@@ -109,60 +109,67 @@ clips, through partial pooling, but rests on the form of the model.</p>
 
 
 <dl><dt id="arg-validation">validation<a class="anchor" aria-label="anchor" href="#arg-validation"></a></dt>
-<dd><p>Reviewed clips, as for <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>. For
-<code>random_detections</code> clips, the empirical threshold uses the weighted
-precision.</p></dd>
+<dd><p>A data frame (or tibble) of reviewed clips, as for
+<code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>. One row per clip. For <code>random_detections</code>
+clips, the empirical threshold uses the weighted precision.</p></dd>
 
 
 <dt id="arg-fit">fit<a class="anchor" aria-label="anchor" href="#arg-fit"></a></dt>
-<dd><p>Model returned by <code><a href="fit_calibration.html">fit_calibration()</a></code>.</p></dd>
+<dd><p>A model returned by <code><a href="fit_calibration.html">fit_calibration()</a></code> (<code>glm</code>, <code>glmerMod</code> or
+<code>brmsfit</code>).</p></dd>
 
 
 <dt id="arg-scored">scored<a class="anchor" aria-label="anchor" href="#arg-scored"></a></dt>
-<dd><p>Table returned by <code><a href="score_detections.html">score_detections()</a></code>. Needed for
-<code>thr_model_precision</code>, <code>model_precision_at_empirical</code> and <code>flag</code>.</p></dd>
+<dd><p><code>NULL</code> or a data frame (or tibble) returned by
+<code><a href="score_detections.html">score_detections()</a></code>. Needed for <code>thr_model_precision</code>,
+<code>model_precision_at_empirical</code> and <code>flag</code>.</p></dd>
 
 
 <dt id="arg-target-p">target_p<a class="anchor" aria-label="anchor" href="#arg-target-p"></a></dt>
-<dd><p>Target of the <code>"probability"</code> rule.</p></dd>
+<dd><p>Numeric scalar in (0, 1). Target of the <code>"probability"</code>
+rule.</p></dd>
 
 
 <dt id="arg-target-precision">target_precision<a class="anchor" aria-label="anchor" href="#arg-target-precision"></a></dt>
-<dd><p>Target precision of the empirical threshold and
-of the <code>"precision"</code> rule.</p></dd>
+<dd><p>Numeric scalar in (0, 1). Target precision of the
+empirical threshold and of the <code>"precision"</code> rule.</p></dd>
 
 
 <dt id="arg-min-n">min_n<a class="anchor" aria-label="anchor" href="#arg-min-n"></a></dt>
-<dd><p>Passed to <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>.</p></dd>
+<dd><p>Integer scalar &gt;= 1. Passed to <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>.</p></dd>
 
 
 <dt id="arg-tolerance">tolerance<a class="anchor" aria-label="anchor" href="#arg-tolerance"></a></dt>
-<dd><p>Largest difference between <code>thr_empirical</code> and
-<code>thr_model_precision</code>, in score units, for <code>"agree"</code>.</p></dd>
+<dd><p>Numeric scalar, in score units. Largest difference
+between <code>thr_empirical</code> and <code>thr_model_precision</code> for <code>"agree"</code>.</p></dd>
 
 
 <dt id="arg-quality">quality<a class="anchor" aria-label="anchor" href="#arg-quality"></a></dt>
-<dd><p>Optional table of <code><a href="calibration_quality.html">calibration_quality()</a></code>, joined by the
-columns <code>site</code> and <code>species</code> that it has.</p></dd>
+<dd><p><code>NULL</code> or a data frame (or tibble) returned by
+<code><a href="calibration_quality.html">calibration_quality()</a></code>, joined by the columns <code>site</code> and <code>species</code>
+that it has.</p></dd>
 
 
 <dt id="arg-weighted-sustained">weighted, sustained<a class="anchor" aria-label="anchor" href="#arg-weighted-sustained"></a></dt>
-<dd><p>Passed to <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>.</p></dd>
+<dd><p><code>NULL</code>, <code>TRUE</code> or <code>FALSE</code> (<code>weighted</code>) and
+logical scalar (<code>sustained</code>). Passed to <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code>.</p></dd>
 
 
 <dt id="arg-min-confidence">min_confidence<a class="anchor" aria-label="anchor" href="#arg-min-confidence"></a></dt>
-<dd><p>Detections below this confidence are not scored.</p></dd>
+<dd><p>Numeric scalar in [0, 1]. Detections below this
+confidence are not scored.</p></dd>
 
 
 <dt id="arg-grid-step">grid_step<a class="anchor" aria-label="anchor" href="#arg-grid-step"></a></dt>
-<dd><p>Models fitted with <code>engine = "brms"</code>: step of the grid
-of scores on which the posterior is computed.</p></dd>
+<dd><p>Numeric scalar in (0, 0.5). Models fitted with
+<code>engine = "brms"</code>: step of the grid of scores on which the posterior is
+computed.</p></dd>
 
 
 <dt id="arg-lower-prob">lower_prob<a class="anchor" aria-label="anchor" href="#arg-lower-prob"></a></dt>
-<dd><p>Models fitted with <code>engine = "brms"</code>: the probability of
-the lower quantile of the posterior of P(TP) used for
-<code>threshold_lower</code>.</p></dd>
+<dd><p>Numeric scalar in (0, 1). Models fitted with
+<code>engine = "brms"</code>: the probability of the lower quantile of the posterior
+of P(TP) used for <code>threshold_lower</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

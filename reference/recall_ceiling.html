@@ -109,8 +109,9 @@ occasion (from the selection tables), they give:</p>
 
 
 <dl><dt id="arg-validation">validation<a class="anchor" aria-label="anchor" href="#arg-validation"></a></dt>
-<dd><p>Reviewed clips (e.g. from <code><a href="read_validation_tables.html">read_validation_tables()</a></code>),
-with the occasions of <code>"random_recordings"</code>: <code>site</code>, <code>species_code</code>,
+<dd><p>A data frame (or tibble) of reviewed clips (e.g. from
+<code><a href="read_validation_tables.html">read_validation_tables()</a></code>), one row per clip, with the occasions of
+<code>"random_recordings"</code>: <code>site</code>, <code>species_code</code>,
 <code>occasion_id</code>, <code>sampling_mode</code>, <code>verdict</code> (<code>"positive"</code> when the
 species was heard in the occasion, <code>"negative"</code> when not; other
 verdicts are left out), <code>inclusion_prob</code> and the <code>cluster</code> column.
@@ -118,11 +119,14 @@ Clips of other designs are ignored.</p></dd>
 
 
 <dt id="arg-detections">detections<a class="anchor" aria-label="anchor" href="#arg-detections"></a></dt>
-<dd><p>Predictions, as returned by <code><a href="read_selection_tables.html">read_selection_tables()</a></code>.</p></dd>
+<dd><p>A data frame (or tibble) of predictions, as returned by
+<code><a href="read_selection_tables.html">read_selection_tables()</a></code>, with columns <code>site</code>, <code>species_code</code>,
+<code>confidence</code>, <code>begin_path</code> and <code>file_offset</code>.</p></dd>
 
 
 <dt id="arg-thresholds">thresholds<a class="anchor" aria-label="anchor" href="#arg-thresholds"></a></dt>
-<dd><p>Thresholds at which the recall is computed: a numeric
+<dd><p><code>NULL</code>, a numeric vector in [0, 1], or a data frame.
+Thresholds at which the recall is computed: a numeric
 vector (the same for every group), or a table with the <code>by</code> columns
 and a <code>threshold</code> column, such as the output of
 <code><a href="suggest_thresholds.html">suggest_thresholds()</a></code> (<code>threshold_column</code> picks another column, such
@@ -131,45 +135,50 @@ the ceiling only.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
-<dd><p>Columns that define the groups: <code>"species_folder"</code> (the
-default, every site pooled) or <code>c("site", "species_folder")</code>.</p></dd>
+<dd><p>Character vector of column names that define the groups:
+<code>"species_folder"</code> (the default, every site pooled) or
+<code>c("site", "species_folder")</code>.</p></dd>
 
 
 <dt id="arg-min-confidence">min_confidence<a class="anchor" aria-label="anchor" href="#arg-min-confidence"></a></dt>
-<dd><p>The lowest score kept in the selection tables (the
-minimum confidence BirdNET was run with). Predictions below it are not
-counted.</p></dd>
+<dd><p>Numeric scalar, the lowest score kept in the
+selection tables (the minimum confidence BirdNET was run with).
+Predictions below it are not counted.</p></dd>
 
 
 <dt id="arg-occasion-unit">occasion_unit<a class="anchor" aria-label="anchor" href="#arg-occasion-unit"></a></dt>
-<dd><p>The occasion of the draw: <code>"file"</code> or <code>"minute"</code>.</p></dd>
+<dd><p>Character scalar, one of <code>"file"</code> or <code>"minute"</code>.
+The occasion of the draw.</p></dd>
 
 
 <dt id="arg-remap-from-remap-to">remap_from, remap_to<a class="anchor" aria-label="anchor" href="#arg-remap-from-remap-to"></a></dt>
-<dd><p>Remapping of the audio paths of <code>detections</code>,
-as in <code><a href="select_clips.html">select_clips()</a></code>.</p></dd>
+<dd><p><code>NULL</code> or character scalars. Remapping of the
+audio paths of <code>detections</code>, as in <code><a href="select_clips.html">select_clips()</a></code>.</p></dd>
 
 
 <dt id="arg-threshold-column">threshold_column<a class="anchor" aria-label="anchor" href="#arg-threshold-column"></a></dt>
-<dd><p>Column of <code>thresholds</code> with the threshold.</p></dd>
+<dd><p>Character scalar, the column of <code>thresholds</code> with
+the threshold.</p></dd>
 
 
 <dt id="arg-n-boot">n_boot<a class="anchor" aria-label="anchor" href="#arg-n-boot"></a></dt>
-<dd><p>Number of bootstrap replicates; 0 skips the intervals.</p></dd>
+<dd><p>Integer scalar &gt;= 0. Number of bootstrap replicates; 0
+skips the intervals.</p></dd>
 
 
 <dt id="arg-cluster">cluster<a class="anchor" aria-label="anchor" href="#arg-cluster"></a></dt>
-<dd><p>Column of <code>validation</code> whose levels are resampled whole:
-<code>"source_audio"</code> (the recording, the default) or <code>"night"</code>.</p></dd>
+<dd><p>Character scalar, the column of <code>validation</code> whose levels
+are resampled whole: <code>"source_audio"</code> (the recording, the default) or
+<code>"night"</code>.</p></dd>
 
 
 <dt id="arg-conf">conf<a class="anchor" aria-label="anchor" href="#arg-conf"></a></dt>
-<dd><p>Probability of the intervals.</p></dd>
+<dd><p>Numeric scalar in (0, 1). Probability of the intervals.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>Seed of the bootstrap. The global random number generator is
-left as it was.</p></dd>
+<dd><p>Integer scalar, seed of the bootstrap. The global random
+number generator is left as it was.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -101,32 +101,35 @@ The result has the columns that <code><a href="community_matrices.html">communit
 
 
 <dl><dt id="arg-detections">detections<a class="anchor" aria-label="anchor" href="#arg-detections"></a></dt>
-<dd><p>Predictions, from <code><a href="read_selection_tables.html">read_selection_tables()</a></code>, with
-<code>site</code>, <code>species_code</code>, <code>confidence</code> and <code>begin_path</code>. Use every
-prediction, not only those of the cells with a threshold.</p></dd>
+<dd><p>A data frame (or tibble) of predictions, from
+<code><a href="read_selection_tables.html">read_selection_tables()</a></code>, with <code>site</code>, <code>species_code</code>, <code>confidence</code>
+and <code>begin_path</code>. One row per prediction. Use every prediction, not
+only those of the cells with a threshold.</p></dd>
 
 
 <dt id="arg-thresholds">thresholds<a class="anchor" aria-label="anchor" href="#arg-thresholds"></a></dt>
-<dd><p>Table with <code>site</code>, <code>species_folder</code> and <code>threshold</code>, one
-row per cell, such as the output of <code><a href="review_support.html">review_support()</a></code>. Cells with a
+<dd><p>A data frame (or tibble) with <code>site</code>, <code>species_folder</code>
+and <code>threshold</code>, one row per cell, such as the output of
+<code><a href="review_support.html">review_support()</a></code>. Cells with a
 missing threshold or without a row have no threshold. The conservative
 threshold of <code><a href="threshold_bootstrap.html">threshold_bootstrap()</a></code> is the one to apply: pass it as
 <code>dplyr::mutate(boot, threshold = threshold_conservative)</code>.</p></dd>
 
 
 <dt id="arg-min-confidence">min_confidence<a class="anchor" aria-label="anchor" href="#arg-min-confidence"></a></dt>
-<dd><p>Predictions below this confidence are left out, as
-in <code><a href="score_detections.html">score_detections()</a></code>. This also sets which nights count as recorded.</p></dd>
+<dd><p>Numeric scalar. Predictions below this confidence
+are left out, as in <code><a href="score_detections.html">score_detections()</a></code>. This also sets which nights
+count as recorded.</p></dd>
 
 
 <dt id="arg-dawn-hour">dawn_hour<a class="anchor" aria-label="anchor" href="#arg-dawn-hour"></a></dt>
-<dd><p>Recordings that start before this hour belong to the
-night before.</p></dd>
+<dd><p>Numeric scalar, an hour of the day. Recordings
+that start before this hour belong to the night before.</p></dd>
 
 
 <dt id="arg-min-detections-night">min_detections_night<a class="anchor" aria-label="anchor" href="#arg-min-detections-night"></a></dt>
-<dd><p>Repetition rule: minimum number of reliable
-detections for a night with detection.</p></dd>
+<dd><p>Integer scalar. Repetition rule: minimum
+number of reliable detections for a night with detection.</p></dd>
 
 </dl></div>
     <div class="section level2">

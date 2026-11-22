@@ -107,21 +107,24 @@ multiple-method design and the occasions of the occupancy models need.</p>
 
 
 <dl><dt id="arg-audio-dir">audio_dir<a class="anchor" aria-label="anchor" href="#arg-audio-dir"></a></dt>
-<dd><p>Root folder of the audio files, searched recursively.</p></dd>
+<dd><p>Character scalar, path to the root folder of the audio
+files, searched recursively.</p></dd>
 
 
 <dt id="arg-audio-pattern">audio_pattern<a class="anchor" aria-label="anchor" href="#arg-audio-pattern"></a></dt>
-<dd><p>Regular expression for the audio file names (case
+<dd><p>Character scalar, regular expression for the audio
+file names (case
 insensitive).</p></dd>
 
 
 <dt id="arg-site">site<a class="anchor" aria-label="anchor" href="#arg-site"></a></dt>
 <dd><p><code>NULL</code> (the site is the first folder below <code>audio_dir</code>) or a
-single site name for every file.</p></dd>
+character scalar, a single site name for every file.</p></dd>
 
 
 <dt id="arg-site-pattern">site_pattern<a class="anchor" aria-label="anchor" href="#arg-site-pattern"></a></dt>
-<dd><p>Optional regular expression with one capture group
+<dd><p><code>NULL</code> or character scalar, regular expression with
+one capture group
 that takes the site from the file name, for recordings of several sites
 in the same folder. For example, <code>"^[^_]+_([^_]+)_"</code> reads <code>Campus01</code>
 from <code>Campinas_Campus01_20261003_074339.flac</code>. It replaces the folder
@@ -129,20 +132,23 @@ rule and cannot be combined with <code>site</code>.</p></dd>
 
 
 <dt id="arg-remap-from-remap-to">remap_from, remap_to<a class="anchor" aria-label="anchor" href="#arg-remap-from-remap-to"></a></dt>
-<dd><p>Replace the prefix <code>remap_from</code> of the listed
+<dd><p><code>NULL</code> or character scalars. Replace the
+prefix <code>remap_from</code> of the listed
 paths by <code>remap_to</code>, e.g. <code>"/Volumes/NAS/"</code> and <code>"N:/"</code>, so that the
 paths match <code>Begin Path</code>. Backslashes are turned into forward slashes
 first.</p></dd>
 
 
 <dt id="arg-predictions">predictions<a class="anchor" aria-label="anchor" href="#arg-predictions"></a></dt>
-<dd><p>Optional table of predictions from
+<dd><p><code>NULL</code> or a data frame of predictions (one row per
+prediction) from
 <code><a href="read_selection_tables.html">read_selection_tables()</a></code>, to check that its audio files are in the
 list.</p></dd>
 
 
 <dt id="arg-file">file<a class="anchor" aria-label="anchor" href="#arg-file"></a></dt>
-<dd><p>Optional path of a CSV file to write the table to (e.g.
+<dd><p><code>NULL</code> or character scalar, path of a CSV file to write the
+table to (e.g.
 <code>"recordings.csv"</code>).</p></dd>
 
 </dl></div>
@@ -185,9 +191,9 @@ as most recorders write them; the files whose names do not are reported.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 2</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   site  source_audio                                       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> ARA   /tmp/Rtmp0jDMSU/audio/ARA/ARA01_20211001_190000.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> ARA   /tmp/Rtmp0jDMSU/audio/ARA/ARA01_20211001_200000.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> BAI   /tmp/Rtmp0jDMSU/audio/BAI/BAI01_20211001_190000.wav</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> ARA   /tmp/Rtmpd8vHp9/audio/ARA/ARA01_20211001_190000.wav</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> ARA   /tmp/Rtmpd8vHp9/audio/ARA/ARA01_20211001_200000.wav</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> BAI   /tmp/Rtmpd8vHp9/audio/BAI/BAI01_20211001_190000.wav</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -94,22 +94,26 @@ of <code>"random_recordings"</code>) are left out.</p>
 
 
 <dl><dt id="arg-validation">validation<a class="anchor" aria-label="anchor" href="#arg-validation"></a></dt>
-<dd><p>Table returned by <code><a href="classify_review.html">classify_review()</a></code>.</p></dd>
+<dd><p>A data frame (or tibble) returned by <code><a href="classify_review.html">classify_review()</a></code>,
+with columns <code>site</code>, <code>species_folder</code>, <code>verdict</code> and <code>confidence</code>. One
+row per clip.</p></dd>
 
 
 <dt id="arg-bins">bins<a class="anchor" aria-label="anchor" href="#arg-bins"></a></dt>
-<dd><p>Breaks of the confidence bins (left-closed).</p></dd>
+<dd><p>Numeric vector of length &gt;= 2, increasing breaks of the
+confidence bins (left-closed).</p></dd>
 
 
 <dt id="arg-min-n">min_n<a class="anchor" aria-label="anchor" href="#arg-min-n"></a></dt>
-<dd><p>Minimum of reviewed clips for a bin to be taken seriously;
-bins with fewer are flagged in <code>low_support</code>.</p></dd>
+<dd><p>Integer scalar &gt;= 1. Minimum of reviewed clips for a bin to
+be taken seriously; bins with fewer are flagged in <code>low_support</code>.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
-<dd><p>Optional columns of <code>validation</code> that split each site x
-species cell further, e.g. the bin of an environmental gradient or of
-an acoustic index joined from <code><a href="covariate_bins.html">covariate_bins()</a></code>. They show which
+<dd><p><code>NULL</code> or a character vector of column names of <code>validation</code>
+that split each site x species cell further, e.g. the bin of an
+environmental gradient or of an acoustic index joined from
+<code><a href="covariate_bins.html">covariate_bins()</a></code>. They show which
 parts of the gradient lack reviewed clips.</p></dd>
 
 </dl></div>

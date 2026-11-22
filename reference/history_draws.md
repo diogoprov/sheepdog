@@ -26,41 +26,45 @@ history_draws(
 
 - fit:
 
-  Model returned by
+  A `brmsfit` returned by
   [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
   with `engine = "brms"`.
 
 - scored:
 
-  Table returned by
-  [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md).
+  A data frame (or tibble) returned by
+  [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md),
+  one row per detection.
 
 - p_min:
 
-  Threshold on the calibrated probability (not on the confidence score).
+  Numeric scalar in \[0, 1\], threshold on the calibrated probability
+  (not on the confidence score).
 
 - n_draws:
 
-  Number of posterior draws.
+  Integer scalar \>= 1, number of posterior draws (at most the number of
+  draws in `fit`).
 
 - min_detections_night:
 
-  Repetition rule: minimum number of reliable detections for a night
-  with detection.
+  Integer scalar \>= 1, repetition rule: minimum number of reliable
+  detections for a night with detection.
 
 - min_confidence:
 
-  Detections below this confidence are not scored.
+  Numeric scalar in \[0, 1\]. Detections below this confidence are not
+  scored.
 
 - grid_step:
 
-  Models fitted with `engine = "brms"`: step of the grid of scores on
-  which the posterior is computed.
+  Numeric scalar in (0, 0.5). Models fitted with `engine = "brms"`: step
+  of the grid of scores on which the posterior is computed.
 
 - seed:
 
-  Seed of the choice of draws. The global random number generator is
-  left as it was.
+  Integer scalar, seed of the choice of draws. The global random number
+  generator is left as it was.
 
 ## Value
 

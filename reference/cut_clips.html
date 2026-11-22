@@ -95,15 +95,18 @@ unreadable recordings do not stop the run; they are flagged in <code>status</cod
 
 
 <dl><dt id="arg-manifest">manifest<a class="anchor" aria-label="anchor" href="#arg-manifest"></a></dt>
-<dd><p>Clip manifest, as returned by <code><a href="select_clips.html">select_clips()</a></code>.</p></dd>
+<dd><p>A data frame, the clip manifest (one row per clip), as
+returned by <code><a href="select_clips.html">select_clips()</a></code>.</p></dd>
 
 
 <dt id="arg-output-dir">output_dir<a class="anchor" aria-label="anchor" href="#arg-output-dir"></a></dt>
-<dd><p>Output folder; created if needed.</p></dd>
+<dd><p>Character scalar, path to the output folder; created if
+needed.</p></dd>
 
 
 <dt id="arg-simulate">simulate<a class="anchor" aria-label="anchor" href="#arg-simulate"></a></dt>
-<dd><p>If <code>TRUE</code>, no audio is cut (the empty species folders
+<dd><p>Logical scalar. If <code>TRUE</code>, no audio is cut (the empty
+species folders
 are still created), but <code>status</code> tells what would be done. Useful to
 check a selection before cutting.</p></dd>
 

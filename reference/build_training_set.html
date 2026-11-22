@@ -122,7 +122,8 @@ goes to <code>val</code>, to be passed as <code>--test_data</code> (see Splits).
 
 
 <dl><dt id="arg-validation">validation<a class="anchor" aria-label="anchor" href="#arg-validation"></a></dt>
-<dd><p>Reviewed clips, as returned by <code><a href="classify_review.html">classify_review()</a></code>,
+<dd><p>A data frame of reviewed clips, one row per clip, as
+returned by <code><a href="classify_review.html">classify_review()</a></code>,
 <code><a href="post_validation.html">post_validation()</a></code> (<code>$validation</code>) or <code><a href="read_validation_tables.html">read_validation_tables()</a></code>. It
 needs <code>site</code>, <code>species_code</code>, <code>clip_file</code>, <code>verdict</code> and
 <code>reviewed_path</code> (the path where the review left each clip), and
@@ -130,38 +131,44 @@ needs <code>site</code>, <code>species_code</code>, <code>clip_file</code>, <cod
 
 
 <dt id="arg-output-dir">output_dir<a class="anchor" aria-label="anchor" href="#arg-output-dir"></a></dt>
-<dd><p>Output folder; <code>train/</code> and, if any clip is held out,
+<dd><p>Character scalar, path to the output folder; <code>train/</code>
+and, if any clip is held out,
 <code>test/</code> are created in it.</p></dd>
 
 
 <dt id="arg-split">split<a class="anchor" aria-label="anchor" href="#arg-split"></a></dt>
-<dd><p>How to split the clips into training and test sets; see
-Splits.</p></dd>
+<dd><p>Character scalar, one of <code>"site"</code>, <code>"night"</code>,
+<code>"site_species_night"</code> or <code>"none"</code>: how to split the clips into
+training and test sets; see Splits.</p></dd>
 
 
 <dt id="arg-test-sites">test_sites<a class="anchor" aria-label="anchor" href="#arg-test-sites"></a></dt>
-<dd><p>Sites held out for testing with <code>split = "site"</code>.
+<dd><p><code>NULL</code> or character vector, sites held out for testing
+with <code>split = "site"</code>.
 <code>NULL</code> puts every clip in <code>train/</code>.</p></dd>
 
 
 <dt id="arg-test-prop">test_prop<a class="anchor" aria-label="anchor" href="#arg-test-prop"></a></dt>
-<dd><p>Proportion of the nights of each site (or site x
+<dd><p>Numeric scalar in (0, 1), proportion of the nights of
+each site (or site x
 species) drawn for the test set.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>Seed of the draws.</p></dd>
+<dd><p>Numeric scalar, seed of the draws.</p></dd>
 
 
 <dt id="arg-max-per-site-species">max_per_site_species<a class="anchor" aria-label="anchor" href="#arg-max-per-site-species"></a></dt>
-<dd><p>Optional maximum number of positive
+<dd><p><code>NULL</code> or integer scalar, maximum number of
+positive
 training clips per site x species. Larger sets are reduced by taking
 clips from the nights in turn, in random order, which keeps as many
 nights as possible. Test clips and negatives are not reduced.</p></dd>
 
 
 <dt id="arg-exclude-from-test">exclude_from_test<a class="anchor" aria-label="anchor" href="#arg-exclude-from-test"></a></dt>
-<dd><p>Optional table with <code>site</code> and <code>night</code> (e.g.
+<dd><p><code>NULL</code> or a data frame with <code>site</code> and <code>night</code>,
+one row per night (e.g.
 from <code><a href="training_nights.html">training_nights()</a></code>): nights that must not be in the test set,
 such as nights whose recordings trained another classifier that will
 be compared on it. They are left out of the draws of the test and
@@ -169,45 +176,52 @@ validation sets and stay in the training set.</p></dd>
 
 
 <dt id="arg-val-prop">val_prop<a class="anchor" aria-label="anchor" href="#arg-val-prop"></a></dt>
-<dd><p>Optional proportion of the training nights of each site
+<dd><p><code>NULL</code> or numeric scalar in (0, 1), proportion of the
+training nights of each site
 drawn for the validation set (<code>val/</code>); see Splits. <code>NULL</code> draws none.</p></dd>
 
 
 <dt id="arg-val-seed">val_seed<a class="anchor" aria-label="anchor" href="#arg-val-seed"></a></dt>
-<dd><p>Seed of the validation draw. The default, <code>seed + 1</code>, is
+<dd><p>Numeric scalar, seed of the validation draw. The
+default, <code>seed + 1</code>, is
 also the seed of <code>max_per_site_species</code>; the two draws are separate,
 and the default reproduces the training sets of the DiverSons project.</p></dd>
 
 
 <dt id="arg-negatives">negatives<a class="anchor" aria-label="anchor" href="#arg-negatives"></a></dt>
-<dd><p>Include the negative clips?</p></dd>
+<dd><p>Logical scalar. If <code>TRUE</code>, include the negative clips.</p></dd>
 
 
 <dt id="arg-negatives-folder">negatives_folder<a class="anchor" aria-label="anchor" href="#arg-negatives-folder"></a></dt>
-<dd><p><code>NULL</code> puts the negatives of each class in a
+<dd><p><code>NULL</code> or character scalar. <code>NULL</code> puts the
+negatives of each class in a
 <code>-&lt;species_code&gt;</code> folder. A non-event class of BirdNET-Analyzer
 (<code>"Noise"</code>, <code>"Other"</code>, <code>"Background"</code> or <code>"Silence"</code>) puts all of them
 in that folder instead; see Negatives.</p></dd>
 
 
 <dt id="arg-min-files">min_files<a class="anchor" aria-label="anchor" href="#arg-min-files"></a></dt>
-<dd><p>Minimum number of positive training files per class
+<dd><p>Numeric scalar, minimum number of positive training
+files per class
 below which a warning is raised.</p></dd>
 
 
 <dt id="arg-copy">copy<a class="anchor" aria-label="anchor" href="#arg-copy"></a></dt>
-<dd><p>Copy the clips? With <code>FALSE</code>, only <code>training_set.csv</code> is
+<dd><p>Logical scalar. If <code>TRUE</code>, copy the clips; with <code>FALSE</code>, only
+<code>training_set.csv</code> is
 written, so that the split can be built on a computer without the
 clips and copied later.</p></dd>
 
 
 <dt id="arg-remap-from-remap-to">remap_from, remap_to<a class="anchor" aria-label="anchor" href="#arg-remap-from-remap-to"></a></dt>
-<dd><p>Optional prefix of <code>reviewed_path</code> and its
+<dd><p><code>NULL</code> or character scalars, prefix of
+<code>reviewed_path</code> and its
 replacement, for clips reviewed on another computer or drive.</p></dd>
 
 
 <dt id="arg-strict">strict<a class="anchor" aria-label="anchor" href="#arg-strict"></a></dt>
-<dd><p>Raise an error if any check is above 0?</p></dd>
+<dd><p>Logical scalar. If <code>TRUE</code>, raise an error if any check is
+above 0.</p></dd>
 
 </dl></div>
     <div class="section level2">

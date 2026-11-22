@@ -95,19 +95,20 @@ another class of the classifier.</p>
 
 
 <dl><dt id="arg-validation">validation<a class="anchor" aria-label="anchor" href="#arg-validation"></a></dt>
-<dd><p>Table of verdicts with <code>species_code</code>, <code>verdict</code> and
-<code>identity</code>, from <code><a href="app_verdicts.html">app_verdicts()</a></code> or <code><a href="join_identities.html">join_identities()</a></code>.</p></dd>
+<dd><p>A data frame (or tibble) of verdicts with
+<code>species_code</code>, <code>verdict</code> and <code>identity</code>, from <code><a href="app_verdicts.html">app_verdicts()</a></code> or
+<code><a href="join_identities.html">join_identities()</a></code>.</p></dd>
 
 
 <dt id="arg-verdicts">verdicts<a class="anchor" aria-label="anchor" href="#arg-verdicts"></a></dt>
-<dd><p>Verdicts counted: <code>"negative"</code> by default; add
-<code>"uncertain"</code> to include the uncertain clips.</p></dd>
+<dd><p>Character vector of the verdicts counted: <code>"negative"</code>
+by default; add <code>"uncertain"</code> to include the uncertain clips.</p></dd>
 
 
 <dt id="arg-classes">classes<a class="anchor" aria-label="anchor" href="#arg-classes"></a></dt>
-<dd><p>Classes of the classifier, to flag identities that are
-classes themselves. By default, the <code>species_code</code> values of
-<code>validation</code>.</p></dd>
+<dd><p><code>NULL</code> or a character vector of the classes of the
+classifier, to flag identities that are classes themselves. <code>NULL</code>
+(default) uses the <code>species_code</code> values of <code>validation</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

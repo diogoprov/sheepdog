@@ -101,25 +101,29 @@ clips it was trained on are biased upwards.</p>
 
 
 <dl><dt id="arg-manifest">manifest<a class="anchor" aria-label="anchor" href="#arg-manifest"></a></dt>
-<dd><p>Clip manifest, as returned by <code><a href="select_clips.html">select_clips()</a></code> or read
+<dd><p>A data frame, the clip manifest (one row per clip), as
+returned by <code><a href="select_clips.html">select_clips()</a></code> or read
 from <code>clip_manifest.csv</code>.</p></dd>
 
 
 <dt id="arg-training-set">training_set<a class="anchor" aria-label="anchor" href="#arg-training-set"></a></dt>
-<dd><p>Table returned by <code><a href="build_training_set.html">build_training_set()</a></code> or
-<code><a href="training_nights.html">training_nights()</a></code>, or the path to a <code>training_set.csv</code>.</p></dd>
+<dd><p>A data frame returned by <code><a href="build_training_set.html">build_training_set()</a></code> or
+<code><a href="training_nights.html">training_nights()</a></code>, or a character scalar, path to a
+<code>training_set.csv</code>.</p></dd>
 
 
 <dt id="arg-level">level<a class="anchor" aria-label="anchor" href="#arg-level"></a></dt>
-<dd><p>What a training clip excludes; see Levels.</p></dd>
+<dd><p>Character scalar, one of <code>"clip"</code>, <code>"recording"</code> or
+<code>"night"</code>: what a training clip excludes; see Levels.</p></dd>
 
 
 <dt id="arg-any-species">any_species<a class="anchor" aria-label="anchor" href="#arg-any-species"></a></dt>
-<dd><p>Exclude across species?</p></dd>
+<dd><p>Logical scalar. If <code>TRUE</code>, exclude across species.</p></dd>
 
 
 <dt id="arg-pattern">pattern<a class="anchor" aria-label="anchor" href="#arg-pattern"></a></dt>
-<dd><p>With a table of <code><a href="training_nights.html">training_nights()</a></code> and
+<dd><p><code>NULL</code> or character scalar. With a table of
+<code><a href="training_nights.html">training_nights()</a></code> and
 <code>level = "recording"</code>, the regular expression that reads the
 recordings from <code>source_audio</code>. By default, the one recorded in the
 table by <code><a href="training_nights.html">training_nights()</a></code> (lost if the table was rebuilt, e.g. by

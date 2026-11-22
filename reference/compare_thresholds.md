@@ -33,66 +33,70 @@ compare_thresholds(
 
 - validation:
 
-  Reviewed clips, as for
+  A data frame (or tibble) of reviewed clips, as for
   [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md).
-  For `random_detections` clips, the empirical threshold uses the
-  weighted precision.
+  One row per clip. For `random_detections` clips, the empirical
+  threshold uses the weighted precision.
 
 - fit:
 
-  Model returned by
-  [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md).
+  A model returned by
+  [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
+  (`glm`, `glmerMod` or `brmsfit`).
 
 - scored:
 
-  Table returned by
+  `NULL` or a data frame (or tibble) returned by
   [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md).
   Needed for `thr_model_precision`, `model_precision_at_empirical` and
   `flag`.
 
 - target_p:
 
-  Target of the `"probability"` rule.
+  Numeric scalar in (0, 1). Target of the `"probability"` rule.
 
 - target_precision:
 
-  Target precision of the empirical threshold and of the `"precision"`
-  rule.
+  Numeric scalar in (0, 1). Target precision of the empirical threshold
+  and of the `"precision"` rule.
 
 - min_n:
 
-  Passed to
+  Integer scalar \>= 1. Passed to
   [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md).
 
 - tolerance:
 
-  Largest difference between `thr_empirical` and `thr_model_precision`,
-  in score units, for `"agree"`.
+  Numeric scalar, in score units. Largest difference between
+  `thr_empirical` and `thr_model_precision` for `"agree"`.
 
 - quality:
 
-  Optional table of
+  `NULL` or a data frame (or tibble) returned by
   [`calibration_quality()`](https://provetelab.org/sheepdog/reference/calibration_quality.md),
   joined by the columns `site` and `species` that it has.
 
 - weighted, sustained:
 
-  Passed to
+  `NULL`, `TRUE` or `FALSE` (`weighted`) and logical scalar
+  (`sustained`). Passed to
   [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md).
 
 - min_confidence:
 
-  Detections below this confidence are not scored.
+  Numeric scalar in \[0, 1\]. Detections below this confidence are not
+  scored.
 
 - grid_step:
 
-  Models fitted with `engine = "brms"`: step of the grid of scores on
-  which the posterior is computed.
+  Numeric scalar in (0, 0.5). Models fitted with `engine = "brms"`: step
+  of the grid of scores on which the posterior is computed.
 
 - lower_prob:
 
-  Models fitted with `engine = "brms"`: the probability of the lower
-  quantile of the posterior of P(TP) used for `threshold_lower`.
+  Numeric scalar in (0, 1). Models fitted with `engine = "brms"`: the
+  probability of the lower quantile of the posterior of P(TP) used for
+  `threshold_lower`.
 
 ## Value
 

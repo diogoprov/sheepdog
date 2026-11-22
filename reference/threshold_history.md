@@ -28,15 +28,16 @@ threshold_history(
 
 - detections:
 
-  Predictions, from
+  A data frame (or tibble) of predictions, from
   [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md),
-  with `site`, `species_code`, `confidence` and `begin_path`. Use every
-  prediction, not only those of the cells with a threshold.
+  with `site`, `species_code`, `confidence` and `begin_path`. One row
+  per prediction. Use every prediction, not only those of the cells with
+  a threshold.
 
 - thresholds:
 
-  Table with `site`, `species_folder` and `threshold`, one row per cell,
-  such as the output of
+  A data frame (or tibble) with `site`, `species_folder` and
+  `threshold`, one row per cell, such as the output of
   [`review_support()`](https://provetelab.org/sheepdog/reference/review_support.md).
   Cells with a missing threshold or without a row have no threshold. The
   conservative threshold of
@@ -46,18 +47,19 @@ threshold_history(
 
 - min_confidence:
 
-  Predictions below this confidence are left out, as in
+  Numeric scalar. Predictions below this confidence are left out, as in
   [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md).
   This also sets which nights count as recorded.
 
 - dawn_hour:
 
-  Recordings that start before this hour belong to the night before.
+  Numeric scalar, an hour of the day. Recordings that start before this
+  hour belong to the night before.
 
 - min_detections_night:
 
-  Repetition rule: minimum number of reliable detections for a night
-  with detection.
+  Integer scalar. Repetition rule: minimum number of reliable detections
+  for a night with detection.
 
 ## Value
 

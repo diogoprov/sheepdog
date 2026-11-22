@@ -15,13 +15,13 @@ plot_calibration_ppc(ppc, check = "score")
 
 - ppc:
 
-  Table returned by
+  A data frame (tibble) returned by
   [`calibration_ppc()`](https://provetelab.org/sheepdog/reference/calibration_ppc.md).
 
 - check:
 
-  The check to draw: `"score"`, `"site"`, `"species"`, `"overall"` or a
-  column given in `group`.
+  Character scalar, the check to draw: `"score"`, `"site"`, `"species"`,
+  `"overall"` or a column given in `group`.
 
 ## Value
 

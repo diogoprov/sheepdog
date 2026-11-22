@@ -103,34 +103,36 @@ recordings that start before <code>dawn_hour</code>.</p>
 
 
 <dl><dt id="arg-tables">tables<a class="anchor" aria-label="anchor" href="#arg-tables"></a></dt>
-<dd><p>Named character vector, named by site (the site names of
-the calibration): the path of the combined selection table of each
-site, or the folder of its per-audio tables (see
+<dd><p>Named character vector, one element per site, named by site
+(the site names of the calibration): the path of the combined selection
+table of each site, or the folder of its per-audio tables (see
 <code><a href="read_selection_tables.html">read_selection_tables()</a></code>).</p></dd>
 
 
 <dt id="arg-fit">fit<a class="anchor" aria-label="anchor" href="#arg-fit"></a></dt>
-<dd><p>Model returned by <code><a href="fit_calibration.html">fit_calibration()</a></code>.</p></dd>
+<dd><p>A <code>glm</code>, <code>glmerMod</code> or <code>brmsfit</code> returned by <code><a href="fit_calibration.html">fit_calibration()</a></code>.</p></dd>
 
 
 <dt id="arg-min-confidence">min_confidence<a class="anchor" aria-label="anchor" href="#arg-min-confidence"></a></dt>
-<dd><p>Detections below this confidence are not scored.</p></dd>
+<dd><p>Numeric scalar in [0, 1]. Detections below this
+confidence are not scored.</p></dd>
 
 
 <dt id="arg-dawn-hour">dawn_hour<a class="anchor" aria-label="anchor" href="#arg-dawn-hour"></a></dt>
-<dd><p>Recordings that start before this hour belong to the
-night before.</p></dd>
+<dd><p>Numeric scalar in [0, 24]. Recordings that start before
+this hour belong to the night before.</p></dd>
 
 
 <dt id="arg-p-min-lower-prob">p_min, lower_prob<a class="anchor" aria-label="anchor" href="#arg-p-min-lower-prob"></a></dt>
-<dd><p>Models fitted with <code>engine = "brms"</code>: the
-threshold of <code>pr_reliable</code> and the probability of the lower quantile
-<code>p_tp_lower</code>.</p></dd>
+<dd><p>Numeric scalars, <code>p_min</code> in [0, 1] and <code>lower_prob</code>
+in (0, 1). Models fitted with <code>engine = "brms"</code>: the threshold of
+<code>pr_reliable</code> and the probability of the lower quantile <code>p_tp_lower</code>.</p></dd>
 
 
 <dt id="arg-grid-step">grid_step<a class="anchor" aria-label="anchor" href="#arg-grid-step"></a></dt>
-<dd><p>Models fitted with <code>engine = "brms"</code>: step of the grid
-of scores on which the posterior is computed.</p></dd>
+<dd><p>Numeric scalar in (0, 0.5). Models fitted with
+<code>engine = "brms"</code>: step of the grid of scores on which the posterior is
+computed.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -95,22 +95,23 @@ every species gets doubly reviewed clips.</p>
 
 
 <dl><dt id="arg-manifest">manifest<a class="anchor" aria-label="anchor" href="#arg-manifest"></a></dt>
-<dd><p>Clip manifest, as returned by <code><a href="select_clips.html">select_clips()</a></code> or
-<code><a href="cut_clips.html">cut_clips()</a></code>.</p></dd>
+<dd><p>A data frame (or tibble), the clip manifest as returned
+by <code><a href="select_clips.html">select_clips()</a></code> or <code><a href="cut_clips.html">cut_clips()</a></code>. One row per clip.</p></dd>
 
 
 <dt id="arg-reviewers">reviewers<a class="anchor" aria-label="anchor" href="#arg-reviewers"></a></dt>
-<dd><p>Names of the reviewers (at least two).</p></dd>
-
-
-<dt id="arg-overlap">overlap<a class="anchor" aria-label="anchor" href="#arg-overlap"></a></dt>
-<dd><p>Fraction of the clips of each species reviewed by two
+<dd><p>Character vector of length &gt;= 2, unique names of the
 reviewers.</p></dd>
 
 
+<dt id="arg-overlap">overlap<a class="anchor" aria-label="anchor" href="#arg-overlap"></a></dt>
+<dd><p>Numeric scalar in [0, 1]. Fraction of the clips of each
+species reviewed by two reviewers.</p></dd>
+
+
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>Seed of the draws. The global random number generator is
-left as it was.</p></dd>
+<dd><p>Integer scalar, seed of the draws. The global random number
+generator is left as it was.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -106,38 +106,43 @@ recording or minute) into bins that can stratify the draw of
 
 
 <dl><dt id="arg-covariates">covariates<a class="anchor" aria-label="anchor" href="#arg-covariates"></a></dt>
-<dd><p>Data frame with the <code>key</code> columns and <code>var</code>, one row
+<dd><p>A data frame with the <code>key</code> columns and <code>var</code>, one row
 per occasion (or per night, when the covariate is nightly).</p></dd>
 
 
 <dt id="arg-var">var<a class="anchor" aria-label="anchor" href="#arg-var"></a></dt>
-<dd><p>Name of the numeric column to cut.</p></dd>
+<dd><p>Character scalar, name of the numeric column to cut.</p></dd>
 
 
 <dt id="arg-key">key<a class="anchor" aria-label="anchor" href="#arg-key"></a></dt>
-<dd><p>Columns that identify a row of <code>covariates</code> and are matched
+<dd><p>Character vector, columns that identify a row of
+<code>covariates</code> and are matched
 against the occasions in <code><a href="select_clips.html">select_clips()</a></code>: any of <code>site</code>, <code>night</code>,
 <code>recording_date</code>, <code>recording_hour</code>, <code>source_audio</code> and <code>occasion_id</code>.
 <code>night</code> and <code>recording_date</code> are dates written as <code>YYYYMMDD</code>.</p></dd>
 
 
 <dt id="arg-n-bins">n_bins<a class="anchor" aria-label="anchor" href="#arg-n-bins"></a></dt>
-<dd><p>Number of bins when <code>breaks</code> is <code>NULL</code>.</p></dd>
+<dd><p>Integer scalar &gt;= 2, number of bins when <code>breaks</code> is
+<code>NULL</code>.</p></dd>
 
 
 <dt id="arg-breaks">breaks<a class="anchor" aria-label="anchor" href="#arg-breaks"></a></dt>
-<dd><p>Optional numeric vector of breaks shared by all groups,
-instead of quantiles (bins are left-closed; the last one includes its
+<dd><p><code>NULL</code> or numeric vector of length &gt;= 2, strictly
+increasing: breaks shared by all groups, instead of quantiles (bins
+are left-closed; the last one includes its
 upper end).</p></dd>
 
 
 <dt id="arg-within">within<a class="anchor" aria-label="anchor" href="#arg-within"></a></dt>
-<dd><p>Columns within which quantile breaks are computed (<code>NULL</code>
+<dd><p><code>NULL</code> or character vector, columns within which quantile
+breaks are computed (<code>NULL</code>
 for quantiles over all rows). Ignored when <code>breaks</code> is given.</p></dd>
 
 
 <dt id="arg-name">name<a class="anchor" aria-label="anchor" href="#arg-name"></a></dt>
-<dd><p>Name of the new column. Defaults to <code>&lt;var&gt;_bin</code>.</p></dd>
+<dd><p>Character scalar, name of the new column. Defaults to
+<code>&lt;var&gt;_bin</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

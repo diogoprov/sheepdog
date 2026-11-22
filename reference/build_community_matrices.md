@@ -25,25 +25,28 @@ build_community_matrices(
 
 - history_file:
 
-  Path to `nightly_detection_history.csv` (or a v1.2.0
+  Character scalar, path to `nightly_detection_history.csv` (or a v1.2.0
   `historico_deteccao_noite.csv`).
 
 - output_dir:
 
-  Output folder; created if needed.
+  Character scalar, path to the output folder; created if needed.
 
 - core_species:
 
-  Species codes (the `species` column) that enter the matrix.
+  Character vector of length \>= 1, species codes (the `species` column)
+  that enter the matrix.
 
 - k_min:
 
-  Repetition rule: 1, 2 or 3 reliable detections on the night.
+  Integer scalar, one of 1, 2 or 3. Repetition rule: 1, 2 or 3 reliable
+  detections on the night.
 
 - min_nights_month:
 
-  Site x month cells with fewer recorded nights are dropped from the
-  matrices (unstable frequencies) and flagged in `effort`.
+  Numeric scalar. Site x month cells with fewer recorded nights are
+  dropped from the matrices (unstable frequencies) and flagged in
+  `effort`.
 
 ## Value
 

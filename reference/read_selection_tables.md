@@ -20,23 +20,25 @@ read_selection_tables(
 
 - data_dir:
 
-  Root folder, searched recursively.
+  Character scalar, path to the root folder, searched recursively.
 
 - table_pattern:
 
-  Regular expression for the file names of combined tables.
+  Character scalar, regular expression for the file names of combined
+  tables.
 
 - per_audio_pattern:
 
-  Regular expression for the file names of per-audio tables. `NULL`
-  reads only combined tables.
+  `NULL` or character scalar, regular expression for the file names of
+  per-audio tables. `NULL` reads only combined tables.
 
 - site_pattern:
 
-  Optional regular expression with one capture group that takes the site
-  from the name of the audio file in `Begin Path`, instead of from the
-  folder of the table. For example, `"^[^_]+_([^_]+)_"` reads `Campus01`
-  from `Campinas_Campus01_20261003_074339.flac`. Use the same pattern in
+  `NULL` or character scalar, regular expression with one capture group
+  that takes the site from the name of the audio file in `Begin Path`,
+  instead of from the folder of the table. For example,
+  `"^[^_]+_([^_]+)_"` reads `Campus01` from
+  `Campinas_Campus01_20261003_074339.flac`. Use the same pattern in
   [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md).
 
 ## Value

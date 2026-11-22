@@ -58,82 +58,87 @@ post_validation(
 
 - review_dir:
 
-  Folder with the reviewed clips. For a review in the BirdNET GUI, the
-  `clips` folder after the review, whose subfolders give the verdicts.
-  With `verdicts_file`, optional: the folder of the clips, used to fill
-  `reviewed_path` (needed by
+  `NULL` or a character scalar, path to the folder with the reviewed
+  clips. For a review in the BirdNET GUI, the `clips` folder after the
+  review, whose subfolders give the verdicts. With `verdicts_file`,
+  optional: the folder of the clips, used to fill `reviewed_path`
+  (needed by
   [`retraining_clips()`](https://provetelab.org/sheepdog/reference/retraining_clips.md)
   and
   [`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md)).
 
 - manifest_path:
 
-  Path to the manifest of the same run as the reviewed clips
-  (`clip_manifest.csv`, or a v1.2.0 `manifesto_clipes.csv`).
+  Character scalar, path to the manifest of the same run as the reviewed
+  clips (`clip_manifest.csv`, or a v1.2.0 `manifesto_clipes.csv`).
 
 - output_dir:
 
-  Output folder; created if needed.
+  Character scalar, path to the output folder; created if needed.
 
 - positive_pattern, negative_pattern:
 
-  Regular expressions (case-insensitive) that identify the positive and
-  negative folders in the path of each clip.
+  Character scalars, regular expressions (case-insensitive) that
+  identify the positive and negative folders in the path of each clip.
 
 - bins:
 
-  Breaks of the confidence bins (left-closed).
+  Numeric vector of length \>= 2, increasing breaks of the confidence
+  bins (left-closed).
 
 - target_precision:
 
-  Target precision.
+  Numeric scalar in (0, 1). Target precision.
 
 - min_n:
 
-  Minimum of reviewed clips for a bin to be taken seriously; bins with
-  fewer are flagged in `low_support`.
+  Integer scalar \>= 1. Minimum of reviewed clips for a bin to be taken
+  seriously; bins with fewer are flagged in `low_support`.
 
 - verdicts_file:
 
-  Optional verdicts file written by
+  `NULL` or a character scalar, path to the verdicts file written by
   [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md),
   used instead of the subfolders of `review_dir`.
 
 - reviewer:
 
-  With `verdicts_file`, optional reviewer(s) whose verdicts are used, as
-  in
+  `NULL` or a character vector of reviewer names. With `verdicts_file`,
+  the reviewer(s) whose verdicts are used, as in
   [`app_verdicts()`](https://provetelab.org/sheepdog/reference/app_verdicts.md).
 
 - weighted, sustained:
 
-  Passed to
+  `NULL`, `TRUE` or `FALSE` (`weighted`) and logical scalar
+  (`sustained`). Passed to
   [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md).
 
 - previous:
 
-  For a later round of a design: the `validation_by_clip.csv` of the
-  earlier rounds. `validation_by_clip.csv` keeps the clips of this round
-  only; the summaries and `validation_combined.csv` cover all rounds,
-  from
+  `NULL`, a character vector of paths, a data frame, or a list of data
+  frames. For a later round of a design: the `validation_by_clip.csv` of
+  the earlier rounds. `validation_by_clip.csv` keeps the clips of this
+  round only; the summaries and `validation_combined.csv` cover all
+  rounds, from
   [`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md).
 
 - candidates:
 
-  With `previous`, the `candidates.csv` of the first round. `NULL` looks
-  for it beside `manifest_path` and `previous`.
+  `NULL`, a data frame, or a character scalar path. With `previous`, the
+  `candidates.csv` of the first round. `NULL` looks for it beside
+  `manifest_path` and `previous`.
 
 - fit:
 
-  Optional model of
-  [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md).
-  With it,
+  `NULL` or a model returned by
+  [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
+  (`glm`, `glmerMod` or `brmsfit`). With it,
   [`compare_thresholds()`](https://provetelab.org/sheepdog/reference/compare_thresholds.md)
   writes `thresholds_compared.csv`.
 
 - scored, quality:
 
-  With `fit`, passed to
+  `NULL` or data frames (or tibbles). With `fit`, passed to
   [`compare_thresholds()`](https://provetelab.org/sheepdog/reference/compare_thresholds.md).
 
 ## Value

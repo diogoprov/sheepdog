@@ -22,27 +22,29 @@ fit_calibration(
 
 - validations:
 
-  Table returned by
-  [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md).
+  A data frame (or tibble) returned by
+  [`read_validations()`](https://provetelab.org/sheepdog/reference/read_validations.md),
+  one row per reviewed clip.
 
 - formula:
 
-  Model formula, usually the best one of
+  A model formula, usually the best one of
   [`compare_calibration_models()`](https://provetelab.org/sheepdog/reference/compare_calibration_models.md).
 
 - engine:
 
-  `"lme4"` or `"brms"`.
+  Character scalar, one of `"lme4"` (default) or `"brms"`.
 
 - prior:
 
-  `engine = "brms"`: the prior (a `brmsprior` object), e.g. from
+  `NULL` or a `brmsprior` object. With `engine = "brms"`, the prior,
+  e.g. from
   [`calibration_prior()`](https://provetelab.org/sheepdog/reference/calibration_prior.md).
   Required.
 
 - control:
 
-  Optional settings of the fitting algorithm, a single object: a
+  `NULL` or a single object with settings of the fitting algorithm: a
   [`lme4::glmerControl()`](https://rdrr.io/pkg/lme4/man/lmerControl.html)
   object (formula with random effects) or a list of
   [`stats::glm.control()`](https://rdrr.io/r/stats/glm.control.html)
@@ -246,10 +248,10 @@ if (requireNamespace("lme4", quietly = TRUE)) {
   confint(fit, method = "Wald", parm = "beta_")
 }
 #> (Intercept)  logit_conf 
-#>  -0.2060526   1.6030184 
+#>  -0.2060523   1.6030183 
 #>                  2.5 %    97.5 %
-#> (Intercept) -0.9305439 0.5184387
-#> logit_conf   1.4584249 1.7476119
+#> (Intercept) -0.9305499 0.5184454
+#> logit_conf   1.4584248 1.7476119
 
 # Bayesian fit: the prior is always given explicitly. Fitting compiles a
 # Stan model, which takes minutes, so this part is not run here.

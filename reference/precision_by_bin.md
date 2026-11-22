@@ -19,23 +19,26 @@ precision_by_bin(
 
 - validation:
 
-  Table returned by
-  [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md).
+  A data frame (or tibble) returned by
+  [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md),
+  with columns `site`, `species_folder`, `verdict` and `confidence`. One
+  row per clip.
 
 - bins:
 
-  Breaks of the confidence bins (left-closed).
+  Numeric vector of length \>= 2, increasing breaks of the confidence
+  bins (left-closed).
 
 - min_n:
 
-  Minimum of reviewed clips for a bin to be taken seriously; bins with
-  fewer are flagged in `low_support`.
+  Integer scalar \>= 1. Minimum of reviewed clips for a bin to be taken
+  seriously; bins with fewer are flagged in `low_support`.
 
 - by:
 
-  Optional columns of `validation` that split each site x species cell
-  further, e.g. the bin of an environmental gradient or of an acoustic
-  index joined from
+  `NULL` or a character vector of column names of `validation` that
+  split each site x species cell further, e.g. the bin of an
+  environmental gradient or of an acoustic index joined from
   [`covariate_bins()`](https://provetelab.org/sheepdog/reference/covariate_bins.md).
   They show which parts of the gradient lack reviewed clips.
 

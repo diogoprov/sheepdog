@@ -95,16 +95,18 @@ review, classify each reviewer's folder with <code><a href="classify_review.html
 
 
 <dl><dt id="arg-manifest">manifest<a class="anchor" aria-label="anchor" href="#arg-manifest"></a></dt>
-<dd><p>Manifest returned by <code><a href="assign_reviewers.html">assign_reviewers()</a></code>.</p></dd>
+<dd><p>A data frame (or tibble) returned by <code><a href="assign_reviewers.html">assign_reviewers()</a></code>,
+with columns <code>reviewer</code>, <code>second_reviewer</code>, <code>species_folder</code> and
+<code>clip_file</code>.</p></dd>
 
 
 <dt id="arg-clips-dir">clips_dir<a class="anchor" aria-label="anchor" href="#arg-clips-dir"></a></dt>
-<dd><p>Folder of the cut clips (the <code>clips</code> folder written by
-<code><a href="cut_clips.html">cut_clips()</a></code>).</p></dd>
+<dd><p>Character scalar, path to the folder of the cut clips
+(the <code>clips</code> folder written by <code><a href="cut_clips.html">cut_clips()</a></code>).</p></dd>
 
 
 <dt id="arg-output-dir">output_dir<a class="anchor" aria-label="anchor" href="#arg-output-dir"></a></dt>
-<dd><p>Output folder.</p></dd>
+<dd><p>Character scalar, path to the output folder.</p></dd>
 
 </dl></div>
     <div class="section level2">

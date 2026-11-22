@@ -174,119 +174,124 @@ filter detections in software that only takes a score threshold;</p></li>
 
 
 <dl><dt id="arg-validation-files">validation_files<a class="anchor" aria-label="anchor" href="#arg-validation-files"></a></dt>
-<dd><p>Paths to the <code>validation_by_clip.csv</code> files of
-the sites (v1.2.0 <code>validacao_por_clipe.csv</code> files are also read).</p></dd>
+<dd><p>Character vector, paths to the
+<code>validation_by_clip.csv</code> files of the sites (v1.2.0
+<code>validacao_por_clipe.csv</code> files are also read).</p></dd>
 
 
 <dt id="arg-prediction-tables">prediction_tables<a class="anchor" aria-label="anchor" href="#arg-prediction-tables"></a></dt>
-<dd><p>Named character vector of the complete
-selection tables, named by site: the path of each combined table, or
-the folder of the per-audio tables of each site (see
+<dd><p>Named character vector of the complete selection
+tables, one element per site, named by site: the path of each combined
+table, or the folder of the per-audio tables of each site (see
 <code><a href="score_detections.html">score_detections()</a></code>).</p></dd>
 
 
 <dt id="arg-output-dir">output_dir<a class="anchor" aria-label="anchor" href="#arg-output-dir"></a></dt>
-<dd><p>Output folder; created if needed. The calibrated
-detections of a large project can take hundreds of MB.</p></dd>
+<dd><p>Character scalar, output folder; created if needed. The
+calibrated detections of a large project can take hundreds of MB.</p></dd>
 
 
 <dt id="arg-site-map">site_map<a class="anchor" aria-label="anchor" href="#arg-site-map"></a></dt>
-<dd><p>Optional named character vector to fix diverging site
+<dd><p><code>NULL</code> or a named character vector to fix diverging site
 names, as <code>c(old = "new")</code>, e.g. <code>c(BEP2 = "BEP")</code>.</p></dd>
 
 
 <dt id="arg-min-confidence">min_confidence<a class="anchor" aria-label="anchor" href="#arg-min-confidence"></a></dt>
-<dd><p>Detections below this confidence are not scored.</p></dd>
+<dd><p>Numeric scalar in [0, 1]. Detections below this
+confidence are not scored.</p></dd>
 
 
 <dt id="arg-p-min">p_min<a class="anchor" aria-label="anchor" href="#arg-p-min"></a></dt>
-<dd><p>Threshold on the calibrated probability (not on the
-confidence score).</p></dd>
+<dd><p>Numeric scalar in [0, 1], threshold on the calibrated
+probability (not on the confidence score).</p></dd>
 
 
 <dt id="arg-min-detections-night">min_detections_night<a class="anchor" aria-label="anchor" href="#arg-min-detections-night"></a></dt>
-<dd><p>Repetition rule: minimum number of reliable
-detections for a night with detection.</p></dd>
+<dd><p>Integer scalar &gt;= 1, repetition rule: minimum
+number of reliable detections for a night with detection.</p></dd>
 
 
 <dt id="arg-dawn-hour">dawn_hour<a class="anchor" aria-label="anchor" href="#arg-dawn-hour"></a></dt>
-<dd><p>Recordings that start before this hour belong to the
-night before.</p></dd>
+<dd><p>Numeric scalar in [0, 24]. Recordings that start before
+this hour belong to the night before.</p></dd>
 
 
 <dt id="arg-k-folds">k_folds<a class="anchor" aria-label="anchor" href="#arg-k-folds"></a></dt>
-<dd><p>Number of folds.</p></dd>
+<dd><p>Integer scalar &gt;= 2, number of folds.</p></dd>
 
 
 <dt id="arg-select">select<a class="anchor" aria-label="anchor" href="#arg-select"></a></dt>
-<dd><p>Rule to choose the model; see
+<dd><p>Character scalar, one of <code>"one_se_logloss"</code> (default) or
+<code>"best_auc"</code>: the rule to choose the model; see
 <code><a href="select_calibration_model.html">select_calibration_model()</a></code>.</p></dd>
 
 
 <dt id="arg-uncorrelated">uncorrelated<a class="anchor" aria-label="anchor" href="#arg-uncorrelated"></a></dt>
-<dd><p>Include the m4 variant without the species
-intercept-slope correlation among the candidates; see
+<dd><p>Logical scalar. If <code>TRUE</code>, include the m4 variant without
+the species intercept-slope correlation among the candidates; see
 <code><a href="calibration_models.html">calibration_models()</a></code>.</p></dd>
 
 
 <dt id="arg-effort-curve">effort_curve<a class="anchor" aria-label="anchor" href="#arg-effort-curve"></a></dt>
-<dd><p>Draw the effort curve (slow).</p></dd>
+<dd><p>Logical scalar. If <code>TRUE</code>, draw the effort curve (slow).</p></dd>
 
 
 <dt id="arg-effort-n-effort-reps">effort_n, effort_reps<a class="anchor" aria-label="anchor" href="#arg-effort-n-effort-reps"></a></dt>
-<dd><p>Training sizes and repetitions of the
-effort curve.</p></dd>
+<dd><p>Numeric vector of training sizes and integer
+scalar &gt;= 1 of repetitions of the effort curve.</p></dd>
 
 
 <dt id="arg-engine">engine<a class="anchor" aria-label="anchor" href="#arg-engine"></a></dt>
-<dd><p>Engine of the final fit: <code>"lme4"</code> or <code>"brms"</code> (see
-<code><a href="fit_calibration.html">fit_calibration()</a></code>). The comparison of the candidate models always
-uses maximum likelihood (fast); with <code>"brms"</code>, the selected model is
-then refitted in a Bayesian framework, its convergence diagnostics are
-written to <code>calibration_diagnostics.csv</code>, and the scored detections
-carry <code>p_tp_lower</code> and <code>pr_reliable</code>.</p></dd>
+<dd><p>Character scalar, one of <code>"lme4"</code> (default) or <code>"brms"</code>: the
+engine of the final fit (see <code><a href="fit_calibration.html">fit_calibration()</a></code>). The comparison of the
+candidate models always uses maximum likelihood (fast); with <code>"brms"</code>, the
+selected model is then refitted in a Bayesian framework, its convergence
+diagnostics are written to <code>calibration_diagnostics.csv</code>, and the scored
+detections carry <code>p_tp_lower</code> and <code>pr_reliable</code>.</p></dd>
 
 
 <dt id="arg-prior">prior<a class="anchor" aria-label="anchor" href="#arg-prior"></a></dt>
-<dd><p><code>engine = "brms"</code>: the prior, as a <code>brmsprior</code> object or as
-a function of the selected formula and the validations that returns
-one, e.g. <code>calibration_prior</code> (whose classes then match the selected
-model). Required with <code>"brms"</code>.</p></dd>
+<dd><p><code>NULL</code>, a <code>brmsprior</code> object or a function. With
+<code>engine = "brms"</code>, the prior, as a <code>brmsprior</code> object or as a function of
+the selected formula and the validations that returns one, e.g.
+<code>calibration_prior</code> (whose classes then match the selected model). Required
+with <code>"brms"</code>.</p></dd>
 
 
 <dt id="arg-brms-args">brms_args<a class="anchor" aria-label="anchor" href="#arg-brms-args"></a></dt>
-<dd><p><code>engine = "brms"</code>: list of further arguments for
-<code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code> (e.g. <code>list(chains = 4, cores = 4, backend = "cmdstanr")</code>).
-Without <code>seed</code> in this list, <code>seed</code> is also the seed of the Bayesian
-refit, so the whole run is reproducible; it is written to
-<code>calibration_model.txt</code>.</p></dd>
+<dd><p>A list. With <code>engine = "brms"</code>, list of further arguments
+for <code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code> (e.g.
+<code>list(chains = 4, cores = 4, backend = "cmdstanr")</code>). Without <code>seed</code> in
+this list, <code>seed</code> is also the seed of the Bayesian refit, so the whole run
+is reproducible; it is written to <code>calibration_model.txt</code>.</p></dd>
 
 
 <dt id="arg-rule">rule<a class="anchor" aria-label="anchor" href="#arg-rule"></a></dt>
-<dd><p>When a detection is reliable: <code>"mean"</code>, its calibrated
-probability (the posterior mean with <code>engine = "brms"</code>) is &gt;= <code>p_min</code>;
-<code>"probability"</code>, the posterior probability that P(TP) &gt;= <code>p_min</code> (the
-<code>pr_reliable</code> of a model fitted with <code>engine = "brms"</code>) is &gt;=
-<code>prob_min</code>. The second rule propagates the uncertainty of the
-calibration and is more conservative where few clips were reviewed.</p></dd>
+<dd><p>Character scalar, one of <code>"mean"</code> (default) or <code>"probability"</code>:
+when a detection is reliable. <code>"mean"</code>, its calibrated probability (the
+posterior mean with <code>engine = "brms"</code>) is &gt;= <code>p_min</code>; <code>"probability"</code>, the
+posterior probability that P(TP) &gt;= <code>p_min</code> (the <code>pr_reliable</code> of a model
+fitted with <code>engine = "brms"</code>) is &gt;= <code>prob_min</code>. The second rule propagates
+the uncertainty of the calibration and is more conservative where few clips
+were reviewed.</p></dd>
 
 
 <dt id="arg-prob-min">prob_min<a class="anchor" aria-label="anchor" href="#arg-prob-min"></a></dt>
-<dd><p><code>rule = "probability"</code>: threshold on <code>pr_reliable</code>.
-<code>pr_reliable</code> is computed in <code><a href="score_detections.html">score_detections()</a></code> for its <code>p_min</code>;
-use the same <code>p_min</code> in both.</p></dd>
+<dd><p>Numeric scalar in [0, 1]. With <code>rule = "probability"</code>,
+threshold on <code>pr_reliable</code>. <code>pr_reliable</code> is computed in
+<code><a href="score_detections.html">score_detections()</a></code> for its <code>p_min</code>; use the same <code>p_min</code> in both.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>Seed of the fold assignment. The global random number
-generator is left as it was.</p></dd>
+<dd><p>Integer scalar, seed of the fold assignment. The global random
+number generator is left as it was.</p></dd>
 
 
 <dt id="arg-fold-group">fold_group<a class="anchor" aria-label="anchor" href="#arg-fold-group"></a></dt>
-<dd><p>Optional character vector of grouping columns. Do not
+<dd><p><code>NULL</code> or a character vector of grouping columns. Do not
 include <code>species</code>, verdicts or confidence scores: these would split
-recordings or nights by species or by outcome. Group IDs must be
-nonmissing and nonempty. <code>NULL</code> keeps the original clip folds.</p></dd>
+recordings or nights by species or by outcome. Group IDs must be nonmissing
+and nonempty. <code>NULL</code> keeps the original clip folds.</p></dd>
 
 </dl></div>
     <div class="section level2">

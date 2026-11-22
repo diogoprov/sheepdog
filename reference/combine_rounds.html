@@ -104,15 +104,17 @@ candidates and the clips, so no earlier file is edited.</p>
 
 
 <dl><dt id="arg-validation">validation<a class="anchor" aria-label="anchor" href="#arg-validation"></a></dt>
-<dd><p>The tables of all rounds: paths to the
-<code>validation_by_clip.csv</code> files or manifests, a data frame, or a list of
-these. Tables without <code>round</code> count as one round each, in the order
-given.</p></dd>
+<dd><p>A character vector of paths, a data frame, or a list
+of these: the tables of all rounds (paths to the
+<code>validation_by_clip.csv</code> files or manifests), one row per clip, with
+the columns <code>site</code>, <code>species_code</code>, <code>occasion_id</code> and <code>sampling_mode</code>.
+Tables without <code>round</code> count as one round each, in the order given.</p></dd>
 
 
 <dt id="arg-candidates">candidates<a class="anchor" aria-label="anchor" href="#arg-candidates"></a></dt>
-<dd><p>The <code>candidates.csv</code> of the first round, as a path or a
-data frame. <code>NULL</code> looks for it in the folders of <code>validation</code>.</p></dd>
+<dd><p><code>NULL</code>, a character scalar (path) or a data frame: the
+<code>candidates.csv</code> of the first round. <code>NULL</code> looks for it in the
+folders of <code>validation</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

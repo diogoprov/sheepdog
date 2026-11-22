@@ -17,7 +17,8 @@ consensus_verdicts(reviews)
 
 - reviews:
 
-  One table of reviewed clips (as returned by
+  A data frame (or tibble) or a named list of data frames. One table of
+  reviewed clips (as returned by
   [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md))
   with a `reviewer` column, or a named list of such tables, named by
   reviewer.
