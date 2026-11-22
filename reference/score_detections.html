@@ -5,12 +5,12 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Score every detection with the calibration model — score_detections"><meta name="description" content="Reads the complete BirdNET selection tables (not only the reviewed
-clips) and predicts, for each detection, the probability that it is a
+</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Score every detection with the calibration model — score_detections"><meta name="description" content="Reads the complete BirdNET selection tables, or takes a table of
+predictions already read (not only the reviewed clips), and predicts, for each detection, the probability that it is a
 true positive. Only species present in the calibration are scored. The
 night of each detection is its recording date, or the day before for
-recordings that start before dawn_hour."><meta property="og:description" content="Reads the complete BirdNET selection tables (not only the reviewed
-clips) and predicts, for each detection, the probability that it is a
+recordings that start before dawn_hour."><meta property="og:description" content="Reads the complete BirdNET selection tables, or takes a table of
+predictions already read (not only the reviewed clips), and predicts, for each detection, the probability that it is a
 true positive. Only species present in the calibration are scored. The
 night of each detection is its recording date, or the day before for
 recordings that start before dawn_hour."><meta property="og:image" content="https://provetelab.org/sheepdog/logo.svg"></head><body>
@@ -21,7 +21,7 @@ recordings that start before dawn_hour."><meta property="og:image" content="http
 
     <a class="navbar-brand me-2" href="../index.html">sheepdog</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.4.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.4.1.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -78,8 +78,8 @@ recordings that start before dawn_hour."><meta property="og:image" content="http
     </div>
 
     <div class="ref-description section level2">
-    <p>Reads the complete BirdNET selection tables (not only the reviewed
-clips) and predicts, for each detection, the probability that it is a
+    <p>Reads the complete BirdNET selection tables, or takes a table of
+predictions already read (not only the reviewed clips), and predicts, for each detection, the probability that it is a
 true positive. Only species present in the calibration are scored. The
 night of each detection is its recording date, or the day before for
 recordings that start before <code>dawn_hour</code>.</p>
@@ -103,10 +103,13 @@ recordings that start before <code>dawn_hour</code>.</p>
 
 
 <dl><dt id="arg-tables">tables<a class="anchor" aria-label="anchor" href="#arg-tables"></a></dt>
-<dd><p>Named character vector, one element per site, named by site
-(the site names of the calibration): the path of the combined selection
-table of each site, or the folder of its per-audio tables (see
-<code><a href="read_selection_tables.html">read_selection_tables()</a></code>).</p></dd>
+<dd><p>Either a data frame (or tibble) of predictions, one row per
+prediction, with the columns <code>site</code>, <code>species_code</code>, <code>confidence</code>,
+<code>begin_path</code> and <code>file_offset</code>, as returned by <code><a href="read_selection_tables.html">read_selection_tables()</a></code>
+or <code><a href="read_classifier_output.html">read_classifier_output()</a></code>; or a named character vector, one element
+per site, named by site (the site names of the calibration): the path of
+the combined selection table of each site, or the folder of its
+per-audio tables (see <code><a href="read_selection_tables.html">read_selection_tables()</a></code>).</p></dd>
 
 
 <dt id="arg-fit">fit<a class="anchor" aria-label="anchor" href="#arg-fit"></a></dt>

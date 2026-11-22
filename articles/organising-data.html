@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">sheepdog</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.4.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">3.4.1.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -215,9 +215,9 @@ audio folders instead. Here on a small simulated tree:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 2</span></span></span>
 <span><span class="co">#&gt;   site  source_audio                                             </span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ARA   /tmp/RtmpksUsf1/audio/ARA/ARA01_20211001_190000.wav      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ARA   /tmp/RtmpksUsf1/audio/ARA/ARA01_20211001_200000.wav      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> BAI   /tmp/RtmpksUsf1/audio/BAI/card1/BAI01_20211001_190000.wav</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ARA   /tmp/RtmpdTq2nA/audio/ARA/ARA01_20211001_190000.wav      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ARA   /tmp/RtmpdTq2nA/audio/ARA/ARA01_20211001_200000.wav      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> BAI   /tmp/RtmpdTq2nA/audio/BAI/card1/BAI01_20211001_190000.wav</span></span></code></pre></div>
 <p>The paths must match <code>Begin Path</code>. When the list is built
 on a computer other than the one that ran BirdNET, rewrite the prefix
 with <code>remap_from</code> and <code>remap_to</code>, and give the
@@ -274,11 +274,72 @@ file names (<code>YYYYMMDD_HHMMSS</code>), not from the
 no field that ties them to the prediction they check.</li>
 <li>
 <strong>Which functions accept the tables:</strong>
-<code><a href="../reference/select_clips.html">select_clips()</a></code> and <code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code>,
-and through the manifest the review app. <code><a href="../reference/calibrate.html">calibrate()</a></code> and
-<code><a href="../reference/score_detections.html">score_detections()</a></code> still read BirdNET selection tables from
+<code><a href="../reference/select_clips.html">select_clips()</a></code>, <code><a href="../reference/export_occupancy_data.html">export_occupancy_data()</a></code> and
+<code><a href="../reference/score_detections.html">score_detections()</a></code>, and through the manifest the review
+app. <code><a href="../reference/calibrate.html">calibrate()</a></code> still reads BirdNET selection tables from
 disk.</li>
 </ul>
+</div>
+<div class="section level2">
+<h2 id="predictions-of-perch-opensoundscape-and-arbimon">Predictions of Perch, OpenSoundscape and Arbimon<a class="anchor" aria-label="anchor" href="#predictions-of-perch-opensoundscape-and-arbimon"></a>
+</h2>
+<p><code><a href="../reference/read_classifier_output.html">read_classifier_output()</a></code> reads the prediction files of
+other classifiers and returns them in the same shape:</p>
+<ul>
+<li>
+<code>format = "perch"</code>: the inference CSV written by
+<code>write_inference_csv()</code> of perch-hoplite or of the earlier
+perch repository, one row per window and label above the logit threshold
+chosen when it was written;</li>
+<li>
+<code>format = "opensoundscape"</code>: the table of
+<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> saved with <code>to_csv()</code>, with
+<code>file</code>, <code>start_time</code>, <code>end_time</code> and
+one column per class.</li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_classifier_output.html">read_classifier_output</a></span><span class="op">(</span><span class="st">"perch/inference.csv"</span>, format <span class="op">=</span> <span class="st">"perch"</span>,</span>
+<span>                               audio_root <span class="op">=</span> <span class="st">"/Volumes/NAS/pam/audio"</span><span class="op">)</span></span>
+<span><span class="va">recs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/list_recordings.html">list_recordings</a></span><span class="op">(</span><span class="st">"/Volumes/NAS/pam/audio"</span><span class="op">)</span></span>
+<span><span class="va">clips</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/select_clips.html">select_clips</a></span><span class="op">(</span><span class="va">pred</span>, sampling_mode <span class="op">=</span> <span class="st">"score_bands"</span>,</span>
+<span>                      recordings <span class="op">=</span> <span class="va">recs</span><span class="op">)</span></span></code></pre></div>
+<ul>
+<li>
+<strong>Scores:</strong> both classifiers write logits by default,
+and neither file says so. With <code>score_scale = "logit"</code> (the
+default), <code>confidence</code> is <code>plogis(score)</code>; use
+<code>score_scale = "probability"</code> when the model applied a
+sigmoid. The calibration works on the logit of <code>confidence</code>,
+which is then the original score. Rows below <code>min_confidence</code>
+(0.1) are left out.</li>
+<li>
+<strong>Site:</strong> the folder of each audio file, or
+<code>site_pattern</code> on its name.</li>
+<li>
+<strong>Species:</strong> built from the label as for pamDP
+(<code>"Wood Thrush"</code> goes to the folder
+<code>wood_thrush</code>); the label is kept in <code>label</code>.</li>
+<li>
+<strong>Calibration:</strong> pass the table to
+<code><a href="../reference/score_detections.html">score_detections()</a></code>.</li>
+</ul>
+<p><code>format = "arbimon"</code> reads the results of Arbimon pattern
+matching jobs. The download of a job names the audio file
+(<code>recording</code>), the site and the species, and is read on its
+own. The “export all results” files name neither the species nor the
+audio file, so they also need the species in <code>label</code> and the
+<code>recordings</code> table of a project backup, which holds the
+original file names:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">pm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_classifier_output.html">read_classifier_output</a></span><span class="op">(</span><span class="st">"arbimon/pm-job_116143.csv"</span>, format <span class="op">=</span> <span class="st">"arbimon"</span>,</span>
+<span>                             label <span class="op">=</span> <span class="st">"Boana raniceps"</span>,</span>
+<span>                             recordings <span class="op">=</span> <span class="st">"backup/recordings.0001.csv"</span>,</span>
+<span>                             audio_root <span class="op">=</span> <span class="st">"/Volumes/NAS/pam/audio"</span><span class="op">)</span></span></code></pre></div>
+<p>The site is the Arbimon site, the score (a correlation between 0 and
+1) is used as it is, and the reviews done in Arbimon are kept in
+<code>verdict</code>. The dates and hours still come from the file
+names, so files named by Arbimon in another pattern need to be renamed
+to <code>YYYYMMDD_HHMMSS</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="where-each-function-looks">Where each function looks<a class="anchor" aria-label="anchor" href="#where-each-function-looks"></a>
@@ -319,12 +380,18 @@ disk.</li>
 <td>predictions and recordings in R</td>
 </tr>
 <tr class="even">
+<td>or read Perch, OpenSoundscape or Arbimon</td>
+<td><code><a href="../reference/read_classifier_output.html">read_classifier_output()</a></code></td>
+<td>prediction CSVs</td>
+<td>a table in R</td>
+</tr>
+<tr class="odd">
 <td>choose clips</td>
 <td><code><a href="../reference/select_clips.html">select_clips()</a></code></td>
 <td>predictions, recordings</td>
 <td>a manifest in R</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>cut clips</td>
 <td>
 <code><a href="../reference/cut_clips.html">cut_clips()</a></code>,
@@ -337,7 +404,7 @@ disk.</li>
 <code>clip_manifest.csv</code>
 </td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>review</td>
 <td>file manager (<code>Positive</code>/<code>Negative</code>
 subfolders) or <code><a href="../reference/run_app.html">run_app()</a></code>
@@ -345,14 +412,14 @@ subfolders) or <code><a href="../reference/run_app.html">run_app()</a></code>
 <td>clips, manifest</td>
 <td>folders, or a verdicts CSV</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>join verdicts</td>
 <td><code><a href="../reference/post_validation.html">post_validation()</a></code></td>
 <td>review folder or <code>verdicts.csv</code>, manifest</td>
 <td>
 <code>validation_by_clip.csv</code> and summaries</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>calibrate</td>
 <td><code><a href="../reference/calibrate.html">calibrate()</a></code></td>
 <td>

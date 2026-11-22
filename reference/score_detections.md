@@ -1,10 +1,11 @@
 # Score every detection with the calibration model
 
-Reads the complete BirdNET selection tables (not only the reviewed
-clips) and predicts, for each detection, the probability that it is a
-true positive. Only species present in the calibration are scored. The
-night of each detection is its recording date, or the day before for
-recordings that start before `dawn_hour`.
+Reads the complete BirdNET selection tables, or takes a table of
+predictions already read (not only the reviewed clips), and predicts,
+for each detection, the probability that it is a true positive. Only
+species present in the calibration are scored. The night of each
+detection is its recording date, or the day before for recordings that
+start before `dawn_hour`.
 
 ## Usage
 
@@ -24,9 +25,15 @@ score_detections(
 
 - tables:
 
-  Named character vector, one element per site, named by site (the site
-  names of the calibration): the path of the combined selection table of
-  each site, or the folder of its per-audio tables (see
+  Either a data frame (or tibble) of predictions, one row per
+  prediction, with the columns `site`, `species_code`, `confidence`,
+  `begin_path` and `file_offset`, as returned by
+  [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)
+  or
+  [`read_classifier_output()`](https://provetelab.org/sheepdog/reference/read_classifier_output.md);
+  or a named character vector, one element per site, named by site (the
+  site names of the calibration): the path of the combined selection
+  table of each site, or the folder of its per-audio tables (see
   [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)).
 
 - fit:

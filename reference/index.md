@@ -26,6 +26,8 @@ gives one simple random sample.
   : List every recording made, from the audio folders
 - [`read_pamdp()`](https://provetelab.org/sheepdog/reference/read_pamdp.md)
   : Read predictions and recordings from a pamDP data package
+- [`read_classifier_output()`](https://provetelab.org/sheepdog/reference/read_classifier_output.md)
+  : Read the predictions of other classifiers
 - [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
   : Select the clips to validate
 - [`select_directed()`](https://provetelab.org/sheepdog/reference/select_directed.md)

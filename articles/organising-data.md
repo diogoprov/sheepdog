@@ -118,9 +118,9 @@ rec
 #> # A tibble: 3 × 2
 #>   site  source_audio                                             
 #>   <chr> <chr>                                                    
-#> 1 ARA   /tmp/RtmpksUsf1/audio/ARA/ARA01_20211001_190000.wav      
-#> 2 ARA   /tmp/RtmpksUsf1/audio/ARA/ARA01_20211001_200000.wav      
-#> 3 BAI   /tmp/RtmpksUsf1/audio/BAI/card1/BAI01_20211001_190000.wav
+#> 1 ARA   /tmp/RtmpdTq2nA/audio/ARA/ARA01_20211001_190000.wav      
+#> 2 ARA   /tmp/RtmpdTq2nA/audio/ARA/ARA01_20211001_200000.wav      
+#> 3 BAI   /tmp/RtmpdTq2nA/audio/BAI/card1/BAI01_20211001_190000.wav
 ```
 
 The paths must match `Begin Path`. When the list is built on a computer
@@ -179,14 +179,70 @@ clips <- select_clips(pam$predictions, sampling_mode = "score_bands",
 - **Human classifications:** left out, because pamDP has no field that
   ties them to the prediction they check.
 - **Which functions accept the tables:**
-  [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
+  [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md),
+  [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
   and
-  [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md),
+  [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md),
   and through the manifest the review app.
   [`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md)
-  and
-  [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md)
-  still read BirdNET selection tables from disk.
+  still reads BirdNET selection tables from disk.
+
+## Predictions of Perch, OpenSoundscape and Arbimon
+
+[`read_classifier_output()`](https://provetelab.org/sheepdog/reference/read_classifier_output.md)
+reads the prediction files of other classifiers and returns them in the
+same shape:
+
+- `format = "perch"`: the inference CSV written by
+  `write_inference_csv()` of perch-hoplite or of the earlier perch
+  repository, one row per window and label above the logit threshold
+  chosen when it was written;
+- `format = "opensoundscape"`: the table of
+  [`predict()`](https://rdrr.io/r/stats/predict.html) saved with
+  `to_csv()`, with `file`, `start_time`, `end_time` and one column per
+  class.
+
+``` r
+
+pred <- read_classifier_output("perch/inference.csv", format = "perch",
+                               audio_root = "/Volumes/NAS/pam/audio")
+recs <- list_recordings("/Volumes/NAS/pam/audio")
+clips <- select_clips(pred, sampling_mode = "score_bands",
+                      recordings = recs)
+```
+
+- **Scores:** both classifiers write logits by default, and neither file
+  says so. With `score_scale = "logit"` (the default), `confidence` is
+  `plogis(score)`; use `score_scale = "probability"` when the model
+  applied a sigmoid. The calibration works on the logit of `confidence`,
+  which is then the original score. Rows below `min_confidence` (0.1)
+  are left out.
+- **Site:** the folder of each audio file, or `site_pattern` on its
+  name.
+- **Species:** built from the label as for pamDP (`"Wood Thrush"` goes
+  to the folder `wood_thrush`); the label is kept in `label`.
+- **Calibration:** pass the table to
+  [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md).
+
+`format = "arbimon"` reads the results of Arbimon pattern matching jobs.
+The download of a job names the audio file (`recording`), the site and
+the species, and is read on its own. The “export all results” files name
+neither the species nor the audio file, so they also need the species in
+`label` and the `recordings` table of a project backup, which holds the
+original file names:
+
+``` r
+
+pm <- read_classifier_output("arbimon/pm-job_116143.csv", format = "arbimon",
+                             label = "Boana raniceps",
+                             recordings = "backup/recordings.0001.csv",
+                             audio_root = "/Volumes/NAS/pam/audio")
+```
+
+The site is the Arbimon site, the score (a correlation between 0 and 1)
+is used as it is, and the reviews done in Arbimon are kept in `verdict`.
+The dates and hours still come from the file names, so files named by
+Arbimon in another pattern need to be renamed to `YYYYMMDD_HHMMSS`.
 
 ## Where each function looks
 
@@ -195,6 +251,7 @@ clips <- select_clips(pam$predictions, sampling_mode = "score_bands",
 | read predictions | [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md) | `birdnet/<site>/` | a table in R |
 | list recordings | [`list_recordings()`](https://provetelab.org/sheepdog/reference/list_recordings.md) | `audio/<site>/` | `recordings.csv` |
 | or read a pamDP package | [`read_pamdp()`](https://provetelab.org/sheepdog/reference/read_pamdp.md) | `deployments.csv`, `media.csv`, `observations.csv` | predictions and recordings in R |
+| or read Perch, OpenSoundscape or Arbimon | [`read_classifier_output()`](https://provetelab.org/sheepdog/reference/read_classifier_output.md) | prediction CSVs | a table in R |
 | choose clips | [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md) | predictions, recordings | a manifest in R |
 | cut clips | [`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md), [`extract_validation_clips()`](https://provetelab.org/sheepdog/reference/extract_validation_clips.md) | the audio, through `Begin Path` | `clips/<species>/`, `clip_manifest.csv` |
 | review | file manager (`Positive`/`Negative` subfolders) or [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md) | clips, manifest | folders, or a verdicts CSV |

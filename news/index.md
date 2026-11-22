@@ -2,6 +2,24 @@
 
 ## sheepdog (development version)
 
+- New
+  [`read_classifier_output()`](https://provetelab.org/sheepdog/reference/read_classifier_output.md)
+  reads the predictions of Perch (the inference CSV of perch-hoplite and
+  of the earlier perch repository), of OpenSoundscape (the table of
+  [`predict()`](https://rdrr.io/r/stats/predict.html)) and of Arbimon
+  pattern matching jobs (with the reviews done in Arbimon in `verdict`),
+  and returns them in the shape of
+  [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md).
+  Logits are turned into confidences with the logistic function
+  (`score_scale`), and the original score is kept.
+
+- [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md)
+  also takes a table of predictions, such as the output of
+  [`read_selection_tables()`](https://provetelab.org/sheepdog/reference/read_selection_tables.md)
+  or
+  [`read_classifier_output()`](https://provetelab.org/sheepdog/reference/read_classifier_output.md),
+  instead of paths to selection tables.
+
 - [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
   gains `control`: a
   [`lme4::glmerControl()`](https://rdrr.io/pkg/lme4/man/lmerControl.html)
