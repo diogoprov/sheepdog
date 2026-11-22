@@ -177,6 +177,36 @@
 #' @return Invisibly, a list with the tables written (tibbles) and the
 #'   schema (a list).
 #' @seealso `vignette("crywolf-integration")` for the columns of each table.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' det <- read_selection_tables(file.path(ex, "birdnet"))
+#' out_dir <- file.path(tempdir(), "occupancy")
+#' out <- export_occupancy_data(
+#'   out_dir, det,
+#'   recordings = file.path(ex, "recordings.csv"),
+#'   validation = list.files(file.path(ex, "validation"), full.names = TRUE),
+#'   classifier = "BirdNET", overwrite = TRUE
+#' )
+#' vapply(out$tables, nrow, integer(1))
+#' list.files(out_dir)
+#'
+#' # With a Bayesian calibration, the export also holds its posterior
+#' # draws. Fitting compiles a Stan model, which takes minutes, so this
+#' # part is not run here.
+#' \dontrun{
+#' val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                    full.names = TRUE))
+#' f <- tp ~ logit_conf + (1 | species)
+#' fit <- fit_calibration(val, f, engine = "brms",
+#'                        prior = calibration_prior(f, val),
+#'                        chains = 4, iter = 2000, seed = 1, refresh = 0)
+#' export_occupancy_data(
+#'   out_dir, det,
+#'   recordings = file.path(ex, "recordings.csv"),
+#'   validation = list.files(file.path(ex, "validation"), full.names = TRUE),
+#'   fit = fit, n_draws = 100, overwrite = TRUE
+#' )
+#' }
 #' @export
 export_occupancy_data <- function(output_dir, detections, recordings = NULL,
                                   validation = NULL, fit = NULL, sites = NULL,

@@ -177,6 +177,24 @@ run_app <- function(manifest = NULL, clips_dir = NULL, verdicts_file = NULL,
 #'   With `reviewer = NULL`, a clip reviewed by two reviewers has two
 #'   rows, and a clip not yet reviewed has one row with `reviewer = NA`.
 #' @seealso [run_app()], [classify_review()].
+#' @examples
+#' man <- system.file("extdata", "clip_manifest.csv", package = "sheepdog")
+#' m <- read.csv(man)
+#' # A verdicts file as written by run_app(), with two reviewers
+#' f <- tempfile(fileext = ".csv")
+#' write.csv(data.frame(
+#'   clip_file = m$clip_file[c(1, 1, 2, 3)],
+#'   species_folder = m$species_folder[c(1, 1, 2, 3)],
+#'   reviewer = c("ana", "bruno", "ana", "bruno"),
+#'   verdict = c("positive", "negative", "positive", "uncertain"),
+#'   time = "2026-01-15T20:00:00-0300"
+#' ), f, row.names = FALSE)
+#' # The verdicts of one reviewer
+#' v <- app_verdicts(man, f, reviewer = "ana")
+#' table(v$verdict)
+#' # Every reviewer: one row per clip and reviewer
+#' v_all <- app_verdicts(man, f)
+#' v_all[!is.na(v_all$reviewer), c("clip_file", "reviewer", "verdict")]
 #' @export
 app_verdicts <- function(manifest, verdicts_file, clips_dir = NULL,
                          reviewer = NULL) {
@@ -314,6 +332,8 @@ identity_certainties <- c("sure", "probable")
 #'
 #' @return A character vector.
 #' @seealso [run_app()], [join_identities()], [confuser_summary()].
+#' @examples
+#' identity_categories()
 #' @export
 identity_categories <- function() {
   c("bird", "insect", "rain", "other_anuran", "noise", "unknown")
@@ -497,7 +517,7 @@ plot_spectrogram <- function(path, max_freq = NULL, fft = 1024L,
   v <- v + if (identical(palette, "Gray")) brightness else -brightness
   v <- pmin(pmax(v, 0), 1)
   op <- graphics::par(mar = c(4, 4, 0.5, 0.5))
-  on.exit(graphics::par(op))
+  on.exit(graphics::par(op), add = TRUE)
   # the top of the axis is the requested one, not the last FFT bin
   top <- if (is.null(max_freq)) max(freq) else min(max_freq, max(freq))
   graphics::image(attr(x, "time"), freq[keep], v, zlim = c(0, 1),
@@ -1163,18 +1183,19 @@ parse_breaks <- function(x) {
 #'   of the warnings and messages), to show in the app.
 #' @noRd
 with_notes <- function(expr) {
-  notes <- character()
+  acc <- new.env(parent = emptyenv())
+  acc$notes <- character()
   value <- withCallingHandlers(
     expr,
     warning = function(w) {
-      notes <<- c(notes, conditionMessage(w))
+      acc$notes <- c(acc$notes, conditionMessage(w))
       invokeRestart("muffleWarning")
     },
     message = function(m) {
-      notes <<- c(notes, trimws(conditionMessage(m)))
+      acc$notes <- c(acc$notes, trimws(conditionMessage(m)))
       invokeRestart("muffleMessage")
     })
-  list(value = value, notes = notes)
+  list(value = value, notes = acc$notes)
 }
 
 #' Check the recordings and look for the missing ones

@@ -102,6 +102,15 @@ defaults: set them from the precision the study needs. Splitting cells by
 \code{min_n}; compare with the reading without \code{by}. These labels interpret
 counts; they are not a statistical test.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validation_tables(list.files(file.path(ex, "validation"),
+                                         full.names = TRUE))
+det <- read_selection_tables(file.path(ex, "birdnet"))
+sup <- review_support(val, det, conf_high = 0.7, min_n = 10)
+sup[, c("site", "species_folder", "n_reviewed", "prec_high",
+        "unreviewed_high", "threshold", "diagnosis")]
+}
 \seealso{
 \code{vignette("validation-effort")}.
 }

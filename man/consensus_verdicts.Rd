@@ -25,3 +25,15 @@ consensus review. Disagreements are left out of the precision,
 thresholds and calibration, which use only positive and negative
 verdicts.
 }
+\examples{
+reviews <- list(
+  ana = data.frame(species_folder = "boa_ran",
+                   clip_file = paste0("clip", 1:4, ".wav"),
+                   verdict = c("positive", "positive", "negative",
+                               "uncertain")),
+  bruno = data.frame(species_folder = "boa_ran",
+                     clip_file = paste0("clip", 1:3, ".wav"),
+                     verdict = c("positive", "negative", "negative"))
+)
+consensus_verdicts(reviews)
+}

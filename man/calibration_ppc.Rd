@@ -74,6 +74,23 @@ was fitted to, so they are lenient: a flagged group is a misfit worth
 modelling (e.g. a group effect in the calibration formula), whereas no
 flag is not proof of a good fit.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE),
+                        keep = "recording_date")
+val$month <- substr(val$recording_date, 5, 6)
+# Fitting compiles a Stan model, which takes minutes, so it is not run here.
+\dontrun{
+f <- tp ~ logit_conf + (1 | species)
+fit_b <- fit_calibration(val, f, engine = "brms",
+                         prior = calibration_prior(f, val),
+                         chains = 4, iter = 2000, seed = 1, refresh = 0)
+calibration_diagnostics(fit_b)
+ppc <- calibration_ppc(fit_b, val, group = "month", n_draws = 500)
+ppc[ppc$flagged, ]
+}
+}
 \seealso{
 \code{\link[=calibration_diagnostics]{calibration_diagnostics()}} for convergence, which should be
 checked first.

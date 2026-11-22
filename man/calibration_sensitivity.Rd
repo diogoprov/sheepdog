@@ -27,3 +27,19 @@ when the prior or the likelihood is up- or down-weighted. A
 prior-data conflict or a strongly informative prior shows up as
 sensitivity to both.
 }
+\examples{
+# Fitting a Bayesian calibration compiles a Stan model, which takes
+# minutes, so this example is not run here.
+\dontrun{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+f <- tp ~ logit_conf + (1 | species)
+fit <- fit_calibration(val, f, engine = "brms",
+                       prior = calibration_prior(f, val),
+                       chains = 4, iter = 2000, seed = 1, refresh = 0)
+calibration_sensitivity(fit)
+# Only the slope on the logit of the score
+calibration_sensitivity(fit, variable = "b_logit_conf")
+}
+}

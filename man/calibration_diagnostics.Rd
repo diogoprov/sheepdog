@@ -41,3 +41,20 @@ warmup next to the sampling phase, use \code{bayesplot::mcmc_trace()} with
 its \code{n_warmup} argument on \code{brms::as_draws_array(fit, inc_warmup = TRUE)}, which requires the warmup draws to have been saved by the Stan
 backend.
 }
+\examples{
+# Fitting a Bayesian calibration compiles a Stan model, which takes
+# minutes, so this example is not run here.
+\dontrun{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+f <- tp ~ logit_conf + (1 | species)
+fit <- fit_calibration(val, f, engine = "brms",
+                       prior = calibration_prior(f, val),
+                       chains = 4, iter = 2000, seed = 1, refresh = 0)
+calibration_diagnostics(fit)
+# Stricter limits
+calibration_diagnostics(fit, rhat_max = 1.005, ess_min = 1000)
+plot(fit)
+}
+}

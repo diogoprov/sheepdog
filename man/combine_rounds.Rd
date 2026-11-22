@@ -57,6 +57,22 @@ models (\code{\link[=export_occupancy_data]{export_occupancy_data()}} warns abou
 \code{vignette("validation-effort")}.
 }
 
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+det <- read_selection_tables(file.path(ex, "birdnet"))
+# two rounds of the same "random_detections" design; the second draws
+# among the occasions not drawn in the first
+r1 <- select_clips(det, "random_detections", threshold = 0.5,
+                   strata = "site_species", n_top = 3)
+cand <- attr(r1, "candidates")
+r2 <- select_clips(det, "random_detections", threshold = 0.5,
+                   strata = "site_species", n_top = 3,
+                   previous = r1, candidates = cand)
+both <- combine_rounds(list(r1, r2), cand)
+# every clip now has the probability of the combined sample
+unique(both[, c("site", "species_folder", "n_candidates", "n_drawn",
+                "inclusion_prob")])
+}
 \seealso{
 \code{\link[=select_clips]{select_clips()}}, \code{\link[=read_validation_tables]{read_validation_tables()}}.
 }

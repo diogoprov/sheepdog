@@ -46,3 +46,16 @@ calibrated probability >= \code{p_min}; the columns \code{detection_k1} to
 \code{detection_k3} give the same rule with k = 1, 2 and 3, as a
 sensitivity analysis.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+fit <- fit_calibration(val, tp ~ logit_conf + species)
+sites <- c("ARA", "BAI", "NHE", "XAR")
+tables <- file.path(ex, "birdnet", sites, "BirdNET_SelectionTable.txt")
+names(tables) <- sites
+scored <- score_detections(tables, fit)
+history <- detection_history(scored, p_min = 0.95,
+                             min_detections_night = 2)
+head(history)
+}

@@ -49,3 +49,10 @@ probabilities. It is \code{NA} in bins with any clip without
 \code{inclusion_prob} (clips of \code{"top"}). A blind review manifest may lack
 \code{inclusion_prob}: join it back from the full manifest first.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validation_tables(list.files(file.path(ex, "validation"),
+                                         full.names = TRUE))
+prec <- precision_by_bin(val, min_n = 10)
+head(prec)
+}

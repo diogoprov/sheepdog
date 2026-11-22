@@ -56,3 +56,12 @@ a cell could be a false negative.
 \code{\link[=suggest_core_species]{suggest_core_species()}} keeps the species without unreliable cells.
 The final choice of core species remains with the analyst.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+# A logistic calibration with fixed effects only
+fit <- fit_calibration(val, tp ~ logit_conf * species + site)
+status <- cell_status(fit, val, p_min = 0.95, min_n = 15)
+table(status$species, status$status)
+}

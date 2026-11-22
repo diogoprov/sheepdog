@@ -27,3 +27,17 @@ one folder tree per reviewer, ready for the review tab of the BirdNET
 GUI. Clips with a second reviewer are copied to both folders. After the
 review, classify each reviewer's folder with \code{\link[=classify_review]{classify_review()}}.
 }
+\examples{
+man <- read.csv(system.file("extdata", "clip_manifest.csv",
+                            package = "sheepdog"))
+man <- assign_reviewers(man, c("ana", "bruno"), overlap = 0.25)
+# Empty files stand in for the clips cut by cut_clips()
+clips_dir <- file.path(tempdir(), "clips")
+dir.create(file.path(clips_dir, unique(man$species_folder)),
+           recursive = TRUE, showWarnings = FALSE)
+invisible(file.create(file.path(clips_dir, man$species_folder,
+                                man$clip_file)))
+copies <- split_by_reviewer(man, clips_dir,
+                            file.path(tempdir(), "by_reviewer"))
+table(copies$reviewer)
+}

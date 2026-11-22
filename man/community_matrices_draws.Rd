@@ -42,3 +42,24 @@ uncertainty of the calibration reaches the matrices. The per-draw
 frequencies are also returned, e.g. to repeat an ordination on each
 draw.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+history <- read.csv(file.path(ex, "nightly_detection_history.csv"),
+                    colClasses = c(night = "character"))
+# history_draws() needs a Bayesian calibration (see its example). As a
+# stand-in, three "draws" in which each reliable detection of the
+# example history is kept with probability 0.8
+set.seed(1)
+draws <- do.call(rbind, lapply(1:3, function(d) {
+  h <- history
+  h$n_reliable <- rbinom(nrow(h), h$n_reliable, 0.8)
+  h$detection_k1 <- as.integer(h$n_reliable >= 1)
+  h$detection_k2 <- as.integer(h$n_reliable >= 2)
+  h$detection_k3 <- as.integer(h$n_reliable >= 3)
+  cbind(draw = d, h)
+}))
+mats <- community_matrices_draws(draws,
+                                 core_species = c("boa_ran", "phy_cuv"),
+                                 k_min = 2)
+mats$summary
+}

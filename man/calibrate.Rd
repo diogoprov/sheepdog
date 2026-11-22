@@ -165,3 +165,21 @@ This function extends that approach with a hierarchical multi-species
 structure. This is the function form of the v1.2.0 script
 \code{calibracao.R}.
 }
+\examples{
+# The whole workflow on the example data; outputs go to a temporary folder
+\donttest{
+if (requireNamespace("lme4", quietly = TRUE)) {
+  ex <- system.file("extdata", "example", package = "sheepdog")
+  sites <- c("ARA", "BAI", "NHE", "XAR")
+  val_files <- file.path(ex, "validation",
+                         paste0("validation_by_clip_", sites, ".csv"))
+  tables <- file.path(ex, "birdnet", sites, "BirdNET_SelectionTable.txt")
+  names(tables) <- sites
+  out <- file.path(tempdir(), "calibration")
+  res <- calibrate(val_files, tables, out, k_folds = 3)
+  res$comparison[c("model", "auc_mean", "logloss_mean")]
+  head(res$history)
+  list.files(out)
+}
+}
+}

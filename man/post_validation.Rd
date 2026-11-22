@@ -121,3 +121,22 @@ chooses the thresholds, unless \code{weighted = FALSE}; see
 
 This is the function form of the v1.2.0 script \code{pos_validacao.R}.
 }
+\examples{
+# Recreate the folders left by a review in the BirdNET GUI, with empty files
+man <- system.file("extdata", "clip_manifest.csv", package = "sheepdog")
+done <- read.csv(system.file("extdata", "validation_by_clip.csv",
+                             package = "sheepdog"))
+review_dir <- file.path(tempdir(), "clips_post")
+sub <- ifelse(done$verdict == "positive", "Positive",
+              ifelse(done$verdict == "negative", "Negative", ""))
+dest <- file.path(review_dir, done$species_folder, sub)
+for (d in unique(dest)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
+invisible(file.create(file.path(dest, done$clip_file)))
+
+out_dir <- file.path(tempdir(), "post_validation")
+res <- post_validation(review_dir, manifest_path = man,
+                       output_dir = out_dir, min_n = 3)
+res$thresholds
+list.files(out_dir)
+unlink(c(review_dir, out_dir), recursive = TRUE)
+}

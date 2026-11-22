@@ -13,6 +13,9 @@ A character vector.
 The fixed categories that \code{\link[=run_app]{run_app()}} suggests, besides the classes of
 the manifest, for what a negative or uncertain clip is.
 }
+\examples{
+identity_categories()
+}
 \seealso{
 \code{\link[=run_app]{run_app()}}, \code{\link[=join_identities]{join_identities()}}, \code{\link[=confuser_summary]{confuser_summary()}}.
 }

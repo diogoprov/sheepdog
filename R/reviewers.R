@@ -20,6 +20,12 @@
 #'
 #' @return The manifest with `reviewer` (the first reviewer of each clip)
 #'   and `second_reviewer` (`NA` for clips reviewed once).
+#' @examples
+#' man <- read.csv(system.file("extdata", "clip_manifest.csv",
+#'                             package = "sheepdog"))
+#' man <- assign_reviewers(man, c("ana", "bruno", "carla"), overlap = 0.5)
+#' table(man$species_folder, man$reviewer)
+#' sum(!is.na(man$second_reviewer))
 #' @export
 assign_reviewers <- function(manifest, reviewers, overlap = 0.1,
                              seed = 2026) {
@@ -65,6 +71,19 @@ assign_reviewers <- function(manifest, reviewers, overlap = 0.1,
 #'
 #' @return A tibble with `reviewer`, `species_folder`, `clip_file` and `to`,
 #'   invisibly.
+#' @examples
+#' man <- read.csv(system.file("extdata", "clip_manifest.csv",
+#'                             package = "sheepdog"))
+#' man <- assign_reviewers(man, c("ana", "bruno"), overlap = 0.25)
+#' # Empty files stand in for the clips cut by cut_clips()
+#' clips_dir <- file.path(tempdir(), "clips")
+#' dir.create(file.path(clips_dir, unique(man$species_folder)),
+#'            recursive = TRUE, showWarnings = FALSE)
+#' invisible(file.create(file.path(clips_dir, man$species_folder,
+#'                                 man$clip_file)))
+#' copies <- split_by_reviewer(man, clips_dir,
+#'                             file.path(tempdir(), "by_reviewer"))
+#' table(copies$reviewer)
 #' @export
 split_by_reviewer <- function(manifest, clips_dir, output_dir) {
   check_columns(manifest, c("reviewer", "second_reviewer"), "manifest",
@@ -104,6 +123,20 @@ split_by_reviewer <- function(manifest, clips_dir, output_dir) {
 #'
 #' @return A tibble with `species_folder`, `n_clips` (clips with at least
 #'   two verdicts), `n_reviewers`, `agreement`, `kappa` and `method`.
+#' @examples
+#' reviews <- list(
+#'   ana = data.frame(species_folder = "boa_ran",
+#'                    clip_file = paste0("clip", 1:8, ".wav"),
+#'                    verdict = c("positive", "positive", "negative",
+#'                                "positive", "negative", "positive",
+#'                                "negative", "positive")),
+#'   bruno = data.frame(species_folder = "boa_ran",
+#'                      clip_file = paste0("clip", 1:8, ".wav"),
+#'                      verdict = c("positive", "negative", "negative",
+#'                                  "positive", "negative", "positive",
+#'                                  "positive", "positive"))
+#' )
+#' reviewer_agreement(reviews)
 #' @export
 reviewer_agreement <- function(reviews) {
   long <- stack_reviews(reviews)
@@ -150,6 +183,17 @@ reviewer_agreement <- function(reviews) {
 #' @return A tibble with one row per clip: the columns of the reviewed
 #'   tables (from the first reviewer of each clip), `verdict`,
 #'   `n_reviewers` and `reviewers` (names separated by `;`).
+#' @examples
+#' reviews <- list(
+#'   ana = data.frame(species_folder = "boa_ran",
+#'                    clip_file = paste0("clip", 1:4, ".wav"),
+#'                    verdict = c("positive", "positive", "negative",
+#'                                "uncertain")),
+#'   bruno = data.frame(species_folder = "boa_ran",
+#'                      clip_file = paste0("clip", 1:3, ".wav"),
+#'                      verdict = c("positive", "negative", "negative"))
+#' )
+#' consensus_verdicts(reviews)
 #' @export
 consensus_verdicts <- function(reviews) {
   long <- stack_reviews(reviews)

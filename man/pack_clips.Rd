@@ -21,3 +21,15 @@ Zips each species folder of \verb{<output_dir>/clips} into
 \verb{<output_dir>/packages/<species_folder>.zip}: light validation packages
 to send to the reviewers.
 }
+\examples{
+man <- read.csv(system.file("extdata", "clip_manifest.csv",
+                            package = "sheepdog"))
+out <- file.path(tempdir(), "packs")
+# Empty files stand in for the clips cut by cut_clips()
+dir.create(file.path(out, "clips", unique(man$species_folder)),
+           recursive = TRUE, showWarnings = FALSE)
+invisible(file.create(file.path(out, "clips", man$species_folder,
+                                man$clip_file)))
+zips <- pack_clips(man, out)
+basename(zips)
+}

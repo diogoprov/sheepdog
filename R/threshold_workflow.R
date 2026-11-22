@@ -50,6 +50,14 @@
 #'   target) and `n_clusters`.
 #' @seealso [suggest_thresholds()], [threshold_by_group()],
 #'   [threshold_record()].
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validation_tables(file.path(ex, "validation",
+#'                                         "validation_by_clip_ARA.csv"))
+#' # Resamples whole recordings; use n_boot = 1000 or more in practice
+#' boot <- threshold_bootstrap(val, target_precision = 0.90, min_n = 15,
+#'                             n_boot = 100)
+#' boot[, c("species_folder", "threshold", "threshold_conservative")]
 #' @export
 threshold_bootstrap <- function(validation, target_precision = 0.90,
                                 min_n = 15, by = NULL, weighted = NULL,
@@ -135,6 +143,17 @@ threshold_bootstrap <- function(validation, target_precision = 0.90,
 #'   `below_target`. A group with fewer than `min_n` clips above the
 #'   threshold gets `below_target = NA`.
 #' @seealso [threshold_bootstrap()], [threshold_record()].
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validation_tables(file.path(ex, "validation",
+#'                                         "validation_by_clip_ARA.csv"))
+#' thr <- suggest_thresholds(val, target_precision = 0.90, min_n = 15)
+#' # Does the threshold of each cell hold in every month?
+#' val$month <- substr(val$recording_date, 1, 6)
+#' threshold_by_group(val, thr, by = "month", target_precision = 0.90,
+#'                    min_n = 5)
+#' # One threshold for every cell
+#' threshold_by_group(val, 0.5, by = "month", min_n = 5)
 #' @export
 threshold_by_group <- function(validation, thresholds, by,
                                target_precision = 0.90, min_n = 15,
@@ -203,6 +222,22 @@ threshold_by_group <- function(validation, thresholds, by,
 #'   when `file` is given.
 #' @seealso [suggest_thresholds()], [threshold_bootstrap()],
 #'   [threshold_by_group()].
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validation_tables(file.path(ex, "validation",
+#'                                         "validation_by_clip_ARA.csv"))
+#' thr <- suggest_thresholds(val, target_precision = 0.90, min_n = 15,
+#'                           sustained = TRUE)
+#' boot <- threshold_bootstrap(val, target_precision = 0.90, min_n = 15,
+#'                             n_boot = 100)
+#' val$month <- substr(val$recording_date, 1, 6)
+#' groups <- threshold_by_group(val, boot, by = "month", min_n = 5,
+#'                              threshold_column = "threshold_conservative")
+#' threshold_record(thr, bootstrap = boot, groups = groups)
+#' # Also write the record as a Markdown table
+#' md <- file.path(tempdir(), "threshold_record.md")
+#' threshold_record(thr, bootstrap = boot, groups = groups, file = md)
+#' head(readLines(md))
 #' @export
 threshold_record <- function(thresholds, bootstrap = NULL, groups = NULL,
                              extraction_info = NULL, target_precision = 0.90,

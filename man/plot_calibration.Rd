@@ -54,3 +54,14 @@ fixed-effects interval. For a \code{brmsfit} the band holds the central
 quantiles of the posterior draws of P(TP) (\code{brms::posterior_epred()})
 and carries all the parameter uncertainty.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+if (requireNamespace("lme4", quietly = TRUE) &&
+    requireNamespace("ggplot2", quietly = TRUE)) {
+  fit <- fit_calibration(val, tp ~ logit_conf + (1 | species))
+  plot_calibration(fit, val, model_name = "species intercept",
+                   interval = TRUE)
+}
+}

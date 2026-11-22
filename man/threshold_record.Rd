@@ -48,6 +48,23 @@ holds in every group (\code{\link[=threshold_by_group]{threshold_by_group()}}) a
 clips (\code{extraction_info.csv} of \code{\link[=extract_validation_clips]{extract_validation_clips()}} or of the
 app). With \code{file}, it also writes the record as a Markdown table.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validation_tables(file.path(ex, "validation",
+                                        "validation_by_clip_ARA.csv"))
+thr <- suggest_thresholds(val, target_precision = 0.90, min_n = 15,
+                          sustained = TRUE)
+boot <- threshold_bootstrap(val, target_precision = 0.90, min_n = 15,
+                            n_boot = 100)
+val$month <- substr(val$recording_date, 1, 6)
+groups <- threshold_by_group(val, boot, by = "month", min_n = 5,
+                             threshold_column = "threshold_conservative")
+threshold_record(thr, bootstrap = boot, groups = groups)
+# Also write the record as a Markdown table
+md <- file.path(tempdir(), "threshold_record.md")
+threshold_record(thr, bootstrap = boot, groups = groups, file = md)
+head(readLines(md))
+}
 \seealso{
 \code{\link[=suggest_thresholds]{suggest_thresholds()}}, \code{\link[=threshold_bootstrap]{threshold_bootstrap()}},
 \code{\link[=threshold_by_group]{threshold_by_group()}}.

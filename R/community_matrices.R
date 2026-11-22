@@ -41,6 +41,18 @@
 #'   `Ntrials` of a binomial model of the counts (e.g. `gllvm::gllvm()`,
 #'   which needs a matrix when effort varies among samples). The row names
 #'   of `trials` are `<site>_<month>`.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' history <- read.csv(file.path(ex, "nightly_detection_history.csv"),
+#'                     colClasses = c(night = "character"))
+#' mats <- community_matrices(history,
+#'                            core_species = c("boa_ran", "ela_bic",
+#'                                             "phy_cuv"),
+#'                            k_min = 2, min_nights_month = 5)
+#' mats$frequency
+#' # Site x month cells dropped for low effort
+#' mats$effort[!mats$effort$included, ]
+#' head(mats$trials)
 #' @export
 community_matrices <- function(history, core_species, k_min = 2,
                                min_nights_month = 5, drop_empty = FALSE) {
@@ -133,6 +145,15 @@ community_matrices <- function(history, core_species, k_min = 2,
 #'   needed.
 #'
 #' @return The list returned by [community_matrices()], invisibly.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' out <- file.path(tempdir(), "matrices")
+#' build_community_matrices(file.path(ex, "nightly_detection_history.csv"),
+#'                          output_dir = out,
+#'                          core_species = c("boa_ran", "ela_bic",
+#'                                           "phy_cuv"),
+#'                          k_min = 2)
+#' list.files(out)
 #' @export
 build_community_matrices <- function(history_file, output_dir, core_species,
                                      k_min = 2, min_nights_month = 5) {

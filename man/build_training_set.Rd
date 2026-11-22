@@ -194,6 +194,35 @@ with \code{split = "night"}. With \code{strict = TRUE}, any count above 0 is an
 error.
 }
 
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validation_tables(list.files(file.path(ex, "validation"),
+                                         full.names = TRUE))
+# Recreate the folders of a review in the BirdNET GUI, with empty files,
+# and read back where each clip is (reviewed_path)
+review_dir <- file.path(tempdir(), "clips_training")
+dest <- file.path(review_dir, val$species_folder,
+                  ifelse(val$verdict == "positive", "Positive", "Negative"))
+for (d in unique(dest)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
+invisible(file.create(file.path(dest, val$clip_file)))
+reviewed <- classify_review(val[, setdiff(names(val),
+                                          c("verdict", "reviewed_path"))],
+                            review_dir)
+
+# Hold out one site for testing; copy = FALSE writes only training_set.csv
+out_dir <- file.path(tempdir(), "birdnet_training")
+ts <- build_training_set(reviewed, out_dir, split = "site",
+                         test_sites = "NHE", min_files = 20,
+                         copy = FALSE)
+table(ts$set, ts$verdict)
+
+# Or a split by night, with all negatives in the non-event class "Noise"
+ts_night <- build_training_set(reviewed, out_dir, split = "night",
+                               test_prop = 0.2, negatives_folder = "Noise",
+                               min_files = 20, copy = FALSE)
+attr(ts_night, "checks")
+unlink(c(review_dir, out_dir), recursive = TRUE)
+}
 \seealso{
 \code{\link[=training_nights]{training_nights()}}, \code{\link[=exclude_training_clips]{exclude_training_clips()}},
 \code{vignette("retraining")}.

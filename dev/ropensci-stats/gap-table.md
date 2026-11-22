@@ -184,13 +184,14 @@ From `pkgcheck::pkgcheck()` (version 0.3.4.5) on commit f3f7c12, before the
 rOpenSci packaging files were merged:
 
 - R CMD check: no errors, no warnings; test coverage 94.7%.
-- 56 Rd files have no examples, including all calibration and Bayesian
-  functions (`fit_calibration()`, `calibration_prior()`,
-  `calibration_diagnostics()`, `compare_calibration_models()`,
-  `calibration_ppc()`, `occasion_draws()`, `calibration_quality()`).
+- 56 Rd files had no examples, including all calibration and Bayesian
+  functions. Fixed on 2026-11-22: every exported function has examples;
+  those that fit a brms model (or need an export written with one) are in
+  `\dontrun{}`, and `calibrate()` is in `\donttest{}`.
 - Global assignment (`<<-`) in `R/app.R` and `R/calibrate.R` (in
-  `fit_model()`), plus test helpers.
-- `on.exit()` without `add = TRUE` in `R/app.R`.
+  `fit_model()`): fixed on 2026-11-22 with a local environment. The test
+  helpers still use it.
+- `on.exit()` without `add = TRUE` in `R/app.R`: fixed on 2026-11-22.
 - Five exported names also exist in other packages: `calibrate()`,
   `plot_calibration()`, `plot_precision()`, `run_app()` and
   `suggest_thresholds()`.

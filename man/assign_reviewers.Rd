@@ -34,3 +34,10 @@ every species gets doubly reviewed clips.
 Cut the clips with \code{\link[=cut_clips]{cut_clips()}} first, then copy each reviewer's share
 to their own folder with \code{\link[=split_by_reviewer]{split_by_reviewer()}}.
 }
+\examples{
+man <- read.csv(system.file("extdata", "clip_manifest.csv",
+                            package = "sheepdog"))
+man <- assign_reviewers(man, c("ana", "bruno", "carla"), overlap = 0.5)
+table(man$species_folder, man$reviewer)
+sum(!is.na(man$second_reviewer))
+}

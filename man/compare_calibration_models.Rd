@@ -60,3 +60,14 @@ the verdicts on the logit of the predicted probabilities in each test
 fold: a well calibrated model has intercept 0 and slope 1; a slope below
 1 means probabilities too extreme (overfitting).
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+# Global model and species random intercept; the latter needs lme4
+if (requireNamespace("lme4", quietly = TRUE)) {
+  cv <- compare_calibration_models(val, calibration_models()[1:2],
+                                   k_folds = 3)
+  cv[c("model", "auc_mean", "logloss_mean", "cal_slope", "prop_singular")]
+}
+}

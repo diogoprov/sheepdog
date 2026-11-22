@@ -36,3 +36,20 @@ clip into subfolders such as \verb{<species>/Positive} and
 \verb{<species>/Negative}, so the verdict of each clip comes from the path
 where it is found. Clips still in the species folder are not reviewed.
 }
+\examples{
+# The review in the BirdNET GUI leaves each clip in a Positive or Negative
+# subfolder. Recreate that layout with empty files from a reviewed table
+man <- system.file("extdata", "clip_manifest.csv", package = "sheepdog")
+done <- read.csv(system.file("extdata", "validation_by_clip.csv",
+                             package = "sheepdog"))
+review_dir <- file.path(tempdir(), "clips_reviewed")
+sub <- ifelse(done$verdict == "positive", "Positive",
+              ifelse(done$verdict == "negative", "Negative", ""))
+dest <- file.path(review_dir, done$species_folder, sub)
+for (d in unique(dest)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
+invisible(file.create(file.path(dest, done$clip_file)))
+
+val <- classify_review(man, review_dir)
+table(val$verdict)
+unlink(review_dir, recursive = TRUE)
+}

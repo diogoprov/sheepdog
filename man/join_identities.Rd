@@ -52,6 +52,17 @@ an identity although their verdict is neither negative nor uncertain (a
 sign that the verdict or the identity is wrong). A message gives how
 many negative clips are still without an identity.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read.csv(file.path(ex, "validation", "validation_by_clip_ARA.csv"))
+# Identities of two negative clips, written in a spreadsheet
+neg <- val$clip_file[val$verdict == "negative"][1:2]
+ids <- data.frame(clip = neg, identity = c("insect", "bird|noise"),
+                  certainty = c("sure", "probable"))
+val <- join_identities(val, ids, certainty_col = "certainty")
+val[val$clip_file \%in\% neg,
+    c("clip_file", "verdict", "identity", "identity_certainty")]
+}
 \seealso{
 \code{\link[=run_app]{run_app()}}, \code{\link[=confuser_summary]{confuser_summary()}}, \code{\link[=identity_categories]{identity_categories()}}.
 }

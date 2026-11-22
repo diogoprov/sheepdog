@@ -46,3 +46,10 @@ their clips, so the training size actually used can be below
 \code{n_train}; it is reported in \code{n_train_mean}, with a warning. The test
 set shrinks as \code{n_train} grows (\code{n_test_mean}), which widens \code{auc_sd}.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+# A few repetitions of a model without random effects, to keep it fast
+calibration_effort(val, tp ~ logit_conf, n_train = c(5, 10), n_reps = 5)
+}

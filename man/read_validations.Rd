@@ -42,3 +42,12 @@ applied, because the calibration models and \code{\link[=score_detections]{score
 expect them; the original \code{confidence} is kept alongside \code{logit_conf}.
 }
 
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+files <- list.files(file.path(ex, "validation"), full.names = TRUE)
+val <- read_validations(files)
+head(val)
+# Keep the recording of each clip, e.g. for grouped folds
+val_rec <- read_validations(files, keep = "source_audio")
+table(val_rec$site)
+}

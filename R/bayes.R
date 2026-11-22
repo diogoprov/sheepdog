@@ -130,6 +130,22 @@ calibration_prior <- function(formula, validations) {
 #'   documented here.
 #' @return A one-row tibble with `max_rhat`, `min_ess_bulk`, `min_ess_tail`,
 #'   `n_divergent` and `ok`.
+#' @examples
+#' # Fitting a Bayesian calibration compiles a Stan model, which takes
+#' # minutes, so this example is not run here.
+#' \dontrun{
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                    full.names = TRUE))
+#' f <- tp ~ logit_conf + (1 | species)
+#' fit <- fit_calibration(val, f, engine = "brms",
+#'                        prior = calibration_prior(f, val),
+#'                        chains = 4, iter = 2000, seed = 1, refresh = 0)
+#' calibration_diagnostics(fit)
+#' # Stricter limits
+#' calibration_diagnostics(fit, rhat_max = 1.005, ess_min = 1000)
+#' plot(fit)
+#' }
 #' @export
 calibration_diagnostics <- function(fit, rhat_max = 1.01, ess_min = 400) {
   check_brmsfit(fit)
@@ -202,6 +218,21 @@ prior_predictive_calibration <- function(formula, validations, prior, ...) {
 #' @param ... Further arguments for `priorsense::powerscale_sensitivity()`.
 #'
 #' @return The table of `priorsense::powerscale_sensitivity()`.
+#' @examples
+#' # Fitting a Bayesian calibration compiles a Stan model, which takes
+#' # minutes, so this example is not run here.
+#' \dontrun{
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                    full.names = TRUE))
+#' f <- tp ~ logit_conf + (1 | species)
+#' fit <- fit_calibration(val, f, engine = "brms",
+#'                        prior = calibration_prior(f, val),
+#'                        chains = 4, iter = 2000, seed = 1, refresh = 0)
+#' calibration_sensitivity(fit)
+#' # Only the slope on the logit of the score
+#' calibration_sensitivity(fit, variable = "b_logit_conf")
+#' }
 #' @export
 calibration_sensitivity <- function(fit, variable = NULL, ...) {
   check_brmsfit(fit)
@@ -310,6 +341,24 @@ summarise_grid_draws <- function(draws, p_min, lower_prob) {
 #' @return A tibble with `draw`, `site`, `species`, `night`,
 #'   `n_detections`, `n_reliable`, `detection_k1` to `detection_k3` and
 #'   `detection`.
+#' @examples
+#' # Fitting a Bayesian calibration compiles a Stan model, which takes
+#' # minutes, so this example is not run here.
+#' \dontrun{
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                    full.names = TRUE))
+#' f <- tp ~ logit_conf + (1 | species)
+#' fit <- fit_calibration(val, f, engine = "brms",
+#'                        prior = calibration_prior(f, val),
+#'                        chains = 4, iter = 2000, seed = 1, refresh = 0)
+#' sites <- c("ARA", "BAI", "NHE", "XAR")
+#' tables <- setNames(file.path(ex, "birdnet", sites,
+#'                              "BirdNET_SelectionTable.txt"), sites)
+#' scored <- score_detections(tables, fit, p_min = 0.95)
+#' hd <- history_draws(fit, scored, p_min = 0.95, n_draws = 200)
+#' community_matrices_draws(hd, core_species = c("boa_ran", "phy_cuv"))
+#' }
 #' @export
 history_draws <- function(fit, scored, p_min = 0.95, n_draws = 200,
                           min_detections_night = 1, min_confidence = 0.1,
@@ -374,6 +423,26 @@ history_draws <- function(fit, scored, p_min = 0.95, n_draws = 200,
 #'   `n_nights_recorded`, `frequency_mean`, `frequency_lower`,
 #'   `frequency_upper`) and `draws` (`draw`, `site`, `month`, `species`,
 #'   `frequency`).
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' history <- read.csv(file.path(ex, "nightly_detection_history.csv"),
+#'                     colClasses = c(night = "character"))
+#' # history_draws() needs a Bayesian calibration (see its example). As a
+#' # stand-in, three "draws" in which each reliable detection of the
+#' # example history is kept with probability 0.8
+#' set.seed(1)
+#' draws <- do.call(rbind, lapply(1:3, function(d) {
+#'   h <- history
+#'   h$n_reliable <- rbinom(nrow(h), h$n_reliable, 0.8)
+#'   h$detection_k1 <- as.integer(h$n_reliable >= 1)
+#'   h$detection_k2 <- as.integer(h$n_reliable >= 2)
+#'   h$detection_k3 <- as.integer(h$n_reliable >= 3)
+#'   cbind(draw = d, h)
+#' }))
+#' mats <- community_matrices_draws(draws,
+#'                                  core_species = c("boa_ran", "phy_cuv"),
+#'                                  k_min = 2)
+#' mats$summary
 #' @export
 community_matrices_draws <- function(history, core_species, k_min = 2,
                                      min_nights_month = 5,
@@ -419,6 +488,24 @@ community_matrices_draws <- function(history, core_species, k_min = 2,
 #'   number generator is left as it was.
 #'
 #' @return A ggplot object.
+#' @examples
+#' # Sampling from the prior or the posterior compiles a Stan model, which
+#' # takes minutes, so this example is not run here.
+#' \dontrun{
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                    full.names = TRUE))
+#' f <- tp ~ logit_conf + (1 | species)
+#' prior <- calibration_prior(f, val)
+#' # Prior predictive check
+#' prior_fit <- prior_predictive_calibration(f, val, prior, chains = 2,
+#'                                           seed = 1, refresh = 0)
+#' plot_calibration_draws(prior_fit, n_draws = 100)
+#' # Uncertainty of the fitted curve
+#' fit <- fit_calibration(val, f, engine = "brms", prior = prior,
+#'                        chains = 4, iter = 2000, seed = 1, refresh = 0)
+#' plot_calibration_draws(fit, n_draws = 100, p_min = 0.95)
+#' }
 #' @export
 plot_calibration_draws <- function(fit, n_draws = 100, p_min = 0.95,
                                    seed = 2026) {

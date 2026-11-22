@@ -19,6 +19,22 @@
 #'   `"negative"`, `"not_reviewed"` or `"clip_missing"`) and
 #'   `reviewed_path`, the path where the clip was found. This is the table
 #'   written to `validation_by_clip.csv`.
+#' @examples
+#' # The review in the BirdNET GUI leaves each clip in a Positive or Negative
+#' # subfolder. Recreate that layout with empty files from a reviewed table
+#' man <- system.file("extdata", "clip_manifest.csv", package = "sheepdog")
+#' done <- read.csv(system.file("extdata", "validation_by_clip.csv",
+#'                              package = "sheepdog"))
+#' review_dir <- file.path(tempdir(), "clips_reviewed")
+#' sub <- ifelse(done$verdict == "positive", "Positive",
+#'               ifelse(done$verdict == "negative", "Negative", ""))
+#' dest <- file.path(review_dir, done$species_folder, sub)
+#' for (d in unique(dest)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
+#' invisible(file.create(file.path(dest, done$clip_file)))
+#'
+#' val <- classify_review(man, review_dir)
+#' table(val$verdict)
+#' unlink(review_dir, recursive = TRUE)
 #' @export
 classify_review <- function(manifest, review_dir,
                             positive_pattern = "positiv",
@@ -200,6 +216,12 @@ kish_n <- function(prob) {
 #' @return A tibble with `site`, `species_folder`, the `by` columns, `bin`,
 #'   `n_reviewed`, `n_positive`, `precision`, `precision_weighted` (only
 #'   with `inclusion_prob`) and `low_support`.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validation_tables(list.files(file.path(ex, "validation"),
+#'                                          full.names = TRUE))
+#' prec <- precision_by_bin(val, min_n = 10)
+#' head(prec)
 #' @export
 precision_by_bin <- function(validation, bins = seq(0.1, 1, by = 0.1),
                              min_n = 15, by = NULL) {
@@ -292,6 +314,14 @@ precision_by_bin <- function(validation, bins = seq(0.1, 1, by = 0.1),
 #'   reviewed clip with a confidence, the tibble has no rows.
 #' @seealso [threshold_bootstrap()] for the conservative threshold to apply;
 #'   [calibrated_thresholds()] for thresholds from the calibration model.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validation_tables(list.files(file.path(ex, "validation"),
+#'                                          full.names = TRUE))
+#' suggest_thresholds(val, target_precision = 0.9, min_n = 10)
+#' # the target must also hold at every higher cut
+#' suggest_thresholds(val, target_precision = 0.9, min_n = 10,
+#'                    sustained = TRUE)
 #' @export
 suggest_thresholds <- function(validation, target_precision = 0.90,
                                min_n = 15, by = NULL, weighted = NULL,
@@ -401,6 +431,14 @@ suggest_thresholds <- function(validation, target_precision = 0.90,
 #'   `reached_last_round`: the cell has a threshold now but had none before
 #'   its last round.
 #' @seealso `vignette("validation-effort")`.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validation_tables(list.files(file.path(ex, "validation"),
+#'                                          full.names = TRUE))
+#' det <- read_selection_tables(file.path(ex, "birdnet"))
+#' sup <- review_support(val, det, conf_high = 0.7, min_n = 10)
+#' sup[, c("site", "species_folder", "n_reviewed", "prec_high",
+#'         "unreviewed_high", "threshold", "diagnosis")]
 #' @export
 review_support <- function(validation, detections, conf_high = 0.7,
                            min_n = 15, min_precision = 0.5,
@@ -624,6 +662,12 @@ threshold_for <- function(df, target, n_min, has_weights = FALSE, weighted = NUL
 #'
 #' @return A tibble with `site`, `species_folder`, `night`, `n_clips`,
 #'   `n_reviewed`, `n_positive`, `presence` and `max_confidence_positive`.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validation_tables(list.files(file.path(ex, "validation"),
+#'                                          full.names = TRUE))
+#' pres <- nightly_presence(val)
+#' table(pres$species_folder, pres$presence)
 #' @export
 nightly_presence <- function(validation) {
   validation |>
@@ -652,6 +696,10 @@ nightly_presence <- function(validation) {
 #' @return A tibble with `site`, `species_code`, `species_folder`,
 #'   `clip_file`, `reviewed_path`, `confidence`, `night`, `recording_hour`
 #'   and `source_audio`.
+#' @examples
+#' val <- read.csv(system.file("extdata", "validation_by_clip.csv",
+#'                             package = "sheepdog"))
+#' retraining_clips(val)
 #' @export
 retraining_clips <- function(validation) {
   validation[!is_inherited(validation), ] |>
@@ -673,6 +721,14 @@ retraining_clips <- function(validation) {
 #' @inheritParams suggest_thresholds
 #'
 #' @return A ggplot object.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validation_tables(list.files(file.path(ex, "validation"),
+#'                                          full.names = TRUE))
+#' prec <- precision_by_bin(val, min_n = 10)
+#' if (requireNamespace("ggplot2", quietly = TRUE)) {
+#'   plot_precision(prec, target_precision = 0.9, min_n = 10)
+#' }
 #' @export
 plot_precision <- function(precision, bins = seq(0.1, 1, by = 0.1),
                            target_precision = 0.90, min_n = 15) {
@@ -786,6 +842,24 @@ plot_precision <- function(precision, bins = seq(0.1, 1, by = 0.1),
 #'
 #' @return A list with the tables `validation`, `precision`, `thresholds`,
 #'   `presence` and `retraining` (and `compared`, with `fit`), invisibly.
+#' @examples
+#' # Recreate the folders left by a review in the BirdNET GUI, with empty files
+#' man <- system.file("extdata", "clip_manifest.csv", package = "sheepdog")
+#' done <- read.csv(system.file("extdata", "validation_by_clip.csv",
+#'                              package = "sheepdog"))
+#' review_dir <- file.path(tempdir(), "clips_post")
+#' sub <- ifelse(done$verdict == "positive", "Positive",
+#'               ifelse(done$verdict == "negative", "Negative", ""))
+#' dest <- file.path(review_dir, done$species_folder, sub)
+#' for (d in unique(dest)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
+#' invisible(file.create(file.path(dest, done$clip_file)))
+#'
+#' out_dir <- file.path(tempdir(), "post_validation")
+#' res <- post_validation(review_dir, manifest_path = man,
+#'                        output_dir = out_dir, min_n = 3)
+#' res$thresholds
+#' list.files(out_dir)
+#' unlink(c(review_dir, out_dir), recursive = TRUE)
 #' @export
 post_validation <- function(review_dir = NULL, manifest_path, output_dir,
                             positive_pattern = "positiv",

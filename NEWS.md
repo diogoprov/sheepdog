@@ -10,6 +10,12 @@
 - `score_detections()` also takes a table of predictions, such as the
   output of `read_selection_tables()` or `read_classifier_output()`,
   instead of paths to selection tables.
+- Every exported function now has examples, built on the data shipped in
+  `inst/extdata/example`. The examples that fit a brms model, or that need
+  an export written with one, are not run.
+- Messages and warnings caught while fitting are collected without global
+  assignment, and the spectrogram panel of `run_app()` restores the
+  graphical parameters with `on.exit(add = TRUE)`.
 - `fit_calibration()` gains `control`: a `lme4::glmerControl()` object or a
   list of `stats::glm.control()` arguments with `engine = "lme4"` (to change
   the optimiser, the evaluation budget or the convergence tolerances), or

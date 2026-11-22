@@ -18,3 +18,11 @@ Keeps the species with no unreliable site x species cell in the table of
 \code{\link[=cell_status]{cell_status()}}: reliable at every site, or reliable where present and
 probably absent elsewhere.
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+fit <- fit_calibration(val, tp ~ logit_conf * species + site)
+status <- cell_status(fit, val, p_min = 0.95, min_n = 15)
+suggest_core_species(status)
+}

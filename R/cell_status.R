@@ -39,6 +39,14 @@
 #'   reaches `p_min`; `NA` if never), `status` and `reason`. The grid
 #'   contains both observed endpoints and steps of 0.01 within the
 #'   reviewed range.
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                    full.names = TRUE))
+#' # A logistic calibration with fixed effects only
+#' fit <- fit_calibration(val, tp ~ logit_conf * species + site)
+#' status <- cell_status(fit, val, p_min = 0.95, min_n = 15)
+#' table(status$species, status$status)
 #' @export
 cell_status <- function(fit, validations, p_min = 0.95, min_n = 15,
                         by = NULL) {
@@ -113,6 +121,13 @@ cell_status <- function(fit, validations, p_min = 0.95, min_n = 15,
 #'
 #' @return A character vector of species codes (the `species` column of
 #'   the history).
+#' @examples
+#' ex <- system.file("extdata", "example", package = "sheepdog")
+#' val <- read_validations(list.files(file.path(ex, "validation"),
+#'                                    full.names = TRUE))
+#' fit <- fit_calibration(val, tp ~ logit_conf * species + site)
+#' status <- cell_status(fit, val, p_min = 0.95, min_n = 15)
+#' suggest_core_species(status)
 #' @export
 suggest_core_species <- function(status) {
   status |>

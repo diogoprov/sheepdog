@@ -98,6 +98,15 @@ the precision curve is flat near the target, and a new round of review
 near the threshold narrows it (a new round of \code{\link[=select_clips]{select_clips()}}, combined
 with the first by \code{\link[=combine_rounds]{combine_rounds()}}).
 }
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validation_tables(file.path(ex, "validation",
+                                        "validation_by_clip_ARA.csv"))
+# Resamples whole recordings; use n_boot = 1000 or more in practice
+boot <- threshold_bootstrap(val, target_precision = 0.90, min_n = 15,
+                            n_boot = 100)
+boot[, c("species_folder", "threshold", "threshold_conservative")]
+}
 \seealso{
 \code{\link[=suggest_thresholds]{suggest_thresholds()}}, \code{\link[=threshold_by_group]{threshold_by_group()}},
 \code{\link[=threshold_record]{threshold_record()}}.

@@ -367,3 +367,24 @@ little; use \code{inherit = TRUE} when the tables will not go to an occupancy
 model.
 }
 
+\examples{
+ex <- system.file("extdata", "example", package = "sheepdog")
+det <- read_selection_tables(file.path(ex, "birdnet"))
+# the highest scores of each site x species x night x hour, for retraining
+# and calibration
+top <- select_clips(det, sampling_mode = "top", n_top = 2,
+                    hour_start = 18, hour_end = 2, max_per_species = 40)
+table(top$site, top$species_folder)
+
+# observation-confirmation design: occasions drawn at random among those
+# with a prediction >= threshold, for false-positive occupancy models
+rd <- select_clips(det, sampling_mode = "random_detections",
+                   threshold = 0.5, strata = "night", n_top = 1)
+summary(rd$inclusion_prob)
+
+# score bands: the same number of clips in each band of scores
+sb <- select_clips(det, sampling_mode = "score_bands",
+                   strata = "site_species", n_top = 5)
+table(cut(sb$confidence, c(0.1, 0.4, 0.7, 1), right = FALSE,
+          include.lowest = TRUE))
+}
