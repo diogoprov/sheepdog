@@ -83,3 +83,36 @@ test_that("the interval of a glm fit covers the true P(TP)", {
   expect_gt(mean(cov), 0.84)
   expect_lt(mean(cov), 0.96)
 })
+
+test_that("fit_calibration() passes a brms control list to brm()", {
+  skip_if_not_installed("brms")
+  args <- NULL
+  local_mocked_bindings(
+    brm = function(...) {
+      args <<- list(...)
+      structure(list(), class = "brmsfit")
+    },
+    .package = "brms")
+  local_mocked_bindings(calibration_diagnostics = function(fit, ...) {
+    tibble::tibble(max_rhat = 1, min_ess_bulk = 1000, min_ess_tail = 1000,
+                   n_divergent = 0L, ok = TRUE)
+  })
+  val <- sim_calibration(n = 200, seed = 16)
+  pr <- brms::set_prior("normal(0, 1)", class = "b")
+  fit_calibration(val, tp ~ logit_conf, engine = "brms", prior = pr,
+                  control = list(adapt_delta = 0.99), seed = 1)
+  expect_identical(args$control, list(adapt_delta = 0.99))
+})
+
+test_that("the brms interval holds the central posterior quantiles", {
+  skip_if_not_installed("brms")
+  draws <- matrix(c(0.1, 0.2, 0.3, 0.4, 0.5,
+                    0.6, 0.7, 0.8, 0.9, 1.0), nrow = 5)
+  local_mocked_bindings(posterior_epred = function(...) draws,
+                        .package = "brms")
+  fake <- structure(list(), class = "brmsfit")
+  b <- predict_tp_interval(fake, data.frame(x = 1:2), level = 0.5)
+  expect_equal(b$p_tp, c(0.3, 0.8))
+  expect_equal(b$lower, c(0.2, 0.7))
+  expect_equal(b$upper, c(0.4, 0.9))
+})
