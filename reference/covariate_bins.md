@@ -58,9 +58,9 @@ covariate_bins(
 
 - within:
 
-  `NULL` or character vector, columns within which quantile breaks are
-  computed (`NULL` for quantiles over all rows). Ignored when `breaks`
-  is given.
+  `NULL` or a character vector of one or more column names of
+  `covariates`, within which quantile breaks are computed (`NULL` for
+  quantiles over all rows). Ignored when `breaks` is given.
 
 - name:
 
@@ -68,10 +68,11 @@ covariate_bins(
 
 ## Value
 
-The `key` columns (as character) and the bin, an ordered factor with
-levels `q1`, `q2`, ... (quantile bins, from low to high values of `var`)
-or the intervals of `breaks`. Rows with a missing `var` get a missing
-bin.
+A data frame (class `data.frame`, or `tbl_df` when `covariates` is a
+tibble) with the `key` columns (as character) and the bin, an ordered
+factor with levels `q1`, `q2`, ... (quantile bins, from low to high
+values of `var`) or the intervals of `breaks`. Rows with a missing `var`
+get a missing bin.
 
 ## Details
 

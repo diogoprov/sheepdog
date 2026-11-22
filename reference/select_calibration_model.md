@@ -27,8 +27,8 @@ select_calibration_model(
 
 - k_folds:
 
-  Numeric scalar, number of folds of the comparison (for the standard
-  error).
+  Integer scalar \>= 2, number of folds of the comparison (for the
+  standard error).
 
 ## Value
 

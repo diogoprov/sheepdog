@@ -34,10 +34,11 @@ calibration_folds(validations, k_folds = 5, seed = 2026, fold_group = NULL)
 
 - fold_group:
 
-  `NULL` or a character vector of grouping columns. Do not include
-  `species`, verdicts or confidence scores: these would split recordings
-  or nights by species or by outcome. Group IDs must be nonmissing and
-  nonempty. `NULL` keeps the original clip folds.
+  `NULL` or a character vector (one or more elements) of grouping
+  columns, combined into one group ID. Do not include `species`,
+  verdicts or confidence scores: these would split recordings or nights
+  by species or by outcome. Group IDs must be nonmissing and nonempty.
+  `NULL` keeps the original clip folds.
 
 ## Value
 

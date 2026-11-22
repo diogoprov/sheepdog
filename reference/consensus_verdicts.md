@@ -25,7 +25,8 @@ consensus_verdicts(reviews)
 
 ## Value
 
-A tibble with one row per clip: the columns of the reviewed tables (from
+A data frame (class `data.frame`, or `tbl_df` when the reviews are
+tibbles) with one row per clip: the columns of the reviewed tables (from
 the first reviewer of each clip), `verdict`, `n_reviewers` and
 `reviewers` (names separated by `;`).
 

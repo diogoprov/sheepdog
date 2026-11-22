@@ -87,7 +87,7 @@ calibrated_thresholds(
 
 ## Value
 
-A tibble with the cell columns, `threshold` and, for
+A tibble (class `tbl_df`) with the cell columns, `threshold` and, for
 `rule = "probability"`, `p_tp_at_threshold` (and `threshold_lower` with
 a `brms` model); for `rule = "precision"`, `precision_at_threshold`,
 `n_above` (detections kept) and `n_detections`. `threshold` is `NA` when

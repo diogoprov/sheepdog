@@ -92,7 +92,8 @@ compare_calibration_curves(
 
   Character scalar, the column of `validation` whose levels are kept
   together in the folds (`"source_audio"`, the recording, by default).
-  Without it, clips are split one by one.
+  When `validation` has no such column, clips are split one by one, with
+  a message.
 
 - top_from, bin_width:
 
@@ -112,9 +113,9 @@ compare_calibration_curves(
 
 - max_error, tolerance:
 
-  Numeric scalars, largest `top_error_excess` and largest difference
-  between the logistic and the weighted thresholds, in score units, for
-  `"keep_logistic"`.
+  Numeric scalars \>= 0, largest `top_error_excess` and largest
+  difference between the logistic and the weighted thresholds, in score
+  units, for `"keep_logistic"`.
 
 - n_boot:
 
@@ -139,11 +140,11 @@ compare_calibration_curves(
 
 ## Value
 
-A tibble with one row per group x target x curve: the `by` columns,
-`curve`, `target`, `n`, `n_positive`, `cv_logloss`, `cv_logloss_se`,
-`within_1se` (log-loss within one standard error of the best curve of
-the group), `top_error`, `top_error_excess`, `n_eff_top`, `max_p`,
-`reaches_target`, `threshold_p_tp`, `threshold_precision`,
+A tibble (class `tbl_df`) with one row per group x target x curve: the
+`by` columns, `curve`, `target`, `n`, `n_positive`, `cv_logloss`,
+`cv_logloss_se`, `within_1se` (log-loss within one standard error of the
+best curve of the group), `top_error`, `top_error_excess`, `n_eff_top`,
+`max_p`, `reaches_target`, `threshold_p_tp`, `threshold_precision`,
 `threshold_weighted`, `diff_weighted`, `diff_weighted_lower`,
 `diff_weighted_upper` (bootstrap interval of `diff_weighted`, logistic
 only, with `n_boot > 0`), `above_reviewed` (a threshold above the

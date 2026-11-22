@@ -103,14 +103,12 @@ recursively.</p></dd>
 
 <dt id="arg-table-pattern">table_pattern<a class="anchor" aria-label="anchor" href="#arg-table-pattern"></a></dt>
 <dd><p>Character scalar, regular expression for the file
-names of combined
-tables.</p></dd>
+names of combined tables.</p></dd>
 
 
 <dt id="arg-per-audio-pattern">per_audio_pattern<a class="anchor" aria-label="anchor" href="#arg-per-audio-pattern"></a></dt>
 <dd><p><code>NULL</code> or character scalar, regular expression
-for the file names of
-per-audio tables. <code>NULL</code> reads only combined tables.</p></dd>
+for the file names of per-audio tables. <code>NULL</code> reads only combined tables.</p></dd>
 
 
 <dt id="arg-site-pattern">site_pattern<a class="anchor" aria-label="anchor" href="#arg-site-pattern"></a></dt>
@@ -125,10 +123,10 @@ instead of from the folder of the table. For example,
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with one row per prediction, the column <code>site</code> first,
-followed by the standardised table columns. The columns <code>begin_time</code>,
-<code>end_time</code>, <code>species_code</code>, <code>confidence</code>, <code>begin_path</code> and <code>file_offset</code>
-are required.</p>
+    <p>A tibble (class <code>tbl_df</code>) with one row per prediction, the
+column <code>site</code> first, followed by the standardised table columns. The
+columns <code>begin_time</code>, <code>end_time</code>, <code>species_code</code>, <code>confidence</code>,
+<code>begin_path</code> and <code>file_offset</code> are required.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

@@ -68,8 +68,9 @@ history_draws(
 
 ## Value
 
-A tibble with `draw`, `site`, `species`, `night`, `n_detections`,
-`n_reliable`, `detection_k1` to `detection_k3` and `detection`.
+A tibble (class `tbl_df`) with `draw`, `site`, `species`, `night`,
+`n_detections`, `n_reliable`, `detection_k1` to `detection_k3` and
+`detection`.
 
 ## Details
 
@@ -82,9 +83,9 @@ score, which keeps the cost independent of the number of detections.
 ## Examples
 
 ``` r
+if (FALSE) { # interactive() && requireNamespace("brms", quietly = TRUE)
 # Fitting a Bayesian calibration compiles a Stan model, which takes
-# minutes, so this example is not run here.
-if (FALSE) { # \dontrun{
+# minutes, so this example runs only interactively.
 ex <- system.file("extdata", "example", package = "sheepdog")
 val <- read_validations(list.files(file.path(ex, "validation"),
                                    full.names = TRUE))
@@ -98,5 +99,5 @@ tables <- setNames(file.path(ex, "birdnet", sites,
 scored <- score_detections(tables, fit, p_min = 0.95)
 hd <- history_draws(fit, scored, p_min = 0.95, n_draws = 200)
 community_matrices_draws(hd, core_species = c("boa_ran", "phy_cuv"))
-} # }
+}
 ```

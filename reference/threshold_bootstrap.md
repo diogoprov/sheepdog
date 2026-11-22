@@ -97,10 +97,11 @@ threshold_bootstrap(
 
 ## Value
 
-A tibble with `site`, `species_folder`, the `by` columns, `threshold`
-(from all the clips), `threshold_median`, `threshold_conservative`
-(quantile `conf` of the replicates), `share_reached` (share of
-replicates in which some score reaches the target) and `n_clusters`.
+A tibble (class `tbl_df`) with `site`, `species_folder`, the `by`
+columns, `threshold` (from all the clips), `threshold_median`,
+`threshold_conservative` (quantile `conf` of the replicates),
+`share_reached` (share of replicates in which some score reaches the
+target) and `n_clusters`.
 
 ## Details
 

@@ -35,11 +35,12 @@ combine_rounds(validation, candidates = NULL)
 
 ## Value
 
-The stacked table, in the order of the input, with `stratum`,
-`n_candidates`, `n_drawn`, the cumulative `inclusion_prob` and
-`n_rounds`, the number of rounds with clips of the site x species. Clips
-of other sampling modes keep their `inclusion_prob`, `n_candidates` and
-`n_drawn`, with `stratum` and `n_rounds` `NA`.
+A tibble (class `tbl_df`): the stacked table, in the order of the input,
+with `stratum`, `n_candidates`, `n_drawn`, the cumulative
+`inclusion_prob` and `n_rounds`, the number of rounds with clips of the
+site x species. Clips of other sampling modes keep their
+`inclusion_prob`, `n_candidates` and `n_drawn`, with `stratum` and
+`n_rounds` `NA`.
 
 ## Details
 

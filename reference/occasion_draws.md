@@ -113,9 +113,10 @@ global random number generator is left as it was.
 ## Examples
 
 ``` r
+if (FALSE) { # interactive() && requireNamespace("brms", quietly = TRUE)
 # The export needs the draws of a Bayesian calibration. Fitting compiles
-# a Stan model, which takes minutes, so this example is not run here.
-if (FALSE) { # \dontrun{
+# a Stan model, which takes minutes, so this example runs only in
+# interactive sessions.
 ex <- system.file("extdata", "example", package = "sheepdog")
 val_files <- list.files(file.path(ex, "validation"), full.names = TRUE)
 val <- read_validations(val_files)
@@ -135,5 +136,5 @@ y <- occasion_draws(out_dir, rule = "sample", n_draws = 20, seed = 2026,
 # Keep only the predictions the calibration is nearly sure of
 occasion_draws(out_dir, species = "boa_ran", rule = "threshold",
                p_min = 0.95)
-} # }
+}
 ```

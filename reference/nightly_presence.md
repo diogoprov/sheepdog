@@ -22,8 +22,9 @@ nightly_presence(validation)
 
 ## Value
 
-A tibble with `site`, `species_folder`, `night`, `n_clips`,
-`n_reviewed`, `n_positive`, `presence` and `max_confidence_positive`.
+A tibble (class `tbl_df`) with `site`, `species_folder`, `night`,
+`n_clips`, `n_reviewed`, `n_positive`, `presence` and
+`max_confidence_positive`.
 
 ## Examples
 

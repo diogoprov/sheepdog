@@ -64,9 +64,10 @@ score_detections(
 
 ## Value
 
-A tibble with `site`, `species`, `date`, `night`, `hour`, `confidence`,
-`p_tp`, `begin_path` and `file_offset`; with a model fitted with
-`engine = "brms"`, also `p_tp_lower` and `pr_reliable`.
+A tibble (class `tbl_df`) with `site`, `species`, `date`, `night`,
+`hour`, `confidence`, `p_tp`, `begin_path` and `file_offset`; with a
+model fitted with `engine = "brms"`, also `p_tp_lower` and
+`pr_reliable`.
 
 ## Details
 

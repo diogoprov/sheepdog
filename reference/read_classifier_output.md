@@ -81,9 +81,9 @@ read_classifier_output(
 
 ## Value
 
-A tibble with one row per prediction: `site`, `begin_time`, `end_time`,
-`species_code`, `confidence`, `begin_path` and `file_offset` (the
-columns required by
+A tibble (class `tbl_df`) with one row per prediction: `site`,
+`begin_time`, `end_time`, `species_code`, `confidence`, `begin_path` and
+`file_offset` (the columns required by
 [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)),
 plus `label`, `score` (as in the file) and `classifier`; for Arbimon,
 also `verdict`.

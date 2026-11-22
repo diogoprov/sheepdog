@@ -67,7 +67,7 @@ compare_thresholds(
 
 - tolerance:
 
-  Numeric scalar, in score units. Largest difference between
+  Numeric scalar \>= 0, in score units. Largest difference between
   `thr_empirical` and `thr_model_precision` for `"agree"`.
 
 - quality:
@@ -100,14 +100,14 @@ compare_thresholds(
 
 ## Value
 
-A tibble with one row per site x species: `site`, `species`,
-`thr_empirical`, `prec_empirical` (the precision that chose the cut),
-`n_support`, `thr_model_precision`, `thr_p_tp`, `p_tp_at_threshold`,
-`thr_p_tp_lower` (with a `brms` model), `model_precision_at_empirical`
-(the expected precision of the model at `thr_empirical`),
-`max_reviewed`, `above_reviewed`, `quality` (with `quality`) and `flag`:
-`"agree"`, `"disagree"`, `"model_only"`, `"empirical_only"` or `"none"`;
-`NA` without `scored`.
+A tibble (class `tbl_df`) with one row per site x species: `site`,
+`species`, `thr_empirical`, `prec_empirical` (the precision that chose
+the cut), `n_support`, `thr_model_precision`, `thr_p_tp`,
+`p_tp_at_threshold`, `thr_p_tp_lower` (with a `brms` model),
+`model_precision_at_empirical` (the expected precision of the model at
+`thr_empirical`), `max_reviewed`, `above_reviewed`, `quality` (with
+`quality`) and `flag`: `"agree"`, `"disagree"`, `"model_only"`,
+`"empirical_only"` or `"none"`; `NA` without `scored`.
 
 ## Details
 

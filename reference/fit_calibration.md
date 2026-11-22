@@ -248,14 +248,13 @@ if (requireNamespace("lme4", quietly = TRUE)) {
   confint(fit, method = "Wald", parm = "beta_")
 }
 #> (Intercept)  logit_conf 
-#>  -0.2060526   1.6030184 
+#>  -0.2060523   1.6030183 
 #>                  2.5 %    97.5 %
-#> (Intercept) -0.9305439 0.5184387
-#> logit_conf   1.4584249 1.7476119
-
+#> (Intercept) -0.9305499 0.5184454
+#> logit_conf   1.4584248 1.7476119
+if (FALSE) { # interactive() && requireNamespace("brms", quietly = TRUE)
 # Bayesian fit: the prior is always given explicitly. Fitting compiles a
-# Stan model, which takes minutes, so this part is not run here.
-if (FALSE) { # \dontrun{
+# Stan model, which takes minutes, so this part runs only interactively.
 f <- tp ~ logit_conf + (1 | species)
 prior <- calibration_prior(f, val)
 fit_b <- fit_calibration(val, f, engine = "brms", prior = prior,
@@ -263,5 +262,5 @@ fit_b <- fit_calibration(val, f, engine = "brms", prior = prior,
                          refresh = 0)
 calibration_diagnostics(fit_b)
 brms::posterior_interval(fit_b)
-} # }
+}
 ```

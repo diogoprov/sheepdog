@@ -33,7 +33,8 @@ cell_status(fit, validations, p_min = 0.95, min_n = 15, by = NULL)
 
 - min_n:
 
-  Numeric scalar. Minimum number of reviewed clips in a cell.
+  Non-negative numeric scalar. Minimum number of reviewed clips in a
+  cell.
 
 - by:
 
@@ -47,12 +48,12 @@ cell_status(fit, validations, p_min = 0.95, min_n = 15, by = NULL)
 
 ## Value
 
-A tibble with one row per site x species (x `by`): `site`, `species`,
-the `by` columns, `n_reviewed`, `n_tp`, `max_confidence` (highest
-reviewed score), `threshold` (lowest grid score at which the calibrated
-probability reaches `p_min`; `NA` if never), `status` and `reason`. The
-grid contains both observed endpoints and steps of 0.01 within the
-reviewed range.
+A tibble (class `tbl_df`) with one row per site x species (x `by`):
+`site`, `species`, the `by` columns, `n_reviewed`, `n_tp`,
+`max_confidence` (highest reviewed score), `threshold` (lowest grid
+score at which the calibrated probability reaches `p_min`; `NA` if
+never), `status` and `reason`. The grid contains both observed endpoints
+and steps of 0.01 within the reviewed range.
 
 ## Details
 

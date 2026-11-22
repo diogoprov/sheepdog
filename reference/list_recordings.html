@@ -113,8 +113,7 @@ files, searched recursively.</p></dd>
 
 <dt id="arg-audio-pattern">audio_pattern<a class="anchor" aria-label="anchor" href="#arg-audio-pattern"></a></dt>
 <dd><p>Character scalar, regular expression for the audio
-file names (case
-insensitive).</p></dd>
+file names (case insensitive).</p></dd>
 
 
 <dt id="arg-site">site<a class="anchor" aria-label="anchor" href="#arg-site"></a></dt>
@@ -154,8 +153,9 @@ table to (e.g.
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with <code>site</code> and <code>source_audio</code>, one row per recording,
-sorted by site and path (invisibly when <code>file</code> is given).</p>
+    <p>A tibble (class <code>tbl_df</code>) with <code>site</code> and <code>source_audio</code>, one
+row per recording, sorted by site and path (invisibly when <code>file</code> is
+given).</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -191,9 +191,9 @@ as most recorders write them; the files whose names do not are reported.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 2</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   site  source_audio                                       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> ARA   /tmp/Rtmp0frRI4/audio/ARA/ARA01_20211001_190000.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> ARA   /tmp/Rtmp0frRI4/audio/ARA/ARA01_20211001_200000.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> BAI   /tmp/Rtmp0frRI4/audio/BAI/BAI01_20211001_190000.wav</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> ARA   /tmp/Rtmpgb1liF/audio/ARA/ARA01_20211001_190000.wav</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> ARA   /tmp/Rtmpgb1liF/audio/ARA/ARA01_20211001_200000.wav</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> BAI   /tmp/Rtmpgb1liF/audio/BAI/BAI01_20211001_190000.wav</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

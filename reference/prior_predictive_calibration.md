@@ -43,8 +43,9 @@ A `brmsfit` sampled from the prior, usable in
 ## Examples
 
 ``` r
-# Sampling from the prior compiles a Stan model, which takes minutes
-if (FALSE) { # \dontrun{
+if (FALSE) { # interactive() && requireNamespace("brms", quietly = TRUE)
+# Sampling from the prior compiles a Stan model, which takes minutes,
+# so this example runs only interactively.
 ex <- system.file("extdata", "example", package = "sheepdog")
 val <- read_validations(list.files(file.path(ex, "validation"),
                                    full.names = TRUE))
@@ -53,5 +54,5 @@ prior_fit <- prior_predictive_calibration(f, val, calibration_prior(f, val),
                                           chains = 2, seed = 1,
                                           refresh = 0)
 plot_calibration_draws(prior_fit)
-} # }
+}
 ```

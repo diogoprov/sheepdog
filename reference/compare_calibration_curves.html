@@ -175,7 +175,8 @@ the verdict, which does not use it, are needed.</p></dd>
 <dt id="arg-cluster">cluster<a class="anchor" aria-label="anchor" href="#arg-cluster"></a></dt>
 <dd><p>Character scalar, the column of <code>validation</code> whose levels are
 kept together in the folds (<code>"source_audio"</code>, the recording, by default).
-Without it, clips are split one by one.</p></dd>
+When <code>validation</code> has no such column, clips are split one by one, with a
+message.</p></dd>
 
 
 <dt id="arg-top-from-bin-width">top_from, bin_width<a class="anchor" aria-label="anchor" href="#arg-top-from-bin-width"></a></dt>
@@ -195,9 +196,9 @@ enter <code>top_error</code>.</p></dd>
 
 
 <dt id="arg-max-error-tolerance">max_error, tolerance<a class="anchor" aria-label="anchor" href="#arg-max-error-tolerance"></a></dt>
-<dd><p>Numeric scalars, largest <code>top_error_excess</code> and
-largest difference between the logistic and the weighted thresholds, in
-score units, for <code>"keep_logistic"</code>.</p></dd>
+<dd><p>Numeric scalars &gt;= 0, largest
+<code>top_error_excess</code> and largest difference between the logistic and the
+weighted thresholds, in score units, for <code>"keep_logistic"</code>.</p></dd>
 
 
 <dt id="arg-n-boot">n_boot<a class="anchor" aria-label="anchor" href="#arg-n-boot"></a></dt>
@@ -223,19 +224,17 @@ generator is left as it was.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with one row per group x target x curve: the <code>by</code>
-columns,
-<code>curve</code>, <code>target</code>, <code>n</code>, <code>n_positive</code>, <code>cv_logloss</code>, <code>cv_logloss_se</code>,
-<code>within_1se</code> (log-loss within one standard error of the best curve of
-the group), <code>top_error</code>, <code>top_error_excess</code>, <code>n_eff_top</code>, <code>max_p</code>,
-<code>reaches_target</code>,
-<code>threshold_p_tp</code>, <code>threshold_precision</code>, <code>threshold_weighted</code>,
-<code>diff_weighted</code>, <code>diff_weighted_lower</code>, <code>diff_weighted_upper</code> (bootstrap
-interval of <code>diff_weighted</code>, logistic only, with <code>n_boot &gt; 0</code>),
-<code>above_reviewed</code> (a threshold above the highest
+    <p>A tibble (class <code>tbl_df</code>) with one row per group x target x curve:
+the <code>by</code> columns, <code>curve</code>, <code>target</code>, <code>n</code>, <code>n_positive</code>, <code>cv_logloss</code>,
+<code>cv_logloss_se</code>, <code>within_1se</code> (log-loss within one standard error of the
+best curve of the group), <code>top_error</code>, <code>top_error_excess</code>, <code>n_eff_top</code>,
+<code>max_p</code>, <code>reaches_target</code>, <code>threshold_p_tp</code>, <code>threshold_precision</code>,
+<code>threshold_weighted</code>, <code>diff_weighted</code>, <code>diff_weighted_lower</code>,
+<code>diff_weighted_upper</code> (bootstrap interval of <code>diff_weighted</code>, logistic
+only, with <code>n_boot &gt; 0</code>), <code>above_reviewed</code> (a threshold above the highest
 reviewed score is an extrapolation), <code>weighted</code> and <code>verdict</code>. The
-attribute <code>"curves"</code> holds the fitted curves on the grid (<code>score</code>,
-<code>p_tp</code>) and <code>"bins"</code> the observed precision by bin, for
+attribute <code>"curves"</code> holds the fitted curves on the grid (<code>score</code>, <code>p_tp</code>)
+and <code>"bins"</code> the observed precision by bin, for
 <code><a href="plot_calibration_curves.html">plot_calibration_curves()</a></code>.</p>
     </div>
     <div class="section level2">

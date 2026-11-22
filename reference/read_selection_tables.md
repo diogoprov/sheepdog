@@ -43,10 +43,10 @@ read_selection_tables(
 
 ## Value
 
-A tibble with one row per prediction, the column `site` first, followed
-by the standardised table columns. The columns `begin_time`, `end_time`,
-`species_code`, `confidence`, `begin_path` and `file_offset` are
-required.
+A tibble (class `tbl_df`) with one row per prediction, the column `site`
+first, followed by the standardised table columns. The columns
+`begin_time`, `end_time`, `species_code`, `confidence`, `begin_path` and
+`file_offset` are required.
 
 ## Details
 

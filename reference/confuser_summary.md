@@ -24,8 +24,10 @@ confuser_summary(validation, verdicts = "negative", classes = NULL)
 
 - verdicts:
 
-  Character vector of the verdicts counted: `"negative"` by default; add
-  `"uncertain"` to include the uncertain clips.
+  Character vector of one or more verdicts counted, among `"negative"`,
+  `"uncertain"`, `"positive"`, `"disagreement"` and `"not_reviewed"`:
+  `"negative"` by default; add `"uncertain"` to include the uncertain
+  clips.
 
 - classes:
 
@@ -35,11 +37,11 @@ confuser_summary(validation, verdicts = "negative", classes = NULL)
 
 ## Value
 
-A tibble with one row per target class and identity: `species_code`,
-`identity`, `n` (clips), `n_weighted`, `n_sure` (clips with certainty
-`"sure"`), `share` (`n_weighted` over the clips of the class counted)
-and `is_class` (the identity is a class of the classifier other than the
-target), sorted by class and decreasing `n`.
+A tibble (class `tbl_df`) with one row per target class and identity:
+`species_code`, `identity`, `n` (clips), `n_weighted`, `n_sure` (clips
+with certainty `"sure"`), `share` (`n_weighted` over the clips of the
+class counted) and `is_class` (the identity is a class of the classifier
+other than the target), sorted by class and decreasing `n`.
 
 ## Details
 

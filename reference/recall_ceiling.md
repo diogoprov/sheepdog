@@ -59,7 +59,7 @@ recall_ceiling(
 
 - by:
 
-  Character vector of column names that define the groups:
+  Character vector of one or more column names that define the groups:
   `"species_folder"` (the default, every site pooled) or
   `c("site", "species_folder")`.
 
@@ -93,7 +93,7 @@ recall_ceiling(
 
   Character scalar, the column of `validation` whose levels are
   resampled whole: `"source_audio"` (the recording, the default) or
-  `"night"`.
+  `"night"`. Used only when `n_boot > 0`.
 
 - conf:
 
@@ -106,13 +106,13 @@ recall_ceiling(
 
 ## Value
 
-A tibble with one row per group (and threshold): the `by` columns,
-`n_occasions` (annotated occasions), `n_present` (occasions with the
-species), `n_missed` (occasions with the species and no prediction of
-it), `recall_ceiling` with `ceiling_lower` and `ceiling_upper`; with
-`thresholds`, also `threshold`, `share_above`, `recall` and
-`recall_lower`, `recall_upper`. Groups with no occasion with the species
-get `NA`.
+A tibble (class `tbl_df`) with one row per group (and threshold): the
+`by` columns, `n_occasions` (annotated occasions), `n_present`
+(occasions with the species), `n_missed` (occasions with the species and
+no prediction of it), `recall_ceiling` with `ceiling_lower` and
+`ceiling_upper`; with `thresholds`, also `threshold`, `share_above`,
+`recall` and `recall_lower`, `recall_upper`. Groups with no occasion
+with the species get `NA`.
 
 ## Details
 

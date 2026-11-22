@@ -140,7 +140,7 @@ empirical threshold and of the <code>"precision"</code> rule.</p></dd>
 
 
 <dt id="arg-tolerance">tolerance<a class="anchor" aria-label="anchor" href="#arg-tolerance"></a></dt>
-<dd><p>Numeric scalar, in score units. Largest difference
+<dd><p>Numeric scalar &gt;= 0, in score units. Largest difference
 between <code>thr_empirical</code> and <code>thr_model_precision</code> for <code>"agree"</code>.</p></dd>
 
 
@@ -174,7 +174,8 @@ of P(TP) used for <code>threshold_lower</code>.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with one row per site x species: <code>site</code>, <code>species</code>,
+    <p>A tibble (class <code>tbl_df</code>) with one row per site x species:
+<code>site</code>, <code>species</code>,
 <code>thr_empirical</code>, <code>prec_empirical</code> (the precision that chose the cut),
 <code>n_support</code>, <code>thr_model_precision</code>, <code>thr_p_tp</code>, <code>p_tp_at_threshold</code>,
 <code>thr_p_tp_lower</code> (with a <code>brms</code> model), <code>model_precision_at_empirical</code>

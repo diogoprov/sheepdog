@@ -69,8 +69,8 @@ list_recordings(
 
 ## Value
 
-A tibble with `site` and `source_audio`, one row per recording, sorted
-by site and path (invisibly when `file` is given).
+A tibble (class `tbl_df`) with `site` and `source_audio`, one row per
+recording, sorted by site and path (invisibly when `file` is given).
 
 ## Details
 
@@ -113,7 +113,7 @@ list_recordings(audio)
 #> # A tibble: 3 × 2
 #>   site  source_audio                                       
 #>   <chr> <chr>                                              
-#> 1 ARA   /tmp/Rtmp0frRI4/audio/ARA/ARA01_20211001_190000.wav
-#> 2 ARA   /tmp/Rtmp0frRI4/audio/ARA/ARA01_20211001_200000.wav
-#> 3 BAI   /tmp/Rtmp0frRI4/audio/BAI/BAI01_20211001_190000.wav
+#> 1 ARA   /tmp/Rtmpgb1liF/audio/ARA/ARA01_20211001_190000.wav
+#> 2 ARA   /tmp/Rtmpgb1liF/audio/ARA/ARA01_20211001_200000.wav
+#> 3 BAI   /tmp/Rtmpgb1liF/audio/BAI/BAI01_20211001_190000.wav
 ```

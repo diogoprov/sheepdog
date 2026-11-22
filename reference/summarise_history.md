@@ -17,9 +17,9 @@ summarise_history(history)
 
 ## Value
 
-A tibble with `site`, `species`, `nights` (nights with any scored
-detection) and `nights_k1` to `nights_k3` (nights with detection under
-each repetition rule).
+A tibble (class `tbl_df`) with `site`, `species`, `nights` (nights with
+any scored detection) and `nights_k1` to `nights_k3` (nights with
+detection under each repetition rule).
 
 ## Examples
 

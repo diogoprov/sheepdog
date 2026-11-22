@@ -55,9 +55,9 @@ detection_history(
 
 ## Value
 
-A tibble with `site`, `species`, `night`, `n_detections`, `n_reliable`,
-`p_tp_max`, `detection_k1`, `detection_k2`, `detection_k3` and
-`detection`.
+A tibble (class `tbl_df`) with `site`, `species`, `night`,
+`n_detections`, `n_reliable`, `p_tp_max`, `detection_k1`,
+`detection_k2`, `detection_k3` and `detection`.
 
 ## Examples
 

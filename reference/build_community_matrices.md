@@ -44,9 +44,9 @@ build_community_matrices(
 
 - min_nights_month:
 
-  Numeric scalar. Site x month cells with fewer recorded nights are
-  dropped from the matrices (unstable frequencies) and flagged in
-  `effort`.
+  Non-negative numeric scalar. Site x month cells with fewer recorded
+  nights are dropped from the matrices (unstable frequencies) and
+  flagged in `effort`.
 
 ## Value
 
@@ -66,7 +66,7 @@ build_community_matrices(file.path(ex, "nightly_detection_history.csv"),
                          k_min = 2)
 #> Matrix: 23 rows (site x month) x 3 species | rule k >= 2
 #> Effort: 23 site x month cells included; 1 dropped for having < 5 recorded nights (see effort_site_month.csv)
-#> Files in: /tmp/Rtmp0frRI4/matrices
+#> Files in: /tmp/Rtmpgb1liF/matrices
 list.files(out)
 #> [1] "count_matrix_site_month_k2.csv"     "effort_site_month.csv"             
 #> [3] "frequency_matrix_site_month_k2.csv"

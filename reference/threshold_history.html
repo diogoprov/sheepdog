@@ -128,13 +128,14 @@ that start before this hour belong to the night before.</p></dd>
 
 
 <dt id="arg-min-detections-night">min_detections_night<a class="anchor" aria-label="anchor" href="#arg-min-detections-night"></a></dt>
-<dd><p>Integer scalar. Repetition rule: minimum
+<dd><p>Integer scalar &gt;= 1. Repetition rule: minimum
 number of reliable detections for a night with detection.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with <code>site</code>, <code>species</code> (the short code, as in
+    <p>A tibble (class <code>tbl_df</code>) with <code>site</code>, <code>species</code> (the short
+code, as in
 <code>species_folder</code>), <code>night</code>, <code>n_detections</code>, <code>n_reliable</code>,
 <code>confidence_max</code>, <code>detection_k1</code>, <code>detection_k2</code>, <code>detection_k3</code> and
 <code>detection</code>.</p>

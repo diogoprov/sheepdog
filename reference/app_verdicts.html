@@ -121,20 +121,24 @@ to <code>clip_manifest.csv</code>: the clip manifest (from <code><a href="select
 <dd><p><code>NULL</code> or a character scalar, the reviewer: only their
 verdicts are used. With <code>NULL</code>, every reviewer's verdicts are kept, one row
 per clip and reviewer, ready for <code><a href="reviewer_agreement.html">reviewer_agreement()</a></code> and
-<code><a href="consensus_verdicts.html">consensus_verdicts()</a></code>.</p>
-<p>A clip marked more than once by the same reviewer keeps the last
-verdict; a message says how many clips were marked again and how many of
-them changed verdict.</p></dd>
+<code><a href="consensus_verdicts.html">consensus_verdicts()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>The manifest with <code>verdict</code> (<code>"positive"</code>, <code>"negative"</code>,
+    <p>A tibble (class <code>tbl_df</code>): the manifest with <code>verdict</code>
+(<code>"positive"</code>, <code>"negative"</code>,
 <code>"uncertain"</code> or <code>"not_reviewed"</code>), <code>reviewed_path</code>, <code>reviewer</code>,
 <code>identity</code> and <code>identity_certainty</code> (<code>NA</code> when the reviewer gave no
 identity, or with a verdicts file of an earlier version).
 With <code>reviewer = NULL</code>, a clip reviewed by two reviewers has two
 rows, and a clip not yet reviewed has one row with <code>reviewer = NA</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>A clip marked more than once by the same reviewer keeps the last
+verdict; a message says how many clips were marked again and how many of
+them changed verdict.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

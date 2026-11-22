@@ -98,11 +98,12 @@ review_support(
 
 ## Value
 
-A tibble with `site`, `species_folder`, the `by` columns, `n_reviewed`,
-`n_fp` (false positives among them), `n_high` (reviewed clips with score
-\>= `conf_high`), `prec_high` (their precision), `n_high_all`
-(predictions with score \>= `conf_high`), `unreviewed_high`, `threshold`
-and `diagnosis`, ordered by diagnosis. With a table of
+A tibble (class `tbl_df`) with `site`, `species_folder`, the `by`
+columns, `n_reviewed`, `n_fp` (false positives among them), `n_high`
+(reviewed clips with score \>= `conf_high`), `prec_high` (their
+precision), `n_high_all` (predictions with score \>= `conf_high`),
+`unreviewed_high`, `threshold` and `diagnosis`, ordered by diagnosis.
+With a table of
 [`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md),
 also `n_rounds` and `reached_last_round`: the cell has a threshold now
 but had none before its last round.

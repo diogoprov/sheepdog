@@ -235,7 +235,8 @@ passed to <code><a href="compare_thresholds.html">compare_thresholds()</a></code
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list with the tables <code>validation</code>, <code>precision</code>, <code>thresholds</code>,
+    <p>A named list (class <code>list</code>) with the tables <code>validation</code>,
+<code>precision</code>, <code>thresholds</code>,
 <code>presence</code> and <code>retraining</code> (and <code>compared</code>, with <code>fit</code>), invisibly.</p>
     </div>
     <div class="section level2">
@@ -278,7 +279,7 @@ chooses the thresholds, unless <code>weighted = FALSE</code>; see
 <span class="r-msg co"><span class="r-pr">#&gt;</span> The manifest has inclusion_prob: the precision tables also give the precision weighted by 1 / inclusion_prob.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Suggested thresholds (target precision 0.9): see suggested_thresholds.csv</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 8 positive clips listed for retraining.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Done! Results in /tmp/Rtmp0frRI4/post_validation</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Done! Results in /tmp/Rtmpgb1liF/post_validation</span>
 <span class="r-in"><span><span class="va">res</span><span class="op">$</span><span class="va">thresholds</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 8</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   site  species_folder threshold n_support precision_at_threshold</span>

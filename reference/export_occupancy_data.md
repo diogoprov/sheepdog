@@ -337,18 +337,17 @@ out <- export_occupancy_data(
   validation = list.files(file.path(ex, "validation"), full.names = TRUE),
   classifier = "BirdNET", overwrite = TRUE
 )
-#> Export written to /tmp/Rtmp0frRI4/occupancy: occasions, detections, scores, validation, sites.
+#> Export written to /tmp/Rtmpgb1liF/occupancy: occasions, detections, scores, validation, sites.
 vapply(out$tables, nrow, integer(1))
 #>  occasions detections     scores validation      sites 
 #>        354       7553       2298       2467          4 
 list.files(out_dir)
 #> [1] "detections.csv" "occasions.csv"  "schema.json"    "scores.csv"    
 #> [5] "sites.csv"      "validation.csv"
-
+if (FALSE) { # interactive() && requireNamespace("brms", quietly = TRUE)
 # With a Bayesian calibration, the export also holds its posterior
 # draws. Fitting compiles a Stan model, which takes minutes, so this
-# part is not run here.
-if (FALSE) { # \dontrun{
+# part runs only in interactive sessions.
 val <- read_validations(list.files(file.path(ex, "validation"),
                                    full.names = TRUE))
 f <- tp ~ logit_conf + (1 | species)
@@ -361,5 +360,5 @@ export_occupancy_data(
   validation = list.files(file.path(ex, "validation"), full.names = TRUE),
   fit = fit, n_draws = 100, overwrite = TRUE
 )
-} # }
+}
 ```

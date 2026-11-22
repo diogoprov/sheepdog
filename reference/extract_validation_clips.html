@@ -120,14 +120,12 @@ design (e.g.
 
 <dt id="arg-table-pattern">table_pattern<a class="anchor" aria-label="anchor" href="#arg-table-pattern"></a></dt>
 <dd><p>Character scalar, regular expression for the file
-names of combined
-tables.</p></dd>
+names of combined tables.</p></dd>
 
 
 <dt id="arg-per-audio-pattern">per_audio_pattern<a class="anchor" aria-label="anchor" href="#arg-per-audio-pattern"></a></dt>
 <dd><p><code>NULL</code> or character scalar, regular expression
-for the file names of
-per-audio tables. <code>NULL</code> reads only combined tables.</p></dd>
+for the file names of per-audio tables. <code>NULL</code> reads only combined tables.</p></dd>
 
 
 <dt id="arg-site-pattern">site_pattern<a class="anchor" aria-label="anchor" href="#arg-site-pattern"></a></dt>
@@ -162,7 +160,8 @@ tables (e.g. <code>"DiverSons v2, BirdNET-Analyzer 2.4.0"</code>), recorded in
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>The manifest written to <code>clip_manifest.csv</code>, invisibly.</p>
+    <p>A tibble (class <code>tbl_df</code>), the manifest written to
+<code>clip_manifest.csv</code>, invisibly.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -201,8 +200,8 @@ reads it, so keep it with the manifest.</p>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Simulating the cut of 4099 clips...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   audio_not_found: 4099</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Some clips were not created - check the `status` column of the manifest and the path remapping (remap_from/remap_to).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Manifest written to /tmp/Rtmp0frRI4/validation/clip_manifest.csv</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Done! The clips in /tmp/Rtmp0frRI4/validation/clips are ready for validation in the BirdNET GUI (review).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Manifest written to /tmp/Rtmpgb1liF/validation/clip_manifest.csv</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Done! The clips in /tmp/Rtmpgb1liF/validation/clips are ready for validation in the BirdNET GUI (review).</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">man</span><span class="op">$</span><span class="va">status</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> audio_not_found </span>

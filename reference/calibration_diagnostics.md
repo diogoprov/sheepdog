@@ -29,8 +29,8 @@ calibration_diagnostics(fit, rhat_max = 1.01, ess_min = 400)
 
 ## Value
 
-A one-row tibble with `max_rhat`, `min_ess_bulk`, `min_ess_tail`,
-`n_divergent` and `ok`.
+A one-row tibble (class `tbl_df`) with `max_rhat`, `min_ess_bulk`,
+`min_ess_tail`, `n_divergent` and `ok`.
 
 ## Details
 
@@ -58,9 +58,9 @@ warmup draws to have been saved by the Stan backend.
 ## Examples
 
 ``` r
+if (FALSE) { # interactive() && requireNamespace("brms", quietly = TRUE)
 # Fitting a Bayesian calibration compiles a Stan model, which takes
-# minutes, so this example is not run here.
-if (FALSE) { # \dontrun{
+# minutes, so this example runs only interactively.
 ex <- system.file("extdata", "example", package = "sheepdog")
 val <- read_validations(list.files(file.path(ex, "validation"),
                                    full.names = TRUE))
@@ -72,5 +72,5 @@ calibration_diagnostics(fit)
 # Stricter limits
 calibration_diagnostics(fit, rhat_max = 1.005, ess_min = 1000)
 plot(fit)
-} # }
+}
 ```

@@ -288,10 +288,11 @@ number generator is left as it was.</p></dd>
 
 
 <dt id="arg-fold-group">fold_group<a class="anchor" aria-label="anchor" href="#arg-fold-group"></a></dt>
-<dd><p><code>NULL</code> or a character vector of grouping columns. Do not
-include <code>species</code>, verdicts or confidence scores: these would split
-recordings or nights by species or by outcome. Group IDs must be nonmissing
-and nonempty. <code>NULL</code> keeps the original clip folds.</p></dd>
+<dd><p><code>NULL</code> or a character vector (one or more elements) of
+grouping columns, combined into one group ID. Do not include <code>species</code>,
+verdicts or confidence scores: these would split recordings or nights by
+species or by outcome. Group IDs must be nonmissing and nonempty. <code>NULL</code>
+keeps the original clip folds.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -355,7 +356,7 @@ structure. This is the function form of the v1.2.0 script
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Scoring XAR (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR/BirdNET_SelectionTable.txt)...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   1866 detections of calibrated species (0 of species NOT calibrated were dropped).</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Nights with a reliable detection (p_tp &gt;= 0.95): 339 (k = 1), 268 (k = 2), 217 (k = 3).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Done! Outputs in /tmp/Rtmp0frRI4/calibration</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Done! Outputs in /tmp/Rtmpgb1liF/calibration</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> nightly_detection_history.csv is the input of the analyses; the column 'detection' uses k = 1; detection_k1/k2/k3 give the sensitivity to the rule.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "calibrated_detections_ARA.csv" "calibrated_detections_BAI.csv"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "calibrated_detections_NHE.csv" "calibrated_detections_XAR.csv"</span>

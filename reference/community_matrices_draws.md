@@ -40,9 +40,9 @@ community_matrices_draws(
 
 - min_nights_month:
 
-  Numeric scalar. Site x month cells with fewer recorded nights are
-  dropped from the matrices (unstable frequencies) and flagged in
-  `effort`.
+  Non-negative numeric scalar. Site x month cells with fewer recorded
+  nights are dropped from the matrices (unstable frequencies) and
+  flagged in `effort`.
 
 - probs:
 

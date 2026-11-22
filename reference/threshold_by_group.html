@@ -120,8 +120,9 @@ number for every cell.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
-<dd><p>Character vector of column names of <code>validation</code> that define
-the groups, e.g. <code>"recording_hour"</code> or a month column.</p></dd>
+<dd><p>Character vector of one or more column names of <code>validation</code>
+that define the groups, e.g. <code>"recording_hour"</code>, a month column, or
+both.</p></dd>
 
 
 <dt id="arg-target-precision">target_precision<a class="anchor" aria-label="anchor" href="#arg-target-precision"></a></dt>
@@ -140,10 +141,10 @@ the threshold.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with <code>site</code>, <code>species_folder</code>, the <code>by</code> columns,
-<code>threshold</code>, <code>n_above</code> (reviewed clips at or above it), <code>n_eff</code>
-(effective sample size of Kish, with weights), <code>precision_above</code> and
-<code>below_target</code>. A group with fewer than <code>min_n</code> clips above the
+    <p>A tibble (class <code>tbl_df</code>) with <code>site</code>, <code>species_folder</code>, the
+<code>by</code> columns, <code>threshold</code>, <code>n_above</code> (reviewed clips at or above it),
+<code>n_eff</code> (effective sample size of Kish, with weights), <code>precision_above</code>
+and <code>below_target</code>. A group with fewer than <code>min_n</code> clips above the
 threshold gets <code>below_target = NA</code>.</p>
     </div>
     <div class="section level2">

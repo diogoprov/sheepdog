@@ -143,8 +143,9 @@ post_validation(
 
 ## Value
 
-A list with the tables `validation`, `precision`, `thresholds`,
-`presence` and `retraining` (and `compared`, with `fit`), invisibly.
+A named list (class `list`) with the tables `validation`, `precision`,
+`thresholds`, `presence` and `retraining` (and `compared`, with `fit`),
+invisibly.
 
 ## Details
 
@@ -192,7 +193,7 @@ res <- post_validation(review_dir, manifest_path = man,
 #> The manifest has inclusion_prob: the precision tables also give the precision weighted by 1 / inclusion_prob.
 #> Suggested thresholds (target precision 0.9): see suggested_thresholds.csv
 #> 8 positive clips listed for retraining.
-#> Done! Results in /tmp/Rtmp0frRI4/post_validation
+#> Done! Results in /tmp/Rtmpgb1liF/post_validation
 res$thresholds
 #> # A tibble: 1 × 8
 #>   site  species_folder threshold n_support precision_at_threshold

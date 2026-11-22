@@ -49,18 +49,20 @@ app_verdicts(manifest, verdicts_file, clips_dir = NULL, reviewer = NULL)
   and
   [`consensus_verdicts()`](https://provetelab.org/sheepdog/reference/consensus_verdicts.md).
 
-  A clip marked more than once by the same reviewer keeps the last
-  verdict; a message says how many clips were marked again and how many
-  of them changed verdict.
-
 ## Value
 
-The manifest with `verdict` (`"positive"`, `"negative"`, `"uncertain"`
-or `"not_reviewed"`), `reviewed_path`, `reviewer`, `identity` and
-`identity_certainty` (`NA` when the reviewer gave no identity, or with a
-verdicts file of an earlier version). With `reviewer = NULL`, a clip
-reviewed by two reviewers has two rows, and a clip not yet reviewed has
-one row with `reviewer = NA`.
+A tibble (class `tbl_df`): the manifest with `verdict` (`"positive"`,
+`"negative"`, `"uncertain"` or `"not_reviewed"`), `reviewed_path`,
+`reviewer`, `identity` and `identity_certainty` (`NA` when the reviewer
+gave no identity, or with a verdicts file of an earlier version). With
+`reviewer = NULL`, a clip reviewed by two reviewers has two rows, and a
+clip not yet reviewed has one row with `reviewer = NA`.
+
+## Details
+
+A clip marked more than once by the same reviewer keeps the last
+verdict; a message says how many clips were marked again and how many of
+them changed verdict.
 
 ## See also
 

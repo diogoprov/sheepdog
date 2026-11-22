@@ -58,12 +58,12 @@ threshold_history(
 
 - min_detections_night:
 
-  Integer scalar. Repetition rule: minimum number of reliable detections
-  for a night with detection.
+  Integer scalar \>= 1. Repetition rule: minimum number of reliable
+  detections for a night with detection.
 
 ## Value
 
-A tibble with `site`, `species` (the short code, as in
+A tibble (class `tbl_df`) with `site`, `species` (the short code, as in
 `species_folder`), `night`, `n_detections`, `n_reliable`,
 `confidence_max`, `detection_k1`, `detection_k2`, `detection_k3` and
 `detection`.

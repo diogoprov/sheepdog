@@ -37,10 +37,10 @@ classify_review(
 
 ## Value
 
-The manifest with two more columns: `verdict` (`"positive"`,
-`"negative"`, `"not_reviewed"` or `"clip_missing"`) and `reviewed_path`,
-the path where the clip was found. This is the table written to
-`validation_by_clip.csv`.
+A tibble (class `tbl_df`): the manifest with two more columns, `verdict`
+(`"positive"`, `"negative"`, `"not_reviewed"` or `"clip_missing"`) and
+`reviewed_path`, the path where the clip was found. This is the table
+written to `validation_by_clip.csv`.
 
 ## Examples
 

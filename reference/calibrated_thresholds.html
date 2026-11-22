@@ -165,14 +165,14 @@ of P(TP) used for <code>threshold_lower</code>.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with the cell columns, <code>threshold</code> and, for
-<code>rule = "probability"</code>, <code>p_tp_at_threshold</code> (and <code>threshold_lower</code> with
-a <code>brms</code> model); for <code>rule = "precision"</code>, <code>precision_at_threshold</code>,
-<code>n_above</code> (detections kept) and <code>n_detections</code>. <code>threshold</code> is <code>NA</code> when
-no score of the grid reaches the target. With <code>"precision"</code>, a cell can
-be <code>NA</code> while <code>"probability"</code> gives a threshold: the probability
-threshold may lie above every detection of the cell, and then no set of
-detections reaches the target.</p>
+    <p>A tibble (class <code>tbl_df</code>) with the cell columns, <code>threshold</code> and, for
+<code>rule = "probability"</code>, <code>p_tp_at_threshold</code> (and <code>threshold_lower</code> with a
+<code>brms</code> model); for <code>rule = "precision"</code>, <code>precision_at_threshold</code>,
+<code>n_above</code> (detections kept) and <code>n_detections</code>. <code>threshold</code> is <code>NA</code> when no
+score of the grid reaches the target. With <code>"precision"</code>, a cell can be
+<code>NA</code> while <code>"probability"</code> gives a threshold: the probability threshold may
+lie above every detection of the cell, and then no set of detections
+reaches the target.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -213,8 +213,8 @@ both. It is not a measure of the classifier alone.</p>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="suggest_thresholds.html">suggest_thresholds()</a></code> for thresholds from the reviewed clips of
-each cell; <code><a href="compare_thresholds.html">compare_thresholds()</a></code> to put both side by side; <code><a href="calibrate.html">calibrate()</a></code>, which writes these thresholds to
-<code>thresholds.csv</code>.</p></div>
+each cell; <code><a href="compare_thresholds.html">compare_thresholds()</a></code> to put both side by side; <code><a href="calibrate.html">calibrate()</a></code>,
+which writes these thresholds to <code>thresholds.csv</code>.</p></div>
     </div>
 
     <div class="section level2">

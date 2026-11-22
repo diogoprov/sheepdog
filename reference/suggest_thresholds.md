@@ -61,9 +61,9 @@ suggest_thresholds(
 
 ## Value
 
-A tibble with `site`, `species_folder`, the `by` columns, `threshold`,
-`n_support`, `precision_at_threshold` (unweighted; `NA` when no cut
-reaches the target). With `inclusion_prob`, also
+A tibble (class `tbl_df`) with `site`, `species_folder`, the `by`
+columns, `threshold`, `n_support`, `precision_at_threshold` (unweighted;
+`NA` when no cut reaches the target). With `inclusion_prob`, also
 `precision_weighted_at_threshold`, `n_eff` (Kish's effective sample size
 at the threshold) and `precision_used` (`"weighted"` or `"unweighted"`,
 the precision that chose the cut). Without any reviewed clip with a

@@ -187,8 +187,9 @@ the threshold.</p></dd>
 
 <dt id="arg-cluster">cluster<a class="anchor" aria-label="anchor" href="#arg-cluster"></a></dt>
 <dd><p><code>NULL</code> or a character scalar, the column of <code>validation</code>
-with the recording (or other unit) of each clip, for sign 9. A missing
-column leaves sign 9 <code>NA</code>.</p></dd>
+with the recording (or other unit) of each clip, for sign 9. A name
+that is not a column of <code>validation</code> leaves sign 9 <code>NA</code>, without an
+error.</p></dd>
 
 
 <dt id="arg-max-deff">max_deff<a class="anchor" aria-label="anchor" href="#arg-max-deff"></a></dt>
@@ -203,7 +204,8 @@ write the report to.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with one row per species: <code>species_folder</code>,
+    <p>A tibble (class <code>tbl_df</code>) with one row per species:
+<code>species_folder</code>,
 <code>threshold</code> (the median over its cells), <code>sign1_ceiling</code>,
 <code>sign1</code>, <code>sign2_tp_kept</code>, <code>sign2</code>, <code>sign6_fp_spread</code>, <code>sign6</code>,
 <code>sign6_detail</code>, <code>sign7_share_below</code>, <code>sign7</code>, <code>sign7_detail</code>,
@@ -290,7 +292,7 @@ then only indicative.</p>
 <span class="r-in"><span>              threshold_column <span class="op">=</span> <span class="st">"threshold_conservative"</span>,</span></span>
 <span class="r-in"><span>              file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".md"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> No reviewed clip has `inclusion_prob`: signs 2 and 6 use every clip, unweighted, and are only indicative.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Warning signs written to /tmp/Rtmp0frRI4/file188d36eaa8e.md</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Warning signs written to /tmp/Rtmpgb1liF/file18997e989017.md</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 8 × 19</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   species_folder threshold sign1_ceiling sign1 sign2_tp_kept sign2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span></span>

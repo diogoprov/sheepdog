@@ -44,9 +44,9 @@ precision_by_bin(
 
 ## Value
 
-A tibble with `site`, `species_folder`, the `by` columns, `bin`,
-`n_reviewed`, `n_positive`, `precision`, `precision_weighted` (only with
-`inclusion_prob`) and `low_support`.
+A tibble (class `tbl_df`) with `site`, `species_folder`, the `by`
+columns, `bin`, `n_reviewed`, `n_positive`, `precision`,
+`precision_weighted` (only with `inclusion_prob`) and `low_support`.
 
 ## Details
 

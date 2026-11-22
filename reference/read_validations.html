@@ -105,17 +105,18 @@ names, as <code>c(old = "new")</code>, e.g. <code>c(BEP2 = "BEP")</code>.</p></d
 
 
 <dt id="arg-keep">keep<a class="anchor" aria-label="anchor" href="#arg-keep"></a></dt>
-<dd><p><code>NULL</code> or a character vector of input columns to retain, e.g.
-<code>c("source_audio", "night")</code> for grouped cross-validation. Missing columns
-raise an error rather than silently falling back to clip folds.</p></dd>
+<dd><p><code>NULL</code> or a character vector (one or more elements) of input
+columns to retain, e.g. <code>c("source_audio", "night")</code> for grouped
+cross-validation. Missing columns raise an error rather than silently
+falling back to clip folds.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with <code>site</code> and <code>species</code> (factors; <code>species</code> is the
-species folder code), <code>confidence</code>, <code>logit_conf</code> (logit of the
-confidence, bounded at 1e-4 and 1 - 1e-4) and <code>tp</code> (1 = true
-positive, 0 = false positive), plus the columns requested in <code>keep</code>.</p>
+    <p>A tibble (class <code>tbl_df</code>) with <code>site</code> and <code>species</code> (factors;
+<code>species</code> is the species folder code), <code>confidence</code>, <code>logit_conf</code> (logit of
+the confidence, bounded at 1e-4 and 1 - 1e-4) and <code>tp</code> (1 = true positive,
+0 = false positive), plus the columns requested in <code>keep</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="transformations">Transformations<a class="anchor" aria-label="anchor" href="#transformations"></a></h2>

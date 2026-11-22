@@ -58,10 +58,10 @@ threshold_record(
 
 ## Value
 
-A tibble, one row per cell, with the columns of `thresholds`,
-`target_precision`, the bootstrap columns and, from `groups`,
-`n_groups`, `n_groups_below` and `worst_group_precision`; invisibly when
-`file` is given.
+A tibble (class `tbl_df`), one row per cell, with the columns of
+`thresholds`, `target_precision`, the bootstrap columns and, from
+`groups`, `n_groups`, `n_groups_below` and `worst_group_precision`;
+invisibly when `file` is given.
 
 ## See also
 
@@ -100,7 +100,7 @@ threshold_record(thr, bootstrap = boot, groups = groups)
 # Also write the record as a Markdown table
 md <- file.path(tempdir(), "threshold_record.md")
 threshold_record(thr, bootstrap = boot, groups = groups, file = md)
-#> Threshold record written to /tmp/Rtmp0frRI4/threshold_record.md
+#> Threshold record written to /tmp/Rtmpgb1liF/threshold_record.md
 head(readLines(md))
 #> [1] "# Threshold record"                           
 #> [2] ""                                             

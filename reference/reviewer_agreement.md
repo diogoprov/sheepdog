@@ -29,8 +29,9 @@ reviewer_agreement(reviews)
 
 ## Value
 
-A tibble with `species_folder`, `n_clips` (clips with at least two
-verdicts), `n_reviewers`, `agreement`, `kappa` and `method`.
+A tibble (class `tbl_df`) with `species_folder`, `n_clips` (clips with
+at least two verdicts), `n_reviewers`, `agreement`, `kappa` and
+`method`.
 
 ## Examples
 

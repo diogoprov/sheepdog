@@ -51,16 +51,17 @@ calibration_quality(
 
 - fold_group:
 
-  `NULL` or a character vector of grouping columns. Do not include
-  `species`, verdicts or confidence scores: these would split recordings
-  or nights by species or by outcome. Group IDs must be nonmissing and
-  nonempty. `NULL` keeps the original clip folds.
+  `NULL` or a character vector (one or more elements) of grouping
+  columns, combined into one group ID. Do not include `species`,
+  verdicts or confidence scores: these would split recordings or nights
+  by species or by outcome. Group IDs must be nonmissing and nonempty.
+  `NULL` keeps the original clip folds.
 
 - by:
 
-  Character vector of columns of `validations` that define the groups:
-  `"species"`, or `c("site", "species")` for the cells of the
-  calibration, which hold fewer clips each.
+  Character vector (one or more elements) of columns of `validations`
+  that define the groups: `"species"`, or `c("site", "species")` for the
+  cells of the calibration, which hold fewer clips each.
 
 - min_class:
 
@@ -69,7 +70,7 @@ calibration_quality(
 
 - auc_min:
 
-  Numeric scalar, lowest acceptable `auc` and `auc_score`.
+  Numeric scalar in \[0, 1\], lowest acceptable `auc` and `auc_score`.
 
 - slope_range:
 
@@ -78,16 +79,16 @@ calibration_quality(
 
 - intercept_max:
 
-  Numeric scalar, largest acceptable absolute `cal_intercept`.
+  Numeric scalar \>= 0, largest acceptable absolute `cal_intercept`.
 
 ## Value
 
-A tibble with one row per group: the `by` columns, `n`, `n_tp`, `n_fp`,
-`conf_min`, `conf_max`, `auc`, `auc_score`, `logloss`, `logloss_null`,
-`logloss_gain`, `cal_intercept`, `cal_slope`, `status` (`"ok"`, `"poor"`
-or `"insufficient"`) and `reason`. Measures that cannot be computed
-(e.g. the AUC of a group with one verdict) are `NA`. Folds whose fit
-failed are left out, with a warning.
+A tibble (class `tbl_df`) with one row per group: the `by` columns, `n`,
+`n_tp`, `n_fp`, `conf_min`, `conf_max`, `auc`, `auc_score`, `logloss`,
+`logloss_null`, `logloss_gain`, `cal_intercept`, `cal_slope`, `status`
+(`"ok"`, `"poor"` or `"insufficient"`) and `reason`. Measures that
+cannot be computed (e.g. the AUC of a group with one verdict) are `NA`.
+Folds whose fit failed are left out, with a warning.
 
 ## Details
 

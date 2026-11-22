@@ -101,8 +101,8 @@ warning_signs(
 - cluster:
 
   `NULL` or a character scalar, the column of `validation` with the
-  recording (or other unit) of each clip, for sign 9. A missing column
-  leaves sign 9 `NA`.
+  recording (or other unit) of each clip, for sign 9. A name that is not
+  a column of `validation` leaves sign 9 `NA`, without an error.
 
 - max_deff:
 
@@ -116,9 +116,9 @@ warning_signs(
 
 ## Value
 
-A tibble with one row per species: `species_folder`, `threshold` (the
-median over its cells), `sign1_ceiling`, `sign1`, `sign2_tp_kept`,
-`sign2`, `sign6_fp_spread`, `sign6`, `sign6_detail`,
+A tibble (class `tbl_df`) with one row per species: `species_folder`,
+`threshold` (the median over its cells), `sign1_ceiling`, `sign1`,
+`sign2_tp_kept`, `sign2`, `sign6_fp_spread`, `sign6`, `sign6_detail`,
 `sign7_share_below`, `sign7`, `sign7_detail`, `sign8_verdict`, `sign8`,
 `sign9_deff`, `sign9`, `n_checked`, `n_raised` and `verdict`. The
 `signN` columns are `TRUE` (raised), `FALSE` (clear) or `NA` (not
@@ -228,7 +228,7 @@ warning_signs(val, thr, groups = "site",
               threshold_column = "threshold_conservative",
               file = tempfile(fileext = ".md"))
 #> No reviewed clip has `inclusion_prob`: signs 2 and 6 use every clip, unweighted, and are only indicative.
-#> Warning signs written to /tmp/Rtmp0frRI4/file188d36eaa8e.md
+#> Warning signs written to /tmp/Rtmpgb1liF/file18997e989017.md
 #> # A tibble: 8 × 19
 #>   species_folder threshold sign1_ceiling sign1 sign2_tp_kept sign2
 #>   <chr>              <dbl>         <dbl> <lgl>         <dbl> <lgl>

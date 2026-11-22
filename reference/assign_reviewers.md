@@ -39,8 +39,9 @@ assign_reviewers(manifest, reviewers, overlap = 0.1, seed = 2026)
 
 ## Value
 
-The manifest with `reviewer` (the first reviewer of each clip) and
-`second_reviewer` (`NA` for clips reviewed once).
+A tibble (class `tbl_df`): the manifest with `reviewer` (the first
+reviewer of each clip) and `second_reviewer` (`NA` for clips reviewed
+once).
 
 ## Details
 

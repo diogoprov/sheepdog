@@ -77,7 +77,8 @@ extract_validation_clips(
 
 ## Value
 
-The manifest written to `clip_manifest.csv`, invisibly.
+A tibble (class `tbl_df`), the manifest written to `clip_manifest.csv`,
+invisibly.
 
 ## Details
 
@@ -122,8 +123,8 @@ man <- extract_validation_clips(file.path(ex, "birdnet"),
 #> Simulating the cut of 4099 clips...
 #>   audio_not_found: 4099
 #> Warning: Some clips were not created - check the `status` column of the manifest and the path remapping (remap_from/remap_to).
-#> Manifest written to /tmp/Rtmp0frRI4/validation/clip_manifest.csv
-#> Done! The clips in /tmp/Rtmp0frRI4/validation/clips are ready for validation in the BirdNET GUI (review).
+#> Manifest written to /tmp/Rtmpgb1liF/validation/clip_manifest.csv
+#> Done! The clips in /tmp/Rtmpgb1liF/validation/clips are ready for validation in the BirdNET GUI (review).
 table(man$status)
 #> 
 #> audio_not_found 

@@ -50,9 +50,10 @@ training_nights(
 
 ## Value
 
-A tibble with `file`, `site`, `recording` (site, date and time of the
-source recording, before `site_map`) and `night` (`YYYYMMDD`). Names
-that do not match `pattern` are left out with a warning.
+A tibble (class `tbl_df`) with `file`, `site`, `recording` (site, date
+and time of the source recording, before `site_map`) and `night`
+(`YYYYMMDD`). Names that do not match `pattern` are left out with a
+warning.
 
 ## See also
 

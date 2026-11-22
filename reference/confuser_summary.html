@@ -101,8 +101,10 @@ another class of the classifier.</p>
 
 
 <dt id="arg-verdicts">verdicts<a class="anchor" aria-label="anchor" href="#arg-verdicts"></a></dt>
-<dd><p>Character vector of the verdicts counted: <code>"negative"</code>
-by default; add <code>"uncertain"</code> to include the uncertain clips.</p></dd>
+<dd><p>Character vector of one or more verdicts counted, among
+<code>"negative"</code>, <code>"uncertain"</code>, <code>"positive"</code>, <code>"disagreement"</code> and
+<code>"not_reviewed"</code>: <code>"negative"</code> by default; add <code>"uncertain"</code> to include
+the uncertain clips.</p></dd>
 
 
 <dt id="arg-classes">classes<a class="anchor" aria-label="anchor" href="#arg-classes"></a></dt>
@@ -113,11 +115,12 @@ classifier, to flag identities that are classes themselves. <code>NULL</code>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with one row per target class and identity:
-<code>species_code</code>, <code>identity</code>, <code>n</code> (clips), <code>n_weighted</code>, <code>n_sure</code> (clips
-with certainty <code>"sure"</code>), <code>share</code> (<code>n_weighted</code> over the clips of the
-class counted) and <code>is_class</code> (the identity is a class of the
-classifier other than the target), sorted by class and decreasing <code>n</code>.</p>
+    <p>A tibble (class <code>tbl_df</code>) with one row per target class and
+identity: <code>species_code</code>, <code>identity</code>, <code>n</code> (clips), <code>n_weighted</code>,
+<code>n_sure</code> (clips with certainty <code>"sure"</code>), <code>share</code> (<code>n_weighted</code> over
+the clips of the class counted) and <code>is_class</code> (the identity is a class
+of the classifier other than the target), sorted by class and
+decreasing <code>n</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

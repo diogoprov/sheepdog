@@ -125,16 +125,16 @@ names, e.g. <code>c(BEP2 = "BEP")</code>, as in <code><a href="read_validations.
 
 <dt id="arg-night-cutoff">night_cutoff<a class="anchor" aria-label="anchor" href="#arg-night-cutoff"></a></dt>
 <dd><p>Numeric scalar (hour, 0-23). Recordings that start
-before this hour belong to
-the night of the day before, as in <code><a href="detection_history.html">detection_history()</a></code>.</p></dd>
+before this hour belong to the night of the day before, as in
+<code><a href="detection_history.html">detection_history()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with <code>file</code>, <code>site</code>, <code>recording</code> (site, date and time
-of the source recording, before <code>site_map</code>) and <code>night</code>
-(<code>YYYYMMDD</code>). Names that do not match <code>pattern</code> are left out with a
-warning.</p>
+    <p>A tibble (class <code>tbl_df</code>) with <code>file</code>, <code>site</code>, <code>recording</code>
+(site, date and time of the source recording, before <code>site_map</code>) and
+<code>night</code> (<code>YYYYMMDD</code>). Names that do not match <code>pattern</code> are left out
+with a warning.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

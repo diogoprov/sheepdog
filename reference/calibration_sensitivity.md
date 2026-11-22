@@ -41,9 +41,9 @@ The table of
 ## Examples
 
 ``` r
+if (FALSE) { # interactive() && requireNamespace("brms", quietly = TRUE)
 # Fitting a Bayesian calibration compiles a Stan model, which takes
-# minutes, so this example is not run here.
-if (FALSE) { # \dontrun{
+# minutes, so this example runs only interactively.
 ex <- system.file("extdata", "example", package = "sheepdog")
 val <- read_validations(list.files(file.path(ex, "validation"),
                                    full.names = TRUE))
@@ -54,5 +54,5 @@ fit <- fit_calibration(val, f, engine = "brms",
 calibration_sensitivity(fit)
 # Only the slope on the logit of the score
 calibration_sensitivity(fit, variable = "b_logit_conf")
-} # }
+}
 ```

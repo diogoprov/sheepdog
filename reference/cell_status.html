@@ -105,7 +105,8 @@ a detection reliable, as in <code><a href="detection_history.html">detection_his
 
 
 <dt id="arg-min-n">min_n<a class="anchor" aria-label="anchor" href="#arg-min-n"></a></dt>
-<dd><p>Numeric scalar. Minimum number of reviewed clips in a cell.</p></dd>
+<dd><p>Non-negative numeric scalar. Minimum number of reviewed clips
+in a cell.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
@@ -119,7 +120,8 @@ threshold uses the <code>by</code> columns only if the calibration model does.</
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with one row per site x species (x <code>by</code>): <code>site</code>,
+    <p>A tibble (class <code>tbl_df</code>) with one row per site x species (x
+<code>by</code>): <code>site</code>,
 <code>species</code>, the <code>by</code> columns,
 <code>n_reviewed</code>, <code>n_tp</code>, <code>max_confidence</code> (highest reviewed score),
 <code>threshold</code> (lowest grid score at which the calibrated probability

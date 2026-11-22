@@ -31,8 +31,8 @@ read_validation_tables(files, candidates = NULL)
 
 ## Value
 
-A tibble with the columns of the validation tables; `night` and
-`recording_date` are character.
+A tibble (class `tbl_df`) with the columns of the validation tables;
+`night` and `recording_date` are character.
 
 ## Examples
 

@@ -141,13 +141,13 @@ every higher cut with at least <code>min_n</code> clips. See Sustained target.</
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with <code>site</code>, <code>species_folder</code>, the <code>by</code> columns,
-<code>threshold</code>, <code>n_support</code>, <code>precision_at_threshold</code> (unweighted; <code>NA</code>
-when no cut reaches the target). With <code>inclusion_prob</code>, also
-<code>precision_weighted_at_threshold</code>, <code>n_eff</code> (Kish's effective sample
-size at the threshold) and <code>precision_used</code> (<code>"weighted"</code> or
-<code>"unweighted"</code>, the precision that chose the cut). Without any
-reviewed clip with a confidence, the tibble has no rows.</p>
+    <p>A tibble (class <code>tbl_df</code>) with <code>site</code>, <code>species_folder</code>, the
+<code>by</code> columns, <code>threshold</code>, <code>n_support</code>, <code>precision_at_threshold</code>
+(unweighted; <code>NA</code> when no cut reaches the target). With
+<code>inclusion_prob</code>, also <code>precision_weighted_at_threshold</code>, <code>n_eff</code>
+(Kish's effective sample size at the threshold) and <code>precision_used</code>
+(<code>"weighted"</code> or <code>"unweighted"</code>, the precision that chose the cut).
+Without any reviewed clip with a confidence, the tibble has no rows.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

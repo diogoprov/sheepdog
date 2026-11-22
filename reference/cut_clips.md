@@ -32,8 +32,9 @@ cut_clips(manifest, output_dir, simulate = FALSE)
 
 ## Value
 
-The manifest with the column `status` after `begin_path`: one of `"ok"`,
-`"already_exists"`, `"audio_not_found"`, `"simulated"` or
+A data frame of the class of `manifest` (`data.frame`, or `tbl_df` for a
+tibble): the manifest with the column `status` after `begin_path`: one
+of `"ok"`, `"already_exists"`, `"audio_not_found"`, `"simulated"` or
 `"error: <message>"`.
 
 ## Details

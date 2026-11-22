@@ -160,11 +160,11 @@ simulation. The global random number generator is left as it was.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with one row per check and group: <code>check</code> (<code>"overall"</code>,
-<code>"score"</code>, <code>"site"</code>, <code>"species"</code> or a column of <code>group</code>), <code>group</code>, <code>n</code>
-(clips), <code>observed</code> (share of true positives), <code>pred_mean</code>, <code>pred_lower</code>
-and <code>pred_upper</code> (posterior predictive mean and interval of the
-share), <code>p_value</code> and <code>flagged</code>. Plot it with <code><a href="plot_calibration_ppc.html">plot_calibration_ppc()</a></code>.</p>
+    <p>A tibble (class <code>tbl_df</code>) with one row per check and group: <code>check</code>
+(<code>"overall"</code>, <code>"score"</code>, <code>"site"</code>, <code>"species"</code> or a column of <code>group</code>),
+<code>group</code>, <code>n</code> (clips), <code>observed</code> (share of true positives), <code>pred_mean</code>,
+<code>pred_lower</code> and <code>pred_upper</code> (posterior predictive mean and interval of
+the share), <code>p_value</code> and <code>flagged</code>. Plot it with <code><a href="plot_calibration_ppc.html">plot_calibration_ppc()</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -193,8 +193,9 @@ checked first.</p></div>
 <span class="r-in"><span>                        keep <span class="op">=</span> <span class="st">"recording_date"</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.</span>
 <span class="r-in"><span><span class="va">val</span><span class="op">$</span><span class="va">month</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/substr.html" class="external-link">substr</a></span><span class="op">(</span><span class="va">val</span><span class="op">$</span><span class="va">recording_date</span>, <span class="fl">5</span>, <span class="fl">6</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="co"># Fitting compiles a Stan model, which takes minutes, so it is not run here.</span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># interactive() &amp;&amp; requireNamespace("brms", quietly = TRUE)</span></span></span>
+<span class="r-in"><span><span class="co"># Fitting compiles a Stan model, which takes minutes, so this part runs</span></span></span>
+<span class="r-in"><span><span class="co"># only interactively.</span></span></span>
 <span class="r-in"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="va">tp</span> <span class="op">~</span> <span class="va">logit_conf</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">species</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">fit_b</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_calibration.html">fit_calibration</a></span><span class="op">(</span><span class="va">val</span>, <span class="va">f</span>, engine <span class="op">=</span> <span class="st">"brms"</span>,</span></span>
 <span class="r-in"><span>                         prior <span class="op">=</span> <span class="fu"><a href="calibration_prior.html">calibration_prior</a></span><span class="op">(</span><span class="va">f</span>, <span class="va">val</span><span class="op">)</span>,</span></span>
@@ -202,7 +203,7 @@ checked first.</p></div>
 <span class="r-in"><span><span class="fu"><a href="calibration_diagnostics.html">calibration_diagnostics</a></span><span class="op">(</span><span class="va">fit_b</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">ppc</span> <span class="op">&lt;-</span> <span class="fu">calibration_ppc</span><span class="op">(</span><span class="va">fit_b</span>, <span class="va">val</span>, group <span class="op">=</span> <span class="st">"month"</span>, n_draws <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">ppc</span><span class="op">[</span><span class="va">ppc</span><span class="op">$</span><span class="va">flagged</span>, <span class="op">]</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

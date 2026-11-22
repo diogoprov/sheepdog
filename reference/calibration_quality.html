@@ -131,16 +131,17 @@ number generator is left as it was.</p></dd>
 
 
 <dt id="arg-fold-group">fold_group<a class="anchor" aria-label="anchor" href="#arg-fold-group"></a></dt>
-<dd><p><code>NULL</code> or a character vector of grouping columns. Do not
-include <code>species</code>, verdicts or confidence scores: these would split
-recordings or nights by species or by outcome. Group IDs must be nonmissing
-and nonempty. <code>NULL</code> keeps the original clip folds.</p></dd>
+<dd><p><code>NULL</code> or a character vector (one or more elements) of
+grouping columns, combined into one group ID. Do not include <code>species</code>,
+verdicts or confidence scores: these would split recordings or nights by
+species or by outcome. Group IDs must be nonmissing and nonempty. <code>NULL</code>
+keeps the original clip folds.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
-<dd><p>Character vector of columns of <code>validations</code> that define the
-groups: <code>"species"</code>, or <code>c("site", "species")</code> for the cells of the
-calibration, which hold fewer clips each.</p></dd>
+<dd><p>Character vector (one or more elements) of columns of <code>validations</code>
+that define the groups: <code>"species"</code>, or <code>c("site", "species")</code> for the
+cells of the calibration, which hold fewer clips each.</p></dd>
 
 
 <dt id="arg-min-class">min_class<a class="anchor" aria-label="anchor" href="#arg-min-class"></a></dt>
@@ -150,7 +151,8 @@ positives for a group to be judged. With fewer, <code>status</code> is
 
 
 <dt id="arg-auc-min">auc_min<a class="anchor" aria-label="anchor" href="#arg-auc-min"></a></dt>
-<dd><p>Numeric scalar, lowest acceptable <code>auc</code> and <code>auc_score</code>.</p></dd>
+<dd><p>Numeric scalar in [0, 1], lowest acceptable <code>auc</code> and
+<code>auc_score</code>.</p></dd>
 
 
 <dt id="arg-slope-range">slope_range<a class="anchor" aria-label="anchor" href="#arg-slope-range"></a></dt>
@@ -159,18 +161,18 @@ of <code>cal_slope</code>.</p></dd>
 
 
 <dt id="arg-intercept-max">intercept_max<a class="anchor" aria-label="anchor" href="#arg-intercept-max"></a></dt>
-<dd><p>Numeric scalar, largest acceptable absolute
+<dd><p>Numeric scalar &gt;= 0, largest acceptable absolute
 <code>cal_intercept</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with one row per group: the <code>by</code> columns, <code>n</code>, <code>n_tp</code>,
-<code>n_fp</code>, <code>conf_min</code>, <code>conf_max</code>, <code>auc</code>, <code>auc_score</code>, <code>logloss</code>,
+    <p>A tibble (class <code>tbl_df</code>) with one row per group: the <code>by</code> columns,
+<code>n</code>, <code>n_tp</code>, <code>n_fp</code>, <code>conf_min</code>, <code>conf_max</code>, <code>auc</code>, <code>auc_score</code>, <code>logloss</code>,
 <code>logloss_null</code>, <code>logloss_gain</code>, <code>cal_intercept</code>, <code>cal_slope</code>, <code>status</code>
-(<code>"ok"</code>, <code>"poor"</code> or <code>"insufficient"</code>) and <code>reason</code>. Measures that
-cannot be computed (e.g. the AUC of a group with one verdict) are <code>NA</code>.
-Folds whose fit failed are left out, with a warning.</p>
+(<code>"ok"</code>, <code>"poor"</code> or <code>"insufficient"</code>) and <code>reason</code>. Measures that cannot
+be computed (e.g. the AUC of a group with one verdict) are <code>NA</code>. Folds
+whose fit failed are left out, with a warning.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

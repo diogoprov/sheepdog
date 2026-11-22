@@ -90,9 +90,9 @@ row per clip.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with <code>site</code>, <code>species_code</code>, <code>species_folder</code>,
-<code>clip_file</code>, <code>reviewed_path</code>, <code>confidence</code>, <code>night</code>, <code>recording_hour</code>
-and <code>source_audio</code>.</p>
+    <p>A tibble (class <code>tbl_df</code>) with <code>site</code>, <code>species_code</code>,
+<code>species_folder</code>, <code>clip_file</code>, <code>reviewed_path</code>, <code>confidence</code>, <code>night</code>,
+<code>recording_hour</code> and <code>source_audio</code>.</p>
     </div>
 
     <div class="section level2">
@@ -100,51 +100,18 @@ and <code>source_audio</code>.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">val</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"validation_by_clip.csv"</span>,</span></span>
 <span class="r-in"><span>                            package <span class="op">=</span> <span class="st">"sheepdog"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">retraining_clips</span><span class="op">(</span><span class="va">val</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   site           species_code species_folder</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  ARA Boana raniceps_boa-ran        boa_ran</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  ARA Boana raniceps_boa-ran        boa_ran</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  ARA Boana raniceps_boa-ran        boa_ran</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  ARA Boana raniceps_boa-ran        boa_ran</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  ARA Boana raniceps_boa-ran        boa_ran</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  ARA Boana raniceps_boa-ran        boa_ran</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  ARA Boana raniceps_boa-ran        boa_ran</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8  ARA Boana raniceps_boa-ran        boa_ran</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                         clip_file</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.913_1_ARA01_20220110_000000_114.0s_117.0s.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.789_1_ARA01_20220110_013000_135.0s_138.0s.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.938_2_ARA01_20220110_013000_159.0s_162.0s.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 0.622_3_ARA01_20220111_030000_123.0s_126.0s.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   0.552_1_ARA01_20220115_120000_21.0s_24.0s.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6   0.964_2_ARA01_20220115_120000_36.0s_39.0s.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7   0.723_3_ARA01_20220115_120000_54.0s_57.0s.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8   0.705_1_ARA01_20220115_193000_87.0s_90.0s.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                        reviewed_path</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 /project/revisado/boa_ran/Positive/0.913_1_ARA01_20220110_000000_114.0s_117.0s.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 /project/revisado/boa_ran/Positive/0.789_1_ARA01_20220110_013000_135.0s_138.0s.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 /project/revisado/boa_ran/Positive/0.938_2_ARA01_20220110_013000_159.0s_162.0s.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 /project/revisado/boa_ran/Positive/0.622_3_ARA01_20220111_030000_123.0s_126.0s.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   /project/revisado/boa_ran/Positive/0.552_1_ARA01_20220115_120000_21.0s_24.0s.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6   /project/revisado/boa_ran/Positive/0.964_2_ARA01_20220115_120000_36.0s_39.0s.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7   /project/revisado/boa_ran/Positive/0.723_3_ARA01_20220115_120000_54.0s_57.0s.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8   /project/revisado/boa_ran/Positive/0.705_1_ARA01_20220115_193000_87.0s_90.0s.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   confidence    night recording_hour</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     0.9128 20220110              0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2     0.7886 20220110              1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3     0.9380 20220110              1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4     0.6215 20220111              3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5     0.5516 20220115             12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6     0.9642 20220115             12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7     0.7233 20220115             12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8     0.7050 20220115             19</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                   source_audio</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 /project/audio/ARA/ARA01_20220110_000000.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 /project/audio/ARA/ARA01_20220110_013000.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 /project/audio/ARA/ARA01_20220110_013000.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 /project/audio/ARA/ARA01_20220111_030000.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 /project/audio/ARA/ARA01_20220115_120000.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 /project/audio/ARA/ARA01_20220115_120000.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7 /project/audio/ARA/ARA01_20220115_120000.wav</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8 /project/audio/ARA/ARA01_20220115_193000.wav</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 8 × 9</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   site  species_code    species_folder clip_file reviewed_path confidence  night</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> ARA   Boana raniceps… boa_ran        0.913_1_… /project/rev…      0.913 2.02<span style="color: #949494;">e</span>7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> ARA   Boana raniceps… boa_ran        0.789_1_… /project/rev…      0.789 2.02<span style="color: #949494;">e</span>7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> ARA   Boana raniceps… boa_ran        0.938_2_… /project/rev…      0.938 2.02<span style="color: #949494;">e</span>7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> ARA   Boana raniceps… boa_ran        0.622_3_… /project/rev…      0.622 2.02<span style="color: #949494;">e</span>7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> ARA   Boana raniceps… boa_ran        0.552_1_… /project/rev…      0.552 2.02<span style="color: #949494;">e</span>7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> ARA   Boana raniceps… boa_ran        0.964_2_… /project/rev…      0.964 2.02<span style="color: #949494;">e</span>7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">7</span> ARA   Boana raniceps… boa_ran        0.723_3_… /project/rev…      0.723 2.02<span style="color: #949494;">e</span>7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">8</span> ARA   Boana raniceps… boa_ran        0.705_1_… /project/rev…      0.705 2.02<span style="color: #949494;">e</span>7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 2 more variables: recording_hour &lt;int&gt;, source_audio &lt;chr&gt;</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

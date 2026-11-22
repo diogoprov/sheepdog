@@ -135,8 +135,8 @@ upper end).</p></dd>
 
 
 <dt id="arg-within">within<a class="anchor" aria-label="anchor" href="#arg-within"></a></dt>
-<dd><p><code>NULL</code> or character vector, columns within which quantile
-breaks are computed (<code>NULL</code>
+<dd><p><code>NULL</code> or a character vector of one or more column names
+of <code>covariates</code>, within which quantile breaks are computed (<code>NULL</code>
 for quantiles over all rows). Ignored when <code>breaks</code> is given.</p></dd>
 
 
@@ -147,10 +147,11 @@ for quantiles over all rows). Ignored when <code>breaks</code> is given.</p></dd
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>The <code>key</code> columns (as character) and the bin, an ordered factor
-with levels <code>q1</code>, <code>q2</code>, ... (quantile bins, from low to high values of
-<code>var</code>) or the intervals of <code>breaks</code>. Rows with a missing <code>var</code> get a
-missing bin.</p>
+    <p>A data frame (class <code>data.frame</code>, or <code>tbl_df</code> when <code>covariates</code>
+is a tibble) with the <code>key</code> columns (as character) and the bin, an
+ordered factor with levels <code>q1</code>, <code>q2</code>, ... (quantile bins, from low to
+high values of <code>var</code>) or the intervals of <code>breaks</code>. Rows with a missing
+<code>var</code> get a missing bin.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

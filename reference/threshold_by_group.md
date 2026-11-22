@@ -42,8 +42,8 @@ threshold_by_group(
 
 - by:
 
-  Character vector of column names of `validation` that define the
-  groups, e.g. `"recording_hour"` or a month column.
+  Character vector of one or more column names of `validation` that
+  define the groups, e.g. `"recording_hour"`, a month column, or both.
 
 - target_precision:
 
@@ -60,11 +60,11 @@ threshold_by_group(
 
 ## Value
 
-A tibble with `site`, `species_folder`, the `by` columns, `threshold`,
-`n_above` (reviewed clips at or above it), `n_eff` (effective sample
-size of Kish, with weights), `precision_above` and `below_target`. A
-group with fewer than `min_n` clips above the threshold gets
-`below_target = NA`.
+A tibble (class `tbl_df`) with `site`, `species_folder`, the `by`
+columns, `threshold`, `n_above` (reviewed clips at or above it), `n_eff`
+(effective sample size of Kish, with weights), `precision_above` and
+`below_target`. A group with fewer than `min_n` clips above the
+threshold gets `below_target = NA`.
 
 ## See also
 
