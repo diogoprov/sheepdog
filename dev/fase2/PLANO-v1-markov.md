@@ -1533,6 +1533,42 @@ mostra que o limiar com o modelo de verificação atual erra para baixo de
 um jeito que os verificados contradizem. Fica como achado para a sessão do
 crywolf (sem mexer no repositório daqui).
 
+### Simulação de ψ: desenho (21/11/2026, fixado antes de rodar)
+
+Pergunta: as violações das emissões achadas no Curiango enviesam ψ, agora
+que o alvo do v1 é a ocupação por sítio-noite? `sim_psi_curiango.R`.
+
+* Estrutura fixa do Curiango. Canto latente do v1 (Markov), com ψ, θ e ρ
+  partindo das medianas de `bins_m1` e calibrados. Faixas de score pelas
+  emissões por faixa (`emissions_bins.rds`).
+* Cenários:
+  - `ind`: faixas independentes dado w (controle);
+  - `pers`: num minuto com canto logo depois de outro com canto, a faixa
+    repete a anterior com probabilidade κ, senão sai de f₁ (a marginal de
+    f₁ não muda);
+  - `pers0`: `pers`, e os minutos sem canto a até 2 passos de um minuto
+    com canto na faixa ≥ 0,4 tiram a faixa da distribuição ponderada dos
+    negativos do ct12 perto de surto (0,215; 0,64; 0,135; 0,01; 0).
+* Calibração (Nelder–Mead, números aleatórios comuns) nos scores ≥ 0,4 do
+  Curiango: taxa, P(y | anterior), fração de noites com algum y, fração de
+  minutos altos com vizinho alto (0,567), fração de noites com um único
+  minuto alto (0,115), e a prevalência 0,033 da referência
+  pós-estratificada. Parâmetros: deslocamento de ψ, de θ, ρ e κ.
+* Rótulos como na simulação com surtos (ct12 estratificado por faixa, ct03
+  com chance 30:1 para canto). Estágio 1 por faixas nos rótulos simulados,
+  estágio 2 com Markov, 4 cadeias de 500 + 500.
+* 8 conjuntos por cenário (24 ajustes, ~1,2 h no Mac, dois por vez).
+* Estimando: ψ médio sobre os sítio-noites, logit⁻¹(Xβ). Medidas: viés da
+  mediana (absoluto e relativo) e cobertura de 90%. Sem bootstrap do
+  estágio 1, a cobertura sai otimista; ela fica para a AWS se o viés for
+  pequeno.
+* O mesmo resumo de ψ é aplicado aos 36 conjuntos da simulação com surtos
+  (desajuste latente), que já guardam o deslocamento de ψ.
+* Leitura combinada antes: viés de ψ ≤ 0,05 (absoluto) em `pers` e
+  `pers0` → as violações das emissões não comprometem ψ, e o passo
+  seguinte é a cobertura com bootstrap na AWS. Viés maior → o v1 precisa
+  de emissões com dependência antes de ir ao crywolf.
+
 ## Critério para levar o v1 de dois estágios ao crywolf (20/11/2026)
 
 Decidido com o Diogo: o v1 fica em `dev/fase2` até cumprir os três
