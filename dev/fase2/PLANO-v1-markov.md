@@ -1608,9 +1608,10 @@ sem o bootstrap do estágio 1 sai abaixo de 0,90, como esperado.
 * **O que enviesa ψ é θ heterogêneo entre sítio-noites (`hett`):** −0,16
   (−33%), em todos os conjuntos. É o problema clássico de heterogeneidade
   de detecção em ocupação: noites ocupadas com pouco canto parecem vazias.
-  No Curiango, o efeito aleatório de noite em θ estimou σ = 0,32 (seção de
-  13/11), bem abaixo do σ = 0,95 de `hett`; um efeito por sítio-noite
-  ainda não foi testado.
+  No Curiango, o efeito aleatório da data (noite de calendário, comum aos
+  sítios) em θ estimou σ = 0,32 (seção de 13/11), bem abaixo do σ = 0,95
+  de `hett`. Um efeito por sítio-noite, que é o de `hett`, se confunde
+  com z e não é identificável com estes dados.
 * Nenhum gerador reproduz o excesso de minutos do Curiango (1,42): aqui a
   razão fica entre 0,92 e 1,15. A causa da prevalência de minutos inflada
   continua sem explicação completa; para ψ ela parece não importar.
@@ -1619,8 +1620,9 @@ Leitura (interpretação): para o alvo de ocupação, o v1 resiste às
 violações das emissões que vimos no Curiango, e a fraqueza que aparece é
 a de qualquer modelo de ocupação, a heterogeneidade de detecção. Próximos
 passos: (i) cobertura de ψ com o bootstrap do estágio 1 (AWS), que é o
-critério 2 reescrito; (ii) testar no Curiango um efeito aleatório de
-sítio-noite em θ e ver se ψ se move; (iii) FrogNet.
+critério 2 reescrito; (ii) medir quanto da heterogeneidade de θ entre
+sítio-noites as covariáveis e um efeito de sítio (7 sítios) explicam, já
+que o efeito por sítio-noite não é identificável; (iii) FrogNet.
 
 ## Critério para levar o v1 de dois estágios ao crywolf (20/11/2026)
 
