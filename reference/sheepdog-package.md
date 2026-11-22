@@ -78,6 +78,26 @@ accepts unambiguous partial matches: `engine = "brms"` and
 allowed values. The others are compared exactly, without partial
 matching.
 
+## Input tables and missing values
+
+Every function that takes a table accepts a `data.frame`, a tibble or a
+`data.table` and converts it to a tibble on entry, so the result does
+not depend on the class of the input. Numeric columns lose extra classes
+(such as those of the 'units' package) and list columns among the
+columns a function uses raise an error.
+
+Rows with a missing value in a column a function needs (the score and
+the audio path of a prediction; the variables of a calibration formula;
+the score of a clip reviewed with `"top"`, `"random_detections"` or
+`"score_bands"`) are left out with a message that says how many. Set
+`options(sheepdog.missing = "error")` to stop with an error instead.
+Missing values are never imputed. A reviewed clip without a score is not
+a missing value when it comes from `"random_recordings"` (whole
+recordings have no score); when a table of reviewed clips has no
+`sampling_mode` column, every clip without a score is taken as such a
+recording and left out of the precision and the thresholds without a
+message.
+
 ## See also
 
 Useful links:

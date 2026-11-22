@@ -181,19 +181,19 @@ reads it, so keep it with the manifest.</p>
 <span class="r-in"><span><span class="va">man</span> <span class="op">&lt;-</span> <span class="fu">extract_validation_clips</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"birdnet"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                                <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"validation"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                                simulate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Sampling mode: top (occasion = file).</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 4 combined table(s) and 0 per-audio table(s) found in 4 folder(s):</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA: BirdNET_SelectionTable.txt</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI: BirdNET_SelectionTable.txt</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE: BirdNET_SelectionTable.txt</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR: BirdNET_SelectionTable.txt</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 7553 predictions read from 4 site(s).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Sampling mode: top (occasion = file).</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 4099 clips selected (top 2 per site x species x night x hour) of 8 species.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Simulating the cut of 4099 clips...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   audio_not_found: 4099</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Some clips were not created - check the `status` column of the manifest and the path remapping (remap_from/remap_to).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Manifest written to /tmp/RtmpnKV61V/validation/clip_manifest.csv</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Done! The clips in /tmp/RtmpnKV61V/validation/clips are ready for validation in the BirdNET GUI (review).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Manifest written to /tmp/Rtmp0jDMSU/validation/clip_manifest.csv</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Done! The clips in /tmp/Rtmp0jDMSU/validation/clips are ready for validation in the BirdNET GUI (review).</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">man</span><span class="op">$</span><span class="va">status</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> audio_not_found </span>

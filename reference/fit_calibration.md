@@ -13,6 +13,7 @@ fit_calibration(
   formula,
   engine = c("lme4", "brms"),
   prior = NULL,
+  control = NULL,
   ...
 )
 ```
@@ -38,6 +39,19 @@ fit_calibration(
   `engine = "brms"`: the prior (a `brmsprior` object), e.g. from
   [`calibration_prior()`](https://provetelab.org/sheepdog/reference/calibration_prior.md).
   Required.
+
+- control:
+
+  Optional settings of the fitting algorithm, a single object: a
+  [`lme4::glmerControl()`](https://rdrr.io/pkg/lme4/man/lmerControl.html)
+  object (formula with random effects) or a list of
+  [`stats::glm.control()`](https://rdrr.io/r/stats/glm.control.html)
+  arguments (formula without them) with `engine = "lme4"`; a list of
+  sampler settings passed to
+  [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) with
+  `engine = "brms"`. `NULL` (default) keeps the settings described in
+  "Maximum likelihood fit" and the 'brms' defaults. See the section
+  "Maximum likelihood fit".
 
 - ...:
 
@@ -137,11 +151,24 @@ Models with random effects are fitted by
 the bound optimisation by quadratic approximation, with up to 100000
 function evaluations, a larger budget than the 'lme4' default, for the
 correlated random slopes of the larger calibration models. The
-convergence tolerances are those of 'lme4' and cannot be changed from
-sheepdog; convergence warnings of 'lme4' are passed on. Models without
-random effects use the iteratively reweighted least squares of
-[`stats::glm()`](https://rdrr.io/r/stats/glm.html) with its default
-control.
+convergence tolerances are those of 'lme4' unless `control` is given;
+convergence warnings of 'lme4' are passed on. Models without random
+effects use the iteratively reweighted least squares of
+[`stats::glm()`](https://rdrr.io/r/stats/glm.html), with the default
+[`stats::glm.control()`](https://rdrr.io/r/stats/glm.control.html)
+(`epsilon = 1e-8`, `maxit = 25`) unless `control` is given.
+
+`control` replaces these settings: a
+[`lme4::glmerControl()`](https://rdrr.io/pkg/lme4/man/lmerControl.html)
+object for a formula with random effects (for example another optimiser,
+a larger `optCtrl = list(maxfun = )` or other `check.conv.grad`
+tolerances), or a list of
+[`stats::glm.control()`](https://rdrr.io/r/stats/glm.control.html)
+arguments (`epsilon`, `maxit`) for a formula without them. With
+`engine = "brms"`, `control` is passed to
+[`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) as its
+list of sampler settings (for example
+`list(adapt_delta = 0.95, max_treedepth = 12)`).
 
 ## Bayesian computation
 
@@ -219,10 +246,10 @@ if (requireNamespace("lme4", quietly = TRUE)) {
   confint(fit, method = "Wald", parm = "beta_")
 }
 #> (Intercept)  logit_conf 
-#>  -0.2060523   1.6030183 
+#>  -0.2060526   1.6030184 
 #>                  2.5 %    97.5 %
-#> (Intercept) -0.9305499 0.5184454
-#> logit_conf   1.4584248 1.7476119
+#> (Intercept) -0.9305439 0.5184387
+#> logit_conf   1.4584249 1.7476119
 
 # Bayesian fit: the prior is always given explicitly. Fitting compiles a
 # Stan model, which takes minutes, so this part is not run here.

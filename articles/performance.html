@@ -593,6 +593,178 @@ cross-validation fits.</p>
 versions. Timing varies with hardware, background load, data and
 convergence. These small frequentist fits do not predict the cost of a
 <code>brms</code> refit.</p>
+<div class="section level3">
+<h3 id="scaling-with-the-number-of-reviewed-clips">Scaling with the number of reviewed clips<a class="anchor" aria-label="anchor" href="#scaling-with-the-number-of-reviewed-clips"></a>
+</h3>
+<p><code>dev/benchmarks/scaling.R</code> times one
+<code><a href="../reference/fit_calibration.html">fit_calibration()</a></code> call for three candidates, from 500 to
+32,000 simulated reviewed clips of eight species at six sites (three
+repetitions each, one fit at a time). The exponent is the slope of log
+time on log clips from 2,000 clips upwards; an exponent of 1 means time
+proportional to the number of clips.</p>
+<table class="table">
+<caption>Median elapsed seconds of one fit.</caption>
+<thead><tr class="header">
+<th align="right">Reviewed clips</th>
+<th align="left">m0_global</th>
+<th align="left">m2_species_slope</th>
+<th align="left">m4_species_x_site</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">500</td>
+<td align="left">0.002</td>
+<td align="left">0.033</td>
+<td align="left">0.071</td>
+</tr>
+<tr class="even">
+<td align="right">1000</td>
+<td align="left">0.002</td>
+<td align="left">0.064</td>
+<td align="left">0.096</td>
+</tr>
+<tr class="odd">
+<td align="right">2000</td>
+<td align="left">0.003</td>
+<td align="left">0.122</td>
+<td align="left">0.177</td>
+</tr>
+<tr class="even">
+<td align="right">4000</td>
+<td align="left">0.004</td>
+<td align="left">0.194</td>
+<td align="left">0.297</td>
+</tr>
+<tr class="odd">
+<td align="right">8000</td>
+<td align="left">0.006</td>
+<td align="left">0.450</td>
+<td align="left">0.745</td>
+</tr>
+<tr class="even">
+<td align="right">16000</td>
+<td align="left">0.011</td>
+<td align="left">0.571</td>
+<td align="left">1.060</td>
+</tr>
+<tr class="odd">
+<td align="right">32000</td>
+<td align="left">0.022</td>
+<td align="left">1.218</td>
+<td align="left">1.914</td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<thead><tr class="header">
+<th align="left">Model</th>
+<th align="left">Exponent</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">m0_global</td>
+<td align="left">0.78</td>
+</tr>
+<tr class="even">
+<td align="left">m2_species_slope</td>
+<td align="left">0.82</td>
+</tr>
+<tr class="odd">
+<td align="left">m4_species_x_site</td>
+<td align="left">0.88</td>
+</tr>
+</tbody>
+</table>
+<p>Time grows slightly less than proportionally with the number of clips
+over this range for all three models. Cross-validation multiplies the
+cost by the number of folds and candidates, and the effort curve by the
+number of training sizes and repetitions, because each of them is one
+such fit.</p>
+</div>
+<div class="section level3">
+<h3 id="comparison-with-base-r-implementations">Comparison with base R implementations<a class="anchor" aria-label="anchor" href="#comparison-with-base-r-implementations"></a>
+</h3>
+<p>The same script compares the calibration with alternatives written
+with <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">stats::glm()</a></code> only. The global model of sheepdog is
+<code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">stats::glm()</a></code> itself: its coefficients match a direct call
+exactly (maximum absolute difference 0.0000 over all the simulated data
+sets). The species model with random intercepts and slopes
+(<code>m2_species_slope</code>, partial pooling) is compared with one
+logistic regression per species (no pooling) and one for all species
+(complete pooling), by log-loss on 2,000 new clips per species drawn
+with the same generating parameters; the oracle uses the true
+parameters. Each row is the mean over 50 simulated data sets of eight
+species with the given number of reviewed clips per species.</p>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="13%">
+<col width="19%">
+<col width="21%">
+<col width="16%">
+<col width="5%">
+<col width="24%">
+</colgroup>
+<thead><tr class="header">
+<th align="right">Clips per species</th>
+<th align="left">Partial pooling (sheepdog)</th>
+<th align="left">No pooling (glm per species)</th>
+<th align="left">Complete pooling (glm)</th>
+<th align="left">Oracle</th>
+<th align="left">Species fits failing or separated</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">10</td>
+<td align="left">0.3932</td>
+<td align="left">1.1153</td>
+<td align="left">0.3618</td>
+<td align="left">0.2790</td>
+<td align="left">6.56</td>
+</tr>
+<tr class="even">
+<td align="right">25</td>
+<td align="left">0.3068</td>
+<td align="left">0.4897</td>
+<td align="left">0.3261</td>
+<td align="left">0.2775</td>
+<td align="left">2.42</td>
+</tr>
+<tr class="odd">
+<td align="right">50</td>
+<td align="left">0.2871</td>
+<td align="left">0.3111</td>
+<td align="left">0.3137</td>
+<td align="left">0.2715</td>
+<td align="left">0.38</td>
+</tr>
+<tr class="even">
+<td align="right">100</td>
+<td align="left">0.2827</td>
+<td align="left">0.2856</td>
+<td align="left">0.3257</td>
+<td align="left">0.2736</td>
+<td align="left">0.06</td>
+</tr>
+<tr class="odd">
+<td align="right">200</td>
+<td align="left">0.2838</td>
+<td align="left">0.2844</td>
+<td align="left">0.3211</td>
+<td align="left">0.2788</td>
+<td align="left">0.00</td>
+</tr>
+</tbody>
+</table>
+<p>With 10 clips per species the per-species regressions separate or
+fail in most species and predict far worse than either pooled model, and
+the complete-pooling model predicts better than partial pooling, whose
+random slopes are poorly estimated from so few clips. From 25 clips per
+species partial pooling has the lowest log-loss of the three, and with
+100 or more clips the per-species regressions approach it. These results
+come from species effects only, simulated with a known logistic
+relation; they say nothing about site effects or misspecified score
+relations.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="what-you-can-do-and-what-did-not-consistently-improve">What you can do, and what did not consistently improve<a class="anchor" aria-label="anchor" href="#what-you-can-do-and-what-did-not-consistently-improve"></a>
@@ -630,6 +802,10 @@ this benchmark. Multispecies empirical validation is still needed.</li>
 <span></span>
 <span><span class="co"># 60 simulated datasets; expensive, opt-in regeneration.</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="st">"dev/benchmarks/multispecies.R"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Scaling with the number of clips and comparison with stats::glm();</span></span>
+<span><span class="co"># about 10 minutes on 10 cores.</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="st">"dev/benchmarks/scaling.R"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Full empirical benchmark: nested CV, recording-level sensitivity,</span></span>
 <span><span class="co"># histories, diagnostics, paired bootstrap and the original report plots.</span></span>

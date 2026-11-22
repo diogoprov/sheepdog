@@ -12,7 +12,9 @@ plot_calibration(
   validations,
   min_confidence = 0.1,
   p_min = 0.95,
-  model_name = ""
+  model_name = "",
+  interval = FALSE,
+  level = 0.95
 )
 ```
 
@@ -40,6 +42,30 @@ plot_calibration(
 
   Name shown in the subtitle.
 
+- interval:
+
+  Draw a band around each curve: a pointwise confidence interval of
+  P(TP) for `glm` and `glmerMod` fits, a credible interval for `brmsfit`
+  fits. `FALSE` (default) draws the curves only.
+
+- level:
+
+  Coverage of the band, a single number in (0, 1).
+
 ## Value
 
 A ggplot object.
+
+## Details
+
+For a `glm` fit the band is the Wald interval of the linear predictor
+(`predict(se.fit = TRUE)`) transformed by
+[`plogis()`](https://rdrr.io/r/stats/Logistic.html). For a `glmerMod`
+fit it is the same interval computed from the covariance matrix of the
+fixed effects only: the predicted random effects are treated as known,
+so the band is narrower than one that also carried their uncertainty,
+and levels not seen in the fit get the fixed-effects interval. For a
+`brmsfit` the band holds the central quantiles of the posterior draws of
+P(TP)
+([`brms::posterior_epred()`](https://mc-stan.org/rstantools/reference/posterior_epred.html))
+and carries all the parameter uncertainty.

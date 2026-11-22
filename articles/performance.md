@@ -240,6 +240,72 @@ The cached `*-session.txt` files record R and dependency versions.
 Timing varies with hardware, background load, data and convergence.
 These small frequentist fits do not predict the cost of a `brms` refit.
 
+### Scaling with the number of reviewed clips
+
+`dev/benchmarks/scaling.R` times one
+[`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
+call for three candidates, from 500 to 32,000 simulated reviewed clips
+of eight species at six sites (three repetitions each, one fit at a
+time). The exponent is the slope of log time on log clips from 2,000
+clips upwards; an exponent of 1 means time proportional to the number of
+clips.
+
+| Reviewed clips | m0_global | m2_species_slope | m4_species_x_site |
+|---------------:|:----------|:-----------------|:------------------|
+|            500 | 0.002     | 0.033            | 0.071             |
+|           1000 | 0.002     | 0.064            | 0.096             |
+|           2000 | 0.003     | 0.122            | 0.177             |
+|           4000 | 0.004     | 0.194            | 0.297             |
+|           8000 | 0.006     | 0.450            | 0.745             |
+|          16000 | 0.011     | 0.571            | 1.060             |
+|          32000 | 0.022     | 1.218            | 1.914             |
+
+Median elapsed seconds of one fit. {.table}
+
+| Model             | Exponent |
+|:------------------|:---------|
+| m0_global         | 0.78     |
+| m2_species_slope  | 0.82     |
+| m4_species_x_site | 0.88     |
+
+Time grows slightly less than proportionally with the number of clips
+over this range for all three models. Cross-validation multiplies the
+cost by the number of folds and candidates, and the effort curve by the
+number of training sizes and repetitions, because each of them is one
+such fit.
+
+### Comparison with base R implementations
+
+The same script compares the calibration with alternatives written with
+[`stats::glm()`](https://rdrr.io/r/stats/glm.html) only. The global
+model of sheepdog is [`stats::glm()`](https://rdrr.io/r/stats/glm.html)
+itself: its coefficients match a direct call exactly (maximum absolute
+difference 0.0000 over all the simulated data sets). The species model
+with random intercepts and slopes (`m2_species_slope`, partial pooling)
+is compared with one logistic regression per species (no pooling) and
+one for all species (complete pooling), by log-loss on 2,000 new clips
+per species drawn with the same generating parameters; the oracle uses
+the true parameters. Each row is the mean over 50 simulated data sets of
+eight species with the given number of reviewed clips per species.
+
+| Clips per species | Partial pooling (sheepdog) | No pooling (glm per species) | Complete pooling (glm) | Oracle | Species fits failing or separated |
+|---:|:---|:---|:---|:---|:---|
+| 10 | 0.3932 | 1.1153 | 0.3618 | 0.2790 | 6.56 |
+| 25 | 0.3068 | 0.4897 | 0.3261 | 0.2775 | 2.42 |
+| 50 | 0.2871 | 0.3111 | 0.3137 | 0.2715 | 0.38 |
+| 100 | 0.2827 | 0.2856 | 0.3257 | 0.2736 | 0.06 |
+| 200 | 0.2838 | 0.2844 | 0.3211 | 0.2788 | 0.00 |
+
+With 10 clips per species the per-species regressions separate or fail
+in most species and predict far worse than either pooled model, and the
+complete-pooling model predicts better than partial pooling, whose
+random slopes are poorly estimated from so few clips. From 25 clips per
+species partial pooling has the lowest log-loss of the three, and with
+100 or more clips the per-species regressions approach it. These results
+come from species effects only, simulated with a known logistic
+relation; they say nothing about site effects or misspecified score
+relations.
+
 ## What you can do, and what did not consistently improve
 
 - Use `fold_group = "source_audio"` or `"night"` when windows share an
@@ -269,6 +335,10 @@ source("dev/benchmarks/curiango-native.R")
 
 # 60 simulated datasets; expensive, opt-in regeneration.
 source("dev/benchmarks/multispecies.R")
+
+# Scaling with the number of clips and comparison with stats::glm();
+# about 10 minutes on 10 cores.
+source("dev/benchmarks/scaling.R")
 
 # Full empirical benchmark: nested CV, recording-level sensitivity,
 # histories, diagnostics, paired bootstrap and the original report plots.

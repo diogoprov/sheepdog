@@ -2,6 +2,54 @@
 
 ## sheepdog (development version)
 
+- [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
+  gains `control`: a
+  [`lme4::glmerControl()`](https://rdrr.io/pkg/lme4/man/lmerControl.html)
+  object or a list of
+  [`stats::glm.control()`](https://rdrr.io/r/stats/glm.control.html)
+  arguments with `engine = "lme4"` (to change the optimiser, the
+  evaluation budget or the convergence tolerances), or the list of
+  sampler settings of
+  [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) with
+  `engine = "brms"`. The defaults are unchanged.
+
+- [`plot_calibration()`](https://provetelab.org/sheepdog/reference/plot_calibration.md)
+  gains `interval` and `level`: a pointwise band around each curve, a
+  Wald confidence interval for `glm` fits, the same from the fixed
+  effects only for `glmerMod` fits, and posterior quantiles for
+  `brmsfit` fits. Off by default.
+
+- Tables given to the sampling and threshold functions
+  ([`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md),
+  [`select_directed()`](https://provetelab.org/sheepdog/reference/select_directed.md),
+  [`threshold_history()`](https://provetelab.org/sheepdog/reference/threshold_history.md),
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md),
+  [`precision_by_bin()`](https://provetelab.org/sheepdog/reference/precision_by_bin.md),
+  [`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md),
+  [`compare_thresholds()`](https://provetelab.org/sheepdog/reference/compare_thresholds.md)
+  and the other functions that read reviewed clips) are converted to a
+  tibble on entry: a `data.table` or a column with extra classes (such
+  as ‘units’) now gives the same result as a plain data frame, and list
+  columns raise an error. Predictions without a score or an audio path
+  are left out with a message, as are clips reviewed with a known design
+  but without a score.
+
+- New option `sheepdog.missing`: `options(sheepdog.missing = "error")`
+  stops on missing values instead of leaving the rows out with a message
+  (see
+  [`?sheepdog`](https://provetelab.org/sheepdog/reference/sheepdog-package.md),
+  section “Input tables and missing values”).
+
+- [`vignette("performance")`](https://provetelab.org/sheepdog/articles/performance.md)
+  reports how the fitting time scales with the number of reviewed clips
+  and compares partial pooling with per-species and global
+  [`glm()`](https://rdrr.io/r/stats/glm.html) fits
+  (`dev/benchmarks/scaling.R`).
+
+- The README gains CRAN status, CRAN downloads and lifecycle (stable)
+  badges. `data.table` is now suggested, for the tests of the table
+  classes.
+
 - [`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md)
   keeps the clips of a `"score_bands"` round (or of any other design) as
   they are: their `inclusion_prob`, `n_candidates` and `n_drawn` are no
@@ -13,22 +61,27 @@
   [`select_clips()`](https://provetelab.org/sheepdog/reference/select_clips.md)
   and
   [`vignette("validation-effort")`](https://provetelab.org/sheepdog/articles/validation-effort.md).
+
 - The documentation now names the project DiverSons instead of FrogNet.
   The vignette `frognet-workflow` is now `diversons-workflow` (also its
   Portuguese translation); the old article addresses redirect to the new
   ones.
+
 - Infrastructure following the rOpenSci packaging guide: `inst/CITATION`
   (so that `citation("sheepdog")` works), `codemeta.json`, a
   contributing guide and a code of conduct (in `.github/`), and
   repostatus and R-CMD-check badges in the README.
+
 - `CITATION.cff` and the README now point to the Zenodo concept DOI
   (10.5281/zenodo.22696209), which always resolves to the latest
   version; they pointed to the DOI of version 1.0.0.
+
 - The rOpenSci statistical standards of the General, Regression and
   Bayesian categories are documented with `srr` tags
   (`R/srr-stats-standards.R`; the roclet runs with
   `devtools::document()`). The triage and the remaining gaps are in
   `dev/ropensci-stats/gap-table.md`.
+
 - `calibrate(engine = "brms")` now passes its `seed` to the Bayesian
   refit (unless `brms_args` has one), so the whole run is reproducible;
   before, the refit drew a random seed.
@@ -38,6 +91,7 @@
   `attr(fit, "sheepdog_seed")`;
   [`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md)
   writes it to `calibration_model.txt`.
+
 - Documentation for the rOpenSci statistical standards:
   [`?fit_calibration`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
   now describes how the formula becomes a model matrix, the fixed ‘lme4’
@@ -57,6 +111,7 @@
   per-species [`glm()`](https://rdrr.io/r/stats/glm.html) calibration;
   the contributing guide has a life cycle statement and explains how to
   run the tests that fit Stan models.
+
 - The description of the posterior grid in
   [`?score_detections`](https://provetelab.org/sheepdog/reference/score_detections.md)
   had slipped into the documentation of the argument `grid_step` (also
@@ -66,6 +121,7 @@
   and
   [`compare_thresholds()`](https://provetelab.org/sheepdog/reference/compare_thresholds.md));
   it is now in the Details.
+
 - Input checks (rOpenSci standards, phase 3).
   [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
   and
@@ -106,9 +162,11 @@
   and
   [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md)
   get their extension when it is missing.
+
 - [`compare_calibration_models()`](https://provetelab.org/sheepdog/reference/compare_calibration_models.md)
   now stops when a model uses a column that `validations` lacks, instead
   of warning that the fit failed in every fold.
+
 - Tests for the rOpenSci standards (phase 4): parameter recovery of
   [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
   under several seeds, estimates improving with more reviewed clips,
@@ -118,10 +176,12 @@
   by `SHEEPDOG_EXTENDED_TESTS=true` (the earlier `SHEEPDOG_TEST_BRMS`
   still works), fit Stan models to check prior and posterior recovery
   and scaling with the data; a GitHub Actions workflow runs them weekly.
+
 - [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
   now stops when a grouping factor of the random effects has one level
   per reviewed clip; ‘lme4’ fitted such models with an unidentifiable
   variance.
+
 - Condition messages shared by several functions now have one wording:
   missing columns are reported as “`x` lacks the column(s): …”
   everywhere (some functions said “lacks column(s)” or “needs the

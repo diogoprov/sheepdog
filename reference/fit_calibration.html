@@ -86,6 +86,7 @@ site levels of <code>validations</code> are stored with the model, so that
 <span>  <span class="va">formula</span>,</span>
 <span>  engine <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lme4"</span>, <span class="st">"brms"</span><span class="op">)</span>,</span>
 <span>  prior <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  control <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -110,6 +111,16 @@ site levels of <code>validations</code> are stored with the model, so that
 <dt id="arg-prior">prior<a class="anchor" aria-label="anchor" href="#arg-prior"></a></dt>
 <dd><p><code>engine = "brms"</code>: the prior (a <code>brmsprior</code> object), e.g.
 from <code><a href="calibration_prior.html">calibration_prior()</a></code>. Required.</p></dd>
+
+
+<dt id="arg-control">control<a class="anchor" aria-label="anchor" href="#arg-control"></a></dt>
+<dd><p>Optional settings of the fitting algorithm, a single
+object: a <code><a href="https://rdrr.io/pkg/lme4/man/lmerControl.html" class="external-link">lme4::glmerControl()</a></code> object (formula with random effects)
+or a list of <code><a href="https://rdrr.io/r/stats/glm.control.html" class="external-link">stats::glm.control()</a></code> arguments (formula without them)
+with <code>engine = "lme4"</code>; a list of sampler settings passed to
+<code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code> with <code>engine = "brms"</code>. <code>NULL</code> (default) keeps the
+settings described in "Maximum likelihood fit" and the 'brms'
+defaults. See the section "Maximum likelihood fit".</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -193,10 +204,17 @@ single verdict class or separated verdicts. With <code>engine = "brms"</code>,
 <code>lme4::glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))</code>: the bound optimisation by quadratic approximation, with up to
 100000 function evaluations, a larger budget than the 'lme4' default,
 for the correlated random slopes of the larger calibration models. The
-convergence tolerances are those of 'lme4' and
-cannot be changed from sheepdog; convergence warnings of 'lme4' are
-passed on. Models without random effects use the iteratively
-reweighted least squares of <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">stats::glm()</a></code> with its default control.</p>
+convergence tolerances are those of 'lme4' unless <code>control</code> is given;
+convergence warnings of 'lme4' are passed on. Models without random
+effects use the iteratively reweighted least squares of <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">stats::glm()</a></code>,
+with the default <code><a href="https://rdrr.io/r/stats/glm.control.html" class="external-link">stats::glm.control()</a></code> (<code>epsilon = 1e-8</code>, <code>maxit = 25</code>) unless <code>control</code> is given.</p>
+<p><code>control</code> replaces these settings: a <code><a href="https://rdrr.io/pkg/lme4/man/lmerControl.html" class="external-link">lme4::glmerControl()</a></code> object for
+a formula with random effects (for example another optimiser, a larger
+<code>optCtrl = list(maxfun = )</code> or other <code>check.conv.grad</code> tolerances), or
+a list of <code><a href="https://rdrr.io/r/stats/glm.control.html" class="external-link">stats::glm.control()</a></code> arguments (<code>epsilon</code>, <code>maxit</code>) for a
+formula without them. With <code>engine = "brms"</code>, <code>control</code> is passed to
+<code><a href="https://paulbuerkner.com/brms/reference/brm.html" class="external-link">brms::brm()</a></code> as its list of sampler settings (for example
+<code>list(adapt_delta = 0.95, max_treedepth = 12)</code>).</p>
     </div>
     <div class="section level2">
     <h2 id="bayesian-computation">Bayesian computation<a class="anchor" aria-label="anchor" href="#bayesian-computation"></a></h2>
@@ -261,10 +279,10 @@ binned posterior predictive check of <code><a href="calibration_ppc.html">calibr
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">fit</span>, method <span class="op">=</span> <span class="st">"Wald"</span>, parm <span class="op">=</span> <span class="st">"beta_"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  logit_conf </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.2060523   1.6030183 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.2060526   1.6030184 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  2.5 %    97.5 %</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept) -0.9305499 0.5184454</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> logit_conf   1.4584248 1.7476119</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept) -0.9305439 0.5184387</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> logit_conf   1.4584249 1.7476119</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Bayesian fit: the prior is always given explicitly. Fitting compiles a</span></span></span>
 <span class="r-in"><span><span class="co"># Stan model, which takes minutes, so this part is not run here.</span></span></span>
