@@ -13,6 +13,10 @@ if ! git diff --quiet HEAD -- dev/fase2; then echo "Uncommitted changes; commit 
 TAR=$(mktemp).tar.gz; UD=$(mktemp)
 git archive --format=tar.gz -o "${TAR}" HEAD -- dev/fase2 ':!dev/fase2/results'
 aws s3 cp "${TAR}" "s3://${BUCKET}/fpcalib/runs/${RUN}/code.tar.gz" --only-show-errors
+# inputs kept out of git (e.g. simpsi_inputs.rds) go along when present
+if [ -d dev/fase2/inputs ]; then
+  aws s3 sync dev/fase2/inputs "s3://${BUCKET}/fpcalib/runs/${RUN}/inputs" --only-show-errors
+fi
 sed -e "s|__BUCKET__|${BUCKET}|" -e "s|__RUN__|${RUN}|" -e "s|__WORKERS__|${WORKERS}|" \
   -e "s|__MAX_HOURS__|${MAX_HOURS}|" -e "s|__SCRIPT__|${SCRIPT}|" -e "s|__EXTRA__|${EXTRA}|" dev/fase2/aws/user_data.sh > "${UD}"
 AMI=$(aws ec2 describe-images --owners amazon \

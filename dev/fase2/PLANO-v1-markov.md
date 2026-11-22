@@ -1624,6 +1624,33 @@ critério 2 reescrito; (ii) medir quanto da heterogeneidade de θ entre
 sítio-noites as covariáveis e um efeito de sítio (7 sítios) explicam, já
 que o efeito por sítio-noite não é identificável; (iii) FrogNet.
 
+### Cobertura de ψ: desenho (22/11/2026, fixado antes de rodar)
+
+Critério 2 reescrito para o alvo de ocupação. `run_simpsi_boot.R` na AWS.
+
+* Os mesmos geradores calibrados da simulação de ψ (`ind`, `pers`,
+  `pers0`), agora em `sim_psi_core.R`. Os conjuntos 1 a 8 de cada cenário
+  são idênticos aos já ajustados (conferido nos rótulos e na prevalência).
+* **50 conjuntos por cenário** (erro-padrão de Monte Carlo da cobertura
+  perto de 0,04) × **10 réplicas** do estágio 1 por conjunto: sítio-noites
+  do depósito sorteados com reposição, estágio 1 por faixas na réplica e
+  emissões aplicadas a todos os minutos, como em `emissions_bins_boot.R`.
+  Cada réplica ajustada no estágio 2 com Markov, 2 cadeias de 500 + 500.
+  Por conjunto, os 10.000 draws de ψ̄ das réplicas são agrupados.
+* 1.500 ajustes, ~7 min cada num núcleo (medido no Mac): ~175 h de CPU.
+  Uma c7a.32xlarge spot com 128 workers, ~1,5 a 2 h, limite de 4 h; custo
+  estimado de US$ 3 a 6.
+* Estimando: ψ̄, a média de logit⁻¹(Xβ) sobre os sítio-noites. Medidas por
+  cenário: viés da mediana, cobertura de 90% e de 95%, largura.
+* **Critério:** cobertura de 90% ≥ 0,85 (0,90 menos ~1 erro-padrão de
+  Monte Carlo) e |viés| ≤ 0,05 nos três cenários, e nenhum ajuste com
+  divergências em mais de 5% das tarefas. Passa → falta o critério 3
+  (FrogNet). Cobertura baixa com viés pequeno → o intervalo precisa de
+  outra fonte de incerteza (por exemplo, mais réplicas ou a incerteza dos
+  rótulos). Viés grande → volta para as emissões.
+* Fora do desenho: θ heterogêneo entre sítio-noites (`hett`), que já
+  mostrou viés de −0,16 sem precisar de cobertura.
+
 ## Critério para levar o v1 de dois estágios ao crywolf (20/11/2026)
 
 Decidido com o Diogo: o v1 fica em `dev/fase2` até cumprir os três
