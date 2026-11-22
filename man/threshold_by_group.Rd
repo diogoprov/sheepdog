@@ -25,8 +25,9 @@ threshold of each cell: a table with \code{site},
 as \code{"threshold_conservative"} of \code{\link[=threshold_bootstrap]{threshold_bootstrap()}}), or a single
 number for every cell.}
 
-\item{by}{Character vector of column names of \code{validation} that define
-the groups, e.g. \code{"recording_hour"} or a month column.}
+\item{by}{Character vector of one or more column names of \code{validation}
+that define the groups, e.g. \code{"recording_hour"}, a month column, or
+both.}
 
 \item{target_precision}{Numeric scalar in (0, 1). Target precision.}
 
@@ -37,10 +38,10 @@ be taken seriously; bins with fewer are flagged in \code{low_support}.}
 the threshold.}
 }
 \value{
-A tibble with \code{site}, \code{species_folder}, the \code{by} columns,
-\code{threshold}, \code{n_above} (reviewed clips at or above it), \code{n_eff}
-(effective sample size of Kish, with weights), \code{precision_above} and
-\code{below_target}. A group with fewer than \code{min_n} clips above the
+A tibble (class \code{tbl_df}) with \code{site}, \code{species_folder}, the
+\code{by} columns, \code{threshold}, \code{n_above} (reviewed clips at or above it),
+\code{n_eff} (effective sample size of Kish, with weights), \code{precision_above}
+and \code{below_target}. A group with fewer than \code{min_n} clips above the
 threshold gets \code{below_target = NA}.
 }
 \description{

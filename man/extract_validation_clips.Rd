@@ -29,12 +29,10 @@ design (e.g.
 \code{remap_to}, and \code{previous} for a further round, in a new \code{output_dir}).}
 
 \item{table_pattern}{Character scalar, regular expression for the file
-names of combined
-tables.}
+names of combined tables.}
 
 \item{per_audio_pattern}{\code{NULL} or character scalar, regular expression
-for the file names of
-per-audio tables. \code{NULL} reads only combined tables.}
+for the file names of per-audio tables. \code{NULL} reads only combined tables.}
 
 \item{site_pattern}{\code{NULL} or character scalar, regular expression with
 one capture group
@@ -59,7 +57,8 @@ tables (e.g. \code{"DiverSons v2, BirdNET-Analyzer 2.4.0"}), recorded in
 \code{extraction_info.csv}. \code{NULL} records \code{NA}.}
 }
 \value{
-The manifest written to \code{clip_manifest.csv}, invisibly.
+A tibble (class \code{tbl_df}), the manifest written to
+\code{clip_manifest.csv}, invisibly.
 }
 \description{
 Runs the whole first stage: reads the selection tables, selects the

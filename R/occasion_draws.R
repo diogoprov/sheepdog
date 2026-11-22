@@ -61,10 +61,10 @@
 #'   Returned invisibly when `write = TRUE`.
 #' @seealso [export_occupancy_data()], [history_draws()],
 #'   `vignette("crywolf-integration")`.
-#' @examples
+#' @examplesIf interactive() && requireNamespace("brms", quietly = TRUE)
 #' # The export needs the draws of a Bayesian calibration. Fitting compiles
-#' # a Stan model, which takes minutes, so this example is not run here.
-#' \dontrun{
+#' # a Stan model, which takes minutes, so this example runs only in
+#' # interactive sessions.
 #' ex <- system.file("extdata", "example", package = "sheepdog")
 #' val_files <- list.files(file.path(ex, "validation"), full.names = TRUE)
 #' val <- read_validations(val_files)
@@ -84,7 +84,6 @@
 #' # Keep only the predictions the calibration is nearly sure of
 #' occasion_draws(out_dir, species = "boa_ran", rule = "threshold",
 #'                p_min = 0.95)
-#' }
 #' @export
 occasion_draws <- function(export_dir, species = NULL,
                            rule = c("sample", "threshold"), p_min = 0.95,

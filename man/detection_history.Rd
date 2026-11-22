@@ -35,8 +35,8 @@ threshold on \code{pr_reliable}. \code{pr_reliable} is computed in
 \code{\link[=score_detections]{score_detections()}} for its \code{p_min}; use the same \code{p_min} in both.}
 }
 \value{
-A tibble with \code{site}, \code{species}, \code{night}, \code{n_detections},
-\code{n_reliable}, \code{p_tp_max}, \code{detection_k1}, \code{detection_k2},
+A tibble (class \code{tbl_df}) with \code{site}, \code{species}, \code{night},
+\code{n_detections}, \code{n_reliable}, \code{p_tp_max}, \code{detection_k1}, \code{detection_k2},
 \code{detection_k3} and \code{detection}.
 }
 \description{

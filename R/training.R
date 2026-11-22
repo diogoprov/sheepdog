@@ -14,8 +14,8 @@
 #'   passed to [combine_rounds()], which gives the clips
 #'   their cumulative `inclusion_prob`. `NULL` only stacks the tables.
 #'
-#' @return A tibble with the columns of the validation tables; `night` and
-#'   `recording_date` are character.
+#' @return A tibble (class `tbl_df`) with the columns of the validation
+#'   tables; `night` and `recording_date` are character.
 #' @examples
 #' ex <- system.file("extdata", "example", package = "sheepdog")
 #' files <- list.files(file.path(ex, "validation"), full.names = TRUE)
@@ -561,13 +561,13 @@ training_checks <- function(copy_tab, guard, with_val = FALSE) {
 #' @param site_map `NULL` or a named character vector to fix diverging site
 #'   names, e.g. `c(BEP2 = "BEP")`, as in [read_validations()].
 #' @param night_cutoff Numeric scalar (hour, 0-23). Recordings that start
-#'   before this hour belong to
-#'   the night of the day before, as in [detection_history()].
+#'   before this hour belong to the night of the day before, as in
+#'   [detection_history()].
 #'
-#' @return A tibble with `file`, `site`, `recording` (site, date and time
-#'   of the source recording, before `site_map`) and `night`
-#'   (`YYYYMMDD`). Names that do not match `pattern` are left out with a
-#'   warning.
+#' @return A tibble (class `tbl_df`) with `file`, `site`, `recording`
+#'   (site, date and time of the source recording, before `site_map`) and
+#'   `night` (`YYYYMMDD`). Names that do not match `pattern` are left out
+#'   with a warning.
 #' @seealso [build_training_set()], [exclude_training_clips()].
 #' @export
 #' @examples
@@ -578,6 +578,7 @@ training_nights <- function(files,
                             pattern = paste0("(?<site>[A-Za-z]+)[A-Za-z0-9]*",
                                              "_(?<date>\\d{8})_(?<time>\\d{6})"),
                             site_map = NULL, night_cutoff = 12) {
+  check_number(night_cutoff, "night_cutoff", lower = 0, upper = 23)
   is_dir <- dir.exists(files)
   files <- c(files[!is_dir],
              unlist(lapply(files[is_dir], list.files, recursive = TRUE,

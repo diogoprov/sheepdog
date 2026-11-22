@@ -13,7 +13,8 @@ a \code{reviewer} column, or a named list of such tables, named by
 reviewer.}
 }
 \value{
-A tibble with one row per clip: the columns of the reviewed
+A data frame (class \code{data.frame}, or \code{tbl_df} when the reviews
+are tibbles) with one row per clip: the columns of the reviewed
 tables (from the first reviewer of each clip), \code{verdict},
 \code{n_reviewers} and \code{reviewers} (names separated by \verb{;}).
 }

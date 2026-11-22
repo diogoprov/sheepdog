@@ -32,11 +32,12 @@ count as recorded.}
 \item{dawn_hour}{Numeric scalar, an hour of the day. Recordings
 that start before this hour belong to the night before.}
 
-\item{min_detections_night}{Integer scalar. Repetition rule: minimum
+\item{min_detections_night}{Integer scalar >= 1. Repetition rule: minimum
 number of reliable detections for a night with detection.}
 }
 \value{
-A tibble with \code{site}, \code{species} (the short code, as in
+A tibble (class \code{tbl_df}) with \code{site}, \code{species} (the short
+code, as in
 \code{species_folder}), \code{night}, \code{n_detections}, \code{n_reliable},
 \code{confidence_max}, \code{detection_k1}, \code{detection_k2}, \code{detection_k3} and
 \code{detection}.

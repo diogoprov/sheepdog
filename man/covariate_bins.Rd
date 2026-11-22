@@ -34,18 +34,19 @@ increasing: breaks shared by all groups, instead of quantiles (bins
 are left-closed; the last one includes its
 upper end).}
 
-\item{within}{\code{NULL} or character vector, columns within which quantile
-breaks are computed (\code{NULL}
+\item{within}{\code{NULL} or a character vector of one or more column names
+of \code{covariates}, within which quantile breaks are computed (\code{NULL}
 for quantiles over all rows). Ignored when \code{breaks} is given.}
 
 \item{name}{Character scalar, name of the new column. Defaults to
 \verb{<var>_bin}.}
 }
 \value{
-The \code{key} columns (as character) and the bin, an ordered factor
-with levels \code{q1}, \code{q2}, ... (quantile bins, from low to high values of
-\code{var}) or the intervals of \code{breaks}. Rows with a missing \code{var} get a
-missing bin.
+A data frame (class \code{data.frame}, or \code{tbl_df} when \code{covariates}
+is a tibble) with the \code{key} columns (as character) and the bin, an
+ordered factor with levels \code{q1}, \code{q2}, ... (quantile bins, from low to
+high values of \code{var}) or the intervals of \code{breaks}. Rows with a missing
+\code{var} get a missing bin.
 }
 \description{
 Cuts a continuous covariate of the occasions (an environmental gradient,

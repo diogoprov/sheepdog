@@ -11,14 +11,15 @@
 #' @param site_map `NULL` or a named character vector to fix diverging site
 #'   names, as `c(old = "new")`, e.g. `c(BEP2 = "BEP")`.
 #'
-#' @param keep `NULL` or a character vector of input columns to retain, e.g.
-#'   `c("source_audio", "night")` for grouped cross-validation. Missing columns
-#'   raise an error rather than silently falling back to clip folds.
+#' @param keep `NULL` or a character vector (one or more elements) of input
+#'   columns to retain, e.g. `c("source_audio", "night")` for grouped
+#'   cross-validation. Missing columns raise an error rather than silently
+#'   falling back to clip folds.
 #'
-#' @return A tibble with `site` and `species` (factors; `species` is the
-#'   species folder code), `confidence`, `logit_conf` (logit of the
-#'   confidence, bounded at 1e-4 and 1 - 1e-4) and `tp` (1 = true
-#'   positive, 0 = false positive), plus the columns requested in `keep`.
+#' @return A tibble (class `tbl_df`) with `site` and `species` (factors;
+#'   `species` is the species folder code), `confidence`, `logit_conf` (logit of
+#'   the confidence, bounded at 1e-4 and 1 - 1e-4) and `tp` (1 = true positive,
+#'   0 = false positive), plus the columns requested in `keep`.
 #'
 #' @section Transformations:
 #' The confidence is bounded at 1e-4 and 1 - 1e-4 before the logit
@@ -153,6 +154,8 @@ rename_site <- function(x, site_map) {
 #' names(calibration_models(uncorrelated = TRUE, single_species = TRUE))
 #' @export
 calibration_models <- function(uncorrelated = FALSE, single_species = FALSE) {
+  check_flag(uncorrelated, "uncorrelated")
+  check_flag(single_species, "single_species")
   if (single_species) {
     models <- list(
       m0_global = tp ~ logit_conf,
@@ -223,10 +226,11 @@ calibration_candidates <- function(validations, uncorrelated = FALSE) {
 #' @param k_folds Integer scalar >= 2, number of folds.
 #' @param seed Integer scalar, seed of the assignment; the caller's random state
 #'   is restored.
-#' @param fold_group `NULL` or a character vector of grouping columns. Do not
-#'   include `species`, verdicts or confidence scores: these would split
-#'   recordings or nights by species or by outcome. Group IDs must be nonmissing
-#'   and nonempty. `NULL` keeps the original clip folds.
+#' @param fold_group `NULL` or a character vector (one or more elements) of
+#'   grouping columns, combined into one group ID. Do not include `species`,
+#'   verdicts or confidence scores: these would split recordings or nights by
+#'   species or by outcome. Group IDs must be nonmissing and nonempty. `NULL`
+#'   keeps the original clip folds.
 #'
 #' @return Integer vector of fold numbers, in the input row order.
 #' @examples
@@ -247,6 +251,7 @@ calibration_folds <- function(validations, k_folds = 5, seed = 2026,
       !is.finite(k_folds) || k_folds < 2 || k_folds != floor(k_folds)) {
     stop("`k_folds` must be an integer of at least two.", call. = FALSE)
   }
+  check_number(seed, "seed", integer = TRUE)
   if (!all(c("site", "species") %in% names(validations)) ||
       nrow(validations) == 0L || anyNA(validations[c("site", "species")])) {
     stop("`validations` needs nonmissing site and species, and at least one row.",
@@ -454,8 +459,8 @@ score_probabilities <- function(tp, p) {
 #'   [compare_calibration_models()].
 #' @param rule Character scalar, the selection rule: `"one_se_logloss"`
 #'   (default) or `"best_auc"`.
-#' @param k_folds Numeric scalar, number of folds of the comparison (for the
-#'   standard error).
+#' @param k_folds Integer scalar >= 2, number of folds of the comparison (for
+#'   the standard error).
 #'
 #' @return The name of the selected model.
 #' @examples
@@ -473,6 +478,7 @@ select_calibration_model <- function(comparison,
                                      rule = c("one_se_logloss", "best_auc"),
                                      k_folds = 5) {
   rule <- match.arg(rule)
+  check_number(k_folds, "k_folds", lower = 2, integer = TRUE)
   if (rule == "best_auc") {
     if (!any(is.finite(comparison$auc_mean))) {
       stop("No finite AUC available for model selection.", call. = FALSE)
@@ -693,10 +699,9 @@ select_calibration_model <- function(comparison,
 #'   print(lme4::fixef(fit))
 #'   confint(fit, method = "Wald", parm = "beta_")
 #' }
-#'
+#' @examplesIf interactive() && requireNamespace("brms", quietly = TRUE)
 #' # Bayesian fit: the prior is always given explicitly. Fitting compiles a
-#' # Stan model, which takes minutes, so this part is not run here.
-#' \dontrun{
+#' # Stan model, which takes minutes, so this part runs only interactively.
 #' f <- tp ~ logit_conf + (1 | species)
 #' prior <- calibration_prior(f, val)
 #' fit_b <- fit_calibration(val, f, engine = "brms", prior = prior,
@@ -704,7 +709,6 @@ select_calibration_model <- function(comparison,
 #'                          refresh = 0)
 #' calibration_diagnostics(fit_b)
 #' brms::posterior_interval(fit_b)
-#' }
 #' @export
 fit_calibration <- function(validations, formula,
                             engine = c("lme4", "brms"), prior = NULL,
@@ -1112,8 +1116,9 @@ calibration_effort <- function(validations, formula,
 #' @srrstats {RE4.16} New site levels are predicted from the fixed and
 #'   species effects, as documented here, with a warning.
 #'
-#' @return A tibble with `site`, `species`, `date`, `night`, `hour`,
-#'   `confidence`, `p_tp`, `begin_path` and `file_offset`; with a model
+#' @return A tibble (class `tbl_df`) with `site`, `species`, `date`,
+#'   `night`, `hour`, `confidence`, `p_tp`, `begin_path` and
+#'   `file_offset`; with a model
 #'   fitted with `engine = "brms"`, also `p_tp_lower` and `pr_reliable`.
 #' @examples
 #' ex <- system.file("extdata", "example", package = "sheepdog")
@@ -1273,8 +1278,8 @@ read_score_columns <- function(path) {
 #'   threshold on `pr_reliable`. `pr_reliable` is computed in
 #'   [score_detections()] for its `p_min`; use the same `p_min` in both.
 #'
-#' @return A tibble with `site`, `species`, `night`, `n_detections`,
-#'   `n_reliable`, `p_tp_max`, `detection_k1`, `detection_k2`,
+#' @return A tibble (class `tbl_df`) with `site`, `species`, `night`,
+#'   `n_detections`, `n_reliable`, `p_tp_max`, `detection_k1`, `detection_k2`,
 #'   `detection_k3` and `detection`.
 #' @examples
 #' ex <- system.file("extdata", "example", package = "sheepdog")
@@ -1294,6 +1299,10 @@ detection_history <- function(scored, p_min = 0.95,
                               rule = c("mean", "probability"),
                               prob_min = 0.9) {
   rule <- match.arg(rule)
+  check_prob(p_min, "p_min")
+  check_number(min_detections_night, "min_detections_night", lower = 1,
+               integer = TRUE)
+  check_prob(prob_min, "prob_min")
   if (rule == "probability") {
     if (!"pr_reliable" %in% names(scored)) {
       stop("rule = \"probability\" needs `pr_reliable`, from ",
@@ -1322,7 +1331,8 @@ detection_history <- function(scored, p_min = 0.95,
 #'
 #' @param history A data frame (or tibble) returned by [detection_history()].
 #'
-#' @return A tibble with `site`, `species`, `nights` (nights with any
+#' @return A tibble (class `tbl_df`) with `site`, `species`, `nights`
+#'   (nights with any
 #'   scored detection) and `nights_k1` to `nights_k3` (nights with
 #'   detection under each repetition rule).
 #' @examples
@@ -1388,6 +1398,12 @@ plot_calibration <- function(fit, validations, min_confidence = 0.1,
                              p_min = 0.95, model_name = "",
                              interval = FALSE, level = 0.95) {
   require_suggested("ggplot2", "to plot the calibration curves")
+  check_prob(p_min, "p_min")
+  if (!is.character(model_name) || length(model_name) != 1L ||
+      is.na(model_name)) {
+    stop("`model_name` must be a single character string (\"\" for none).",
+         call. = FALSE)
+  }
   check_flag(interval, "interval")
   check_prob(level, "level", open = TRUE)
   lvls <- fit_levels(fit)
@@ -1555,6 +1571,18 @@ calibrate <- function(validation_files, prediction_tables, output_dir,
   select <- match.arg(select)
   engine <- match.arg(engine)
   rule   <- match.arg(rule)
+  check_string(output_dir, "output_dir")
+  check_prob(min_confidence, "min_confidence")
+  check_prob(p_min, "p_min")
+  check_number(min_detections_night, "min_detections_night", lower = 1,
+               integer = TRUE)
+  check_number(dawn_hour, "dawn_hour", 0, 24)
+  check_number(k_folds, "k_folds", lower = 2, integer = TRUE)
+  check_flag(uncorrelated, "uncorrelated")
+  check_flag(effort_curve, "effort_curve")
+  check_number(effort_reps, "effort_reps", lower = 1, integer = TRUE)
+  check_prob(prob_min, "prob_min")
+  check_number(seed, "seed", integer = TRUE)
   if (engine == "brms" && is.null(prior)) {
     stop("engine = \"brms\" needs an explicit `prior` (e.g. ",
          "prior = calibration_prior).", call. = FALSE)

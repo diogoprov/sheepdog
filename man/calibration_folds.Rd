@@ -17,10 +17,11 @@ validation files.}
 \item{seed}{Integer scalar, seed of the assignment; the caller's random state
 is restored.}
 
-\item{fold_group}{\code{NULL} or a character vector of grouping columns. Do not
-include \code{species}, verdicts or confidence scores: these would split
-recordings or nights by species or by outcome. Group IDs must be nonmissing
-and nonempty. \code{NULL} keeps the original clip folds.}
+\item{fold_group}{\code{NULL} or a character vector (one or more elements) of
+grouping columns, combined into one group ID. Do not include \code{species},
+verdicts or confidence scores: these would split recordings or nights by
+species or by outcome. Group IDs must be nonmissing and nonempty. \code{NULL}
+keeps the original clip folds.}
 }
 \value{
 Integer vector of fold numbers, in the input row order.

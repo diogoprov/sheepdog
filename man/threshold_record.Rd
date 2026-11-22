@@ -35,7 +35,8 @@ in the table.}
 write.}
 }
 \value{
-A tibble, one row per cell, with the columns of \code{thresholds},
+A tibble (class \code{tbl_df}), one row per cell, with the columns of
+\code{thresholds},
 \code{target_precision}, the bootstrap columns and, from \code{groups},
 \code{n_groups}, \code{n_groups_below} and \code{worst_group_precision}; invisibly
 when \code{file} is given.

@@ -19,9 +19,10 @@ are still created), but \code{status} tells what would be done. Useful to
 check a selection before cutting.}
 }
 \value{
-The manifest with the column \code{status} after \code{begin_path}: one of
-\code{"ok"}, \code{"already_exists"}, \code{"audio_not_found"}, \code{"simulated"} or
-\code{"error: <message>"}.
+A data frame of the class of \code{manifest} (\code{data.frame}, or
+\code{tbl_df} for a tibble): the manifest with the column \code{status} after
+\code{begin_path}: one of \code{"ok"}, \code{"already_exists"}, \code{"audio_not_found"},
+\code{"simulated"} or \code{"error: <message>"}.
 }
 \description{
 Cuts each clip of the manifest from its source recording into

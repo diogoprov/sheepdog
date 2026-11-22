@@ -62,7 +62,8 @@ the verdict, which does not use it, are needed.}
 
 \item{cluster}{Character scalar, the column of \code{validation} whose levels are
 kept together in the folds (\code{"source_audio"}, the recording, by default).
-Without it, clips are split one by one.}
+When \code{validation} has no such column, clips are split one by one, with a
+message.}
 
 \item{top_from, bin_width}{Numeric scalars in (0, 1), lower limit and width of
 the high score bins of \code{top_error}.}
@@ -74,9 +75,9 @@ in the high bins.}
 \item{min_bin}{Numeric scalar, minimum number of clips of a bin for it to
 enter \code{top_error}.}
 
-\item{max_error, tolerance}{Numeric scalars, largest \code{top_error_excess} and
-largest difference between the logistic and the weighted thresholds, in
-score units, for \code{"keep_logistic"}.}
+\item{max_error, tolerance}{Numeric scalars >= 0, largest
+\code{top_error_excess} and largest difference between the logistic and the
+weighted thresholds, in score units, for \code{"keep_logistic"}.}
 
 \item{n_boot}{Numeric scalar >= 0, number of bootstrap replicates of the
 difference between the logistic and the weighted thresholds (\code{0}, the
@@ -92,19 +93,17 @@ of the difference.}
 generator is left as it was.}
 }
 \value{
-A tibble with one row per group x target x curve: the \code{by}
-columns,
-\code{curve}, \code{target}, \code{n}, \code{n_positive}, \code{cv_logloss}, \code{cv_logloss_se},
-\code{within_1se} (log-loss within one standard error of the best curve of
-the group), \code{top_error}, \code{top_error_excess}, \code{n_eff_top}, \code{max_p},
-\code{reaches_target},
-\code{threshold_p_tp}, \code{threshold_precision}, \code{threshold_weighted},
-\code{diff_weighted}, \code{diff_weighted_lower}, \code{diff_weighted_upper} (bootstrap
-interval of \code{diff_weighted}, logistic only, with \code{n_boot > 0}),
-\code{above_reviewed} (a threshold above the highest
+A tibble (class \code{tbl_df}) with one row per group x target x curve:
+the \code{by} columns, \code{curve}, \code{target}, \code{n}, \code{n_positive}, \code{cv_logloss},
+\code{cv_logloss_se}, \code{within_1se} (log-loss within one standard error of the
+best curve of the group), \code{top_error}, \code{top_error_excess}, \code{n_eff_top},
+\code{max_p}, \code{reaches_target}, \code{threshold_p_tp}, \code{threshold_precision},
+\code{threshold_weighted}, \code{diff_weighted}, \code{diff_weighted_lower},
+\code{diff_weighted_upper} (bootstrap interval of \code{diff_weighted}, logistic
+only, with \code{n_boot > 0}), \code{above_reviewed} (a threshold above the highest
 reviewed score is an extrapolation), \code{weighted} and \code{verdict}. The
-attribute \code{"curves"} holds the fitted curves on the grid (\code{score},
-\code{p_tp}) and \code{"bins"} the observed precision by bin, for
+attribute \code{"curves"} holds the fitted curves on the grid (\code{score}, \code{p_tp})
+and \code{"bins"} the observed precision by bin, for
 \code{\link[=plot_calibration_curves]{plot_calibration_curves()}}.
 }
 \description{

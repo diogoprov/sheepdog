@@ -29,9 +29,9 @@ environmental gradient or of an acoustic index joined from
 parts of the gradient lack reviewed clips.}
 }
 \value{
-A tibble with \code{site}, \code{species_folder}, the \code{by} columns, \code{bin},
-\code{n_reviewed}, \code{n_positive}, \code{precision}, \code{precision_weighted} (only
-with \code{inclusion_prob}) and \code{low_support}.
+A tibble (class \code{tbl_df}) with \code{site}, \code{species_folder}, the
+\code{by} columns, \code{bin}, \code{n_reviewed}, \code{n_positive}, \code{precision},
+\code{precision_weighted} (only with \code{inclusion_prob}) and \code{low_support}.
 }
 \description{
 Precision (share of positive verdicts) of the reviewed clips, by site,

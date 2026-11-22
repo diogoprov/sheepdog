@@ -10,7 +10,8 @@ summarise_history(history)
 \item{history}{A data frame (or tibble) returned by \code{\link[=detection_history]{detection_history()}}.}
 }
 \value{
-A tibble with \code{site}, \code{species}, \code{nights} (nights with any
+A tibble (class \code{tbl_df}) with \code{site}, \code{species}, \code{nights}
+(nights with any
 scored detection) and \code{nights_k1} to \code{nights_k3} (nights with
 detection under each repetition rule).
 }

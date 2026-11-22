@@ -12,9 +12,9 @@ with columns \code{site}, \code{species_folder}, \code{verdict} and \code{confid
 row per clip.}
 }
 \value{
-A tibble with \code{site}, \code{species_code}, \code{species_folder},
-\code{clip_file}, \code{reviewed_path}, \code{confidence}, \code{night}, \code{recording_hour}
-and \code{source_audio}.
+A tibble (class \code{tbl_df}) with \code{site}, \code{species_code},
+\code{species_folder}, \code{clip_file}, \code{reviewed_path}, \code{confidence}, \code{night},
+\code{recording_hour} and \code{source_audio}.
 }
 \description{
 Lists the clips confirmed as positive, ready to retrain the classifier.

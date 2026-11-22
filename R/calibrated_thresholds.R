@@ -72,17 +72,17 @@
 #'   of P(TP) used for `threshold_lower`.
 #' @inheritParams score_detections
 #'
-#' @return A tibble with the cell columns, `threshold` and, for
-#'   `rule = "probability"`, `p_tp_at_threshold` (and `threshold_lower` with
-#'   a `brms` model); for `rule = "precision"`, `precision_at_threshold`,
-#'   `n_above` (detections kept) and `n_detections`. `threshold` is `NA` when
-#'   no score of the grid reaches the target. With `"precision"`, a cell can
-#'   be `NA` while `"probability"` gives a threshold: the probability
-#'   threshold may lie above every detection of the cell, and then no set of
-#'   detections reaches the target.
+#' @return A tibble (class `tbl_df`) with the cell columns, `threshold` and, for
+#'   `rule = "probability"`, `p_tp_at_threshold` (and `threshold_lower` with a
+#'   `brms` model); for `rule = "precision"`, `precision_at_threshold`,
+#'   `n_above` (detections kept) and `n_detections`. `threshold` is `NA` when no
+#'   score of the grid reaches the target. With `"precision"`, a cell can be
+#'   `NA` while `"probability"` gives a threshold: the probability threshold may
+#'   lie above every detection of the cell, and then no set of detections
+#'   reaches the target.
 #' @seealso [suggest_thresholds()] for thresholds from the reviewed clips of
-#'   each cell; [compare_thresholds()] to put both side by side; [calibrate()], which writes these thresholds to
-#'   `thresholds.csv`.
+#'   each cell; [compare_thresholds()] to put both side by side; [calibrate()],
+#'   which writes these thresholds to `thresholds.csv`.
 #' @export
 #' @examples
 #' ex <- system.file("extdata", "example", package = "sheepdog")
@@ -108,6 +108,17 @@ calibrated_thresholds <- function(fit, target = 0.95,
   if (!is.numeric(target) || length(target) != 1 || target <= 0 ||
       target >= 1) {
     stop("`target` must be a single number between 0 and 1.", call. = FALSE)
+  }
+  check_prob(lower_prob, "lower_prob", open = TRUE)
+  # plain tibbles, so that a data.table or data.frame input gives the same
+  # output as a tibble
+  if (!is.null(scored)) {
+    check_data_frame(scored, "scored")
+    scored <- tibble::as_tibble(as.data.frame(scored))
+  }
+  if (!is.null(cells)) {
+    check_data_frame(cells, "cells")
+    cells <- tibble::as_tibble(as.data.frame(cells))
   }
 
   if (rule == "precision") {
@@ -157,7 +168,7 @@ calibrated_thresholds <- function(fit, target = 0.95,
     nd$p_tp <- draw_summary$p_tp
     nd$p_tp_lower <- draw_summary$p_tp_lower
   } else {
-    nd$p_tp <- predict_tp(fit, nd)
+    nd$p_tp <- unname(predict_tp(fit, nd))
   }
 
   thr <- nd |>

@@ -128,8 +128,10 @@ join_identities <- function(validation, identities, clip_col = "clip",
 #' @param validation A data frame (or tibble) of verdicts with
 #'   `species_code`, `verdict` and `identity`, from [app_verdicts()] or
 #'   [join_identities()].
-#' @param verdicts Character vector of the verdicts counted: `"negative"`
-#'   by default; add `"uncertain"` to include the uncertain clips.
+#' @param verdicts Character vector of one or more verdicts counted, among
+#'   `"negative"`, `"uncertain"`, `"positive"`, `"disagreement"` and
+#'   `"not_reviewed"`: `"negative"` by default; add `"uncertain"` to include
+#'   the uncertain clips.
 #' @param classes `NULL` or a character vector of the classes of the
 #'   classifier, to flag identities that are classes themselves. `NULL`
 #'   (default) uses the `species_code` values of `validation`.
@@ -140,11 +142,12 @@ join_identities <- function(validation, identities, clip_col = "clip",
 #' `n_weighted` sums to the number of clips with an identity. Clips without
 #' an identity are counted as `identity = NA`.
 #'
-#' @return A tibble with one row per target class and identity:
-#'   `species_code`, `identity`, `n` (clips), `n_weighted`, `n_sure` (clips
-#'   with certainty `"sure"`), `share` (`n_weighted` over the clips of the
-#'   class counted) and `is_class` (the identity is a class of the
-#'   classifier other than the target), sorted by class and decreasing `n`.
+#' @return A tibble (class `tbl_df`) with one row per target class and
+#'   identity: `species_code`, `identity`, `n` (clips), `n_weighted`,
+#'   `n_sure` (clips with certainty `"sure"`), `share` (`n_weighted` over
+#'   the clips of the class counted) and `is_class` (the identity is a class
+#'   of the classifier other than the target), sorted by class and
+#'   decreasing `n`.
 #' @seealso [join_identities()], [build_training_set()].
 #' @examples
 #' ex <- system.file("extdata", "example", package = "sheepdog")
@@ -156,6 +159,13 @@ join_identities <- function(validation, identities, clip_col = "clip",
 #' @export
 confuser_summary <- function(validation, verdicts = "negative",
                              classes = NULL) {
+  known <- c("negative", "uncertain", "positive", "disagreement",
+             "not_reviewed")
+  if (!is.character(verdicts) || length(verdicts) == 0 ||
+      !all(verdicts %in% known)) {
+    stop("`verdicts` must be one or more of: ",
+         paste0("\"", known, "\"", collapse = ", "), ".", call. = FALSE)
+  }
   check_columns(validation, c("species_code", "verdict", "identity"),
                 "validation")
   if (is.null(classes)) {

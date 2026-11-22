@@ -182,10 +182,9 @@ if (requireNamespace("lme4", quietly = TRUE)) {
   print(lme4::fixef(fit))
   confint(fit, method = "Wald", parm = "beta_")
 }
-
+\dontshow{if (interactive() && requireNamespace("brms", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # Bayesian fit: the prior is always given explicitly. Fitting compiles a
-# Stan model, which takes minutes, so this part is not run here.
-\dontrun{
+# Stan model, which takes minutes, so this part runs only interactively.
 f <- tp ~ logit_conf + (1 | species)
 prior <- calibration_prior(f, val)
 fit_b <- fit_calibration(val, f, engine = "brms", prior = prior,
@@ -193,5 +192,5 @@ fit_b <- fit_calibration(val, f, engine = "brms", prior = prior,
                          refresh = 0)
 calibration_diagnostics(fit_b)
 brms::posterior_interval(fit_b)
-}
+\dontshow{\}) # examplesIf}
 }

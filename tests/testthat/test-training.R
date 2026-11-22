@@ -127,7 +127,7 @@ treino_sintetico <- function() {
     reviewed_path = file.path("E:/revisado", clip_file))
 }
 
-test_that("split = \"night\" holds out whole nights for all species", {
+test_that("a night split holds out whole nights for all species", {
   val <- treino_sintetico()
   d <- withr::local_tempdir()
   set.seed(5)
@@ -175,7 +175,7 @@ test_that("nights in exclude_from_test never reach the test set", {
                "lacks the column")
 })
 
-test_that("split = \"site_species_night\" warns and its checks catch leaks", {
+test_that("a site_species_night split warns and its checks catch leaks", {
   val <- treino_sintetico()
   d <- withr::local_tempdir()
   expect_warning(ts <- suppressMessages(build_training_set(

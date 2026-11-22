@@ -106,7 +106,7 @@ test_that("crywolf drops the score_bands clips of a real export", {
   expect_true(all(x$validation$sampling_mode == "random_detections"))
 })
 
-test_that("score_bands can pool the sites with strata = \"species\"", {
+test_that("score_bands can pool the sites with species strata", {
   det <- pred_exemplo()
   quebras <- c(0.1, 0.4, 0.7, 1)
   man <- suppressMessages(select_clips(det, "score_bands", n_top = 4,

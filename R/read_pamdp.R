@@ -117,6 +117,7 @@ read_pamdp <- function(dir, site_column = "locationID", audio_root = NULL) {
   if (!is.character(site_column) || length(site_column) != 1) {
     stop("`site_column` must be a single column name.", call. = FALSE)
   }
+  check_string(audio_root, "audio_root", null_ok = TRUE)
   paths <- pamdp_paths(dir)
   read_chr <- function(x) {
     readr::read_csv(x, col_types = cols(.default = col_character()),

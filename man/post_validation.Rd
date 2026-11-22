@@ -80,7 +80,8 @@ it beside \code{manifest_path} and \code{previous}.}
 passed to \code{\link[=compare_thresholds]{compare_thresholds()}}.}
 }
 \value{
-A list with the tables \code{validation}, \code{precision}, \code{thresholds},
+A named list (class \code{list}) with the tables \code{validation},
+\code{precision}, \code{thresholds},
 \code{presence} and \code{retraining} (and \code{compared}, with \code{fit}), invisibly.
 }
 \description{

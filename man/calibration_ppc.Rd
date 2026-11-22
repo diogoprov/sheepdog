@@ -45,11 +45,11 @@ above \code{1 - flag} are flagged.}
 simulation. The global random number generator is left as it was.}
 }
 \value{
-A tibble with one row per check and group: \code{check} (\code{"overall"},
-\code{"score"}, \code{"site"}, \code{"species"} or a column of \code{group}), \code{group}, \code{n}
-(clips), \code{observed} (share of true positives), \code{pred_mean}, \code{pred_lower}
-and \code{pred_upper} (posterior predictive mean and interval of the
-share), \code{p_value} and \code{flagged}. Plot it with \code{\link[=plot_calibration_ppc]{plot_calibration_ppc()}}.
+A tibble (class \code{tbl_df}) with one row per check and group: \code{check}
+(\code{"overall"}, \code{"score"}, \code{"site"}, \code{"species"} or a column of \code{group}),
+\code{group}, \code{n} (clips), \code{observed} (share of true positives), \code{pred_mean},
+\code{pred_lower} and \code{pred_upper} (posterior predictive mean and interval of
+the share), \code{p_value} and \code{flagged}. Plot it with \code{\link[=plot_calibration_ppc]{plot_calibration_ppc()}}.
 }
 \description{
 Compares the observed share of true positives among the reviewed clips
@@ -80,8 +80,9 @@ val <- read_validations(list.files(file.path(ex, "validation"),
                                    full.names = TRUE),
                         keep = "recording_date")
 val$month <- substr(val$recording_date, 5, 6)
-# Fitting compiles a Stan model, which takes minutes, so it is not run here.
-\dontrun{
+\dontshow{if (interactive() && requireNamespace("brms", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+# Fitting compiles a Stan model, which takes minutes, so this part runs
+# only interactively.
 f <- tp ~ logit_conf + (1 | species)
 fit_b <- fit_calibration(val, f, engine = "brms",
                          prior = calibration_prior(f, val),
@@ -89,7 +90,7 @@ fit_b <- fit_calibration(val, f, engine = "brms",
 calibration_diagnostics(fit_b)
 ppc <- calibration_ppc(fit_b, val, group = "month", n_draws = 500)
 ppc[ppc$flagged, ]
-}
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=calibration_diagnostics]{calibration_diagnostics()}} for convergence, which should be

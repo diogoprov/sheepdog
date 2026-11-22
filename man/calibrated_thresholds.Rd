@@ -52,14 +52,14 @@ computed.}
 of P(TP) used for \code{threshold_lower}.}
 }
 \value{
-A tibble with the cell columns, \code{threshold} and, for
-\code{rule = "probability"}, \code{p_tp_at_threshold} (and \code{threshold_lower} with
-a \code{brms} model); for \code{rule = "precision"}, \code{precision_at_threshold},
-\code{n_above} (detections kept) and \code{n_detections}. \code{threshold} is \code{NA} when
-no score of the grid reaches the target. With \code{"precision"}, a cell can
-be \code{NA} while \code{"probability"} gives a threshold: the probability
-threshold may lie above every detection of the cell, and then no set of
-detections reaches the target.
+A tibble (class \code{tbl_df}) with the cell columns, \code{threshold} and, for
+\code{rule = "probability"}, \code{p_tp_at_threshold} (and \code{threshold_lower} with a
+\code{brms} model); for \code{rule = "precision"}, \code{precision_at_threshold},
+\code{n_above} (detections kept) and \code{n_detections}. \code{threshold} is \code{NA} when no
+score of the grid reaches the target. With \code{"precision"}, a cell can be
+\code{NA} while \code{"probability"} gives a threshold: the probability threshold may
+lie above every detection of the cell, and then no set of detections
+reaches the target.
 }
 \description{
 Derives a confidence threshold for each site x species from the
@@ -129,6 +129,6 @@ calibrated_thresholds(fit, target = 0.90, rule = "precision",
 }
 \seealso{
 \code{\link[=suggest_thresholds]{suggest_thresholds()}} for thresholds from the reviewed clips of
-each cell; \code{\link[=compare_thresholds]{compare_thresholds()}} to put both side by side; \code{\link[=calibrate]{calibrate()}}, which writes these thresholds to
-\code{thresholds.csv}.
+each cell; \code{\link[=compare_thresholds]{compare_thresholds()}} to put both side by side; \code{\link[=calibrate]{calibrate()}},
+which writes these thresholds to \code{thresholds.csv}.
 }

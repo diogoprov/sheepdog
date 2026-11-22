@@ -18,7 +18,8 @@ Tables without \code{round} count as one round each, in the order given.}
 folders of \code{validation}.}
 }
 \value{
-The stacked table, in the order of the input, with \code{stratum},
+A tibble (class \code{tbl_df}): the stacked table, in the order of
+the input, with \code{stratum},
 \code{n_candidates}, \code{n_drawn}, the cumulative \code{inclusion_prob} and
 \code{n_rounds}, the number of rounds with clips of the site x species.
 Clips of other sampling modes keep their \code{inclusion_prob},

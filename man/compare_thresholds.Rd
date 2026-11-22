@@ -40,7 +40,7 @@ empirical threshold and of the \code{"precision"} rule.}
 
 \item{min_n}{Integer scalar >= 1. Passed to \code{\link[=suggest_thresholds]{suggest_thresholds()}}.}
 
-\item{tolerance}{Numeric scalar, in score units. Largest difference
+\item{tolerance}{Numeric scalar >= 0, in score units. Largest difference
 between \code{thr_empirical} and \code{thr_model_precision} for \code{"agree"}.}
 
 \item{quality}{\code{NULL} or a data frame (or tibble) returned by
@@ -62,7 +62,8 @@ computed.}
 of P(TP) used for \code{threshold_lower}.}
 }
 \value{
-A tibble with one row per site x species: \code{site}, \code{species},
+A tibble (class \code{tbl_df}) with one row per site x species:
+\code{site}, \code{species},
 \code{thr_empirical}, \code{prec_empirical} (the precision that chose the cut),
 \code{n_support}, \code{thr_model_precision}, \code{thr_p_tp}, \code{p_tp_at_threshold},
 \code{thr_p_tp_lower} (with a \code{brms} model), \code{model_precision_at_empirical}

@@ -12,7 +12,8 @@ with columns \code{site}, \code{species_folder}, \code{verdict} and \code{confid
 row per clip.}
 }
 \value{
-A tibble with \code{site}, \code{species_folder}, \code{night}, \code{n_clips},
+A tibble (class \code{tbl_df}) with \code{site}, \code{species_folder},
+\code{night}, \code{n_clips},
 \code{n_reviewed}, \code{n_positive}, \code{presence} and \code{max_confidence_positive}.
 }
 \description{

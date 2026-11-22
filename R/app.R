@@ -156,6 +156,10 @@ run_app <- function(manifest = NULL, clips_dir = NULL, verdicts_file = NULL,
 #' `"disagreement"`, left out of precision, thresholds and calibration,
 #' which use only positive and negative verdicts.
 #'
+#' A clip marked more than once by the same reviewer keeps the last
+#' verdict; a message says how many clips were marked again and how many of
+#' them changed verdict.
+#'
 #' @inheritParams run_app
 #' @param verdicts_file Character scalar, path to the CSV written by
 #'   [run_app()].
@@ -166,11 +170,8 @@ run_app <- function(manifest = NULL, clips_dir = NULL, verdicts_file = NULL,
 #'   per clip and reviewer, ready for [reviewer_agreement()] and
 #'   [consensus_verdicts()].
 #'
-#' A clip marked more than once by the same reviewer keeps the last
-#' verdict; a message says how many clips were marked again and how many of
-#' them changed verdict.
-#'
-#' @return The manifest with `verdict` (`"positive"`, `"negative"`,
+#' @return A tibble (class `tbl_df`): the manifest with `verdict`
+#'   (`"positive"`, `"negative"`,
 #'   `"uncertain"` or `"not_reviewed"`), `reviewed_path`, `reviewer`,
 #'   `identity` and `identity_certainty` (`NA` when the reviewer gave no
 #'   identity, or with a verdicts file of an earlier version).
@@ -198,6 +199,9 @@ run_app <- function(manifest = NULL, clips_dir = NULL, verdicts_file = NULL,
 #' @export
 app_verdicts <- function(manifest, verdicts_file, clips_dir = NULL,
                          reviewer = NULL) {
+  check_string(verdicts_file, "verdicts_file")
+  check_string(clips_dir, "clips_dir", null_ok = TRUE)
+  check_string(reviewer, "reviewer", null_ok = TRUE)
   man <- read_manifest(manifest)
   log <- read_verdict_log(verdicts_file, last_only = FALSE)
   if (!is.null(reviewer)) log <- log[log$reviewer %in% reviewer, ]

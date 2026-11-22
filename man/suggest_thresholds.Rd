@@ -41,13 +41,13 @@ and \code{n_support} for \code{min_n}.}
 every higher cut with at least \code{min_n} clips. See Sustained target.}
 }
 \value{
-A tibble with \code{site}, \code{species_folder}, the \code{by} columns,
-\code{threshold}, \code{n_support}, \code{precision_at_threshold} (unweighted; \code{NA}
-when no cut reaches the target). With \code{inclusion_prob}, also
-\code{precision_weighted_at_threshold}, \code{n_eff} (Kish's effective sample
-size at the threshold) and \code{precision_used} (\code{"weighted"} or
-\code{"unweighted"}, the precision that chose the cut). Without any
-reviewed clip with a confidence, the tibble has no rows.
+A tibble (class \code{tbl_df}) with \code{site}, \code{species_folder}, the
+\code{by} columns, \code{threshold}, \code{n_support}, \code{precision_at_threshold}
+(unweighted; \code{NA} when no cut reaches the target). With
+\code{inclusion_prob}, also \code{precision_weighted_at_threshold}, \code{n_eff}
+(Kish's effective sample size at the threshold) and \code{precision_used}
+(\code{"weighted"} or \code{"unweighted"}, the precision that chose the cut).
+Without any reviewed clip with a confidence, the tibble has no rows.
 }
 \description{
 For each site and species (and each level of the \code{by} columns), the

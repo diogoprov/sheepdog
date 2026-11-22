@@ -51,8 +51,8 @@ used for the Perch files that do not store its end.}
 "export all" file (one job, one template). Needed for those files only.}
 }
 \value{
-A tibble with one row per prediction: \code{site}, \code{begin_time},
-\code{end_time}, \code{species_code}, \code{confidence}, \code{begin_path} and
+A tibble (class \code{tbl_df}) with one row per prediction: \code{site},
+\code{begin_time}, \code{end_time}, \code{species_code}, \code{confidence}, \code{begin_path} and
 \code{file_offset} (the columns required by \code{\link[=select_clips]{select_clips()}}), plus \code{label},
 \code{score} (as in the file) and \code{classifier}; for Arbimon, also \code{verdict}.
 }

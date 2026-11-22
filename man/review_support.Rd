@@ -67,8 +67,8 @@ Backslashes are turned into forward slashes first.}
 \code{prec_high} stays unweighted.}
 }
 \value{
-A tibble with \code{site}, \code{species_folder}, the \code{by} columns,
-\code{n_reviewed}, \code{n_fp} (false positives among them), \code{n_high}
+A tibble (class \code{tbl_df}) with \code{site}, \code{species_folder}, the
+\code{by} columns, \code{n_reviewed}, \code{n_fp} (false positives among them), \code{n_high}
 (reviewed clips with score >= \code{conf_high}), \code{prec_high} (their
 precision), \code{n_high_all} (predictions with score >= \code{conf_high}),
 \code{unreviewed_high}, \code{threshold} and \code{diagnosis}, ordered by diagnosis.

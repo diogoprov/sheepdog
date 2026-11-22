@@ -47,24 +47,25 @@
 #' @inheritParams compare_calibration_models
 #' @param formula A model formula, the formula of the model to check, e.g. the
 #'   one chosen by [select_calibration_model()].
-#' @param by Character vector of columns of `validations` that define the
-#'   groups: `"species"`, or `c("site", "species")` for the cells of the
-#'   calibration, which hold fewer clips each.
+#' @param by Character vector (one or more elements) of columns of `validations`
+#'   that define the groups: `"species"`, or `c("site", "species")` for the
+#'   cells of the calibration, which hold fewer clips each.
 #' @param min_class Numeric scalar, least number of true positives and of false
 #'   positives for a group to be judged. With fewer, `status` is
 #'   `"insufficient"`.
-#' @param auc_min Numeric scalar, lowest acceptable `auc` and `auc_score`.
+#' @param auc_min Numeric scalar in \[0, 1\], lowest acceptable `auc` and
+#'   `auc_score`.
 #' @param slope_range Numeric vector of length 2, increasing: acceptable range
 #'   of `cal_slope`.
-#' @param intercept_max Numeric scalar, largest acceptable absolute
+#' @param intercept_max Numeric scalar >= 0, largest acceptable absolute
 #'   `cal_intercept`.
 #'
-#' @return A tibble with one row per group: the `by` columns, `n`, `n_tp`,
-#'   `n_fp`, `conf_min`, `conf_max`, `auc`, `auc_score`, `logloss`,
+#' @return A tibble (class `tbl_df`) with one row per group: the `by` columns,
+#'   `n`, `n_tp`, `n_fp`, `conf_min`, `conf_max`, `auc`, `auc_score`, `logloss`,
 #'   `logloss_null`, `logloss_gain`, `cal_intercept`, `cal_slope`, `status`
-#'   (`"ok"`, `"poor"` or `"insufficient"`) and `reason`. Measures that
-#'   cannot be computed (e.g. the AUC of a group with one verdict) are `NA`.
-#'   Folds whose fit failed are left out, with a warning.
+#'   (`"ok"`, `"poor"` or `"insufficient"`) and `reason`. Measures that cannot
+#'   be computed (e.g. the AUC of a group with one verdict) are `NA`. Folds
+#'   whose fit failed are left out, with a warning.
 #' @seealso [compare_calibration_models()], [calibration_ppc()]
 #' @examples
 #' ex <- system.file("extdata", "example", package = "sheepdog")
@@ -94,6 +95,9 @@ calibration_quality <- function(validations, formula, k_folds = 5,
       anyNA(slope_range) || slope_range[1] >= slope_range[2]) {
     stop("`slope_range` must be two increasing numbers.", call. = FALSE)
   }
+  check_number(seed, "seed", integer = TRUE)
+  check_prob(auc_min, "auc_min")
+  check_number(intercept_max, "intercept_max", lower = 0)
   need_lme4(list(formula))
 
   val <- validations

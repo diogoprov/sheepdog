@@ -34,11 +34,9 @@
 #' @param data_dir Character scalar, path to the root folder, searched
 #'   recursively.
 #' @param table_pattern Character scalar, regular expression for the file
-#'   names of combined
-#'   tables.
+#'   names of combined tables.
 #' @param per_audio_pattern `NULL` or character scalar, regular expression
-#'   for the file names of
-#'   per-audio tables. `NULL` reads only combined tables.
+#'   for the file names of per-audio tables. `NULL` reads only combined tables.
 #' @param site_pattern `NULL` or character scalar, regular expression with
 #'   one capture group
 #'   that takes the site from the name of the audio file in `Begin Path`,
@@ -47,10 +45,10 @@
 #'   `Campinas_Campus01_20261003_074339.flac`. Use the same pattern in
 #'   [list_recordings()].
 #'
-#' @return A tibble with one row per prediction, the column `site` first,
-#'   followed by the standardised table columns. The columns `begin_time`,
-#'   `end_time`, `species_code`, `confidence`, `begin_path` and `file_offset`
-#'   are required.
+#' @return A tibble (class `tbl_df`) with one row per prediction, the
+#'   column `site` first, followed by the standardised table columns. The
+#'   columns `begin_time`, `end_time`, `species_code`, `confidence`,
+#'   `begin_path` and `file_offset` are required.
 #' @examples
 #' ex <- system.file("extdata", "example", package = "sheepdog")
 #' # one folder per site, each with a combined BirdNET_SelectionTable.txt
@@ -63,6 +61,10 @@ read_selection_tables <- function(data_dir,
                                   table_pattern = "^BirdNET_SelectionTable\\.txt$",
                                   per_audio_pattern = "\\.BirdNET\\.selection\\.table\\.txt$",
                                   site_pattern = NULL) {
+  check_string(data_dir, "data_dir")
+  check_string(table_pattern, "table_pattern")
+  check_string(per_audio_pattern, "per_audio_pattern", null_ok = TRUE)
+  check_string(site_pattern, "site_pattern", null_ok = TRUE)
   sources <- find_selection_tables(data_dir, table_pattern, per_audio_pattern)
   if (length(sources) == 0) {
     others <- list.files(data_dir, pattern = "(?i)selection.?table.*\\.txt$",

@@ -16,6 +16,21 @@
   `threshold` of the bootstrap matches the threshold of
   `suggest_thresholds()` and `threshold_record()` compares like with like.
   Set `sustained = TRUE` to keep the current thresholds.
+- Stricter argument checks, from the findings of `autotest`: scalar
+  arguments (seeds, minimum counts, probabilities, paths and patterns) now
+  stop when given a vector, a non-whole number where a count is expected,
+  or a value out of the documented range, and logical arguments stop on
+  anything but `TRUE` or `FALSE`. Column names given as arguments
+  (`threshold_column`, `within`) are checked against the table, and
+  `confuser_summary(verdicts)` against the known verdicts. Valid input
+  gives the same results as before; the `@return` sections now name the
+  class returned.
+- `calibrated_thresholds()` always returns a tibble, also when `scored` or
+  `cells` is a data.frame or a data.table, and `p_tp_at_threshold` no
+  longer carries names.
+- `cut_clips()` checks up front that the manifest has the columns it uses.
+- The examples that fit a brms model run with `@examplesIf interactive()`
+  instead of `\dontrun{}`.
 - Every exported function now has examples, built on the data shipped in
   `inst/extdata/example`. The examples that fit a brms model, or that need
   an export written with one, are not run.

@@ -295,7 +295,8 @@ draw_round <- function(snap, prev_rounds, n_top, seed, round_no, cells) {
 #' models ([export_occupancy_data()] warns about them). See
 #' `vignette("validation-effort")`.
 #'
-#' @return The stacked table, in the order of the input, with `stratum`,
+#' @return A tibble (class `tbl_df`): the stacked table, in the order of
+#'   the input, with `stratum`,
 #'   `n_candidates`, `n_drawn`, the cumulative `inclusion_prob` and
 #'   `n_rounds`, the number of rounds with clips of the site x species.
 #'   Clips of other sampling modes keep their `inclusion_prob`,

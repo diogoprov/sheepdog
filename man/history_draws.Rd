@@ -42,7 +42,7 @@ computed.}
 number generator is left as it was.}
 }
 \value{
-A tibble with \code{draw}, \code{site}, \code{species}, \code{night},
+A tibble (class \code{tbl_df}) with \code{draw}, \code{site}, \code{species}, \code{night},
 \code{n_detections}, \code{n_reliable}, \code{detection_k1} to \code{detection_k3} and
 \code{detection}.
 }
@@ -61,9 +61,9 @@ detections by their rounded score, which keeps the cost independent of
 the number of detections.
 }
 \examples{
+\dontshow{if (interactive() && requireNamespace("brms", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # Fitting a Bayesian calibration compiles a Stan model, which takes
-# minutes, so this example is not run here.
-\dontrun{
+# minutes, so this example runs only interactively.
 ex <- system.file("extdata", "example", package = "sheepdog")
 val <- read_validations(list.files(file.path(ex, "validation"),
                                    full.names = TRUE))
@@ -77,5 +77,5 @@ tables <- setNames(file.path(ex, "birdnet", sites,
 scored <- score_detections(tables, fit, p_min = 0.95)
 hd <- history_draws(fit, scored, p_min = 0.95, n_draws = 200)
 community_matrices_draws(hd, core_species = c("boa_ran", "phy_cuv"))
-}
+\dontshow{\}) # examplesIf}
 }
