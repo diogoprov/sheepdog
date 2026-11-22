@@ -266,11 +266,10 @@ out <- export_occupancy_data(
 )
 vapply(out$tables, nrow, integer(1))
 list.files(out_dir)
-
+\dontshow{if (interactive() && requireNamespace("brms", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # With a Bayesian calibration, the export also holds its posterior
 # draws. Fitting compiles a Stan model, which takes minutes, so this
-# part is not run here.
-\dontrun{
+# part runs only in interactive sessions.
 val <- read_validations(list.files(file.path(ex, "validation"),
                                    full.names = TRUE))
 f <- tp ~ logit_conf + (1 | species)
@@ -283,7 +282,7 @@ export_occupancy_data(
   validation = list.files(file.path(ex, "validation"), full.names = TRUE),
   fit = fit, n_draws = 100, overwrite = TRUE
 )
-}
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{vignette("crywolf-integration")} for the columns of each table.

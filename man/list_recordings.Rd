@@ -20,8 +20,7 @@ list_recordings(
 files, searched recursively.}
 
 \item{audio_pattern}{Character scalar, regular expression for the audio
-file names (case
-insensitive).}
+file names (case insensitive).}
 
 \item{site}{\code{NULL} (the site is the first folder below \code{audio_dir}) or a
 character scalar, a single site name for every file.}
@@ -49,8 +48,9 @@ table to (e.g.
 \code{"recordings.csv"}).}
 }
 \value{
-A tibble with \code{site} and \code{source_audio}, one row per recording,
-sorted by site and path (invisibly when \code{file} is given).
+A tibble (class \code{tbl_df}) with \code{site} and \code{source_audio}, one
+row per recording, sorted by site and path (invisibly when \code{file} is
+given).
 }
 \description{
 Builds the table of all recordings that \code{"random_recordings"} in

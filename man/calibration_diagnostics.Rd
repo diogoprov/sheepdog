@@ -16,8 +16,8 @@ calibration_diagnostics(fit, rhat_max = 1.01, ess_min = 400)
 effective sample size.}
 }
 \value{
-A one-row tibble with \code{max_rhat}, \code{min_ess_bulk}, \code{min_ess_tail},
-\code{n_divergent} and \code{ok}.
+A one-row tibble (class \code{tbl_df}) with \code{max_rhat}, \code{min_ess_bulk},
+\code{min_ess_tail}, \code{n_divergent} and \code{ok}.
 }
 \description{
 Reports the largest R-hat, the smallest bulk and tail effective sample
@@ -42,9 +42,9 @@ its \code{n_warmup} argument on \code{brms::as_draws_array(fit, inc_warmup = TRU
 backend.
 }
 \examples{
+\dontshow{if (interactive() && requireNamespace("brms", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # Fitting a Bayesian calibration compiles a Stan model, which takes
-# minutes, so this example is not run here.
-\dontrun{
+# minutes, so this example runs only interactively.
 ex <- system.file("extdata", "example", package = "sheepdog")
 val <- read_validations(list.files(file.path(ex, "validation"),
                                    full.names = TRUE))
@@ -56,5 +56,5 @@ calibration_diagnostics(fit)
 # Stricter limits
 calibration_diagnostics(fit, rhat_max = 1.005, ess_min = 1000)
 plot(fit)
-}
+\dontshow{\}) # examplesIf}
 }

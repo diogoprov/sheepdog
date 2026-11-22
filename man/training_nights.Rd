@@ -28,14 +28,14 @@ such as \code{ARA01_20211016_190000} or
 names, e.g. \code{c(BEP2 = "BEP")}, as in \code{\link[=read_validations]{read_validations()}}.}
 
 \item{night_cutoff}{Numeric scalar (hour, 0-23). Recordings that start
-before this hour belong to
-the night of the day before, as in \code{\link[=detection_history]{detection_history()}}.}
+before this hour belong to the night of the day before, as in
+\code{\link[=detection_history]{detection_history()}}.}
 }
 \value{
-A tibble with \code{file}, \code{site}, \code{recording} (site, date and time
-of the source recording, before \code{site_map}) and \code{night}
-(\code{YYYYMMDD}). Names that do not match \code{pattern} are left out with a
-warning.
+A tibble (class \code{tbl_df}) with \code{file}, \code{site}, \code{recording}
+(site, date and time of the source recording, before \code{site_map}) and
+\code{night} (\code{YYYYMMDD}). Names that do not match \code{pattern} are left out
+with a warning.
 }
 \description{
 Reads the site, date and time of the source recording from the names of

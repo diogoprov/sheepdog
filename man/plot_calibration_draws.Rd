@@ -30,9 +30,9 @@ probability scale (a prior predictive check); with a fitted model, the
 uncertainty of the curve. Needs the 'ggplot2' package.
 }
 \examples{
+\dontshow{if (interactive() && requireNamespace("brms", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # Sampling from the prior or the posterior compiles a Stan model, which
-# takes minutes, so this example is not run here.
-\dontrun{
+# takes minutes, so this example runs only interactively.
 ex <- system.file("extdata", "example", package = "sheepdog")
 val <- read_validations(list.files(file.path(ex, "validation"),
                                    full.names = TRUE))
@@ -46,5 +46,5 @@ plot_calibration_draws(prior_fit, n_draws = 100)
 fit <- fit_calibration(val, f, engine = "brms", prior = prior,
                        chains = 4, iter = 2000, seed = 1, refresh = 0)
 plot_calibration_draws(fit, n_draws = 100, p_min = 0.95)
-}
+\dontshow{\}) # examplesIf}
 }

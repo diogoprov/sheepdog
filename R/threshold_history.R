@@ -33,10 +33,11 @@
 #'   count as recorded.
 #' @param dawn_hour Numeric scalar, an hour of the day. Recordings
 #'   that start before this hour belong to the night before.
-#' @param min_detections_night Integer scalar. Repetition rule: minimum
+#' @param min_detections_night Integer scalar >= 1. Repetition rule: minimum
 #'   number of reliable detections for a night with detection.
 #'
-#' @return A tibble with `site`, `species` (the short code, as in
+#' @return A tibble (class `tbl_df`) with `site`, `species` (the short
+#'   code, as in
 #'   `species_folder`), `night`, `n_detections`, `n_reliable`,
 #'   `confidence_max`, `detection_k1`, `detection_k2`, `detection_k3` and
 #'   `detection`.
@@ -54,6 +55,8 @@
 #' threshold_history(detections, thresholds)
 threshold_history <- function(detections, thresholds, min_confidence = 0.1,
                               dawn_hour = 12, min_detections_night = 1) {
+  check_number(min_detections_night, "min_detections_night", lower = 1,
+               integer = TRUE)
   detections <- check_detections(
     detections, c("site", "species_code", "confidence", "begin_path"))
   absent <- setdiff(c("site", "species_folder", "threshold"), names(thresholds))

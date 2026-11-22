@@ -29,34 +29,36 @@ one chosen by \code{\link[=select_calibration_model]{select_calibration_model()}
 \item{seed}{Integer scalar, seed of the fold assignment. The global random
 number generator is left as it was.}
 
-\item{fold_group}{\code{NULL} or a character vector of grouping columns. Do not
-include \code{species}, verdicts or confidence scores: these would split
-recordings or nights by species or by outcome. Group IDs must be nonmissing
-and nonempty. \code{NULL} keeps the original clip folds.}
+\item{fold_group}{\code{NULL} or a character vector (one or more elements) of
+grouping columns, combined into one group ID. Do not include \code{species},
+verdicts or confidence scores: these would split recordings or nights by
+species or by outcome. Group IDs must be nonmissing and nonempty. \code{NULL}
+keeps the original clip folds.}
 
-\item{by}{Character vector of columns of \code{validations} that define the
-groups: \code{"species"}, or \code{c("site", "species")} for the cells of the
-calibration, which hold fewer clips each.}
+\item{by}{Character vector (one or more elements) of columns of \code{validations}
+that define the groups: \code{"species"}, or \code{c("site", "species")} for the
+cells of the calibration, which hold fewer clips each.}
 
 \item{min_class}{Numeric scalar, least number of true positives and of false
 positives for a group to be judged. With fewer, \code{status} is
 \code{"insufficient"}.}
 
-\item{auc_min}{Numeric scalar, lowest acceptable \code{auc} and \code{auc_score}.}
+\item{auc_min}{Numeric scalar in [0, 1], lowest acceptable \code{auc} and
+\code{auc_score}.}
 
 \item{slope_range}{Numeric vector of length 2, increasing: acceptable range
 of \code{cal_slope}.}
 
-\item{intercept_max}{Numeric scalar, largest acceptable absolute
+\item{intercept_max}{Numeric scalar >= 0, largest acceptable absolute
 \code{cal_intercept}.}
 }
 \value{
-A tibble with one row per group: the \code{by} columns, \code{n}, \code{n_tp},
-\code{n_fp}, \code{conf_min}, \code{conf_max}, \code{auc}, \code{auc_score}, \code{logloss},
+A tibble (class \code{tbl_df}) with one row per group: the \code{by} columns,
+\code{n}, \code{n_tp}, \code{n_fp}, \code{conf_min}, \code{conf_max}, \code{auc}, \code{auc_score}, \code{logloss},
 \code{logloss_null}, \code{logloss_gain}, \code{cal_intercept}, \code{cal_slope}, \code{status}
-(\code{"ok"}, \code{"poor"} or \code{"insufficient"}) and \code{reason}. Measures that
-cannot be computed (e.g. the AUC of a group with one verdict) are \code{NA}.
-Folds whose fit failed are left out, with a warning.
+(\code{"ok"}, \code{"poor"} or \code{"insufficient"}) and \code{reason}. Measures that cannot
+be computed (e.g. the AUC of a group with one verdict) are \code{NA}. Folds
+whose fit failed are left out, with a warning.
 }
 \description{
 \code{\link[=compare_calibration_models]{compare_calibration_models()}} scores each model over all the clips,

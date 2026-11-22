@@ -199,13 +199,40 @@ rOpenSci packaging files were merged:
   `1:length()`, `any(is.na())` and others) are listed in the full report and
   are left for a later clean-up.
 
+## pkgcheck on main, 2026-11-22
+
+`pkgcheck::pkgcheck()` 0.3.4.5 on c65568c: all required checks pass
+(examples for every function, coverage 95.9%, R CMD check without errors or
+warnings, ORCID for all authors, 155 standards met and 29 N/A). Optional
+items left: goodpractice lints (1175, mostly line length, `expect_equal`
+and leading zeros; 41 functions with cyclomatic complexity >= 15), five
+exported names shared with other packages (kept: renaming would break the
+API), and `\dontrun{}` examples (replaced by `@examplesIf interactive()`).
+The dependency table and the call network came out empty because the
+macOS `ctags` is not universal-ctags; the rOpenSci bot uses the right one.
+
 ## autotest
 
-`autotest::autotest_package()` (and a run function by function) stops on
-every function with "'\_' is an unrecognized escape in character string
-(test-rounds.R:230:136)". No file of the package contains `\_`, and line 230
-of `tests/testthat/test-rounds.R` has fewer than 136 characters, so the
-error comes from the code that autotest generates or parses, not from
-sheepdog. autotest gave no result to triage; it should be tried again with a
-newer version before submission.
+autotest 0.2.0.11 needed three workarounds, all for problems in autotest
+or typetracer, not in sheepdog:
 
+1. typetracer turns test names into file names and breaks on escaped
+   quotes (the "'\_' is an unrecognized escape" error). Four tests were
+   renamed.
+2. It runs the tests against the installed package, so the current
+   version must be installed first.
+3. Tracing the instrumented tests fails, and a few calls stop inside
+   autotest ("incorrect number of dimensions", "arguments imply differing
+   number of rows"). It was run on the examples only, skipping the calls
+   that stop (script in the session scratchpad: the loop over
+   `autotest_single_trace()` wrapped in `tryCatch()`).
+
+Findings fixed on 2026-11-22: scalar arguments that accepted length-2
+vectors (54), logical arguments that accepted integers or strings (6),
+column-name arguments not checked against the table (`threshold_column`,
+`within`, `confuser_summary(verdicts)`), `@return` sections without the
+class (36), and `calibrated_thresholds()` returning the class of its input.
+Left on purpose: arguments that take several values (`by`, `keep`,
+`fold_group`, `target`, `verdicts`, `within`), free paths and labels
+(`output_dir`, `reviewer`, `file`), case-dependent character arguments
+(paths and patterns) and parameters not shown in the examples.

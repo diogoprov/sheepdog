@@ -26,9 +26,9 @@
 #'   `species` column) that enter the matrix.
 #' @param k_min Integer scalar, one of 1, 2 or 3. Repetition rule: 1, 2 or
 #'   3 reliable detections on the night.
-#' @param min_nights_month Numeric scalar. Site x month cells with fewer
-#'   recorded nights are dropped from the matrices (unstable frequencies)
-#'   and flagged in `effort`.
+#' @param min_nights_month Non-negative numeric scalar. Site x month cells
+#'   with fewer recorded nights are dropped from the matrices (unstable
+#'   frequencies) and flagged in `effort`.
 #' @param drop_empty Logical scalar. If `TRUE`, drops the site x month rows
 #'   in which no core species was detected. Distances such as Bray-Curtis
 #'   are undefined for them.
@@ -56,6 +56,8 @@
 #' @export
 community_matrices <- function(history, core_species, k_min = 2,
                                min_nights_month = 5, drop_empty = FALSE) {
+  check_number(min_nights_month, "min_nights_month", lower = 0)
+  check_flag(drop_empty, "drop_empty")
   if (length(core_species) == 0) stop("`core_species` is empty.")
   hist_tbl <- from_legacy(history) |>
     mutate(night = as.character(night))
@@ -157,6 +159,7 @@ community_matrices <- function(history, core_species, k_min = 2,
 #' @export
 build_community_matrices <- function(history_file, output_dir, core_species,
                                      k_min = 2, min_nights_month = 5) {
+  check_number(min_nights_month, "min_nights_month", lower = 0)
   if (!file.exists(history_file)) stop("History not found: ", history_file)
   # the night (YYYYMMDD) is read as text, in the new or the legacy format
   night_cols <- intersect(c("night", "noite"),

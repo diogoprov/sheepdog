@@ -21,14 +21,11 @@ to \code{clip_manifest.csv}: the clip manifest (from \code{\link[=select_clips]{
 \item{reviewer}{\code{NULL} or a character scalar, the reviewer: only their
 verdicts are used. With \code{NULL}, every reviewer's verdicts are kept, one row
 per clip and reviewer, ready for \code{\link[=reviewer_agreement]{reviewer_agreement()}} and
-\code{\link[=consensus_verdicts]{consensus_verdicts()}}.
-
-A clip marked more than once by the same reviewer keeps the last
-verdict; a message says how many clips were marked again and how many of
-them changed verdict.}
+\code{\link[=consensus_verdicts]{consensus_verdicts()}}.}
 }
 \value{
-The manifest with \code{verdict} (\code{"positive"}, \code{"negative"},
+A tibble (class \code{tbl_df}): the manifest with \code{verdict}
+(\code{"positive"}, \code{"negative"},
 \code{"uncertain"} or \code{"not_reviewed"}), \code{reviewed_path}, \code{reviewer},
 \code{identity} and \code{identity_certainty} (\code{NA} when the reviewer gave no
 identity, or with a verdicts file of an earlier version).
@@ -43,6 +40,11 @@ agreement between reviewers and the calibration work as with a review
 in the BirdNET GUI. \code{"uncertain"} verdicts are kept but, like
 \code{"disagreement"}, left out of precision, thresholds and calibration,
 which use only positive and negative verdicts.
+}
+\details{
+A clip marked more than once by the same reviewer keeps the last
+verdict; a message says how many clips were marked again and how many of
+them changed verdict.
 }
 \examples{
 man <- system.file("extdata", "clip_manifest.csv", package = "sheepdog")

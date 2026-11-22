@@ -40,8 +40,9 @@ in (0, 1). Models fitted with \code{engine = "brms"}: the threshold of
 computed.}
 }
 \value{
-A tibble with \code{site}, \code{species}, \code{date}, \code{night}, \code{hour},
-\code{confidence}, \code{p_tp}, \code{begin_path} and \code{file_offset}; with a model
+A tibble (class \code{tbl_df}) with \code{site}, \code{species}, \code{date},
+\code{night}, \code{hour}, \code{confidence}, \code{p_tp}, \code{begin_path} and
+\code{file_offset}; with a model
 fitted with \code{engine = "brms"}, also \code{p_tp_lower} and \code{pr_reliable}.
 }
 \description{

@@ -52,8 +52,8 @@
 #'   [suggest_thresholds()] (`threshold_column` picks another column, such
 #'   as `"threshold_conservative"` of [threshold_bootstrap()]). `NULL` gives
 #'   the ceiling only.
-#' @param by Character vector of column names that define the groups:
-#'   `"species_folder"` (the default, every site pooled) or
+#' @param by Character vector of one or more column names that define the
+#'   groups: `"species_folder"` (the default, every site pooled) or
 #'   `c("site", "species_folder")`.
 #' @param min_confidence Numeric scalar, the lowest score kept in the
 #'   selection tables (the minimum confidence BirdNET was run with).
@@ -68,12 +68,13 @@
 #'   skips the intervals.
 #' @param cluster Character scalar, the column of `validation` whose levels
 #'   are resampled whole: `"source_audio"` (the recording, the default) or
-#'   `"night"`.
+#'   `"night"`. Used only when `n_boot > 0`.
 #' @param conf Numeric scalar in (0, 1). Probability of the intervals.
 #' @param seed Integer scalar, seed of the bootstrap. The global random
 #'   number generator is left as it was.
 #'
-#' @return A tibble with one row per group (and threshold): the `by`
+#' @return A tibble (class `tbl_df`) with one row per group (and
+#'   threshold): the `by`
 #'   columns, `n_occasions` (annotated occasions), `n_present` (occasions
 #'   with the species), `n_missed` (occasions with the species and no
 #'   prediction of it), `recall_ceiling` with `ceiling_lower` and
@@ -108,6 +109,10 @@ recall_ceiling <- function(validation, detections, thresholds = NULL,
                            seed = 2026) {
   unit <- match.arg(occasion_unit)
   check_prob(conf, "conf", open = TRUE)
+  check_number(n_boot, "n_boot", lower = 0, integer = TRUE)
+  check_number(seed, "seed", integer = TRUE)
+  check_string(threshold_column, "threshold_column")
+  check_string(cluster, "cluster")
   check_columns(validation,
                 c("site", "species_code", "occasion_id", "sampling_mode",
                   "verdict"),

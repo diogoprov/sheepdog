@@ -179,7 +179,7 @@ test_that("later rounds change the seed", {
   expect_gt(mean(distancia), 2)
 })
 
-test_that("\"top\" leaves out the clips already reviewed", {
+test_that("mode top leaves out the clips already reviewed", {
   pred <- rounds_detections(6)
   a <- suppressMessages(select_clips(pred, "top", n_top = 1))
   b <- suppressMessages(select_clips(pred, "top", n_top = 1, previous = a))

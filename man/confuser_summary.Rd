@@ -11,19 +11,22 @@ confuser_summary(validation, verdicts = "negative", classes = NULL)
 \code{species_code}, \code{verdict} and \code{identity}, from \code{\link[=app_verdicts]{app_verdicts()}} or
 \code{\link[=join_identities]{join_identities()}}.}
 
-\item{verdicts}{Character vector of the verdicts counted: \code{"negative"}
-by default; add \code{"uncertain"} to include the uncertain clips.}
+\item{verdicts}{Character vector of one or more verdicts counted, among
+\code{"negative"}, \code{"uncertain"}, \code{"positive"}, \code{"disagreement"} and
+\code{"not_reviewed"}: \code{"negative"} by default; add \code{"uncertain"} to include
+the uncertain clips.}
 
 \item{classes}{\code{NULL} or a character vector of the classes of the
 classifier, to flag identities that are classes themselves. \code{NULL}
 (default) uses the \code{species_code} values of \code{validation}.}
 }
 \value{
-A tibble with one row per target class and identity:
-\code{species_code}, \code{identity}, \code{n} (clips), \code{n_weighted}, \code{n_sure} (clips
-with certainty \code{"sure"}), \code{share} (\code{n_weighted} over the clips of the
-class counted) and \code{is_class} (the identity is a class of the
-classifier other than the target), sorted by class and decreasing \code{n}.
+A tibble (class \code{tbl_df}) with one row per target class and
+identity: \code{species_code}, \code{identity}, \code{n} (clips), \code{n_weighted},
+\code{n_sure} (clips with certainty \code{"sure"}), \code{share} (\code{n_weighted} over
+the clips of the class counted) and \code{is_class} (the identity is a class
+of the classifier other than the target), sorted by class and
+decreasing \code{n}.
 }
 \description{
 Counts, for each target class, the identities given to its negative

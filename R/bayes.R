@@ -128,12 +128,11 @@ calibration_prior <- function(formula, validations) {
 #'   documented with their reference.
 #' @srrstats {BS6.2} Trace plots, with and without the warmup, are
 #'   documented here.
-#' @return A one-row tibble with `max_rhat`, `min_ess_bulk`, `min_ess_tail`,
-#'   `n_divergent` and `ok`.
-#' @examples
+#' @return A one-row tibble (class `tbl_df`) with `max_rhat`, `min_ess_bulk`,
+#'   `min_ess_tail`, `n_divergent` and `ok`.
+#' @examplesIf interactive() && requireNamespace("brms", quietly = TRUE)
 #' # Fitting a Bayesian calibration compiles a Stan model, which takes
-#' # minutes, so this example is not run here.
-#' \dontrun{
+#' # minutes, so this example runs only interactively.
 #' ex <- system.file("extdata", "example", package = "sheepdog")
 #' val <- read_validations(list.files(file.path(ex, "validation"),
 #'                                    full.names = TRUE))
@@ -145,7 +144,6 @@ calibration_prior <- function(formula, validations) {
 #' # Stricter limits
 #' calibration_diagnostics(fit, rhat_max = 1.005, ess_min = 1000)
 #' plot(fit)
-#' }
 #' @export
 calibration_diagnostics <- function(fit, rhat_max = 1.01, ess_min = 400) {
   check_brmsfit(fit)
@@ -179,9 +177,9 @@ calibration_diagnostics <- function(fit, rhat_max = 1.01, ess_min = 400) {
 #'
 #' @return A `brmsfit` sampled from the prior, usable in
 #'   [plot_calibration()].
-#' @examples
-#' # Sampling from the prior compiles a Stan model, which takes minutes
-#' \dontrun{
+#' @examplesIf interactive() && requireNamespace("brms", quietly = TRUE)
+#' # Sampling from the prior compiles a Stan model, which takes minutes,
+#' # so this example runs only interactively.
 #' ex <- system.file("extdata", "example", package = "sheepdog")
 #' val <- read_validations(list.files(file.path(ex, "validation"),
 #'                                    full.names = TRUE))
@@ -190,7 +188,6 @@ calibration_diagnostics <- function(fit, rhat_max = 1.01, ess_min = 400) {
 #'                                           chains = 2, seed = 1,
 #'                                           refresh = 0)
 #' plot_calibration_draws(prior_fit)
-#' }
 #' @export
 prior_predictive_calibration <- function(formula, validations, prior, ...) {
   require_suggested("brms", "for Bayesian calibration models")
@@ -218,10 +215,9 @@ prior_predictive_calibration <- function(formula, validations, prior, ...) {
 #' @param ... Further arguments for `priorsense::powerscale_sensitivity()`.
 #'
 #' @return The table of `priorsense::powerscale_sensitivity()`.
-#' @examples
+#' @examplesIf interactive() && requireNamespace("brms", quietly = TRUE)
 #' # Fitting a Bayesian calibration compiles a Stan model, which takes
-#' # minutes, so this example is not run here.
-#' \dontrun{
+#' # minutes, so this example runs only interactively.
 #' ex <- system.file("extdata", "example", package = "sheepdog")
 #' val <- read_validations(list.files(file.path(ex, "validation"),
 #'                                    full.names = TRUE))
@@ -232,7 +228,6 @@ prior_predictive_calibration <- function(formula, validations, prior, ...) {
 #' calibration_sensitivity(fit)
 #' # Only the slope on the logit of the score
 #' calibration_sensitivity(fit, variable = "b_logit_conf")
-#' }
 #' @export
 calibration_sensitivity <- function(fit, variable = NULL, ...) {
   check_brmsfit(fit)
@@ -338,13 +333,12 @@ summarise_grid_draws <- function(draws, p_min, lower_prob) {
 #' @inheritParams detection_history
 #' @inheritParams score_detections
 #'
-#' @return A tibble with `draw`, `site`, `species`, `night`,
+#' @return A tibble (class `tbl_df`) with `draw`, `site`, `species`, `night`,
 #'   `n_detections`, `n_reliable`, `detection_k1` to `detection_k3` and
 #'   `detection`.
-#' @examples
+#' @examplesIf interactive() && requireNamespace("brms", quietly = TRUE)
 #' # Fitting a Bayesian calibration compiles a Stan model, which takes
-#' # minutes, so this example is not run here.
-#' \dontrun{
+#' # minutes, so this example runs only interactively.
 #' ex <- system.file("extdata", "example", package = "sheepdog")
 #' val <- read_validations(list.files(file.path(ex, "validation"),
 #'                                    full.names = TRUE))
@@ -358,7 +352,6 @@ summarise_grid_draws <- function(draws, p_min, lower_prob) {
 #' scored <- score_detections(tables, fit, p_min = 0.95)
 #' hd <- history_draws(fit, scored, p_min = 0.95, n_draws = 200)
 #' community_matrices_draws(hd, core_species = c("boa_ran", "phy_cuv"))
-#' }
 #' @export
 history_draws <- function(fit, scored, p_min = 0.95, n_draws = 200,
                           min_detections_night = 1, min_confidence = 0.1,
@@ -447,6 +440,7 @@ history_draws <- function(fit, scored, p_min = 0.95, n_draws = 200,
 community_matrices_draws <- function(history, core_species, k_min = 2,
                                      min_nights_month = 5,
                                      probs = c(0.05, 0.95)) {
+  check_number(min_nights_month, "min_nights_month", lower = 0)
   by_draw <- history |>
     group_split(draw) |>
     map(function(h) {
@@ -488,10 +482,9 @@ community_matrices_draws <- function(history, core_species, k_min = 2,
 #'   number generator is left as it was.
 #'
 #' @return A ggplot object.
-#' @examples
+#' @examplesIf interactive() && requireNamespace("brms", quietly = TRUE)
 #' # Sampling from the prior or the posterior compiles a Stan model, which
-#' # takes minutes, so this example is not run here.
-#' \dontrun{
+#' # takes minutes, so this example runs only interactively.
 #' ex <- system.file("extdata", "example", package = "sheepdog")
 #' val <- read_validations(list.files(file.path(ex, "validation"),
 #'                                    full.names = TRUE))
@@ -505,7 +498,6 @@ community_matrices_draws <- function(history, core_species, k_min = 2,
 #' fit <- fit_calibration(val, f, engine = "brms", prior = prior,
 #'                        chains = 4, iter = 2000, seed = 1, refresh = 0)
 #' plot_calibration_draws(fit, n_draws = 100, p_min = 0.95)
-#' }
 #' @export
 plot_calibration_draws <- function(fit, n_draws = 100, p_min = 0.95,
                                    seed = 2026) {

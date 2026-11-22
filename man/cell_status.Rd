@@ -17,7 +17,8 @@ cell_status(fit, validations, p_min = 0.95, min_n = 15, by = NULL)
 \item{p_min}{Numeric scalar in (0, 1). Calibrated probability that makes
 a detection reliable, as in \code{\link[=detection_history]{detection_history()}}.}
 
-\item{min_n}{Numeric scalar. Minimum number of reviewed clips in a cell.}
+\item{min_n}{Non-negative numeric scalar. Minimum number of reviewed clips
+in a cell.}
 
 \item{by}{\code{NULL} or a character vector of column names of \code{validations}
 that split each cell, e.g.
@@ -27,7 +28,8 @@ afterwards). Each site x species x \code{by} cell gets its own status; the
 threshold uses the \code{by} columns only if the calibration model does.}
 }
 \value{
-A tibble with one row per site x species (x \code{by}): \code{site},
+A tibble (class \code{tbl_df}) with one row per site x species (x
+\code{by}): \code{site},
 \code{species}, the \code{by} columns,
 \code{n_reviewed}, \code{n_tp}, \code{max_confidence} (highest reviewed score),
 \code{threshold} (lowest grid score at which the calibrated probability

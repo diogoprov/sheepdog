@@ -16,12 +16,10 @@ read_selection_tables(
 recursively.}
 
 \item{table_pattern}{Character scalar, regular expression for the file
-names of combined
-tables.}
+names of combined tables.}
 
 \item{per_audio_pattern}{\code{NULL} or character scalar, regular expression
-for the file names of
-per-audio tables. \code{NULL} reads only combined tables.}
+for the file names of per-audio tables. \code{NULL} reads only combined tables.}
 
 \item{site_pattern}{\code{NULL} or character scalar, regular expression with
 one capture group
@@ -32,10 +30,10 @@ instead of from the folder of the table. For example,
 \code{\link[=list_recordings]{list_recordings()}}.}
 }
 \value{
-A tibble with one row per prediction, the column \code{site} first,
-followed by the standardised table columns. The columns \code{begin_time},
-\code{end_time}, \code{species_code}, \code{confidence}, \code{begin_path} and \code{file_offset}
-are required.
+A tibble (class \code{tbl_df}) with one row per prediction, the
+column \code{site} first, followed by the standardised table columns. The
+columns \code{begin_time}, \code{end_time}, \code{species_code}, \code{confidence},
+\code{begin_path} and \code{file_offset} are required.
 }
 \description{
 Finds the BirdNET selection tables (Raven format, tab-separated) under

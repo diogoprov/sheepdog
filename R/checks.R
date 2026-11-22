@@ -63,6 +63,22 @@ check_flag <- function(x, arg) {
   invisible(x)
 }
 
+#' Check a single character string
+#'
+#' @param x Value to check.
+#' @param arg Character scalar, argument name used in the error message.
+#' @param null_ok Logical scalar; if `TRUE`, `NULL` is accepted.
+#' @return `x`, invisibly; stops unless `x` is one non-missing, non-empty
+#'   string (or `NULL` with `null_ok = TRUE`).
+#' @noRd
+check_string <- function(x, arg, null_ok = FALSE) {
+  if (null_ok && is.null(x)) return(invisible(x))
+  if (!is.character(x) || length(x) != 1L || is.na(x) || !nzchar(x)) {
+    stop("`", arg, "` must be a single character string.", call. = FALSE)
+  }
+  invisible(x)
+}
+
 #' Check confidence scores
 #'
 #' Numeric, no NaN or Inf, within \[0, 1\]. Missing values are allowed;

@@ -26,8 +26,7 @@
 #' @param audio_dir Character scalar, path to the root folder of the audio
 #'   files, searched recursively.
 #' @param audio_pattern Character scalar, regular expression for the audio
-#'   file names (case
-#'   insensitive).
+#'   file names (case insensitive).
 #' @param site `NULL` (the site is the first folder below `audio_dir`) or a
 #'   character scalar, a single site name for every file.
 #' @param site_pattern `NULL` or character scalar, regular expression with
@@ -49,8 +48,9 @@
 #'   table to (e.g.
 #'   `"recordings.csv"`).
 #'
-#' @return A tibble with `site` and `source_audio`, one row per recording,
-#'   sorted by site and path (invisibly when `file` is given).
+#' @return A tibble (class `tbl_df`) with `site` and `source_audio`, one
+#'   row per recording, sorted by site and path (invisibly when `file` is
+#'   given).
 #' @seealso [select_clips()], `vignette("organising-data")`.
 #' @export
 #' @examples
@@ -70,6 +70,8 @@ list_recordings <- function(audio_dir,
       !dir.exists(audio_dir)) {
     stop("`audio_dir` must be an existing folder.", call. = FALSE)
   }
+  check_string(audio_pattern, "audio_pattern")
+  check_string(site_pattern, "site_pattern", null_ok = TRUE)
   if (!is.null(site) && (!is.character(site) || length(site) != 1)) {
     stop("`site` must be NULL or a single site name.", call. = FALSE)
   }

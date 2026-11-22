@@ -118,8 +118,8 @@
 #' @param label `NULL` or character scalar, the species of an Arbimon
 #'   "export all" file (one job, one template). Needed for those files only.
 #'
-#' @return A tibble with one row per prediction: `site`, `begin_time`,
-#'   `end_time`, `species_code`, `confidence`, `begin_path` and
+#' @return A tibble (class `tbl_df`) with one row per prediction: `site`,
+#'   `begin_time`, `end_time`, `species_code`, `confidence`, `begin_path` and
 #'   `file_offset` (the columns required by [select_clips()]), plus `label`,
 #'   `score` (as in the file) and `classifier`; for Arbimon, also `verdict`.
 #' @seealso [read_selection_tables()] for BirdNET, [read_pamdp()] for pamDP

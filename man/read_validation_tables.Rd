@@ -17,8 +17,8 @@ passed to \code{\link[=combine_rounds]{combine_rounds()}}, which gives the clips
 their cumulative \code{inclusion_prob}. \code{NULL} only stacks the tables.}
 }
 \value{
-A tibble with the columns of the validation tables; \code{night} and
-\code{recording_date} are character.
+A tibble (class \code{tbl_df}) with the columns of the validation
+tables; \code{night} and \code{recording_date} are character.
 }
 \description{
 Stacks the \code{validation_by_clip.csv} tables of several runs or sites

@@ -20,8 +20,9 @@ species reviewed by two reviewers.}
 generator is left as it was.}
 }
 \value{
-The manifest with \code{reviewer} (the first reviewer of each clip)
-and \code{second_reviewer} (\code{NA} for clips reviewed once).
+A tibble (class \code{tbl_df}): the manifest with \code{reviewer} (the
+first reviewer of each clip) and \code{second_reviewer} (\code{NA} for clips
+reviewed once).
 }
 \description{
 Splits the clips of a manifest among reviewers, balanced within each

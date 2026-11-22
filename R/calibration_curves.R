@@ -127,7 +127,8 @@
 #'   the verdict, which does not use it, are needed.
 #' @param cluster Character scalar, the column of `validation` whose levels are
 #'   kept together in the folds (`"source_audio"`, the recording, by default).
-#'   Without it, clips are split one by one.
+#'   When `validation` has no such column, clips are split one by one, with a
+#'   message.
 #' @param top_from,bin_width Numeric scalars in (0, 1), lower limit and width of
 #'   the high score bins of `top_error`.
 #' @param min_n Numeric scalar, minimum number of clips of a group, of
@@ -135,9 +136,9 @@
 #'   in the high bins.
 #' @param min_bin Numeric scalar, minimum number of clips of a bin for it to
 #'   enter `top_error`.
-#' @param max_error,tolerance Numeric scalars, largest `top_error_excess` and
-#'   largest difference between the logistic and the weighted thresholds, in
-#'   score units, for `"keep_logistic"`.
+#' @param max_error,tolerance Numeric scalars >= 0, largest
+#'   `top_error_excess` and largest difference between the logistic and the
+#'   weighted thresholds, in score units, for `"keep_logistic"`.
 #' @param n_boot Numeric scalar >= 0, number of bootstrap replicates of the
 #'   difference between the logistic and the weighted thresholds (`0`, the
 #'   default, skips it).
@@ -148,19 +149,17 @@
 #' @param seed Integer scalar, seed of the folds. The global random number
 #'   generator is left as it was.
 #'
-#' @return A tibble with one row per group x target x curve: the `by`
-#'   columns,
-#'   `curve`, `target`, `n`, `n_positive`, `cv_logloss`, `cv_logloss_se`,
-#'   `within_1se` (log-loss within one standard error of the best curve of
-#'   the group), `top_error`, `top_error_excess`, `n_eff_top`, `max_p`,
-#'   `reaches_target`,
-#'   `threshold_p_tp`, `threshold_precision`, `threshold_weighted`,
-#'   `diff_weighted`, `diff_weighted_lower`, `diff_weighted_upper` (bootstrap
-#'   interval of `diff_weighted`, logistic only, with `n_boot > 0`),
-#'   `above_reviewed` (a threshold above the highest
+#' @return A tibble (class `tbl_df`) with one row per group x target x curve:
+#'   the `by` columns, `curve`, `target`, `n`, `n_positive`, `cv_logloss`,
+#'   `cv_logloss_se`, `within_1se` (log-loss within one standard error of the
+#'   best curve of the group), `top_error`, `top_error_excess`, `n_eff_top`,
+#'   `max_p`, `reaches_target`, `threshold_p_tp`, `threshold_precision`,
+#'   `threshold_weighted`, `diff_weighted`, `diff_weighted_lower`,
+#'   `diff_weighted_upper` (bootstrap interval of `diff_weighted`, logistic
+#'   only, with `n_boot > 0`), `above_reviewed` (a threshold above the highest
 #'   reviewed score is an extrapolation), `weighted` and `verdict`. The
-#'   attribute `"curves"` holds the fitted curves on the grid (`score`,
-#'   `p_tp`) and `"bins"` the observed precision by bin, for
+#'   attribute `"curves"` holds the fitted curves on the grid (`score`, `p_tp`)
+#'   and `"bins"` the observed precision by bin, for
 #'   [plot_calibration_curves()].
 #' @references
 #' Wood, C. M. & Kahl, S. (2024). Guidelines for appropriate use of
@@ -212,6 +211,11 @@ compare_calibration_curves <- function(validation, target = 0.95,
   if (!isTRUE(cv) && !isFALSE(cv)) {
     stop("`cv` must be TRUE or FALSE.", call. = FALSE)
   }
+  check_number(k, "k", lower = 1, integer = TRUE)
+  check_string(cluster, "cluster")
+  check_number(max_error, "max_error", lower = 0)
+  check_number(tolerance, "tolerance", lower = 0)
+  check_number(seed, "seed", integer = TRUE)
   check_by(validation, by)
   if ("gam" %in% curves && !has_suggested("mgcv")) {
     message("Package mgcv is not installed: the GAM is left out.")
@@ -654,6 +658,7 @@ predict_curve <- function(fit, x) {
 #' @export
 plot_calibration_curves <- function(x, validation = NULL, bin_width = 0.1) {
   require_suggested("ggplot2", "to plot the calibration curves")
+  check_number(bin_width, "bin_width", 0, 1, open = TRUE)
   curve_tab <- attr(x, "curves")
   by <- attr(x, "by")
   if (is.null(curve_tab) || nrow(curve_tab) == 0) {

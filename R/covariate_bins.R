@@ -36,16 +36,17 @@
 #'   increasing: breaks shared by all groups, instead of quantiles (bins
 #'   are left-closed; the last one includes its
 #'   upper end).
-#' @param within `NULL` or character vector, columns within which quantile
-#'   breaks are computed (`NULL`
+#' @param within `NULL` or a character vector of one or more column names
+#'   of `covariates`, within which quantile breaks are computed (`NULL`
 #'   for quantiles over all rows). Ignored when `breaks` is given.
 #' @param name Character scalar, name of the new column. Defaults to
 #'   `<var>_bin`.
 #'
-#' @return The `key` columns (as character) and the bin, an ordered factor
-#'   with levels `q1`, `q2`, ... (quantile bins, from low to high values of
-#'   `var`) or the intervals of `breaks`. Rows with a missing `var` get a
-#'   missing bin.
+#' @return A data frame (class `data.frame`, or `tbl_df` when `covariates`
+#'   is a tibble) with the `key` columns (as character) and the bin, an
+#'   ordered factor with levels `q1`, `q2`, ... (quantile bins, from low to
+#'   high values of `var`) or the intervals of `breaks`. Rows with a missing
+#'   `var` get a missing bin.
 #' @export
 #' @examples
 #' nights <- data.frame(
@@ -58,6 +59,19 @@ covariate_bins <- function(covariates, var, key = c("site", "night"),
                            n_bins = 3, breaks = NULL, within = "site",
                            name = paste0(var, "_bin")) {
   check_data_frame(covariates, "covariates")
+  check_string(var, "var")
+  check_string(name, "name")
+  if (is.null(breaks) && !is.null(within)) {
+    if (!is.character(within) || length(within) == 0 || anyNA(within)) {
+      stop("`within` must be `NULL` or a character vector of column names.",
+           call. = FALSE)
+    }
+    absent <- setdiff(within, names(covariates))
+    if (length(absent) > 0) {
+      stop("`within` names column(s) not in `covariates`: ",
+           paste(absent, collapse = ", "), ".", call. = FALSE)
+    }
+  }
   missing <- setdiff(c(key, var, if (is.null(breaks)) within),
                     names(covariates))
   if (length(missing) > 0) {
@@ -87,9 +101,7 @@ covariate_bins <- function(covariates, var, key = c("site", "night"),
     tab[[name]] <- cut(tab[[var]], breaks = breaks, right = FALSE,
                        include.lowest = TRUE, ordered_result = TRUE)
   } else {
-    if (!is.numeric(n_bins) || length(n_bins) != 1 || n_bins < 2) {
-      stop("`n_bins` must be a number >= 2.", call. = FALSE)
-    }
+    check_number(n_bins, "n_bins", lower = 2, integer = TRUE)
     labels <- paste0("q", seq_len(n_bins))
     tab <- tab |>
       group_by(across(all_of(within))) |>

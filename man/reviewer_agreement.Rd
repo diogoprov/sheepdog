@@ -13,8 +13,9 @@ a \code{reviewer} column, or a named list of such tables, named by
 reviewer.}
 }
 \value{
-A tibble with \code{species_folder}, \code{n_clips} (clips with at least
-two verdicts), \code{n_reviewers}, \code{agreement}, \code{kappa} and \code{method}.
+A tibble (class \code{tbl_df}) with \code{species_folder}, \code{n_clips}
+(clips with at least two verdicts), \code{n_reviewers}, \code{agreement},
+\code{kappa} and \code{method}.
 }
 \description{
 Measures, for each species, the agreement between reviewers on the

@@ -17,9 +17,10 @@
 #'   are still created), but `status` tells what would be done. Useful to
 #'   check a selection before cutting.
 #'
-#' @return The manifest with the column `status` after `begin_path`: one of
-#'   `"ok"`, `"already_exists"`, `"audio_not_found"`, `"simulated"` or
-#'   `"error: <message>"`.
+#' @return A data frame of the class of `manifest` (`data.frame`, or
+#'   `tbl_df` for a tibble): the manifest with the column `status` after
+#'   `begin_path`: one of `"ok"`, `"already_exists"`, `"audio_not_found"`,
+#'   `"simulated"` or `"error: <message>"`.
 #' @examples
 #' # A 5-s silent recording (16-bit PCM WAV), written with base R
 #' wav <- file.path(tempdir(), "S01_20220110_190000.wav")
@@ -51,6 +52,12 @@
 #' }
 #' @export
 cut_clips <- function(manifest, output_dir, simulate = FALSE) {
+  check_data_frame(manifest, "manifest")
+  check_columns(manifest, c("species_folder", "clip_file", "source_audio",
+                            "begin_path", "clip_start", "duration"),
+                "manifest", hint = "Use the manifest of select_clips().")
+  check_string(output_dir, "output_dir")
+  check_flag(simulate, "simulate")
   if (!simulate) require_suggested("av", "to cut the clips")
   clips_dir <- file.path(output_dir, "clips")
   dir.create(clips_dir, recursive = TRUE, showWarnings = FALSE)
@@ -189,7 +196,8 @@ pack_clips <- function(manifest, output_dir) {
 #'   tables (e.g. `"DiverSons v2, BirdNET-Analyzer 2.4.0"`), recorded in
 #'   `extraction_info.csv`. `NULL` records `NA`.
 #'
-#' @return The manifest written to `clip_manifest.csv`, invisibly.
+#' @return A tibble (class `tbl_df`), the manifest written to
+#'   `clip_manifest.csv`, invisibly.
 #' @export
 #' @examples
 #' ex <- system.file("extdata", "example", package = "sheepdog")
@@ -204,6 +212,10 @@ extract_validation_clips <- function(data_dir, output_dir, ...,
                                      site_pattern = NULL,
                                      make_zip = TRUE, simulate = FALSE,
                                      classifier = NULL) {
+  check_string(output_dir, "output_dir")
+  check_flag(make_zip, "make_zip")
+  check_flag(simulate, "simulate")
+  check_string(classifier, "classifier", null_ok = TRUE)
   manifest_path <- file.path(output_dir, "clip_manifest.csv")
   previous <- list(...)$previous
   if (is.character(previous) && file.exists(manifest_path) &&

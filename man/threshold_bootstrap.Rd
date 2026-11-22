@@ -67,8 +67,8 @@ resampling it gives no information on the uncertainty. With few units
 number generator is left as it was.}
 }
 \value{
-A tibble with \code{site}, \code{species_folder}, the \code{by} columns,
-\code{threshold} (from all the clips), \code{threshold_median},
+A tibble (class \code{tbl_df}) with \code{site}, \code{species_folder}, the
+\code{by} columns, \code{threshold} (from all the clips), \code{threshold_median},
 \code{threshold_conservative} (quantile \code{conf} of the replicates),
 \code{share_reached} (share of replicates in which some score reaches the
 target) and \code{n_clusters}.

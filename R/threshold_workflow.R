@@ -49,8 +49,8 @@
 #' @param seed Integer scalar, seed of the resampling. The global random
 #'   number generator is left as it was.
 #'
-#' @return A tibble with `site`, `species_folder`, the `by` columns,
-#'   `threshold` (from all the clips), `threshold_median`,
+#' @return A tibble (class `tbl_df`) with `site`, `species_folder`, the
+#'   `by` columns, `threshold` (from all the clips), `threshold_median`,
 #'   `threshold_conservative` (quantile `conf` of the replicates),
 #'   `share_reached` (share of replicates in which some score reaches the
 #'   target) and `n_clusters`.
@@ -85,6 +85,7 @@ threshold_bootstrap <- function(validation, target_precision = 0.90,
          call. = FALSE)
   }
   check_prob(conf, "conf", open = TRUE)
+  check_number(seed, "seed", integer = TRUE)
   reviewed <- reviewed_with_confidence(validation)
   has_weights <- has_inclusion_prob(reviewed)
   check_reviewed(reviewed)
@@ -142,15 +143,16 @@ threshold_bootstrap <- function(validation, target_precision = 0.90,
 #'   [suggest_thresholds()]; `threshold_column` picks another column, such
 #'   as `"threshold_conservative"` of [threshold_bootstrap()]), or a single
 #'   number for every cell.
-#' @param by Character vector of column names of `validation` that define
-#'   the groups, e.g. `"recording_hour"` or a month column.
+#' @param by Character vector of one or more column names of `validation`
+#'   that define the groups, e.g. `"recording_hour"`, a month column, or
+#'   both.
 #' @param threshold_column Character scalar, the column of `thresholds` with
 #'   the threshold.
 #'
-#' @return A tibble with `site`, `species_folder`, the `by` columns,
-#'   `threshold`, `n_above` (reviewed clips at or above it), `n_eff`
-#'   (effective sample size of Kish, with weights), `precision_above` and
-#'   `below_target`. A group with fewer than `min_n` clips above the
+#' @return A tibble (class `tbl_df`) with `site`, `species_folder`, the
+#'   `by` columns, `threshold`, `n_above` (reviewed clips at or above it),
+#'   `n_eff` (effective sample size of Kish, with weights), `precision_above`
+#'   and `below_target`. A group with fewer than `min_n` clips above the
 #'   threshold gets `below_target = NA`.
 #' @seealso [threshold_bootstrap()], [threshold_record()].
 #' @examples
@@ -172,13 +174,16 @@ threshold_by_group <- function(validation, thresholds, by,
   if (length(by) == 0) {
     stop("Give the group columns in `by`.", call. = FALSE)
   }
+  check_prob(target_precision, "target_precision", open = TRUE)
+  check_number(min_n, "min_n", lower = 1, integer = TRUE)
+  check_string(threshold_column, "threshold_column")
   reviewed <- reviewed_with_confidence(validation)
   has_weights <- has_inclusion_prob(reviewed) && !anyNA(reviewed$inclusion_prob)
   if (is.numeric(thresholds) && length(thresholds) == 1) {
     reviewed$.thr <- thresholds
   } else {
     check_columns(thresholds, c("site", "species_folder", threshold_column),
-                  "thresholds")
+                  "thresholds", hint = "See `threshold_column`.")
     tab <- distinct(thresholds, site, species_folder,
                     .thr = .data[[threshold_column]])
     reviewed <- inner_join(reviewed, tab,
@@ -226,7 +231,8 @@ threshold_by_group <- function(validation, thresholds, by,
 #' @param file `NULL` or a character scalar, path of a Markdown file to
 #'   write.
 #'
-#' @return A tibble, one row per cell, with the columns of `thresholds`,
+#' @return A tibble (class `tbl_df`), one row per cell, with the columns of
+#'   `thresholds`,
 #'   `target_precision`, the bootstrap columns and, from `groups`,
 #'   `n_groups`, `n_groups_below` and `worst_group_precision`; invisibly
 #'   when `file` is given.

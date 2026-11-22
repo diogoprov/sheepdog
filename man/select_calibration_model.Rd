@@ -17,8 +17,8 @@ select_calibration_model(
 \item{rule}{Character scalar, the selection rule: \code{"one_se_logloss"}
 (default) or \code{"best_auc"}.}
 
-\item{k_folds}{Numeric scalar, number of folds of the comparison (for the
-standard error).}
+\item{k_folds}{Integer scalar >= 2, number of folds of the comparison (for
+the standard error).}
 }
 \value{
 The name of the selected model.

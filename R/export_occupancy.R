@@ -189,11 +189,10 @@
 #' )
 #' vapply(out$tables, nrow, integer(1))
 #' list.files(out_dir)
-#'
+#' @examplesIf interactive() && requireNamespace("brms", quietly = TRUE)
 #' # With a Bayesian calibration, the export also holds its posterior
 #' # draws. Fitting compiles a Stan model, which takes minutes, so this
-#' # part is not run here.
-#' \dontrun{
+#' # part runs only in interactive sessions.
 #' val <- read_validations(list.files(file.path(ex, "validation"),
 #'                                    full.names = TRUE))
 #' f <- tp ~ logit_conf + (1 | species)
@@ -206,7 +205,6 @@
 #'   validation = list.files(file.path(ex, "validation"), full.names = TRUE),
 #'   fit = fit, n_draws = 100, overwrite = TRUE
 #' )
-#' }
 #' @export
 export_occupancy_data <- function(output_dir, detections, recordings = NULL,
                                   validation = NULL, fit = NULL, sites = NULL,

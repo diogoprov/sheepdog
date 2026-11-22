@@ -24,7 +24,8 @@
 #'   `tp`: the clips the model was fitted to, one row per clip.
 #' @param p_min Numeric scalar in (0, 1). Calibrated probability that makes
 #'   a detection reliable, as in [detection_history()].
-#' @param min_n Numeric scalar. Minimum number of reviewed clips in a cell.
+#' @param min_n Non-negative numeric scalar. Minimum number of reviewed clips
+#'   in a cell.
 #' @param by `NULL` or a character vector of column names of `validations`
 #'   that split each cell, e.g.
 #'   the bin of an environmental gradient or of an acoustic index from
@@ -32,7 +33,8 @@
 #'   afterwards). Each site x species x `by` cell gets its own status; the
 #'   threshold uses the `by` columns only if the calibration model does.
 #'
-#' @return A tibble with one row per site x species (x `by`): `site`,
+#' @return A tibble (class `tbl_df`) with one row per site x species (x
+#'   `by`): `site`,
 #'   `species`, the `by` columns,
 #'   `n_reviewed`, `n_tp`, `max_confidence` (highest reviewed score),
 #'   `threshold` (lowest grid score at which the calibrated probability
@@ -50,6 +52,7 @@
 #' @export
 cell_status <- function(fit, validations, p_min = 0.95, min_n = 15,
                         by = NULL) {
+  check_number(min_n, "min_n", lower = 0)
   check_by(validations, by)
   lvls <- fit_levels(fit)
   cell_summary <- validations |>

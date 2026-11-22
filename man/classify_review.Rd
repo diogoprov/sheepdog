@@ -24,8 +24,9 @@ expressions (case-insensitive) that identify the positive and negative
 folders in the path of each clip.}
 }
 \value{
-The manifest with two more columns: \code{verdict} (\code{"positive"},
-\code{"negative"}, \code{"not_reviewed"} or \code{"clip_missing"}) and
+A tibble (class \code{tbl_df}): the manifest with two more columns,
+\code{verdict} (\code{"positive"}, \code{"negative"}, \code{"not_reviewed"} or
+\code{"clip_missing"}) and
 \code{reviewed_path}, the path where the clip was found. This is the table
 written to \code{validation_by_clip.csv}.
 }

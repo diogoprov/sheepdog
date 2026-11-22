@@ -203,3 +203,12 @@ test_that("Bayesian helpers check their computational parameters", {
   expect_error(plot_calibration_draws(fit, p_min = -1), "`p_min`")
   expect_error(plot_calibration_draws(fit, seed = NA), "`seed`")
 })
+
+test_that("check_string() accepts one non-empty string only", {
+  expect_silent(check_string("a", "x"))
+  expect_silent(check_string(NULL, "x", null_ok = TRUE))
+  for (bad in list(c("a", "b"), NA_character_, "", 1, NULL)) {
+    expect_error(check_string(bad, "x"),
+                 "`x` must be a single character string")
+  }
+})

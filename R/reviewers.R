@@ -18,8 +18,9 @@
 #' @param seed Integer scalar, seed of the draws. The global random number
 #'   generator is left as it was.
 #'
-#' @return The manifest with `reviewer` (the first reviewer of each clip)
-#'   and `second_reviewer` (`NA` for clips reviewed once).
+#' @return A tibble (class `tbl_df`): the manifest with `reviewer` (the
+#'   first reviewer of each clip) and `second_reviewer` (`NA` for clips
+#'   reviewed once).
 #' @examples
 #' man <- read.csv(system.file("extdata", "clip_manifest.csv",
 #'                             package = "sheepdog"))
@@ -31,7 +32,8 @@ assign_reviewers <- function(manifest, reviewers, overlap = 0.1,
                              seed = 2026) {
   if (length(reviewers) < 2) stop("Give at least two reviewers.")
   if (anyDuplicated(reviewers)) stop("Reviewer names must be unique.")
-  if (overlap < 0 || overlap > 1) stop("`overlap` must be between 0 and 1.")
+  check_prob(overlap, "overlap")
+  check_number(seed, "seed", integer = TRUE)
   k <- length(reviewers)
   withr::with_seed(seed, {
     manifest |>
@@ -121,8 +123,9 @@ split_by_reviewer <- function(manifest, clips_dir, output_dir) {
 #'   a `reviewer` column, or a named list of such tables, named by
 #'   reviewer.
 #'
-#' @return A tibble with `species_folder`, `n_clips` (clips with at least
-#'   two verdicts), `n_reviewers`, `agreement`, `kappa` and `method`.
+#' @return A tibble (class `tbl_df`) with `species_folder`, `n_clips`
+#'   (clips with at least two verdicts), `n_reviewers`, `agreement`,
+#'   `kappa` and `method`.
 #' @examples
 #' reviews <- list(
 #'   ana = data.frame(species_folder = "boa_ran",
@@ -180,7 +183,8 @@ reviewer_agreement <- function(reviews) {
 #'
 #' @inheritParams reviewer_agreement
 #'
-#' @return A tibble with one row per clip: the columns of the reviewed
+#' @return A data frame (class `data.frame`, or `tbl_df` when the reviews
+#'   are tibbles) with one row per clip: the columns of the reviewed
 #'   tables (from the first reviewer of each clip), `verdict`,
 #'   `n_reviewers` and `reviewers` (names separated by `;`).
 #' @examples

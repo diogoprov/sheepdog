@@ -15,8 +15,9 @@
 #'   expressions (case-insensitive) that identify the positive and negative
 #'   folders in the path of each clip.
 #'
-#' @return The manifest with two more columns: `verdict` (`"positive"`,
-#'   `"negative"`, `"not_reviewed"` or `"clip_missing"`) and
+#' @return A tibble (class `tbl_df`): the manifest with two more columns,
+#'   `verdict` (`"positive"`, `"negative"`, `"not_reviewed"` or
+#'   `"clip_missing"`) and
 #'   `reviewed_path`, the path where the clip was found. This is the table
 #'   written to `validation_by_clip.csv`.
 #' @examples
@@ -213,9 +214,9 @@ kish_n <- function(prob) {
 #'   [covariate_bins()]. They show which
 #'   parts of the gradient lack reviewed clips.
 #'
-#' @return A tibble with `site`, `species_folder`, the `by` columns, `bin`,
-#'   `n_reviewed`, `n_positive`, `precision`, `precision_weighted` (only
-#'   with `inclusion_prob`) and `low_support`.
+#' @return A tibble (class `tbl_df`) with `site`, `species_folder`, the
+#'   `by` columns, `bin`, `n_reviewed`, `n_positive`, `precision`,
+#'   `precision_weighted` (only with `inclusion_prob`) and `low_support`.
 #' @examples
 #' ex <- system.file("extdata", "example", package = "sheepdog")
 #' val <- read_validation_tables(list.files(file.path(ex, "validation"),
@@ -226,6 +227,7 @@ kish_n <- function(prob) {
 precision_by_bin <- function(validation, bins = seq(0.1, 1, by = 0.1),
                              min_n = 15, by = NULL) {
   check_by(validation, by)
+  check_number(min_n, "min_n", lower = 1, integer = TRUE)
   val <- reviewed_with_confidence(validation)
   has_weights <- has_inclusion_prob(val)
   if (!has_weights) val$inclusion_prob <- NA_real_
@@ -305,13 +307,13 @@ precision_by_bin <- function(validation, bins = seq(0.1, 1, by = 0.1),
 #' @param sustained Logical scalar. If `TRUE`, the target must also hold at
 #'   every higher cut with at least `min_n` clips. See Sustained target.
 #'
-#' @return A tibble with `site`, `species_folder`, the `by` columns,
-#'   `threshold`, `n_support`, `precision_at_threshold` (unweighted; `NA`
-#'   when no cut reaches the target). With `inclusion_prob`, also
-#'   `precision_weighted_at_threshold`, `n_eff` (Kish's effective sample
-#'   size at the threshold) and `precision_used` (`"weighted"` or
-#'   `"unweighted"`, the precision that chose the cut). Without any
-#'   reviewed clip with a confidence, the tibble has no rows.
+#' @return A tibble (class `tbl_df`) with `site`, `species_folder`, the
+#'   `by` columns, `threshold`, `n_support`, `precision_at_threshold`
+#'   (unweighted; `NA` when no cut reaches the target). With
+#'   `inclusion_prob`, also `precision_weighted_at_threshold`, `n_eff`
+#'   (Kish's effective sample size at the threshold) and `precision_used`
+#'   (`"weighted"` or `"unweighted"`, the precision that chose the cut).
+#'   Without any reviewed clip with a confidence, the tibble has no rows.
 #' @seealso [threshold_bootstrap()] for the conservative threshold to apply;
 #'   [calibrated_thresholds()] for thresholds from the calibration model.
 #' @examples
@@ -422,8 +424,8 @@ suggest_thresholds <- function(validation, target_precision = 0.90,
 #'   as in [select_clips()].
 #' @inheritParams select_clips
 #'
-#' @return A tibble with `site`, `species_folder`, the `by` columns,
-#'   `n_reviewed`, `n_fp` (false positives among them), `n_high`
+#' @return A tibble (class `tbl_df`) with `site`, `species_folder`, the
+#'   `by` columns, `n_reviewed`, `n_fp` (false positives among them), `n_high`
 #'   (reviewed clips with score >= `conf_high`), `prec_high` (their
 #'   precision), `n_high_all` (predictions with score >= `conf_high`),
 #'   `unreviewed_high`, `threshold` and `diagnosis`, ordered by diagnosis.
@@ -448,6 +450,7 @@ review_support <- function(validation, detections, conf_high = 0.7,
                            remap_from = NULL, remap_to = NULL,
                            weighted = NULL) {
   unit <- match.arg(occasion_unit)
+  check_prob(min_precision, "min_precision")
   check_columns(detections,
                 c("site", "species_code", "confidence", "begin_path",
                   "file_offset"),
@@ -660,7 +663,8 @@ threshold_for <- function(df, target, n_min, has_weights = FALSE, weighted = NUL
 #'
 #' @inheritParams precision_by_bin
 #'
-#' @return A tibble with `site`, `species_folder`, `night`, `n_clips`,
+#' @return A tibble (class `tbl_df`) with `site`, `species_folder`,
+#'   `night`, `n_clips`,
 #'   `n_reviewed`, `n_positive`, `presence` and `max_confidence_positive`.
 #' @examples
 #' ex <- system.file("extdata", "example", package = "sheepdog")
@@ -693,9 +697,9 @@ nightly_presence <- function(validation) {
 #'
 #' @inheritParams precision_by_bin
 #'
-#' @return A tibble with `site`, `species_code`, `species_folder`,
-#'   `clip_file`, `reviewed_path`, `confidence`, `night`, `recording_hour`
-#'   and `source_audio`.
+#' @return A tibble (class `tbl_df`) with `site`, `species_code`,
+#'   `species_folder`, `clip_file`, `reviewed_path`, `confidence`, `night`,
+#'   `recording_hour` and `source_audio`.
 #' @examples
 #' val <- read.csv(system.file("extdata", "validation_by_clip.csv",
 #'                             package = "sheepdog"))
@@ -705,7 +709,8 @@ retraining_clips <- function(validation) {
   validation[!is_inherited(validation), ] |>
     filter(verdict == "positive") |>
     select(site, species_code, species_folder, clip_file, reviewed_path,
-           confidence, night, recording_hour, source_audio)
+           confidence, night, recording_hour, source_audio) |>
+    tibble::as_tibble()
 }
 
 #' Plot the precision curves
@@ -732,6 +737,8 @@ retraining_clips <- function(validation) {
 #' @export
 plot_precision <- function(precision, bins = seq(0.1, 1, by = 0.1),
                            target_precision = 0.90, min_n = 15) {
+  check_prob(target_precision, "target_precision", open = TRUE)
+  check_number(min_n, "min_n", lower = 1, integer = TRUE)
   require_suggested("ggplot2", "to plot the precision curves")
   # with several sites, one line per site (lines of different sites were
   # once joined in the same panel)
@@ -840,7 +847,8 @@ plot_precision <- function(precision, bins = seq(0.1, 1, by = 0.1),
 #'   `previous`, the `candidates.csv` of the first round. `NULL` looks for
 #'   it beside `manifest_path` and `previous`.
 #'
-#' @return A list with the tables `validation`, `precision`, `thresholds`,
+#' @return A named list (class `list`) with the tables `validation`,
+#'   `precision`, `thresholds`,
 #'   `presence` and `retraining` (and `compared`, with `fit`), invisibly.
 #' @examples
 #' # Recreate the folders left by a review in the BirdNET GUI, with empty files

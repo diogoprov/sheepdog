@@ -26,8 +26,9 @@ val <- read_validations(list.files(file.path(ex, "validation"),
                                    full.names = TRUE),
                         keep = "recording_date")
 val$month <- substr(val$recording_date, 5, 6)
-# Fitting compiles a Stan model, which takes minutes, so it is not run here.
-\dontrun{
+\dontshow{if (interactive() && requireNamespace("brms", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+# Fitting compiles a Stan model, which takes minutes, so this part runs
+# only interactively.
 f <- tp ~ logit_conf + (1 | species)
 fit_b <- fit_calibration(val, f, engine = "brms",
                          prior = calibration_prior(f, val),
@@ -35,5 +36,5 @@ fit_b <- fit_calibration(val, f, engine = "brms",
 ppc <- calibration_ppc(fit_b, val, group = "month")
 plot_calibration_ppc(ppc, check = "score")
 plot_calibration_ppc(ppc, check = "month")
-}
+\dontshow{\}) # examplesIf}
 }

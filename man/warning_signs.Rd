@@ -65,8 +65,9 @@ recall ceiling is below this.}
 the threshold.}
 
 \item{cluster}{\code{NULL} or a character scalar, the column of \code{validation}
-with the recording (or other unit) of each clip, for sign 9. A missing
-column leaves sign 9 \code{NA}.}
+with the recording (or other unit) of each clip, for sign 9. A name
+that is not a column of \code{validation} leaves sign 9 \code{NA}, without an
+error.}
 
 \item{max_deff}{Numeric scalar. Sign 9 is raised when the design effect
 of the false positives above the threshold is above this.}
@@ -75,7 +76,8 @@ of the false positives above the threshold is above this.}
 write the report to.}
 }
 \value{
-A tibble with one row per species: \code{species_folder},
+A tibble (class \code{tbl_df}) with one row per species:
+\code{species_folder},
 \code{threshold} (the median over its cells), \code{sign1_ceiling},
 \code{sign1}, \code{sign2_tp_kept}, \code{sign2}, \code{sign6_fp_spread}, \code{sign6},
 \code{sign6_detail}, \code{sign7_share_below}, \code{sign7}, \code{sign7_detail},

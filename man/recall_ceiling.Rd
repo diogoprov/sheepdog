@@ -41,8 +41,8 @@ and a \code{threshold} column, such as the output of
 as \code{"threshold_conservative"} of \code{\link[=threshold_bootstrap]{threshold_bootstrap()}}). \code{NULL} gives
 the ceiling only.}
 
-\item{by}{Character vector of column names that define the groups:
-\code{"species_folder"} (the default, every site pooled) or
+\item{by}{Character vector of one or more column names that define the
+groups: \code{"species_folder"} (the default, every site pooled) or
 \code{c("site", "species_folder")}.}
 
 \item{min_confidence}{Numeric scalar, the lowest score kept in the
@@ -63,7 +63,7 @@ skips the intervals.}
 
 \item{cluster}{Character scalar, the column of \code{validation} whose levels
 are resampled whole: \code{"source_audio"} (the recording, the default) or
-\code{"night"}.}
+\code{"night"}. Used only when \code{n_boot > 0}.}
 
 \item{conf}{Numeric scalar in (0, 1). Probability of the intervals.}
 
@@ -71,7 +71,8 @@ are resampled whole: \code{"source_audio"} (the recording, the default) or
 number generator is left as it was.}
 }
 \value{
-A tibble with one row per group (and threshold): the \code{by}
+A tibble (class \code{tbl_df}) with one row per group (and
+threshold): the \code{by}
 columns, \code{n_occasions} (annotated occasions), \code{n_present} (occasions
 with the species), \code{n_missed} (occasions with the species and no
 prediction of it), \code{recall_ceiling} with \code{ceiling_lower} and

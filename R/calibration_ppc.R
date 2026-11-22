@@ -40,11 +40,11 @@
 #' @param seed Integer scalar, seed of the choice of draws and of the predictive
 #'   simulation. The global random number generator is left as it was.
 #'
-#' @return A tibble with one row per check and group: `check` (`"overall"`,
-#'   `"score"`, `"site"`, `"species"` or a column of `group`), `group`, `n`
-#'   (clips), `observed` (share of true positives), `pred_mean`, `pred_lower`
-#'   and `pred_upper` (posterior predictive mean and interval of the
-#'   share), `p_value` and `flagged`. Plot it with [plot_calibration_ppc()].
+#' @return A tibble (class `tbl_df`) with one row per check and group: `check`
+#'   (`"overall"`, `"score"`, `"site"`, `"species"` or a column of `group`),
+#'   `group`, `n` (clips), `observed` (share of true positives), `pred_mean`,
+#'   `pred_lower` and `pred_upper` (posterior predictive mean and interval of
+#'   the share), `p_value` and `flagged`. Plot it with [plot_calibration_ppc()].
 #' @seealso [calibration_diagnostics()] for convergence, which should be
 #'   checked first.
 #' @examples
@@ -53,8 +53,9 @@
 #'                                    full.names = TRUE),
 #'                         keep = "recording_date")
 #' val$month <- substr(val$recording_date, 5, 6)
-#' # Fitting compiles a Stan model, which takes minutes, so it is not run here.
-#' \dontrun{
+#' @examplesIf interactive() && requireNamespace("brms", quietly = TRUE)
+#' # Fitting compiles a Stan model, which takes minutes, so this part runs
+#' # only interactively.
 #' f <- tp ~ logit_conf + (1 | species)
 #' fit_b <- fit_calibration(val, f, engine = "brms",
 #'                          prior = calibration_prior(f, val),
@@ -62,7 +63,6 @@
 #' calibration_diagnostics(fit_b)
 #' ppc <- calibration_ppc(fit_b, val, group = "month", n_draws = 500)
 #' ppc[ppc$flagged, ]
-#' }
 #' @export
 calibration_ppc <- function(fit, validations = NULL, group = NULL,
                             bin_width = 0.1, min_n = 15, prob = 0.9,
@@ -124,8 +124,9 @@ calibration_ppc <- function(fit, validations = NULL, group = NULL,
 #'                                    full.names = TRUE),
 #'                         keep = "recording_date")
 #' val$month <- substr(val$recording_date, 5, 6)
-#' # Fitting compiles a Stan model, which takes minutes, so it is not run here.
-#' \dontrun{
+#' @examplesIf interactive() && requireNamespace("brms", quietly = TRUE)
+#' # Fitting compiles a Stan model, which takes minutes, so this part runs
+#' # only interactively.
 #' f <- tp ~ logit_conf + (1 | species)
 #' fit_b <- fit_calibration(val, f, engine = "brms",
 #'                          prior = calibration_prior(f, val),
@@ -133,7 +134,6 @@ calibration_ppc <- function(fit, validations = NULL, group = NULL,
 #' ppc <- calibration_ppc(fit_b, val, group = "month")
 #' plot_calibration_ppc(ppc, check = "score")
 #' plot_calibration_ppc(ppc, check = "month")
-#' }
 #' @export
 plot_calibration_ppc <- function(ppc, check = "score") {
   require_suggested("ggplot2", "to plot the posterior predictive checks")

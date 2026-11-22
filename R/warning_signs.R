@@ -118,14 +118,16 @@
 #' @param threshold_column Character scalar, the column of `thresholds` with
 #'   the threshold.
 #' @param cluster `NULL` or a character scalar, the column of `validation`
-#'   with the recording (or other unit) of each clip, for sign 9. A missing
-#'   column leaves sign 9 `NA`.
+#'   with the recording (or other unit) of each clip, for sign 9. A name
+#'   that is not a column of `validation` leaves sign 9 `NA`, without an
+#'   error.
 #' @param max_deff Numeric scalar. Sign 9 is raised when the design effect
 #'   of the false positives above the threshold is above this.
 #' @param file `NULL` or a character scalar, path of a Markdown file to
 #'   write the report to.
 #'
-#' @return A tibble with one row per species: `species_folder`,
+#' @return A tibble (class `tbl_df`) with one row per species:
+#'   `species_folder`,
 #'   `threshold` (the median over its cells), `sign1_ceiling`,
 #'   `sign1`, `sign2_tp_kept`, `sign2`, `sign6_fp_spread`, `sign6`,
 #'   `sign6_detail`, `sign7_share_below`, `sign7`, `sign7_detail`,
@@ -153,6 +155,7 @@ warning_signs <- function(validation, thresholds, groups = NULL,
                           cluster = "source_audio", max_deff = 2,
                           file = NULL) {
   if (!is.null(file)) file <- check_file_ext(file, "md")
+  check_string(cluster, "cluster", null_ok = TRUE)
   reviewed <- reviewed_with_confidence(validation)
   check_reviewed(reviewed)
   reviewed <- mutate(reviewed, site = as.character(site))

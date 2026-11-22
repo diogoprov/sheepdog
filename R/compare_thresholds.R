@@ -41,7 +41,7 @@
 #' @param target_precision Numeric scalar in (0, 1). Target precision of the
 #'   empirical threshold and of the `"precision"` rule.
 #' @param min_n Integer scalar >= 1. Passed to [suggest_thresholds()].
-#' @param tolerance Numeric scalar, in score units. Largest difference
+#' @param tolerance Numeric scalar >= 0, in score units. Largest difference
 #'   between `thr_empirical` and `thr_model_precision` for `"agree"`.
 #' @param quality `NULL` or a data frame (or tibble) returned by
 #'   [calibration_quality()], joined by the columns `site` and `species`
@@ -50,7 +50,8 @@
 #'   logical scalar (`sustained`). Passed to [suggest_thresholds()].
 #' @inheritParams calibrated_thresholds
 #'
-#' @return A tibble with one row per site x species: `site`, `species`,
+#' @return A tibble (class `tbl_df`) with one row per site x species:
+#'   `site`, `species`,
 #'   `thr_empirical`, `prec_empirical` (the precision that chose the cut),
 #'   `n_support`, `thr_model_precision`, `thr_p_tp`, `p_tp_at_threshold`,
 #'   `thr_p_tp_lower` (with a `brms` model), `model_precision_at_empirical`
@@ -76,6 +77,8 @@ compare_thresholds <- function(validation, fit, scored = NULL,
                                weighted = NULL, sustained = FALSE,
                                min_confidence = 0.1,
                                grid_step = 0.01, lower_prob = 0.05) {
+  check_number(tolerance, "tolerance", lower = 0)
+  check_prob(lower_prob, "lower_prob", open = TRUE)
   cell <- c("site", "species")
   empirical <- suggest_thresholds(validation, target_precision, min_n,
                                  weighted = weighted, sustained = sustained) |>

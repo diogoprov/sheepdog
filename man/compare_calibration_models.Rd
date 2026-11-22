@@ -27,10 +27,11 @@ reproduce a particular candidate set.}
 \item{seed}{Integer scalar, seed of the fold assignment. The global random
 number generator is left as it was.}
 
-\item{fold_group}{\code{NULL} or a character vector of grouping columns. Do not
-include \code{species}, verdicts or confidence scores: these would split
-recordings or nights by species or by outcome. Group IDs must be nonmissing
-and nonempty. \code{NULL} keeps the original clip folds.}
+\item{fold_group}{\code{NULL} or a character vector (one or more elements) of
+grouping columns, combined into one group ID. Do not include \code{species},
+verdicts or confidence scores: these would split recordings or nights by
+species or by outcome. Group IDs must be nonmissing and nonempty. \code{NULL}
+keeps the original clip folds.}
 }
 \value{
 A tibble with \code{model}, \code{formula}, \code{auc_mean}, \code{auc_sd},
