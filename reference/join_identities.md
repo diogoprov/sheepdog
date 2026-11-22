@@ -72,3 +72,24 @@ many negative clips are still without an identity.
 [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md),
 [`confuser_summary()`](https://provetelab.org/sheepdog/reference/confuser_summary.md),
 [`identity_categories()`](https://provetelab.org/sheepdog/reference/identity_categories.md).
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read.csv(file.path(ex, "validation", "validation_by_clip_ARA.csv"))
+# Identities of two negative clips, written in a spreadsheet
+neg <- val$clip_file[val$verdict == "negative"][1:2]
+ids <- data.frame(clip = neg, identity = c("insect", "bird|noise"),
+                  certainty = c("sure", "probable"))
+val <- join_identities(val, ids, certainty_col = "certainty")
+#> 2 of 111 negative clip(s) with an identity.
+val[val$clip_file %in% neg,
+    c("clip_file", "verdict", "identity", "identity_certainty")]
+#>                                          clip_file  verdict   identity
+#> 1  0.469_2_ARA01_20211016_190000_165.0s_168.0s.wav negative     insect
+#> 13   0.500_1_ARA01_20211022_010000_60.0s_63.0s.wav negative bird|noise
+#>    identity_certainty
+#> 1                sure
+#> 13           probable
+```

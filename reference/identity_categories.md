@@ -20,3 +20,11 @@ A character vector.
 [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md),
 [`join_identities()`](https://provetelab.org/sheepdog/reference/join_identities.md),
 [`confuser_summary()`](https://provetelab.org/sheepdog/reference/confuser_summary.md).
+
+## Examples
+
+``` r
+identity_categories()
+#> [1] "bird"         "insect"       "rain"         "other_anuran" "noise"       
+#> [6] "unknown"     
+```

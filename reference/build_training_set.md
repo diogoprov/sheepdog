@@ -225,3 +225,56 @@ error.
 [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md),
 [`exclude_training_clips()`](https://provetelab.org/sheepdog/reference/exclude_training_clips.md),
 [`vignette("retraining")`](https://provetelab.org/sheepdog/articles/retraining.md).
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validation_tables(list.files(file.path(ex, "validation"),
+                                         full.names = TRUE))
+# Recreate the folders of a review in the BirdNET GUI, with empty files,
+# and read back where each clip is (reviewed_path)
+review_dir <- file.path(tempdir(), "clips_training")
+dest <- file.path(review_dir, val$species_folder,
+                  ifelse(val$verdict == "positive", "Positive", "Negative"))
+for (d in unique(dest)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
+invisible(file.create(file.path(dest, val$clip_file)))
+reviewed <- classify_review(val[, setdiff(names(val),
+                                          c("verdict", "reviewed_path"))],
+                            review_dir)
+#> Clips in the manifest: 2467
+#>   negative: 890
+#>   positive: 1577
+
+# Hold out one site for testing; copy = FALSE writes only training_set.csv
+out_dir <- file.path(tempdir(), "birdnet_training")
+ts <- build_training_set(reviewed, out_dir, split = "site",
+                         test_sites = "NHE", min_files = 20,
+                         copy = FALSE)
+#> 2467 clips listed in training_set.csv (nothing copied) in /tmp/Rtmp0frRI4/birdnet_training (1827 train, 640 test).
+#> Checks (all should be 0 with split = "night"):
+#>   test_nights_in_train: 0
+#>   test_nights_excluded: 0
+#>   test_clips_overlapping_train: 0
+table(ts$set, ts$verdict)
+#>        
+#>         negative positive
+#>   test       275      365
+#>   train      615     1212
+
+# Or a split by night, with all negatives in the non-event class "Noise"
+ts_night <- build_training_set(reviewed, out_dir, split = "night",
+                               test_prop = 0.2, negatives_folder = "Noise",
+                               min_files = 20, copy = FALSE)
+#> 2467 clips listed in training_set.csv (nothing copied) in /tmp/Rtmp0frRI4/birdnet_training (1937 train, 530 test).
+#> Checks (all should be 0 with split = "night"):
+#>   test_nights_in_train: 0
+#>   test_nights_excluded: 0
+#>   test_clips_overlapping_train: 0
+attr(ts_night, "checks")
+#>         test_nights_in_train         test_nights_excluded 
+#>                            0                            0 
+#> test_clips_overlapping_train 
+#>                            0 
+unlink(c(review_dir, out_dir), recursive = TRUE)
+```

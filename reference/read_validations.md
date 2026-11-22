@@ -52,3 +52,29 @@ with the model. These transformations are always applied, because the
 calibration models and
 [`score_detections()`](https://provetelab.org/sheepdog/reference/score_detections.md)
 expect them; the original `confidence` is kept alongside `logit_conf`.
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+files <- list.files(file.path(ex, "validation"), full.names = TRUE)
+val <- read_validations(files)
+#> 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.
+head(val)
+#> # A tibble: 6 × 5
+#>   site  species confidence logit_conf    tp
+#>   <fct> <fct>        <dbl>      <dbl> <int>
+#> 1 ARA   boa_ran      0.469     -0.123     0
+#> 2 ARA   boa_ran      0.804      1.41      1
+#> 3 ARA   boa_ran      0.867      1.87      1
+#> 4 ARA   boa_ran      0.850      1.74      1
+#> 5 ARA   boa_ran      0.847      1.71      1
+#> 6 ARA   boa_ran      0.932      2.61      1
+# Keep the recording of each clip, e.g. for grouped folds
+val_rec <- read_validations(files, keep = "source_audio")
+#> 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.
+table(val_rec$site)
+#> 
+#> ARA BAI NHE XAR 
+#> 593 594 640 640 
+```

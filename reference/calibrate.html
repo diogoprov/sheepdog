@@ -325,6 +325,47 @@ structure. This is the function form of the v1.2.0 script
 <code>calibracao.R</code>.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># The whole workflow on the example data; outputs go to a temporary folder</span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"lme4"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example"</span>, package <span class="op">=</span> <span class="st">"sheepdog"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ARA"</span>, <span class="st">"BAI"</span>, <span class="st">"NHE"</span>, <span class="st">"XAR"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">val_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"validation"</span>,</span></span>
+<span class="r-in"><span>                         <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"validation_by_clip_"</span>, <span class="va">sites</span>, <span class="st">".csv"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">tables</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"birdnet"</span>, <span class="va">sites</span>, <span class="st">"BirdNET_SelectionTable.txt"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tables</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">sites</span></span></span>
+<span class="r-in"><span>  <span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"calibration"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">calibrate</span><span class="op">(</span><span class="va">val_files</span>, <span class="va">tables</span>, <span class="va">out</span>, k_folds <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">res</span><span class="op">$</span><span class="va">comparison</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"model"</span>, <span class="st">"auc_mean"</span>, <span class="st">"logloss_mean"</span><span class="op">)</span><span class="op">]</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">history</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Cross-validation (3 folds) of 5 models...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Selected model (one_se_logloss): m1_species_intercept</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Check these groups in calibration_quality.csv before using their probabilities: boa_ran, ela_bic, lep_pod, phy_cuv, pse_pla.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scoring ARA (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA/BirdNET_SelectionTable.txt)...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   1753 detections of calibrated species (0 of species NOT calibrated were dropped).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scoring BAI (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI/BirdNET_SelectionTable.txt)...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   1427 detections of calibrated species (0 of species NOT calibrated were dropped).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scoring NHE (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE/BirdNET_SelectionTable.txt)...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   2507 detections of calibrated species (0 of species NOT calibrated were dropped).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scoring XAR (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR/BirdNET_SelectionTable.txt)...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   1866 detections of calibrated species (0 of species NOT calibrated were dropped).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Nights with a reliable detection (p_tp &gt;= 0.95): 339 (k = 1), 268 (k = 2), 217 (k = 3).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Done! Outputs in /tmp/Rtmp0frRI4/calibration</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> nightly_detection_history.csv is the input of the analyses; the column 'detection' uses k = 1; detection_k1/k2/k3 give the sensitivity to the rule.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "calibrated_detections_ARA.csv" "calibrated_detections_BAI.csv"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "calibrated_detections_NHE.csv" "calibrated_detections_XAR.csv"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "calibration_curves.png"        "calibration_model.rds"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "calibration_model.txt"         "calibration_quality.csv"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "detection_summary.csv"         "model_comparison.csv"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "nightly_detection_history.csv" "thresholds.csv"               </span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

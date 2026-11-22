@@ -54,3 +54,42 @@ community_matrices_draws(
 A list with `summary` (`site`, `month`, `species`, `n_nights_recorded`,
 `frequency_mean`, `frequency_lower`, `frequency_upper`) and `draws`
 (`draw`, `site`, `month`, `species`, `frequency`).
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+history <- read.csv(file.path(ex, "nightly_detection_history.csv"),
+                    colClasses = c(night = "character"))
+# history_draws() needs a Bayesian calibration (see its example). As a
+# stand-in, three "draws" in which each reliable detection of the
+# example history is kept with probability 0.8
+set.seed(1)
+draws <- do.call(rbind, lapply(1:3, function(d) {
+  h <- history
+  h$n_reliable <- rbinom(nrow(h), h$n_reliable, 0.8)
+  h$detection_k1 <- as.integer(h$n_reliable >= 1)
+  h$detection_k2 <- as.integer(h$n_reliable >= 2)
+  h$detection_k3 <- as.integer(h$n_reliable >= 3)
+  cbind(draw = d, h)
+}))
+mats <- community_matrices_draws(draws,
+                                 core_species = c("boa_ran", "phy_cuv"),
+                                 k_min = 2)
+mats$summary
+#> # A tibble: 46 × 7
+#>    site  month   species n_nights_recorded frequency_mean frequency_lower
+#>    <chr> <chr>   <chr>               <int>          <dbl>           <dbl>
+#>  1 ARA   2021-10 boa_ran                 5            1               1  
+#>  2 ARA   2021-10 phy_cuv                 5            0               0  
+#>  3 ARA   2021-11 boa_ran                 5            1               1  
+#>  4 ARA   2021-11 phy_cuv                 5            1               1  
+#>  5 ARA   2021-12 boa_ran                 5            0.8             0.8
+#>  6 ARA   2021-12 phy_cuv                 5            1               1  
+#>  7 ARA   2022-01 boa_ran                 5            1               1  
+#>  8 ARA   2022-01 phy_cuv                 5            1               1  
+#>  9 ARA   2022-02 boa_ran                 5            1               1  
+#> 10 ARA   2022-02 phy_cuv                 5            1               1  
+#> # ℹ 36 more rows
+#> # ℹ 1 more variable: frequency_upper <dbl>
+```

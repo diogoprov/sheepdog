@@ -58,3 +58,38 @@ detection_history(
 A tibble with `site`, `species`, `night`, `n_detections`, `n_reliable`,
 `p_tp_max`, `detection_k1`, `detection_k2`, `detection_k3` and
 `detection`.
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+#> 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.
+fit <- fit_calibration(val, tp ~ logit_conf + species)
+sites <- c("ARA", "BAI", "NHE", "XAR")
+tables <- file.path(ex, "birdnet", sites, "BirdNET_SelectionTable.txt")
+names(tables) <- sites
+scored <- score_detections(tables, fit)
+#> Scoring ARA (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA/BirdNET_SelectionTable.txt)...
+#>   1753 detections of calibrated species (0 of species NOT calibrated were dropped).
+#> Scoring BAI (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI/BirdNET_SelectionTable.txt)...
+#>   1427 detections of calibrated species (0 of species NOT calibrated were dropped).
+#> Scoring NHE (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE/BirdNET_SelectionTable.txt)...
+#>   2507 detections of calibrated species (0 of species NOT calibrated were dropped).
+#> Scoring XAR (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR/BirdNET_SelectionTable.txt)...
+#>   1866 detections of calibrated species (0 of species NOT calibrated were dropped).
+history <- detection_history(scored, p_min = 0.95,
+                             min_detections_night = 2)
+head(history)
+#> # A tibble: 6 × 10
+#>   site  species night n_detections n_reliable p_tp_max detection_k1 detection_k2
+#>   <chr> <fct>   <chr>        <int>      <int>    <dbl>        <int>        <int>
+#> 1 ARA   boa_ran 2021…           10          1    0.954            1            0
+#> 2 ARA   boa_ran 2021…           13          5    0.985            1            1
+#> 3 ARA   boa_ran 2021…           16          3    0.978            1            1
+#> 4 ARA   boa_ran 2021…           11          3    0.993            1            1
+#> 5 ARA   boa_ran 2021…            8          1    0.976            1            0
+#> 6 ARA   boa_ran 2021…           13          2    0.986            1            1
+#> # ℹ 2 more variables: detection_k3 <int>, detection <int>
+```

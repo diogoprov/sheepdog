@@ -431,3 +431,54 @@ clips), which can bias what an occupancy model estimates from those
 tables. The overlap between two random draws is usually small, so
 reviewing it costs little; use `inherit = TRUE` when the tables will not
 go to an occupancy model.
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+det <- read_selection_tables(file.path(ex, "birdnet"))
+#> 4 combined table(s) and 0 per-audio table(s) found in 4 folder(s):
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR: BirdNET_SelectionTable.txt
+#> 7553 predictions read from 4 site(s).
+# the highest scores of each site x species x night x hour, for retraining
+# and calibration
+top <- select_clips(det, sampling_mode = "top", n_top = 2,
+                    hour_start = 18, hour_end = 2, max_per_species = 40)
+#> Sampling mode: top (occasion = file).
+#> The hour window crosses midnight: grouping by night (small hours count as the night before).
+#> Hour window 18h-2h: 7553 -> 7553 predictions.
+#> 4099 clips selected (top 2 per site x species x night x hour) of 8 species.
+#> Limit of 40 clips per species (per site): 4099 -> 1273 clips.
+table(top$site, top$species_folder)
+#>      
+#>       boa_ran den_nan ela_bic lep_fus lep_pod phy_cuv pse_pla sci_nas
+#>   ARA      40      40      40      33      40      40      40      40
+#>   BAI      40      40      40      40      40      40      40      40
+#>   NHE      40      40      40      40      40      40      40      40
+#>   XAR      40      40      40      40      40      40      40      40
+
+# observation-confirmation design: occasions drawn at random among those
+# with a prediction >= threshold, for false-positive occupancy models
+rd <- select_clips(det, sampling_mode = "random_detections",
+                   threshold = 0.5, strata = "night", n_top = 1)
+#> Sampling mode: random_detections (occasion = file).
+#> 1343 occasions drawn (1 per site x species_code x night) among 1876 with a prediction >= 0.5.
+#> 3339 clips (every prediction >= 0.5 of the 1343 occasions drawn).
+summary(rd$inclusion_prob)
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#>  0.5000  0.5000  1.0000  0.7929  1.0000  1.0000 
+
+# score bands: the same number of clips in each band of scores
+sb <- select_clips(det, sampling_mode = "score_bands",
+                   strata = "site_species", n_top = 5)
+#> Sampling mode: score_bands (occasion = file).
+#> 474 clips drawn (5 per site x species_code x score band) among 7553 predictions in 3 score band(s). These clips serve thresholds and calibration, not false-positive occupancy models: they were chosen by their score.
+table(cut(sb$confidence, c(0.1, 0.4, 0.7, 1), right = FALSE,
+          include.lowest = TRUE))
+#> 
+#> [0.1,0.4) [0.4,0.7)   [0.7,1] 
+#>       160       160       154 
+```

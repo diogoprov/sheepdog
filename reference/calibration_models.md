@@ -41,3 +41,19 @@ A named list of formulas: `m0_global`, `m1_species_intercept`,
 The list goes from the simplest to the most complex model; that order is
 the complexity used by
 [`select_calibration_model()`](https://provetelab.org/sheepdog/reference/select_calibration_model.md).
+
+## Examples
+
+``` r
+mods <- calibration_models()
+names(mods)
+#> [1] "m0_global"            "m1_species_intercept" "m2_species_slope"    
+#> [4] "m3_plus_site"         "m4_species_x_site"   
+mods$m2_species_slope
+#> tp ~ logit_conf + (logit_conf | species)
+#> <environment: 0x5c3c0db15b28>
+# Family for a single species, with uncorrelated site effects
+names(calibration_models(uncorrelated = TRUE, single_species = TRUE))
+#> [1] "m0_global"                  "m1_site_intercept"         
+#> [3] "m2_site_slope"              "m3_site_slope_uncorrelated"
+```

@@ -33,3 +33,21 @@ read_validation_tables(files, candidates = NULL)
 
 A tibble with the columns of the validation tables; `night` and
 `recording_date` are character.
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+files <- list.files(file.path(ex, "validation"), full.names = TRUE)
+basename(files)
+#> [1] "validation_by_clip_ARA.csv" "validation_by_clip_BAI.csv"
+#> [3] "validation_by_clip_NHE.csv" "validation_by_clip_XAR.csv"
+val <- read_validation_tables(files)
+table(val$site, val$verdict)
+#>      
+#>       negative positive
+#>   ARA      111      482
+#>   BAI      255      339
+#>   NHE      275      365
+#>   XAR      249      391
+```

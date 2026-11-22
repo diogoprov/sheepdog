@@ -76,3 +76,28 @@ the site from the name of the audio file of each prediction
 Column names are standardised to lower case without units or
 punctuation, e.g. `Begin Time (s)` becomes `begin_time` and
 `File Offset (s)` becomes `file_offset`.
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+# one folder per site, each with a combined BirdNET_SelectionTable.txt
+list.files(file.path(ex, "birdnet"), recursive = TRUE)
+#> [1] "ARA/BirdNET_SelectionTable.txt" "BAI/BirdNET_SelectionTable.txt"
+#> [3] "NHE/BirdNET_SelectionTable.txt" "XAR/BirdNET_SelectionTable.txt"
+det <- read_selection_tables(file.path(ex, "birdnet"))
+#> 4 combined table(s) and 0 per-audio table(s) found in 4 folder(s):
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR: BirdNET_SelectionTable.txt
+#> 7553 predictions read from 4 site(s).
+det[1:3, c("site", "species_code", "confidence", "begin_path",
+           "file_offset")]
+#> # A tibble: 3 × 5
+#>   site  species_code                 confidence begin_path           file_offset
+#>   <chr> <chr>                             <dbl> <chr>                      <dbl>
+#> 1 ARA   Boana raniceps_boa-ran            0.504 "N:\\pam\\audio\\AR…          57
+#> 2 ARA   Dendropsophus nanus_den-nan       0.372 "N:\\pam\\audio\\AR…          66
+#> 3 ARA   Leptodactylus fuscus_lep-fus      0.267 "N:\\pam\\audio\\AR…         150
+```

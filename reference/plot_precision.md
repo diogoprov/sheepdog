@@ -40,3 +40,15 @@ plot_precision(
 ## Value
 
 A ggplot object.
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validation_tables(list.files(file.path(ex, "validation"),
+                                         full.names = TRUE))
+prec <- precision_by_bin(val, min_n = 10)
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  plot_precision(prec, target_precision = 0.9, min_n = 10)
+}
+```

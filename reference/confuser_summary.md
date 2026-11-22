@@ -52,3 +52,28 @@ an identity are counted as `identity = NA`.
 
 [`join_identities()`](https://provetelab.org/sheepdog/reference/join_identities.md),
 [`build_training_set()`](https://provetelab.org/sheepdog/reference/build_training_set.md).
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read.csv(file.path(ex, "validation", "validation_by_clip_ARA.csv"))
+neg <- val$clip_file[val$verdict == "negative"][1:3]
+ids <- data.frame(clip = neg, identity = c("insect", "insect", "bird|rain"))
+val <- join_identities(val, ids)
+#> 3 of 111 negative clip(s) with an identity.
+confuser_summary(val)
+#> # A tibble: 10 × 7
+#>    species_code                 identity     n n_weighted n_sure  share is_class
+#>    <chr>                        <chr>    <int>      <dbl>  <int>  <dbl> <lgl>   
+#>  1 Boana raniceps_boa-ran       insect       2        2        0 1      FALSE   
+#>  2 Dendropsophus nanus_den-nan  NA          13       13        0 0.929  FALSE   
+#>  3 Dendropsophus nanus_den-nan  bird         1        0.5      0 0.0357 FALSE   
+#>  4 Dendropsophus nanus_den-nan  rain         1        0.5      0 0.0357 FALSE   
+#>  5 Elachistocleis bicolor_ela-… NA           7        7        0 1      FALSE   
+#>  6 Leptodactylus fuscus_lep-fus NA          33       33        0 1      FALSE   
+#>  7 Leptodactylus podicipinus_l… NA           7        7        0 1      FALSE   
+#>  8 Physalaemus cuvieri_phy-cuv  NA           2        2        0 1      FALSE   
+#>  9 Pseudis platensis_pse-pla    NA          31       31        0 1      FALSE   
+#> 10 Scinax nasicus_sci-nas       NA          15       15        0 1      FALSE   
+```

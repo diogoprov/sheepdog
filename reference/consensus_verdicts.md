@@ -28,3 +28,24 @@ consensus_verdicts(reviews)
 A tibble with one row per clip: the columns of the reviewed tables (from
 the first reviewer of each clip), `verdict`, `n_reviewers` and
 `reviewers` (names separated by `;`).
+
+## Examples
+
+``` r
+reviews <- list(
+  ana = data.frame(species_folder = "boa_ran",
+                   clip_file = paste0("clip", 1:4, ".wav"),
+                   verdict = c("positive", "positive", "negative",
+                               "uncertain")),
+  bruno = data.frame(species_folder = "boa_ran",
+                     clip_file = paste0("clip", 1:3, ".wav"),
+                     verdict = c("positive", "negative", "negative"))
+)
+consensus_verdicts(reviews)
+#> 1 clip(s) with conflicting verdicts marked "disagreement" for a consensus review.
+#>   species_folder clip_file      verdict n_reviewers reviewers
+#> 1        boa_ran clip1.wav     positive           2 ana;bruno
+#> 2        boa_ran clip2.wav disagreement           2 ana;bruno
+#> 3        boa_ran clip3.wav     negative           2 ana;bruno
+#> 4        boa_ran clip4.wav    uncertain           0      <NA>
+```

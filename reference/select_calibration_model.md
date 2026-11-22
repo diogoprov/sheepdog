@@ -49,3 +49,20 @@ The name of the selected model.
   candidates apart. This is the default of
   [`calibrate()`](https://provetelab.org/sheepdog/reference/calibrate.md)
   since 3.0.0.
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+#> 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.
+if (requireNamespace("lme4", quietly = TRUE)) {
+  cv <- compare_calibration_models(val, calibration_models()[1:2],
+                                   k_folds = 3)
+  select_calibration_model(cv, k_folds = 3)
+  select_calibration_model(cv, rule = "best_auc")
+}
+#> Cross-validation (3 folds) of 2 models...
+#> [1] "m1_species_intercept"
+```

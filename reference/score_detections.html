@@ -165,6 +165,37 @@ species effects only. With a <code>brmsfit</code> (<code>allow_new_levels = TRUE
 random-effects distribution, which widens the posterior of P(TP).</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example"</span>, package <span class="op">=</span> <span class="st">"sheepdog"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">val</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_validations.html">read_validations</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"validation"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                                   full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.</span>
+<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="fit_calibration.html">fit_calibration</a></span><span class="op">(</span><span class="va">val</span>, <span class="va">tp</span> <span class="op">~</span> <span class="va">logit_conf</span> <span class="op">+</span> <span class="va">species</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ARA"</span>, <span class="st">"BAI"</span>, <span class="st">"NHE"</span>, <span class="st">"XAR"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">tables</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"birdnet"</span>, <span class="va">sites</span>, <span class="st">"BirdNET_SelectionTable.txt"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tables</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">sites</span></span></span>
+<span class="r-in"><span><span class="va">scored</span> <span class="op">&lt;-</span> <span class="fu">score_detections</span><span class="op">(</span><span class="va">tables</span>, <span class="va">fit</span>, min_confidence <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scoring ARA (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA/BirdNET_SelectionTable.txt)...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   1753 detections of calibrated species (0 of species NOT calibrated were dropped).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scoring BAI (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI/BirdNET_SelectionTable.txt)...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   1427 detections of calibrated species (0 of species NOT calibrated were dropped).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scoring NHE (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE/BirdNET_SelectionTable.txt)...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   2507 detections of calibrated species (0 of species NOT calibrated were dropped).</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scoring XAR (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR/BirdNET_SelectionTable.txt)...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   1866 detections of calibrated species (0 of species NOT calibrated were dropped).</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">scored</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 9</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   site  species date     night     hour confidence  p_tp begin_path  file_offset</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> ARA   boa_ran 20211001 20211001    19      0.504 0.512 <span style="color: #949494;">"</span>N:\\pam\\…          57</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> ARA   den_nan 20211001 20211001    19      0.372 0.147 <span style="color: #949494;">"</span>N:\\pam\\…          66</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> ARA   lep_fus 20211001 20211001    19      0.267 0.111 <span style="color: #949494;">"</span>N:\\pam\\…         150</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> ARA   pse_pla 20211001 20211001    19      0.873 0.744 <span style="color: #949494;">"</span>N:\\pam\\…         165</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> ARA   lep_pod 20211001 20211001    19      0.846 0.969 <span style="color: #949494;">"</span>N:\\pam\\…         174</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> ARA   lep_pod 20211001 20211001    19      0.479 0.640 <span style="color: #949494;">"</span>N:\\pam\\…         177</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

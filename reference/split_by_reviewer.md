@@ -37,3 +37,24 @@ split_by_reviewer(manifest, clips_dir, output_dir)
 
 A tibble with `reviewer`, `species_folder`, `clip_file` and `to`,
 invisibly.
+
+## Examples
+
+``` r
+man <- read.csv(system.file("extdata", "clip_manifest.csv",
+                            package = "sheepdog"))
+man <- assign_reviewers(man, c("ana", "bruno"), overlap = 0.25)
+# Empty files stand in for the clips cut by cut_clips()
+clips_dir <- file.path(tempdir(), "clips")
+dir.create(file.path(clips_dir, unique(man$species_folder)),
+           recursive = TRUE, showWarnings = FALSE)
+invisible(file.create(file.path(clips_dir, man$species_folder,
+                                man$clip_file)))
+copies <- split_by_reviewer(man, clips_dir,
+                            file.path(tempdir(), "by_reviewer"))
+#> 15 clips copied to 2 reviewer folders in /tmp/Rtmp0frRI4/by_reviewer
+table(copies$reviewer)
+#> 
+#>   ana bruno 
+#>     8     7 
+```

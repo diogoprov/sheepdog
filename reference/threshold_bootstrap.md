@@ -15,7 +15,7 @@ threshold_bootstrap(
   min_n = 15,
   by = NULL,
   weighted = NULL,
-  sustained = TRUE,
+  sustained = NULL,
   n_boot = 1000,
   cluster = "source_audio",
   conf = 0.95,
@@ -60,8 +60,14 @@ threshold_bootstrap(
 
 - sustained:
 
-  Logical scalar. If `TRUE`, the target must also hold at every higher
-  cut with at least `min_n` clips. See Sustained target.
+  `NULL` or logical scalar. If `TRUE`, the target must also hold at
+  every higher cut with at least `min_n` clips (see
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)).
+  `NULL`, the default, currently means `TRUE` and warns once per
+  session: in the next minor version the default becomes `FALSE`, as in
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md),
+  so that the point `threshold` matches it. Set `sustained` to keep the
+  current thresholds.
 
 - n_boot:
 
@@ -128,3 +134,26 @@ combined with the first by
 [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md),
 [`threshold_by_group()`](https://provetelab.org/sheepdog/reference/threshold_by_group.md),
 [`threshold_record()`](https://provetelab.org/sheepdog/reference/threshold_record.md).
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validation_tables(file.path(ex, "validation",
+                                        "validation_by_clip_ARA.csv"))
+# Resamples whole recordings; use n_boot = 1000 or more in practice
+boot <- threshold_bootstrap(val, target_precision = 0.90, min_n = 15,
+                            sustained = TRUE, n_boot = 100)
+boot[, c("species_folder", "threshold", "threshold_conservative")]
+#> # A tibble: 8 × 3
+#>   species_folder threshold threshold_conservative
+#>   <chr>              <dbl>                  <dbl>
+#> 1 boa_ran             0.36                  0.5  
+#> 2 den_nan             0.56                  0.851
+#> 3 ela_bic             0.13                  0.262
+#> 4 lep_fus            NA                    NA    
+#> 5 lep_pod             0.1                   0.273
+#> 6 phy_cuv             0.19                  0.38 
+#> 7 pse_pla            NA                     0.81 
+#> 8 sci_nas             0.76                  0.76 
+```

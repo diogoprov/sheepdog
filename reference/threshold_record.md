@@ -68,3 +68,44 @@ A tibble, one row per cell, with the columns of `thresholds`,
 [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md),
 [`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md),
 [`threshold_by_group()`](https://provetelab.org/sheepdog/reference/threshold_by_group.md).
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validation_tables(file.path(ex, "validation",
+                                        "validation_by_clip_ARA.csv"))
+thr <- suggest_thresholds(val, target_precision = 0.90, min_n = 15,
+                          sustained = TRUE)
+boot <- threshold_bootstrap(val, target_precision = 0.90, min_n = 15,
+                            sustained = TRUE, n_boot = 100)
+val$month <- substr(val$recording_date, 1, 6)
+groups <- threshold_by_group(val, boot, by = "month", min_n = 5,
+                             threshold_column = "threshold_conservative")
+threshold_record(thr, bootstrap = boot, groups = groups)
+#> # A tibble: 8 × 13
+#>   site  species_folder threshold n_support precision_at_threshold
+#>   <chr> <chr>              <dbl>     <int>                  <dbl>
+#> 1 ARA   boa_ran             0.36        80                  0.975
+#> 2 ARA   den_nan             0.56        56                  0.911
+#> 3 ARA   ela_bic             0.13        79                  0.924
+#> 4 ARA   lep_fus            NA           NA                 NA    
+#> 5 ARA   lep_pod             0.1         80                  0.912
+#> 6 ARA   phy_cuv             0.19        79                  0.987
+#> 7 ARA   pse_pla            NA           NA                 NA    
+#> 8 ARA   sci_nas             0.76        24                  0.958
+#> # ℹ 8 more variables: target_precision <dbl>, threshold_median <dbl>,
+#> #   threshold_conservative <dbl>, share_reached <dbl>, n_clusters <int>,
+#> #   n_groups <int>, n_groups_below <int>, worst_group_precision <dbl>
+# Also write the record as a Markdown table
+md <- file.path(tempdir(), "threshold_record.md")
+threshold_record(thr, bootstrap = boot, groups = groups, file = md)
+#> Threshold record written to /tmp/Rtmp0frRI4/threshold_record.md
+head(readLines(md))
+#> [1] "# Threshold record"                           
+#> [2] ""                                             
+#> [3] "Written by sheepdog 3.4.1.9000 on 2026-11-22."
+#> [4] ""                                             
+#> [5] "## Thresholds"                                
+#> [6] ""                                             
+```

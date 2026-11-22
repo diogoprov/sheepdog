@@ -20,6 +20,28 @@
   [`read_classifier_output()`](https://provetelab.org/sheepdog/reference/read_classifier_output.md),
   instead of paths to selection tables.
 
+- [`threshold_bootstrap()`](https://provetelab.org/sheepdog/reference/threshold_bootstrap.md)
+  now defaults to `sustained = NULL`, which still means `TRUE` but warns
+  once per session: in the next minor version the default becomes
+  `FALSE`, as in
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md),
+  so that the point `threshold` of the bootstrap matches the threshold
+  of
+  [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md)
+  and
+  [`threshold_record()`](https://provetelab.org/sheepdog/reference/threshold_record.md)
+  compares like with like. Set `sustained = TRUE` to keep the current
+  thresholds.
+
+- Every exported function now has examples, built on the data shipped in
+  `inst/extdata/example`. The examples that fit a brms model, or that
+  need an export written with one, are not run.
+
+- Messages and warnings caught while fitting are collected without
+  global assignment, and the spectrogram panel of
+  [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md)
+  restores the graphical parameters with `on.exit(add = TRUE)`.
+
 - [`fit_calibration()`](https://provetelab.org/sheepdog/reference/fit_calibration.md)
   gains `control`: a
   [`lme4::glmerControl()`](https://rdrr.io/pkg/lme4/man/lmerControl.html)

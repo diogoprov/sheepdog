@@ -66,3 +66,43 @@ one row with `reviewer = NA`.
 
 [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md),
 [`classify_review()`](https://provetelab.org/sheepdog/reference/classify_review.md).
+
+## Examples
+
+``` r
+man <- system.file("extdata", "clip_manifest.csv", package = "sheepdog")
+m <- read.csv(man)
+# A verdicts file as written by run_app(), with two reviewers
+f <- tempfile(fileext = ".csv")
+write.csv(data.frame(
+  clip_file = m$clip_file[c(1, 1, 2, 3)],
+  species_folder = m$species_folder[c(1, 1, 2, 3)],
+  reviewer = c("ana", "bruno", "ana", "bruno"),
+  verdict = c("positive", "negative", "positive", "uncertain"),
+  time = "2026-01-15T20:00:00-0300"
+), f, row.names = FALSE)
+# The verdicts of one reviewer
+v <- app_verdicts(man, f, reviewer = "ana")
+#> Clips in the review queue: 12
+#>   not_reviewed: 10
+#>   positive: 2
+table(v$verdict)
+#> 
+#> not_reviewed     positive 
+#>           10            2 
+# Every reviewer: one row per clip and reviewer
+v_all <- app_verdicts(man, f)
+#> Clips in the review queue: 12
+#>   negative: 1
+#>   not_reviewed: 9
+#>   positive: 2
+#>   uncertain: 1
+v_all[!is.na(v_all$reviewer), c("clip_file", "reviewer", "verdict")]
+#> # A tibble: 4 × 3
+#>   clip_file                                       reviewer verdict  
+#>   <chr>                                           <chr>    <chr>    
+#> 1 0.913_1_ARA01_20220110_000000_114.0s_117.0s.wav ana      positive 
+#> 2 0.913_1_ARA01_20220110_000000_114.0s_117.0s.wav bruno    negative 
+#> 3 0.789_1_ARA01_20220110_013000_135.0s_138.0s.wav ana      positive 
+#> 4 0.938_2_ARA01_20220110_013000_159.0s_162.0s.wav bruno    uncertain
+```

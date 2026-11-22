@@ -149,6 +149,26 @@ many negative clips are still without an identity.</p>
     <div class="dont-index"><p><code><a href="run_app.html">run_app()</a></code>, <code><a href="confuser_summary.html">confuser_summary()</a></code>, <code><a href="identity_categories.html">identity_categories()</a></code>.</p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example"</span>, package <span class="op">=</span> <span class="st">"sheepdog"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">val</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"validation"</span>, <span class="st">"validation_by_clip_ARA.csv"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Identities of two negative clips, written in a spreadsheet</span></span></span>
+<span class="r-in"><span><span class="va">neg</span> <span class="op">&lt;-</span> <span class="va">val</span><span class="op">$</span><span class="va">clip_file</span><span class="op">[</span><span class="va">val</span><span class="op">$</span><span class="va">verdict</span> <span class="op">==</span> <span class="st">"negative"</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">ids</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>clip <span class="op">=</span> <span class="va">neg</span>, identity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"insect"</span>, <span class="st">"bird|noise"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                  certainty <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sure"</span>, <span class="st">"probable"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">val</span> <span class="op">&lt;-</span> <span class="fu">join_identities</span><span class="op">(</span><span class="va">val</span>, <span class="va">ids</span>, certainty_col <span class="op">=</span> <span class="st">"certainty"</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 2 of 111 negative clip(s) with an identity.</span>
+<span class="r-in"><span><span class="va">val</span><span class="op">[</span><span class="va">val</span><span class="op">$</span><span class="va">clip_file</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">neg</span>,</span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"clip_file"</span>, <span class="st">"verdict"</span>, <span class="st">"identity"</span>, <span class="st">"identity_certainty"</span><span class="op">)</span><span class="op">]</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                          clip_file  verdict   identity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  0.469_2_ARA01_20211016_190000_165.0s_168.0s.wav negative     insect</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13   0.500_1_ARA01_20211022_010000_60.0s_63.0s.wav negative bird|noise</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    identity_certainty</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                sure</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13           probable</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

@@ -99,3 +99,24 @@ flag is not proof of a good fit.
 
 [`calibration_diagnostics()`](https://provetelab.org/sheepdog/reference/calibration_diagnostics.md)
 for convergence, which should be checked first.
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE),
+                        keep = "recording_date")
+#> 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.
+val$month <- substr(val$recording_date, 5, 6)
+# Fitting compiles a Stan model, which takes minutes, so it is not run here.
+if (FALSE) { # \dontrun{
+f <- tp ~ logit_conf + (1 | species)
+fit_b <- fit_calibration(val, f, engine = "brms",
+                         prior = calibration_prior(f, val),
+                         chains = 4, iter = 2000, seed = 1, refresh = 0)
+calibration_diagnostics(fit_b)
+ppc <- calibration_ppc(fit_b, val, group = "month", n_draws = 500)
+ppc[ppc$flagged, ]
+} # }
+```

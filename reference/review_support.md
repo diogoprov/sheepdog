@@ -134,3 +134,35 @@ counts; they are not a statistical test.
 ## See also
 
 [`vignette("validation-effort")`](https://provetelab.org/sheepdog/articles/validation-effort.md).
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validation_tables(list.files(file.path(ex, "validation"),
+                                         full.names = TRUE))
+det <- read_selection_tables(file.path(ex, "birdnet"))
+#> 4 combined table(s) and 0 per-audio table(s) found in 4 folder(s):
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR: BirdNET_SelectionTable.txt
+#> 7553 predictions read from 4 site(s).
+sup <- review_support(val, det, conf_high = 0.7, min_n = 10)
+sup[, c("site", "species_folder", "n_reviewed", "prec_high",
+        "unreviewed_high", "threshold", "diagnosis")]
+#> # A tibble: 32 × 7
+#>    site  species_folder n_reviewed prec_high unreviewed_high threshold diagnosis
+#>    <chr> <chr>               <int>     <dbl>           <int>     <dbl> <chr>    
+#>  1 ARA   lep_fus                33     0                   0     NA    exhausted
+#>  2 BAI   lep_fus                56     0                   0     NA    exhausted
+#>  3 ARA   boa_ran                80     1                 122      0.36 reached  
+#>  4 BAI   boa_ran                80     1                  25      0.39 reached  
+#>  5 NHE   boa_ran                80     0.962              18      0.55 reached  
+#>  6 XAR   boa_ran                80     0.980              29      0.58 reached  
+#>  7 ARA   den_nan                80     0.943              57      0.56 reached  
+#>  8 NHE   den_nan                80     0.818              47      0.77 reached  
+#>  9 ARA   ela_bic                80     1                  42      0.13 reached  
+#> 10 BAI   ela_bic                80     1                  51      0.23 reached  
+#> # ℹ 22 more rows
+```

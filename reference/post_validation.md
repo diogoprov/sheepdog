@@ -167,3 +167,42 @@ see
 [`suggest_thresholds()`](https://provetelab.org/sheepdog/reference/suggest_thresholds.md).
 
 This is the function form of the v1.2.0 script `pos_validacao.R`.
+
+## Examples
+
+``` r
+# Recreate the folders left by a review in the BirdNET GUI, with empty files
+man <- system.file("extdata", "clip_manifest.csv", package = "sheepdog")
+done <- read.csv(system.file("extdata", "validation_by_clip.csv",
+                             package = "sheepdog"))
+review_dir <- file.path(tempdir(), "clips_post")
+sub <- ifelse(done$verdict == "positive", "Positive",
+              ifelse(done$verdict == "negative", "Negative", ""))
+dest <- file.path(review_dir, done$species_folder, sub)
+for (d in unique(dest)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
+invisible(file.create(file.path(dest, done$clip_file)))
+
+out_dir <- file.path(tempdir(), "post_validation")
+res <- post_validation(review_dir, manifest_path = man,
+                       output_dir = out_dir, min_n = 3)
+#> Clips in the manifest: 12
+#>   negative: 3
+#>   not_reviewed: 1
+#>   positive: 8
+#> The manifest has inclusion_prob: the precision tables also give the precision weighted by 1 / inclusion_prob.
+#> Suggested thresholds (target precision 0.9): see suggested_thresholds.csv
+#> 8 positive clips listed for retraining.
+#> Done! Results in /tmp/Rtmp0frRI4/post_validation
+res$thresholds
+#> # A tibble: 1 × 8
+#>   site  species_folder threshold n_support precision_at_threshold
+#>   <chr> <chr>              <dbl>     <int>                  <dbl>
+#> 1 ARA   boa_ran              0.7         6                      1
+#> # ℹ 3 more variables: precision_weighted_at_threshold <dbl>, n_eff <dbl>,
+#> #   precision_used <chr>
+list.files(out_dir)
+#> [1] "nightly_presence.csv"     "precision_by_bin.csv"    
+#> [3] "precision_by_bin.png"     "retraining_clips.csv"    
+#> [5] "suggested_thresholds.csv" "validation_by_clip.csv"  
+unlink(c(review_dir, out_dir), recursive = TRUE)
+```

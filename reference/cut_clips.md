@@ -39,3 +39,39 @@ The manifest with the column `status` after `begin_path`: one of `"ok"`,
 ## Details
 
 Cutting uses the 'ffmpeg' library bundled with the 'av' package.
+
+## Examples
+
+``` r
+# A 5-s silent recording (16-bit PCM WAV), written with base R
+wav <- file.path(tempdir(), "S01_20220110_190000.wav")
+n <- 5 * 8000
+con <- file(wav, "wb")
+writeChar("RIFF", con, eos = NULL)
+writeBin(as.integer(36 + 2 * n), con, size = 4, endian = "little")
+writeChar("WAVEfmt ", con, eos = NULL)
+writeBin(16L, con, size = 4, endian = "little")
+writeBin(c(1L, 1L), con, size = 2, endian = "little")
+writeBin(c(8000L, 16000L), con, size = 4, endian = "little")
+writeBin(c(2L, 16L), con, size = 2, endian = "little")
+writeChar("data", con, eos = NULL)
+writeBin(as.integer(2 * n), con, size = 4, endian = "little")
+writeBin(integer(n), con, size = 2, endian = "little")
+close(con)
+man <- data.frame(species_folder = "boa_ran",
+                  clip_file = c("clip1.wav", "clip2.wav"),
+                  clip_start = c(0, 2), duration = 3,
+                  source_audio = wav, begin_path = wav)
+out <- file.path(tempdir(), "validation")
+# Check the manifest without cutting
+cut_clips(man, out, simulate = TRUE)$status
+#> Simulating the cut of 2 clips...
+#>   simulated: 2
+#> [1] "simulated" "simulated"
+# Cut the clips (needs the 'av' package)
+if (requireNamespace("av", quietly = TRUE)) {
+  man <- cut_clips(man, out)
+  print(man$status)
+  list.files(file.path(out, "clips"), recursive = TRUE)
+}
+```

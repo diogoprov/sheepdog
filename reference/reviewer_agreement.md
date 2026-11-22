@@ -31,3 +31,25 @@ reviewer_agreement(reviews)
 
 A tibble with `species_folder`, `n_clips` (clips with at least two
 verdicts), `n_reviewers`, `agreement`, `kappa` and `method`.
+
+## Examples
+
+``` r
+reviews <- list(
+  ana = data.frame(species_folder = "boa_ran",
+                   clip_file = paste0("clip", 1:8, ".wav"),
+                   verdict = c("positive", "positive", "negative",
+                               "positive", "negative", "positive",
+                               "negative", "positive")),
+  bruno = data.frame(species_folder = "boa_ran",
+                     clip_file = paste0("clip", 1:8, ".wav"),
+                     verdict = c("positive", "negative", "negative",
+                                 "positive", "negative", "positive",
+                                 "positive", "positive"))
+)
+reviewer_agreement(reviews)
+#> # A tibble: 1 × 6
+#>   species_folder n_clips n_reviewers agreement kappa method
+#>   <chr>            <int>       <int>     <dbl> <dbl> <chr> 
+#> 1 boa_ran              8           2      0.75 0.467 Cohen 
+```

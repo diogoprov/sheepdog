@@ -134,3 +134,27 @@ recording or night on the same side of the split.
 
 [`compare_calibration_models()`](https://provetelab.org/sheepdog/reference/compare_calibration_models.md),
 [`calibration_ppc()`](https://provetelab.org/sheepdog/reference/calibration_ppc.md)
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+#> 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.
+# Species intercepts as fixed effects, so that lme4 is not needed
+q <- calibration_quality(val, tp ~ logit_conf + species, k_folds = 3)
+q[c("species", "n", "auc", "auc_score", "logloss_gain", "cal_slope",
+    "status")]
+#> # A tibble: 8 × 7
+#>   species     n   auc auc_score logloss_gain cal_slope status
+#>   <fct>   <int> <dbl>     <dbl>        <dbl>     <dbl> <chr> 
+#> 1 boa_ran   320 0.974     0.974       0.356      2.37  poor  
+#> 2 den_nan   320 0.792     0.792       0.140      0.875 ok    
+#> 3 ela_bic   320 0.997     0.996       0.238      3.51  poor  
+#> 4 lep_fus   249 0.782     0.788       0.126      0.800 ok    
+#> 5 lep_pod   298 0.992     0.993       0.289      2.77  poor  
+#> 6 phy_cuv   320 0.983     0.984       0.226      2.33  poor  
+#> 7 pse_pla   320 0.544     0.543      -0.116      0.173 poor  
+#> 8 sci_nas   320 0.729     0.738       0.0664     0.596 ok    
+```

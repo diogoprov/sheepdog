@@ -41,3 +41,30 @@ The manifest with two more columns: `verdict` (`"positive"`,
 `"negative"`, `"not_reviewed"` or `"clip_missing"`) and `reviewed_path`,
 the path where the clip was found. This is the table written to
 `validation_by_clip.csv`.
+
+## Examples
+
+``` r
+# The review in the BirdNET GUI leaves each clip in a Positive or Negative
+# subfolder. Recreate that layout with empty files from a reviewed table
+man <- system.file("extdata", "clip_manifest.csv", package = "sheepdog")
+done <- read.csv(system.file("extdata", "validation_by_clip.csv",
+                             package = "sheepdog"))
+review_dir <- file.path(tempdir(), "clips_reviewed")
+sub <- ifelse(done$verdict == "positive", "Positive",
+              ifelse(done$verdict == "negative", "Negative", ""))
+dest <- file.path(review_dir, done$species_folder, sub)
+for (d in unique(dest)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
+invisible(file.create(file.path(dest, done$clip_file)))
+
+val <- classify_review(man, review_dir)
+#> Clips in the manifest: 12
+#>   negative: 3
+#>   not_reviewed: 1
+#>   positive: 8
+table(val$verdict)
+#> 
+#>     negative not_reviewed     positive 
+#>            3            1            8 
+unlink(review_dir, recursive = TRUE)
+```

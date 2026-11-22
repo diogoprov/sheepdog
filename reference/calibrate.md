@@ -228,3 +228,45 @@ for instance, by Owens et al. (2026,
 ). This function extends that approach with a hierarchical multi-species
 structure. This is the function form of the v1.2.0 script
 `calibracao.R`.
+
+## Examples
+
+``` r
+# The whole workflow on the example data; outputs go to a temporary folder
+# \donttest{
+if (requireNamespace("lme4", quietly = TRUE)) {
+  ex <- system.file("extdata", "example", package = "sheepdog")
+  sites <- c("ARA", "BAI", "NHE", "XAR")
+  val_files <- file.path(ex, "validation",
+                         paste0("validation_by_clip_", sites, ".csv"))
+  tables <- file.path(ex, "birdnet", sites, "BirdNET_SelectionTable.txt")
+  names(tables) <- sites
+  out <- file.path(tempdir(), "calibration")
+  res <- calibrate(val_files, tables, out, k_folds = 3)
+  res$comparison[c("model", "auc_mean", "logloss_mean")]
+  head(res$history)
+  list.files(out)
+}
+#> 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.
+#> Cross-validation (3 folds) of 5 models...
+#> Selected model (one_se_logloss): m1_species_intercept
+#> Check these groups in calibration_quality.csv before using their probabilities: boa_ran, ela_bic, lep_pod, phy_cuv, pse_pla.
+#> Scoring ARA (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA/BirdNET_SelectionTable.txt)...
+#>   1753 detections of calibrated species (0 of species NOT calibrated were dropped).
+#> Scoring BAI (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI/BirdNET_SelectionTable.txt)...
+#>   1427 detections of calibrated species (0 of species NOT calibrated were dropped).
+#> Scoring NHE (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE/BirdNET_SelectionTable.txt)...
+#>   2507 detections of calibrated species (0 of species NOT calibrated were dropped).
+#> Scoring XAR (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR/BirdNET_SelectionTable.txt)...
+#>   1866 detections of calibrated species (0 of species NOT calibrated were dropped).
+#> Nights with a reliable detection (p_tp >= 0.95): 339 (k = 1), 268 (k = 2), 217 (k = 3).
+#> Done! Outputs in /tmp/Rtmp0frRI4/calibration
+#> nightly_detection_history.csv is the input of the analyses; the column 'detection' uses k = 1; detection_k1/k2/k3 give the sensitivity to the rule.
+#>  [1] "calibrated_detections_ARA.csv" "calibrated_detections_BAI.csv"
+#>  [3] "calibrated_detections_NHE.csv" "calibrated_detections_XAR.csv"
+#>  [5] "calibration_curves.png"        "calibration_model.rds"        
+#>  [7] "calibration_model.txt"         "calibration_quality.csv"      
+#>  [9] "detection_summary.csv"         "model_comparison.csv"         
+#> [11] "nightly_detection_history.csv" "thresholds.csv"               
+# }
+```

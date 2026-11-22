@@ -458,7 +458,8 @@ curve:
 ``` r
 
 thr  <- suggest_thresholds(val, target_precision = 0.95, sustained = TRUE)
-boot <- threshold_bootstrap(val, target_precision = 0.95, n_boot = 1000)
+boot <- threshold_bootstrap(val, target_precision = 0.95, n_boot = 1000,
+                            sustained = TRUE)
 grp  <- threshold_by_group(val, boot, by = "recording_hour",
                            target_precision = 0.95,
                            threshold_column = "threshold_conservative")

@@ -53,3 +53,21 @@ build_community_matrices(
 The list returned by
 [`community_matrices()`](https://provetelab.org/sheepdog/reference/community_matrices.md),
 invisibly.
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+out <- file.path(tempdir(), "matrices")
+build_community_matrices(file.path(ex, "nightly_detection_history.csv"),
+                         output_dir = out,
+                         core_species = c("boa_ran", "ela_bic",
+                                          "phy_cuv"),
+                         k_min = 2)
+#> Matrix: 23 rows (site x month) x 3 species | rule k >= 2
+#> Effort: 23 site x month cells included; 1 dropped for having < 5 recorded nights (see effort_site_month.csv)
+#> Files in: /tmp/Rtmp0frRI4/matrices
+list.files(out)
+#> [1] "count_matrix_site_month_k2.csv"     "effort_site_month.csv"             
+#> [3] "frequency_matrix_site_month_k2.csv"
+```

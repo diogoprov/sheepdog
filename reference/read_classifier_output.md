@@ -206,3 +206,43 @@ automated species identification. *PeerJ*, 1, e103.
 for BirdNET,
 [`read_pamdp()`](https://provetelab.org/sheepdog/reference/read_pamdp.md)
 for pamDP data packages.
+
+## Examples
+
+``` r
+# A small Perch inference CSV (perch-hoplite); the scores are logits and
+# the audio paths are relative to the folder the embeddings came from
+perch <- tempfile(fileext = ".csv")
+writeLines(c(
+  "idx,project,filename,window_start,window_end,label,logits",
+  "1,demo,SITE_A/A01_20240110_200000.wav,0.0,5.0,Boana raniceps,2.0",
+  "2,demo,SITE_A/A01_20240110_200000.wav,5.0,10.0,Boana raniceps,-3.0",
+  "3,demo,SITE_B/B01_20240111_210000.wav,10.0,15.0,Scinax fuscovarius,0.5"
+), perch)
+p <- read_classifier_output(perch, "perch", audio_root = "/data/audio")
+#> 2 predictions read from 1 file(s), 2 site(s) and 2 label(s).
+p[, c("site", "species_code", "confidence", "score", "begin_path")]
+#> # A tibble: 2 × 5
+#>   site   species_code                          confidence score begin_path      
+#>   <chr>  <chr>                                      <dbl> <dbl> <chr>           
+#> 1 SITE_A Boana raniceps_boana-raniceps              0.881   2   /data/audio/SIT…
+#> 2 SITE_B Scinax fuscovarius_scinax-fuscovarius      0.622   0.5 /data/audio/SIT…
+
+# An OpenSoundscape prediction table: one column of scores per class
+oss <- tempfile(fileext = ".csv")
+writeLines(c(
+  "file,start_time,end_time,Boana raniceps,Scinax fuscovarius",
+  "/data/audio/SITE_A/A01_20240110_200000.wav,0.0,3.0,1.2,-2.5",
+  "/data/audio/SITE_A/A01_20240110_200000.wav,3.0,6.0,-0.4,0.8"
+), oss)
+read_classifier_output(oss, "opensoundscape", min_confidence = 0.3)
+#> 3 predictions read from 1 file(s), 1 site(s) and 2 label(s).
+#> # A tibble: 3 × 10
+#>   site  begin_time end_time species_code confidence begin_path file_offset label
+#>   <chr>      <dbl>    <dbl> <chr>             <dbl> <chr>            <dbl> <chr>
+#> 1 SITE…          0        3 Boana ranic…      0.769 /data/aud…           0 Boan…
+#> 2 SITE…          3        6 Boana ranic…      0.401 /data/aud…           3 Boan…
+#> 3 SITE…          3        6 Scinax fusc…      0.690 /data/aud…           3 Scin…
+#> # ℹ 2 more variables: score <dbl>, classifier <chr>
+unlink(c(perch, oss))
+```

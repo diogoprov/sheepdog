@@ -72,3 +72,18 @@ and levels not seen in the fit get the fixed-effects interval. For a
 P(TP)
 ([`brms::posterior_epred()`](https://mc-stan.org/rstantools/reference/posterior_epred.html))
 and carries all the parameter uncertainty.
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+#> 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.
+if (requireNamespace("lme4", quietly = TRUE) &&
+    requireNamespace("ggplot2", quietly = TRUE)) {
+  fit <- fit_calibration(val, tp ~ logit_conf + (1 | species))
+  plot_calibration(fit, val, model_name = "species intercept",
+                   interval = TRUE)
+}
+```

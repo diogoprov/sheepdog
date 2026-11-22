@@ -31,3 +31,17 @@ plot_calibration_curves(x, validation = NULL, bin_width = 0.1)
 ## Value
 
 A ggplot object.
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+validation <- read_validation_tables(list.files(file.path(ex, "validation"),
+                                                full.names = TRUE))
+cmp <- compare_calibration_curves(validation, curves = "logistic",
+                                  k_folds = 3)
+# Observed precision over the whole score range
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  plot_calibration_curves(cmp, validation = validation)
+}
+```

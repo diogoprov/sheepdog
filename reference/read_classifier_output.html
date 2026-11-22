@@ -259,6 +259,45 @@ species identification. <em>PeerJ</em>, 1, e103. <a href="https://doi.org/10.771
 data packages.</p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># A small Perch inference CSV (perch-hoplite); the scores are logits and</span></span></span>
+<span class="r-in"><span><span class="co"># the audio paths are relative to the folder the embeddings came from</span></span></span>
+<span class="r-in"><span><span class="va">perch</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".csv"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/writeLines.html" class="external-link">writeLines</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="st">"idx,project,filename,window_start,window_end,label,logits"</span>,</span></span>
+<span class="r-in"><span>  <span class="st">"1,demo,SITE_A/A01_20240110_200000.wav,0.0,5.0,Boana raniceps,2.0"</span>,</span></span>
+<span class="r-in"><span>  <span class="st">"2,demo,SITE_A/A01_20240110_200000.wav,5.0,10.0,Boana raniceps,-3.0"</span>,</span></span>
+<span class="r-in"><span>  <span class="st">"3,demo,SITE_B/B01_20240111_210000.wav,10.0,15.0,Scinax fuscovarius,0.5"</span></span></span>
+<span class="r-in"><span><span class="op">)</span>, <span class="va">perch</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">read_classifier_output</span><span class="op">(</span><span class="va">perch</span>, <span class="st">"perch"</span>, audio_root <span class="op">=</span> <span class="st">"/data/audio"</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 2 predictions read from 1 file(s), 2 site(s) and 2 label(s).</span>
+<span class="r-in"><span><span class="va">p</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"site"</span>, <span class="st">"species_code"</span>, <span class="st">"confidence"</span>, <span class="st">"score"</span>, <span class="st">"begin_path"</span><span class="op">)</span><span class="op">]</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   site   species_code                          confidence score begin_path      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> SITE_A Boana raniceps_boana-raniceps              0.881   2   /data/audio/SIT…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> SITE_B Scinax fuscovarius_scinax-fuscovarius      0.622   0.5 /data/audio/SIT…</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># An OpenSoundscape prediction table: one column of scores per class</span></span></span>
+<span class="r-in"><span><span class="va">oss</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".csv"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/writeLines.html" class="external-link">writeLines</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="st">"file,start_time,end_time,Boana raniceps,Scinax fuscovarius"</span>,</span></span>
+<span class="r-in"><span>  <span class="st">"/data/audio/SITE_A/A01_20240110_200000.wav,0.0,3.0,1.2,-2.5"</span>,</span></span>
+<span class="r-in"><span>  <span class="st">"/data/audio/SITE_A/A01_20240110_200000.wav,3.0,6.0,-0.4,0.8"</span></span></span>
+<span class="r-in"><span><span class="op">)</span>, <span class="va">oss</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">read_classifier_output</span><span class="op">(</span><span class="va">oss</span>, <span class="st">"opensoundscape"</span>, min_confidence <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 3 predictions read from 1 file(s), 1 site(s) and 2 label(s).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 10</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   site  begin_time end_time species_code confidence begin_path file_offset label</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> SITE…          0        3 Boana ranic…      0.769 /data/aud…           0 Boan…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> SITE…          3        6 Boana ranic…      0.401 /data/aud…           3 Boan…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> SITE…          3        6 Scinax fusc…      0.690 /data/aud…           3 Scin…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 2 more variables: score &lt;dbl&gt;, classifier &lt;chr&gt;</span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">perch</span>, <span class="va">oss</span><span class="op">)</span><span class="op">)</span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

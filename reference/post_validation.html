@@ -255,6 +255,44 @@ chooses the thresholds, unless <code>weighted = FALSE</code>; see
 <p>This is the function form of the v1.2.0 script <code>pos_validacao.R</code>.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Recreate the folders left by a review in the BirdNET GUI, with empty files</span></span></span>
+<span class="r-in"><span><span class="va">man</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"clip_manifest.csv"</span>, package <span class="op">=</span> <span class="st">"sheepdog"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">done</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"validation_by_clip.csv"</span>,</span></span>
+<span class="r-in"><span>                             package <span class="op">=</span> <span class="st">"sheepdog"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">review_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"clips_post"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">sub</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">done</span><span class="op">$</span><span class="va">verdict</span> <span class="op">==</span> <span class="st">"positive"</span>, <span class="st">"Positive"</span>,</span></span>
+<span class="r-in"><span>              <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">done</span><span class="op">$</span><span class="va">verdict</span> <span class="op">==</span> <span class="st">"negative"</span>, <span class="st">"Negative"</span>, <span class="st">""</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">review_dir</span>, <span class="va">done</span><span class="op">$</span><span class="va">species_folder</span>, <span class="va">sub</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw">for</span> <span class="op">(</span><span class="va">d</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">dest</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">d</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span>, showWarnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.create</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">dest</span>, <span class="va">done</span><span class="op">$</span><span class="va">clip_file</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">out_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"post_validation"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">post_validation</span><span class="op">(</span><span class="va">review_dir</span>, manifest_path <span class="op">=</span> <span class="va">man</span>,</span></span>
+<span class="r-in"><span>                       output_dir <span class="op">=</span> <span class="va">out_dir</span>, min_n <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Clips in the manifest: 12</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   negative: 3</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   not_reviewed: 1</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   positive: 8</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> The manifest has inclusion_prob: the precision tables also give the precision weighted by 1 / inclusion_prob.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Suggested thresholds (target precision 0.9): see suggested_thresholds.csv</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 8 positive clips listed for retraining.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Done! Results in /tmp/Rtmp0frRI4/post_validation</span>
+<span class="r-in"><span><span class="va">res</span><span class="op">$</span><span class="va">thresholds</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 8</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   site  species_folder threshold n_support precision_at_threshold</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> ARA   boa_ran              0.7         6                      1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: precision_weighted_at_threshold &lt;dbl&gt;, n_eff &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   precision_used &lt;chr&gt;</span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">out_dir</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "nightly_presence.csv"     "precision_by_bin.csv"    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [3] "precision_by_bin.png"     "retraining_clips.csv"    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [5] "suggested_thresholds.csv" "validation_by_clip.csv"  </span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">review_dir</span>, <span class="va">out_dir</span><span class="op">)</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

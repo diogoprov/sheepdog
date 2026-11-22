@@ -122,3 +122,43 @@ sample and should not set thresholds.
 for the conservative threshold to apply;
 [`calibrated_thresholds()`](https://provetelab.org/sheepdog/reference/calibrated_thresholds.md)
 for thresholds from the calibration model.
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validation_tables(list.files(file.path(ex, "validation"),
+                                         full.names = TRUE))
+suggest_thresholds(val, target_precision = 0.9, min_n = 10)
+#> # A tibble: 32 × 5
+#>    site  species_folder threshold n_support precision_at_threshold
+#>    <chr> <chr>              <dbl>     <int>                  <dbl>
+#>  1 ARA   boa_ran             0.36        80                  0.975
+#>  2 ARA   den_nan             0.56        56                  0.911
+#>  3 ARA   ela_bic             0.13        79                  0.924
+#>  4 ARA   lep_fus            NA           NA                 NA    
+#>  5 ARA   lep_pod             0.1         80                  0.912
+#>  6 ARA   phy_cuv             0.19        79                  0.987
+#>  7 ARA   pse_pla             0.8         14                  0.929
+#>  8 ARA   sci_nas             0.69        43                  0.907
+#>  9 BAI   boa_ran             0.39        68                  0.912
+#> 10 BAI   den_nan            NA           NA                 NA    
+#> # ℹ 22 more rows
+# the target must also hold at every higher cut
+suggest_thresholds(val, target_precision = 0.9, min_n = 10,
+                   sustained = TRUE)
+#> # A tibble: 32 × 5
+#>    site  species_folder threshold n_support precision_at_threshold
+#>    <chr> <chr>              <dbl>     <int>                  <dbl>
+#>  1 ARA   boa_ran             0.36        80                  0.975
+#>  2 ARA   den_nan             0.56        56                  0.911
+#>  3 ARA   ela_bic             0.13        79                  0.924
+#>  4 ARA   lep_fus            NA           NA                 NA    
+#>  5 ARA   lep_pod             0.1         80                  0.912
+#>  6 ARA   phy_cuv             0.19        79                  0.987
+#>  7 ARA   pse_pla             0.8         14                  0.929
+#>  8 ARA   sci_nas             0.76        24                  0.958
+#>  9 BAI   boa_ran             0.39        68                  0.912
+#> 10 BAI   den_nan            NA           NA                 NA    
+#> # ℹ 22 more rows
+```

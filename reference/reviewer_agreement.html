@@ -122,6 +122,27 @@ reviewer.</p></dd>
 two verdicts), <code>n_reviewers</code>, <code>agreement</code>, <code>kappa</code> and <code>method</code>.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">reviews</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  ana <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>species_folder <span class="op">=</span> <span class="st">"boa_ran"</span>,</span></span>
+<span class="r-in"><span>                   clip_file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"clip"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">8</span>, <span class="st">".wav"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                   verdict <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"positive"</span>, <span class="st">"positive"</span>, <span class="st">"negative"</span>,</span></span>
+<span class="r-in"><span>                               <span class="st">"positive"</span>, <span class="st">"negative"</span>, <span class="st">"positive"</span>,</span></span>
+<span class="r-in"><span>                               <span class="st">"negative"</span>, <span class="st">"positive"</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  bruno <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>species_folder <span class="op">=</span> <span class="st">"boa_ran"</span>,</span></span>
+<span class="r-in"><span>                     clip_file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"clip"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">8</span>, <span class="st">".wav"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                     verdict <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"positive"</span>, <span class="st">"negative"</span>, <span class="st">"negative"</span>,</span></span>
+<span class="r-in"><span>                                 <span class="st">"positive"</span>, <span class="st">"negative"</span>, <span class="st">"positive"</span>,</span></span>
+<span class="r-in"><span>                                 <span class="st">"positive"</span>, <span class="st">"positive"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">reviewer_agreement</span><span class="op">(</span><span class="va">reviews</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 6</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   species_folder n_clips n_reviewers agreement kappa method</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> boa_ran              8           2      0.75 0.467 Cohen </span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

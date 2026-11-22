@@ -71,3 +71,26 @@ reviewed range.
 [`suggest_core_species()`](https://provetelab.org/sheepdog/reference/suggest_core_species.md)
 keeps the species without unreliable cells. The final choice of core
 species remains with the analyst.
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+#> 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.
+# A logistic calibration with fixed effects only
+fit <- fit_calibration(val, tp ~ logit_conf * species + site)
+status <- cell_status(fit, val, p_min = 0.95, min_n = 15)
+table(status$species, status$status)
+#>          
+#>           probably_absent reliable unreliable
+#>   boa_ran               0        4          0
+#>   den_nan               0        4          0
+#>   ela_bic               0        4          0
+#>   lep_fus               2        2          0
+#>   lep_pod               0        4          0
+#>   phy_cuv               0        4          0
+#>   pse_pla               0        0          4
+#>   sci_nas               0        2          2
+```

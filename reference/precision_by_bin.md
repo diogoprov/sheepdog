@@ -61,3 +61,22 @@ strata drawn with different probabilities. It is `NA` in bins with any
 clip without `inclusion_prob` (clips of `"top"`). A blind review
 manifest may lack `inclusion_prob`: join it back from the full manifest
 first.
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validation_tables(list.files(file.path(ex, "validation"),
+                                         full.names = TRUE))
+prec <- precision_by_bin(val, min_n = 10)
+head(prec)
+#> # A tibble: 6 × 7
+#>   site  species_folder bin       n_reviewed n_positive precision low_support
+#>   <chr> <chr>          <fct>          <int>      <int>     <dbl> <lgl>      
+#> 1 ARA   boa_ran        [0.3,0.4)          1          1         1 TRUE       
+#> 2 ARA   boa_ran        [0.4,0.5)          2          0         0 TRUE       
+#> 3 ARA   boa_ran        [0.5,0.6)          4          4         1 TRUE       
+#> 4 ARA   boa_ran        [0.6,0.7)         14         14         1 FALSE      
+#> 5 ARA   boa_ran        [0.7,0.8)         18         18         1 FALSE      
+#> 6 ARA   boa_ran        [0.8,0.9)         23         23         1 FALSE      
+```

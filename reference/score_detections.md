@@ -90,3 +90,35 @@ are set to zero, so P(TP) comes from the fixed and species effects only.
 With a `brmsfit` (`allow_new_levels = TRUE` of 'brms'), the effects of
 the new site are drawn from the fitted random-effects distribution,
 which widens the posterior of P(TP).
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+#> 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.
+fit <- fit_calibration(val, tp ~ logit_conf + species)
+sites <- c("ARA", "BAI", "NHE", "XAR")
+tables <- file.path(ex, "birdnet", sites, "BirdNET_SelectionTable.txt")
+names(tables) <- sites
+scored <- score_detections(tables, fit, min_confidence = 0.1)
+#> Scoring ARA (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA/BirdNET_SelectionTable.txt)...
+#>   1753 detections of calibrated species (0 of species NOT calibrated were dropped).
+#> Scoring BAI (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI/BirdNET_SelectionTable.txt)...
+#>   1427 detections of calibrated species (0 of species NOT calibrated were dropped).
+#> Scoring NHE (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE/BirdNET_SelectionTable.txt)...
+#>   2507 detections of calibrated species (0 of species NOT calibrated were dropped).
+#> Scoring XAR (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR/BirdNET_SelectionTable.txt)...
+#>   1866 detections of calibrated species (0 of species NOT calibrated were dropped).
+head(scored)
+#> # A tibble: 6 × 9
+#>   site  species date     night     hour confidence  p_tp begin_path  file_offset
+#>   <chr> <fct>   <chr>    <chr>    <int>      <dbl> <dbl> <chr>             <dbl>
+#> 1 ARA   boa_ran 20211001 20211001    19      0.504 0.512 "N:\\pam\\…          57
+#> 2 ARA   den_nan 20211001 20211001    19      0.372 0.147 "N:\\pam\\…          66
+#> 3 ARA   lep_fus 20211001 20211001    19      0.267 0.111 "N:\\pam\\…         150
+#> 4 ARA   pse_pla 20211001 20211001    19      0.873 0.744 "N:\\pam\\…         165
+#> 5 ARA   lep_pod 20211001 20211001    19      0.846 0.969 "N:\\pam\\…         174
+#> 6 ARA   lep_pod 20211001 20211001    19      0.479 0.640 "N:\\pam\\…         177
+```

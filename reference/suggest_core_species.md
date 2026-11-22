@@ -22,3 +22,16 @@ suggest_core_species(status)
 
 A character vector of species codes (the `species` column of the
 history).
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+#> 2467 reviewed clips (1577 TP / 890 FP) of 8 species at 4 sites.
+fit <- fit_calibration(val, tp ~ logit_conf * species + site)
+status <- cell_status(fit, val, p_min = 0.95, min_n = 15)
+suggest_core_species(status)
+#> [1] "boa_ran" "den_nan" "ela_bic" "lep_fus" "lep_pod" "phy_cuv"
+```

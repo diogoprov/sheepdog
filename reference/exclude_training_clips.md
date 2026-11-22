@@ -80,3 +80,29 @@ has no species, clip times or `source_audio`: it takes
 `"recording"`, the site, date and time are read from `source_audio` of
 the manifest with `pattern`, which should be the one given to
 [`training_nights()`](https://provetelab.org/sheepdog/reference/training_nights.md).
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+det <- read_selection_tables(file.path(ex, "birdnet"))
+#> 4 combined table(s) and 0 per-audio table(s) found in 4 folder(s):
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR: BirdNET_SelectionTable.txt
+#> 7553 predictions read from 4 site(s).
+man <- select_clips(det, sampling_mode = "top", n_top = 1)
+#> Sampling mode: top (occasion = file).
+#> 2298 clips selected (top 1 per site x species x night x hour) of 8 species.
+
+# nights whose recordings were used to train the classifier, read from the
+# names of its training clips
+trained <- training_nights(c("ARA01_20211016_190000_3.0s_6.0s.wav",
+                             "BAI01_20211020_220000_9.0s_12.0s.wav"))
+man2 <- exclude_training_clips(man, trained, level = "night")
+#> A table of training_nights() has no species: clips of every species are excluded.
+#> 12 clip(s) sharing a night with the training clips left out of the manifest.
+nrow(man) - nrow(man2)
+#> [1] 12
+```

@@ -48,3 +48,17 @@ Cut the clips with
 [`cut_clips()`](https://provetelab.org/sheepdog/reference/cut_clips.md)
 first, then copy each reviewer's share to their own folder with
 [`split_by_reviewer()`](https://provetelab.org/sheepdog/reference/split_by_reviewer.md).
+
+## Examples
+
+``` r
+man <- read.csv(system.file("extdata", "clip_manifest.csv",
+                            package = "sheepdog"))
+man <- assign_reviewers(man, c("ana", "bruno", "carla"), overlap = 0.5)
+table(man$species_folder, man$reviewer)
+#>          
+#>           ana bruno carla
+#>   boa_ran   4     4     4
+sum(!is.na(man$second_reviewer))
+#> [1] 6
+```

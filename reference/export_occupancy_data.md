@@ -318,3 +318,48 @@ annotated by ear gives the state of the whole occasion.
 
 [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md)
 for the columns of each table.
+
+## Examples
+
+``` r
+ex <- system.file("extdata", "example", package = "sheepdog")
+det <- read_selection_tables(file.path(ex, "birdnet"))
+#> 4 combined table(s) and 0 per-audio table(s) found in 4 folder(s):
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/ARA: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/BAI: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/NHE: BirdNET_SelectionTable.txt
+#>   - /home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR: BirdNET_SelectionTable.txt
+#> 7553 predictions read from 4 site(s).
+out_dir <- file.path(tempdir(), "occupancy")
+out <- export_occupancy_data(
+  out_dir, det,
+  recordings = file.path(ex, "recordings.csv"),
+  validation = list.files(file.path(ex, "validation"), full.names = TRUE),
+  classifier = "BirdNET", overwrite = TRUE
+)
+#> Export written to /tmp/Rtmp0frRI4/occupancy: occasions, detections, scores, validation, sites.
+vapply(out$tables, nrow, integer(1))
+#>  occasions detections     scores validation      sites 
+#>        354       7553       2298       2467          4 
+list.files(out_dir)
+#> [1] "detections.csv" "occasions.csv"  "schema.json"    "scores.csv"    
+#> [5] "sites.csv"      "validation.csv"
+
+# With a Bayesian calibration, the export also holds its posterior
+# draws. Fitting compiles a Stan model, which takes minutes, so this
+# part is not run here.
+if (FALSE) { # \dontrun{
+val <- read_validations(list.files(file.path(ex, "validation"),
+                                   full.names = TRUE))
+f <- tp ~ logit_conf + (1 | species)
+fit <- fit_calibration(val, f, engine = "brms",
+                       prior = calibration_prior(f, val),
+                       chains = 4, iter = 2000, seed = 1, refresh = 0)
+export_occupancy_data(
+  out_dir, det,
+  recordings = file.path(ex, "recordings.csv"),
+  validation = list.files(file.path(ex, "validation"), full.names = TRUE),
+  fit = fit, n_draws = 100, overwrite = TRUE
+)
+} # }
+```

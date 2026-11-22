@@ -174,6 +174,44 @@ nights in the history of the site, for any species. With dense
 detections, every night actually recorded appears in the history.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example"</span>, package <span class="op">=</span> <span class="st">"sheepdog"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">history</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">ex</span>, <span class="st">"nightly_detection_history.csv"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                    colClasses <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>night <span class="op">=</span> <span class="st">"character"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">mats</span> <span class="op">&lt;-</span> <span class="fu">community_matrices</span><span class="op">(</span><span class="va">history</span>,</span></span>
+<span class="r-in"><span>                           core_species <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"boa_ran"</span>, <span class="st">"ela_bic"</span>,</span></span>
+<span class="r-in"><span>                                            <span class="st">"phy_cuv"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                           k_min <span class="op">=</span> <span class="fl">2</span>, min_nights_month <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">mats</span><span class="op">$</span><span class="va">frequency</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 23 × 6</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    site  month   n_nights_recorded boa_ran ela_bic phy_cuv</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> ARA   2021-10                 5     1         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> ARA   2021-11                 5     1         1       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> ARA   2021-12                 5     1         1       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> ARA   2022-01                 5     1         1       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> ARA   2022-02                 5     1         1       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> ARA   2022-03                 5     1         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> BAI   2021-10                 5     0         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> BAI   2021-11                 5     0         1       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> BAI   2021-12                 5     0.8       1       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> BAI   2022-01                 5     1         1       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 13 more rows</span></span>
+<span class="r-in"><span><span class="co"># Site x month cells dropped for low effort</span></span></span>
+<span class="r-in"><span><span class="va">mats</span><span class="op">$</span><span class="va">effort</span><span class="op">[</span><span class="op">!</span><span class="va">mats</span><span class="op">$</span><span class="va">effort</span><span class="op">$</span><span class="va">included</span>, <span class="op">]</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    site   month n_nights_recorded included</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19  XAR 2021-10                 3    FALSE</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mats</span><span class="op">$</span><span class="va">trials</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             boa_ran ela_bic phy_cuv</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ARA_2021-10       5       5       5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ARA_2021-11       5       5       5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ARA_2021-12       5       5       5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ARA_2022-01       5       5       5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ARA_2022-02       5       5       5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ARA_2022-03       5       5       5</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
