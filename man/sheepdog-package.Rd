@@ -68,6 +68,27 @@ matches: \code{engine = "brms"} and \code{engine = "b"} work, but \code{engine =
 compared exactly, without partial matching.
 }
 
+\section{Input tables and missing values}{
+
+Every function that takes a table accepts a \code{data.frame}, a tibble or a
+\code{data.table} and converts it to a tibble on entry, so the result does not
+depend on the class of the input. Numeric columns lose extra classes
+(such as those of the 'units' package) and list columns among the
+columns a function uses raise an error.
+
+Rows with a missing value in a column a function needs (the score and
+the audio path of a prediction; the variables of a calibration formula;
+the score of a clip reviewed with \code{"top"}, \code{"random_detections"} or
+\code{"score_bands"}) are left out with a message that says how many. Set
+\code{options(sheepdog.missing = "error")} to stop with an error instead.
+Missing values are never imputed. A reviewed clip without a score is
+not a missing value when it comes from \code{"random_recordings"} (whole
+recordings have no score); when a table of reviewed clips has no
+\code{sampling_mode} column, every clip without a score is taken as such a
+recording and left out of the precision and the thresholds without a
+message.
+}
+
 \seealso{
 Useful links:
 \itemize{

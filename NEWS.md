@@ -1,5 +1,32 @@
 # sheepdog (development version)
 
+- `fit_calibration()` gains `control`: a `lme4::glmerControl()` object or a
+  list of `stats::glm.control()` arguments with `engine = "lme4"` (to change
+  the optimiser, the evaluation budget or the convergence tolerances), or
+  the list of sampler settings of `brms::brm()` with `engine = "brms"`. The
+  defaults are unchanged.
+- `plot_calibration()` gains `interval` and `level`: a pointwise band
+  around each curve, a Wald confidence interval for `glm` fits, the same
+  from the fixed effects only for `glmerMod` fits, and posterior quantiles
+  for `brmsfit` fits. Off by default.
+- Tables given to the sampling and threshold functions (`select_clips()`,
+  `select_directed()`, `threshold_history()`, `suggest_thresholds()`,
+  `precision_by_bin()`, `threshold_bootstrap()`, `compare_thresholds()` and
+  the other functions that read reviewed clips) are converted to a tibble on
+  entry: a `data.table` or a column with extra classes (such as 'units') now
+  gives the same result as a plain data frame, and list columns raise an
+  error. Predictions without a score or an audio path are left out with a
+  message, as are clips reviewed with a known design but without a score.
+- New option `sheepdog.missing`: `options(sheepdog.missing = "error")`
+  stops on missing values instead of leaving the rows out with a message
+  (see `?sheepdog`, section "Input tables and missing values").
+- `vignette("performance")` reports how the fitting time scales with the
+  number of reviewed clips and compares partial pooling with per-species
+  and global `glm()` fits (`dev/benchmarks/scaling.R`).
+- The README gains CRAN status, CRAN downloads and lifecycle (stable)
+  badges. `data.table` is now suggested, for the tests of the table
+  classes.
+
 - `combine_rounds()` keeps the clips of a `"score_bands"` round (or of any
   other design) as they are: their `inclusion_prob`, `n_candidates` and
   `n_drawn` are no longer overwritten by those of the `"random_detections"`

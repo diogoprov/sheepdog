@@ -82,15 +82,14 @@ check_validations <- function(validations, cols = c("site", "species",
   val <- tibble::as_tibble(as.data.frame(validations))
   listas <- cols[map_lgl(cols, function(cl) is.list(val[[cl]]))]
   if (length(listas) > 0) {
-    stop("Column(s) ", paste(listas, collapse = ", "), " of `", arg,
-         "` are list columns; give one value per row.", call. = FALSE)
+    stop_list_columns(listas, arg)
   }
   if (nrow(val) == 0) {
     stop("`", arg, "` has no rows.", call. = FALSE)
   }
   for (cl in intersect(c("confidence", "logit_conf"), cols)) {
     if (!is.numeric(unclass(val[[cl]]))) {
-      stop("Column `", cl, "` of `", arg, "` must be numeric.", call. = FALSE)
+      stop_not_numeric(cl, arg)
     }
     val[[cl]] <- as.numeric(unclass(val[[cl]]))
     if (any(is.nan(val[[cl]]) | is.infinite(val[[cl]]))) {
@@ -125,20 +124,82 @@ check_validations <- function(validations, cols = c("site", "species",
   val
 }
 
-# Rows with missing values in the variables `vars` are dropped with a
-# message (the fixed policy of the calibration functions)
-drop_missing <- function(val, vars, arg = "validations") {
-  falta <- !stats::complete.cases(val[intersect(vars, names(val))])
+# Errors shared by check_validations() and as_input_table()
+stop_list_columns <- function(cols, arg) {
+  stop("Column(s) ", paste(cols, collapse = ", "), " of `", arg,
+       "` are list columns; give one value per row.", call. = FALSE)
+}
+stop_not_numeric <- function(col, arg) {
+  stop("Column `", col, "` of `", arg, "` must be numeric.", call. = FALSE)
+}
+
+# Missing-value policy of the package, from the option `sheepdog.missing`:
+# "omit" (default) leaves the incomplete rows out with a message, "error"
+# stops. Imputation is never offered (see G2.14c).
+missing_policy <- function() {
+  p <- getOption("sheepdog.missing", "omit")
+  if (!is.character(p) || length(p) != 1L || !p %in% c("omit", "error")) {
+    stop("Option `sheepdog.missing` must be \"omit\" or \"error\".",
+         call. = FALSE)
+  }
+  p
+}
+
+# Rows with missing values in the variables `vars` follow missing_policy():
+# left out with a message, or an error. `allow_empty` returns zero rows
+# instead of stopping when no row is complete.
+drop_missing <- function(val, vars, arg = "validations",
+                         allow_empty = FALSE) {
+  vars <- intersect(vars, names(val))
+  falta <- !stats::complete.cases(val[vars])
   if (any(falta)) {
+    if (missing_policy() == "error") {
+      stop("`", arg, "` has ", sum(falta), " row(s) with missing values ",
+           "in ", paste(vars, collapse = ", "), " (option sheepdog.missing ",
+           "= \"error\").", call. = FALSE)
+    }
     message(sum(falta), " row(s) of `", arg, "` with missing values in ",
-            paste(intersect(vars, names(val)), collapse = ", "),
-            " were left out.")
+            paste(vars, collapse = ", "), " were left out.")
     val <- val[!falta, , drop = FALSE]
   }
-  if (nrow(val) == 0) {
+  if (nrow(val) == 0 && !allow_empty) {
     stop("No row of `", arg, "` is complete.", call. = FALSE)
   }
   val
+}
+
+# Entry routine of the tables of the sampling and threshold functions
+# (G2.6-G2.8, G2.11, G2.12): any data frame (data.frame, tibble,
+# data.table) becomes a plain tibble; the columns `cols` must exist; the
+# columns used may not be list columns; numeric columns lose extra classes
+# such as 'units'.
+as_input_table <- function(x, cols, arg, numeric = character()) {
+  check_data_frame(x, arg)
+  check_columns(x, cols, arg)
+  x <- tibble::as_tibble(as.data.frame(x))
+  usadas <- intersect(unique(c(cols, numeric)), names(x))
+  listas <- usadas[map_lgl(usadas, function(cl) is.list(x[[cl]]))]
+  if (length(listas) > 0) {
+    stop_list_columns(listas, arg)
+  }
+  for (cl in intersect(numeric, names(x))) {
+    v <- unclass(x[[cl]])
+    if (!is.numeric(v) && !all(is.na(v))) {
+      stop_not_numeric(cl, arg)
+    }
+    x[[cl]] <- as.numeric(v)
+  }
+  x
+}
+
+# Prediction tables of select_clips(), select_directed() and
+# threshold_history(): the entry routine, then rows without a confidence
+# or an audio path follow missing_policy()
+check_detections <- function(detections, cols, arg = "detections") {
+  det <- as_input_table(detections, cols, arg,
+                        numeric = c("confidence", "begin_time", "end_time",
+                                    "file_offset"))
+  drop_missing(det, c("confidence", "begin_path"), arg)
 }
 
 # Fixed part of a formula with random effects in the syntax of 'lme4'

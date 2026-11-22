@@ -57,6 +57,11 @@ Diogo confirmed that no real multispecies validation dataset is available.
   Curiango calibrations saved by `curiango-export.R`: share of true
   positives overall, by score bin, by site and by month, with Bayesian
   p-values and figures in each classifier folder.
+- `scaling.R [N_CORES]`: elapsed time of `fit_calibration()` from 500 to
+  32,000 simulated clips for three candidates (rOpenSci standard RE5.0), and
+  log-loss of partial pooling against per-species and global `stats::glm()`
+  fits on new clips (G1.6). Writes `inst/benchmarks/scaling-*.csv` and
+  `alternatives-logloss.csv`.
 - `check-results.R`: checks the cached comparisons, selections, paired
   metrics, design sizes and artifact consistency without refitting models.
 

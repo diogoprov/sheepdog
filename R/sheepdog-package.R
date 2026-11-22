@@ -58,6 +58,27 @@
 #' "BRMS"` raises an error listing the allowed values. The others are
 #' compared exactly, without partial matching.
 #'
+#' @section Input tables and missing values:
+#' Every function that takes a table accepts a `data.frame`, a tibble or a
+#' `data.table` and converts it to a tibble on entry, so the result does not
+#' depend on the class of the input. Numeric columns lose extra classes
+#' (such as those of the 'units' package) and list columns among the
+#' columns a function uses raise an error.
+#'
+#' Rows with a missing value in a column a function needs (the score and
+#' the audio path of a prediction; the variables of a calibration formula;
+#' the score of a clip reviewed with `"top"`, `"random_detections"` or
+#' `"score_bands"`) are left out with a message that says how many. Set
+#' `options(sheepdog.missing = "error")` to stop with an error instead.
+#' Missing values are never imputed. A reviewed clip without a score is
+#' not a missing value when it comes from `"random_recordings"` (whole
+#' recordings have no score); when a table of reviewed clips has no
+#' `sampling_mode` column, every clip without a score is taken as such a
+#' recording and left out of the precision and the thresholds without a
+#' message.
+#'
+#' @srrstats {G2.14, G2.14a, G2.14b} The section "Input tables and missing
+#'   values" documents the option `sheepdog.missing` ("omit" or "error").
 #' @srrstats {G1.3} The section "Glossary" defines the statistical terms
 #'   used in the package.
 #' @srrstats {G2.3b} The section "Option arguments" documents that option
@@ -79,7 +100,7 @@ NULL
 utils::globalVariables(c(
   "mediaID", "deploymentID", "momento", "duracao", "media_id", "deployment_media",
   "deployment_id", "observation_id", "scientific_name", "classified_by",
-  "low_freq", "high_freq",
+  "low_freq", "high_freq", "lower", "upper",
   "sign1_ceiling", "sign2_tp_kept", "sign6_fp_spread", "sign6_detail",
   "sign7_share_below", "sign7_detail", "sign8_verdict", "sign1", "sign2",
   "sign6", "sign7", "sign8", "sign9", "sign9_deff", "n_checked", "n_raised",

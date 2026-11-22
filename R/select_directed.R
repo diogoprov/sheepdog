@@ -82,6 +82,9 @@ select_directed <- function(detections, units, n_units, threshold,
                             previous = NULL, seed = 2026,
                             remap_from = NULL, remap_to = NULL) {
   unidade <- match.arg(occasion_unit)
+  detections <- check_detections(
+    detections, c("site", "confidence", "begin_path", "begin_time",
+                  "end_time", "file_offset"))
   check_data_frame(units, "units")
   if (!size_col %in% names(units)) {
     stop("`units` lacks the size column `", size_col, "`.", call. = FALSE)

@@ -9,7 +9,9 @@ plot_calibration(
   validations,
   min_confidence = 0.1,
   p_min = 0.95,
-  model_name = ""
+  model_name = "",
+  interval = FALSE,
+  level = 0.95
 )
 }
 \arguments{
@@ -23,6 +25,12 @@ plot_calibration(
 confidence score).}
 
 \item{model_name}{Name shown in the subtitle.}
+
+\item{interval}{Draw a band around each curve: a pointwise confidence
+interval of P(TP) for \code{glm} and \code{glmerMod} fits, a credible interval
+for \code{brmsfit} fits. \code{FALSE} (default) draws the curves only.}
+
+\item{level}{Coverage of the band, a single number in (0, 1).}
 }
 \value{
 A ggplot object.
@@ -31,4 +39,15 @@ A ggplot object.
 Calibrated probability of a true detection against the confidence
 score, one panel per species and one line per site, with the observed
 precision by confidence bin as points. Needs the 'ggplot2' package.
+}
+\details{
+For a \code{glm} fit the band is the Wald interval of the linear
+predictor (\code{predict(se.fit = TRUE)}) transformed by \code{plogis()}. For a
+\code{glmerMod} fit it is the same interval computed from the covariance
+matrix of the fixed effects only: the predicted random effects are
+treated as known, so the band is narrower than one that also carried
+their uncertainty, and levels not seen in the fit get the
+fixed-effects interval. For a \code{brmsfit} the band holds the central
+quantiles of the posterior draws of P(TP) (\code{brms::posterior_epred()})
+and carries all the parameter uncertainty.
 }

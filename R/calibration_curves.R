@@ -208,12 +208,12 @@ compare_calibration_curves <- function(validation, target = 0.95,
     stop("`cv` must be TRUE or FALSE.", call. = FALSE)
   }
   check_by(validation, by)
-  if ("gam" %in% curves && !requireNamespace("mgcv", quietly = TRUE)) {
+  if ("gam" %in% curves && !has_suggested("mgcv")) {
     message("Package mgcv is not installed: the GAM is left out.")
     curves <- setdiff(curves, "gam")
   }
   if ("monotone_gam" %in% curves &&
-      !requireNamespace("scam", quietly = TRUE)) {
+      !has_suggested("scam")) {
     message("Package scam is not installed: the monotone GAM is left out. ",
             "Install it with install.packages(\"scam\").")
     curves <- setdiff(curves, "monotone_gam")

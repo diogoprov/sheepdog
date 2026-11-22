@@ -29,6 +29,11 @@ folder_name <- function(species_code) {
 }
 
 # Exige um pacote de Suggests
+# Is a suggested package installed? (one place, so tests can mock it)
+has_suggested <- function(pkg) {
+  requireNamespace(pkg, quietly = TRUE)
+}
+
 require_suggested <- function(pkg, para) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
     stop("Package '", pkg, "' is needed ", para, ". Install it with ",
