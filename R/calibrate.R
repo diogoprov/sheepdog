@@ -486,10 +486,19 @@ select_calibration_model <- function(comparison,
 #' 1e5))`: the bound optimisation by quadratic approximation, with up to
 #' 100000 function evaluations, a larger budget than the 'lme4' default,
 #' for the correlated random slopes of the larger calibration models. The
-#' convergence tolerances are those of 'lme4' and
-#' cannot be changed from sheepdog; convergence warnings of 'lme4' are
-#' passed on. Models without random effects use the iteratively
-#' reweighted least squares of `stats::glm()` with its default control.
+#' convergence tolerances are those of 'lme4' unless `control` is given;
+#' convergence warnings of 'lme4' are passed on. Models without random
+#' effects use the iteratively reweighted least squares of `stats::glm()`,
+#' with the default `stats::glm.control()` (`epsilon = 1e-8`, `maxit =
+#' 25`) unless `control` is given.
+#'
+#' `control` replaces these settings: a `lme4::glmerControl()` object for
+#' a formula with random effects (for example another optimiser, a larger
+#' `optCtrl = list(maxfun = )` or other `check.conv.grad` tolerances), or
+#' a list of `stats::glm.control()` arguments (`epsilon`, `maxit`) for a
+#' formula without them. With `engine = "brms"`, `control` is passed to
+#' `brms::brm()` as its list of sampler settings (for example
+#' `list(adapt_delta = 0.95, max_treedepth = 12)`).
 #'
 #' @section Bayesian computation:
 #' With `engine = "brms"`, the posterior is sampled with the No-U-Turn
@@ -549,7 +558,10 @@ select_calibration_model <- function(comparison,
 #'   which attributes are transferred (`sheepdog_levels`,
 #'   `sheepdog_seed`) and that columns outside the formula are not kept.
 #' @srrstats {RE3.2} The section "Maximum likelihood fit" documents the
-#'   fixed `glmerControl()` settings.
+#'   default `glmerControl()` and `glm.control()` settings.
+#' @srrstats {RE3.3} The argument `control` sets the optimiser,
+#'   evaluation budget and convergence tolerances of 'lme4' and `glm()`,
+#'   or the sampler settings of 'brms'.
 #' @srrstats {RE4.3} The section "Methods for the fitted model" points to
 #'   `confint()` and `brms::posterior_interval()`.
 #' @srrstats {RE4.10} The section "Methods for the fitted model"
@@ -577,6 +589,13 @@ select_calibration_model <- function(comparison,
 #' @param engine `"lme4"` or `"brms"`.
 #' @param prior `engine = "brms"`: the prior (a `brmsprior` object), e.g.
 #'   from [calibration_prior()]. Required.
+#' @param control Optional settings of the fitting algorithm, a single
+#'   object: a `lme4::glmerControl()` object (formula with random effects)
+#'   or a list of `stats::glm.control()` arguments (formula without them)
+#'   with `engine = "lme4"`; a list of sampler settings passed to
+#'   `brms::brm()` with `engine = "brms"`. `NULL` (default) keeps the
+#'   settings described in "Maximum likelihood fit" and the 'brms'
+#'   defaults. See the section "Maximum likelihood fit".
 #' @param ... `engine = "brms"`: further arguments for `brms::brm()` (e.g.
 #'   `chains`, `iter`, `cores`, `backend`, `seed`). Without `seed`, one is
 #'   drawn from R's random number generator (so `set.seed()` before the
@@ -611,7 +630,8 @@ select_calibration_model <- function(comparison,
 #' }
 #' @export
 fit_calibration <- function(validations, formula,
-                            engine = c("lme4", "brms"), prior = NULL, ...) {
+                            engine = c("lme4", "brms"), prior = NULL,
+                            control = NULL, ...) {
   engine <- match.arg(engine)
   if (engine == "brms") {
     require_suggested("brms", "for Bayesian calibration models")
@@ -626,6 +646,14 @@ fit_calibration <- function(validations, formula,
     }
     validations <- check_calibration_input(validations, formula)
     dots <- list(...)
+    if (!is.null(control)) {
+      if (!is.list(control)) {
+        stop("With engine = \"brms\", `control` must be a list of sampler ",
+             "settings for brms::brm(), e.g. list(adapt_delta = 0.95).",
+             call. = FALSE)
+      }
+      dots$control <- control
+    }
     if (is.null(dots$seed) || is.na(dots$seed)) {
       dots$seed <- sample.int(.Machine$integer.max, 1)
     }
@@ -647,7 +675,8 @@ fit_calibration <- function(validations, formula,
     return(fit)
   }
   validations <- check_calibration_input(validations, formula)
-  fit <- fit_model(formula, validations, quiet = FALSE)
+  control <- check_fit_control(control, formula)
+  fit <- fit_model(formula, validations, quiet = FALSE, control = control)
   if (inherits(fit, "merMod") && lme4::isSingular(fit)) {
     warning("Singular fit (boundary) of the calibration model ",
             deparse1(formula), ": a variance component is estimated at ",
@@ -707,22 +736,48 @@ fit_levels <- function(fit) {
   niveis
 }
 
-# Ajusta glm (sem efeitos aleatorios) ou glmer
+# Default control of lme4::glmer() in sheepdog: bobyqa with 1e5 evaluations
+default_glmer_control <- function() {
+  lme4::glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))
+}
+
+# Checks `control` of fit_calibration() against the model being fitted:
+# a glmerControl object for random effects, a list of glm.control()
+# settings otherwise
+check_fit_control <- function(control, formula) {
+  if (is.null(control)) return(NULL)
+  if (has_random_effects(formula)) {
+    if (!inherits(control, "glmerControl")) {
+      stop("`control` must be a glmerControl object from ",
+           "lme4::glmerControl() for a formula with random effects.",
+           call. = FALSE)
+    }
+    return(control)
+  }
+  if (!is.list(control) || inherits(control, "merControl")) {
+    stop("`control` must be a list from stats::glm.control() for a ",
+         "formula without random effects.", call. = FALSE)
+  }
+  do.call(stats::glm.control, control)
+}
+
 # Ajusta glm (sem efeitos aleatorios) ou glmer. As mensagens do glmer sao
 # guardadas no atributo `sheepdog_messages`; com quiet = FALSE, as que nao
 # tratam de ajuste singular (que vira aviso em fit_calibration()) sao
 # repassadas ao usuario. Nos folds e nas repeticoes da curva de esforco
 # ficam quietas, para nao repetir a mesma mensagem dezenas de vezes.
-fit_model <- function(formula, dados, quiet = TRUE) {
+fit_model <- function(formula, dados, quiet = TRUE, control = NULL) {
   if (!has_random_effects(formula)) {
-    return(stats::glm(formula, data = dados, family = stats::binomial))
+    if (is.null(control)) control <- stats::glm.control()
+    return(stats::glm(formula, data = dados, family = stats::binomial,
+                      control = control))
   }
   require_suggested("lme4", "to fit calibration models with random effects")
+  if (is.null(control)) control <- default_glmer_control()
   mensagens <- character()
   fit <- withCallingHandlers(
     lme4::glmer(formula, data = dados, family = stats::binomial,
-                control = lme4::glmerControl(optimizer = "bobyqa",
-                                             optCtrl = list(maxfun = 1e5))),
+                control = control),
     message = function(m) {
       mensagens <<- c(mensagens, trimws(conditionMessage(m)))
       invokeRestart("muffleMessage")
@@ -746,6 +801,37 @@ predict_tp <- function(modelo, dados) {
   } else {
     stats::predict(modelo, newdata = dados, type = "response")
   }
+}
+
+# P(TP) with a pointwise interval: Wald on the link scale for glm and,
+# from the fixed effects only, for glmerMod; posterior quantiles for brms.
+# Returns a tibble with p_tp, lower and upper, one row per row of `dados`.
+predict_tp_interval <- function(modelo, dados, level = 0.95) {
+  a <- (1 - level) / 2
+  if (inherits(modelo, "brmsfit")) {
+    ep <- brms::posterior_epred(modelo, newdata = dados,
+                                allow_new_levels = TRUE)
+    return(tibble(p_tp = colMeans(ep),
+                  lower = apply(ep, 2, stats::quantile, probs = a),
+                  upper = apply(ep, 2, stats::quantile, probs = 1 - a)))
+  }
+  if (inherits(modelo, "merMod")) {
+    eta <- stats::predict(modelo, newdata = dados, type = "link",
+                          allow.new.levels = TRUE)
+    fixa <- stats::formula(modelo, fixed.only = TRUE)
+    X <- stats::model.matrix(stats::delete.response(stats::terms(fixa)),
+                             dados)
+    V <- as.matrix(stats::vcov(modelo))
+    se <- sqrt(rowSums((X %*% V) * X))
+  } else {
+    pr <- stats::predict(modelo, newdata = dados, type = "link",
+                         se.fit = TRUE)
+    eta <- pr$fit
+    se <- pr$se.fit
+  }
+  z <- stats::qnorm(1 - a)
+  tibble(p_tp = stats::plogis(eta), lower = stats::plogis(eta - z * se),
+         upper = stats::plogis(eta + z * se))
 }
 
 auc <- function(tp, p) {
@@ -1053,20 +1139,44 @@ summarise_history <- function(history) {
 #' @inheritParams score_detections
 #' @inheritParams detection_history
 #' @param model_name Name shown in the subtitle.
+#' @param interval Draw a band around each curve: a pointwise confidence
+#'   interval of P(TP) for `glm` and `glmerMod` fits, a credible interval
+#'   for `brmsfit` fits. `FALSE` (default) draws the curves only.
+#' @param level Coverage of the band, a single number in (0, 1).
 #'
+#' @details For a `glm` fit the band is the Wald interval of the linear
+#'   predictor (`predict(se.fit = TRUE)`) transformed by `plogis()`. For a
+#'   `glmerMod` fit it is the same interval computed from the covariance
+#'   matrix of the fixed effects only: the predicted random effects are
+#'   treated as known, so the band is narrower than one that also carried
+#'   their uncertainty, and levels not seen in the fit get the
+#'   fixed-effects interval. For a `brmsfit` the band holds the central
+#'   quantiles of the posterior draws of P(TP) (`brms::posterior_epred()`)
+#'   and carries all the parameter uncertainty.
+#'
+#' @srrstats {RE6.2} The curves are the fitted P(TP) over a grid of
+#'   scores; `interval = TRUE` adds pointwise confidence or credible bands.
 #' @return A ggplot object.
 #' @export
 plot_calibration <- function(fit, validations, min_confidence = 0.1,
-                             p_min = 0.95, model_name = "") {
+                             p_min = 0.95, model_name = "",
+                             interval = FALSE, level = 0.95) {
   require_suggested("ggplot2", "to plot the calibration curves")
+  check_flag(interval, "interval")
+  check_prob(level, "level", open = TRUE)
   niveis <- fit_levels(fit)
   grade <- expand_grid(
     species    = factor(niveis$species, levels = niveis$species),
     site       = factor(niveis$site, levels = niveis$site),
     confidence = seq(min_confidence, 0.99, by = 0.01)
   ) |>
-    mutate(logit_conf = safe_logit(confidence),
-           p_tp = predict_tp(fit, pick(everything())))
+    mutate(logit_conf = safe_logit(confidence))
+  if (interval) {
+    band <- predict_tp_interval(fit, grade, level)
+    grade <- dplyr::bind_cols(grade, band)
+  } else {
+    grade$p_tp <- predict_tp(fit, grade)
+  }
 
   obs_faixa <- validations |>
     mutate(faixa = pmin(floor(confidence * 10) / 10 + 0.05, 0.95)) |>
@@ -1076,6 +1186,11 @@ plot_calibration <- function(fit, validations, min_confidence = 0.1,
   ggplot2::ggplot(grade, ggplot2::aes(confidence, p_tp, colour = site)) +
     ggplot2::geom_hline(yintercept = p_min, linetype = "dashed",
                         colour = "grey50") +
+    (if (interval) {
+      ggplot2::geom_ribbon(ggplot2::aes(ymin = lower, ymax = upper,
+                                        fill = site),
+                           alpha = 0.15, colour = NA)
+    }) +
     ggplot2::geom_line(linewidth = 0.5) +
     ggplot2::geom_point(data = obs_faixa,
                         ggplot2::aes(faixa, prec, size = n, colour = site),
@@ -1262,7 +1377,7 @@ calibrate <- function(validation_files, prediction_tables, output_dir,
         file = file.path(output_dir, "calibration_model.txt"), append = TRUE)
   }
 
-  if (requireNamespace("ggplot2", quietly = TRUE)) {
+  if (has_suggested("ggplot2")) {
     g <- plot_calibration(fit_final, val, min_confidence, p_min, melhor)
     ggplot2::ggsave(file.path(output_dir, "calibration_curves.png"), g,
                     width = 13, height = 9, dpi = 200, bg = "white")

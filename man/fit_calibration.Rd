@@ -9,6 +9,7 @@ fit_calibration(
   formula,
   engine = c("lme4", "brms"),
   prior = NULL,
+  control = NULL,
   ...
 )
 }
@@ -22,6 +23,14 @@ fit_calibration(
 
 \item{prior}{\code{engine = "brms"}: the prior (a \code{brmsprior} object), e.g.
 from \code{\link[=calibration_prior]{calibration_prior()}}. Required.}
+
+\item{control}{Optional settings of the fitting algorithm, a single
+object: a \code{lme4::glmerControl()} object (formula with random effects)
+or a list of \code{stats::glm.control()} arguments (formula without them)
+with \code{engine = "lme4"}; a list of sampler settings passed to
+\code{brms::brm()} with \code{engine = "brms"}. \code{NULL} (default) keeps the
+settings described in "Maximum likelihood fit" and the 'brms'
+defaults. See the section "Maximum likelihood fit".}
 
 \item{...}{\code{engine = "brms"}: further arguments for \code{brms::brm()} (e.g.
 \code{chains}, \code{iter}, \code{cores}, \code{backend}, \code{seed}). Without \code{seed}, one is
@@ -102,10 +111,18 @@ Models with random effects are fitted by \code{lme4::glmer()} with
 \code{lme4::glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))}: the bound optimisation by quadratic approximation, with up to
 100000 function evaluations, a larger budget than the 'lme4' default,
 for the correlated random slopes of the larger calibration models. The
-convergence tolerances are those of 'lme4' and
-cannot be changed from sheepdog; convergence warnings of 'lme4' are
-passed on. Models without random effects use the iteratively
-reweighted least squares of \code{stats::glm()} with its default control.
+convergence tolerances are those of 'lme4' unless \code{control} is given;
+convergence warnings of 'lme4' are passed on. Models without random
+effects use the iteratively reweighted least squares of \code{stats::glm()},
+with the default \code{stats::glm.control()} (\code{epsilon = 1e-8}, \code{maxit = 25}) unless \code{control} is given.
+
+\code{control} replaces these settings: a \code{lme4::glmerControl()} object for
+a formula with random effects (for example another optimiser, a larger
+\code{optCtrl = list(maxfun = )} or other \code{check.conv.grad} tolerances), or
+a list of \code{stats::glm.control()} arguments (\code{epsilon}, \code{maxit}) for a
+formula without them. With \code{engine = "brms"}, \code{control} is passed to
+\code{brms::brm()} as its list of sampler settings (for example
+\code{list(adapt_delta = 0.95, max_treedepth = 12)}).
 }
 
 \section{Bayesian computation}{

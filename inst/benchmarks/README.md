@@ -45,3 +45,10 @@ simulated candidate windows; it is not latent occupancy. Timings are
 machine-specific elapsed seconds, not a version-to-version speed-up.
 R and dependency versions are recorded in the session files. Do not
 claim universal superiority of either selection rule from these results.
+
+`scaling-timing.csv`, `scaling-exponent.csv` and `alternatives-logloss.csv`
+come from `dev/benchmarks/scaling.R` and are SIMULATED: elapsed seconds of
+one `fit_calibration()` call by number of clips and model, the log-log
+slope from 2,000 clips upwards, and the test log-loss of partial pooling,
+per-species `glm()`, global `glm()` and the true model over 50 data sets per
+number of clips per species. `scaling-session.txt` records the versions.

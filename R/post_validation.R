@@ -90,12 +90,25 @@ read_manifest <- function(manifest) {
   manifesto
 }
 
-# Clipes com veredito positivo/negativo e com confidence: gravacoes
-# inteiras (modo "random_recordings") ficam fora da precisao e dos
-# thresholds
-reviewed_with_confidence <- function(validation) {
-  filter(validation, verdict %in% c("positive", "negative"),
-         !is.na(confidence))
+# Clips with a positive or negative verdict and a confidence: whole
+# recordings (mode "random_recordings") stay out of the precision and the
+# thresholds. A missing confidence marks such a clip, so it is not a
+# missing value; only when the table says how each clip was drawn
+# (`sampling_mode`) are the other clips without a confidence missing
+# values, which follow missing_policy(). Entry routine of the threshold
+# functions (as_input_table()).
+reviewed_with_confidence <- function(validation, arg = "validation",
+                                     quiet = FALSE) {
+  val <- as_input_table(validation, c("verdict", "confidence"), arg,
+                        numeric = c("confidence", "inclusion_prob"))
+  val <- filter(val, verdict %in% c("positive", "negative"))
+  if (!quiet && "sampling_mode" %in% names(val)) {
+    gravacao <- val$sampling_mode %in% "random_recordings"
+    val <- bind_rows(val[gravacao, ],
+                     drop_missing(val[!gravacao, ], "confidence", arg,
+                                  allow_empty = TRUE))
+  }
+  filter(val, !is.na(confidence))
 }
 
 # A tabela tem inclusion_prob (clipes de "random_detections")?
@@ -731,7 +744,7 @@ post_validation <- function(review_dir = NULL, manifest_path, output_dir,
            "Check `verdicts_file` and `reviewer`."
          }, call. = FALSE)
   }
-  if (has_inclusion_prob(reviewed_with_confidence(resultado))) {
+  if (has_inclusion_prob(reviewed_with_confidence(resultado, quiet = TRUE))) {
     message("The manifest has inclusion_prob: the precision tables also ",
             "give the precision weighted by 1 / inclusion_prob.")
   }
@@ -770,7 +783,7 @@ post_validation <- function(review_dir = NULL, manifest_path, output_dir,
   message(nrow(retreino), " positive clips listed for retraining.")
 
   if (nrow(precisao) > 0) {
-    if (requireNamespace("ggplot2", quietly = TRUE)) {
+    if (has_suggested("ggplot2")) {
       g <- plot_precision(precisao, bins, target_precision, min_n)
       ggplot2::ggsave(file.path(output_dir, "precision_by_bin.png"), g,
                       width = 11, height = 8, dpi = 200)

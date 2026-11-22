@@ -7,13 +7,14 @@ statistical software track. The tags themselves are in
 
 | Category | Met | Not applicable | To do |
 |---|---|---|---|
-| G | 46 | 7 | 15 |
-| RE | 37 | 7 | 4 |
+| G | 58 | 7 | 3 |
+| RE | 40 | 8 | 0 |
 | BS | 42 | 14 | 0 |
-| Total | 125 | 28 | 19 |
+| Total | 140 | 29 | 3 |
 
-Partially met standards are counted as to do. Counts updated after phase 4
-(tests); they were 51 met and 93 to do after phase 1, 78 met and 66 to do
+Partially met standards are counted as to do. Counts updated after the
+first part of phase 5; they were 125 met and 19 to do after phase 4
+(tests), 51 met and 93 to do after phase 1, 78 met and 66 to do
 after phase 2, and 97 met and 47 to do after phase 3.
 
 ## Phase 2: documentation
@@ -44,7 +45,7 @@ by `fit_calibration()`, `compare_calibration_models()`,
 `suggest_thresholds()`, `threshold_bootstrap()` and the functions that
 write files. Tests are in `tests/testthat/test-checks.R`.
 
-Still to do (partly done for the calibration functions only):
+Completed in phase 5 (see below); the gaps were:
 
 | Standard | Gap |
 |---|---|
@@ -87,7 +88,7 @@ RE7.1, RE7.2, RE7.3, BS2.1a, BS2.13, BS2.14, BS7.0, BS7.1, BS7.2, BS7.3.
   pattern includes a value (e.g. "No predictions within the hour window");
   they were checked by hand.
 
-Still to do:
+Completed in phase 5 (see below); the gap was:
 
 | Standard | Gap |
 |---|---|
@@ -98,10 +99,37 @@ Still to do:
 BS5.0 (the seed was not passed to brms by `calibrate()` nor kept in the
 fit) was fixed in phase 1 and is tagged in `tests/testthat/test-bayes.R`.
 
-| Standard | Gap |
-|---|---|
-| RE3.3 | the lme4 optimiser and tolerances cannot be changed; planned `control` argument. |
-| RE6.2 | `plot_calibration()` shows no interval for lme4 fits; uncertainty is shown only for brms fits by `plot_calibration_draws()`. |
+Done in the first part of phase 5:
+
+- RE3.3: `fit_calibration(control = )` (a `glmerControl()` object, a list
+  of `glm.control()` arguments, or the sampler settings of `brms::brm()`);
+  tests in `test-fit-options.R`.
+- RE6.2: `plot_calibration(interval = TRUE, level = )`, Wald bands for
+  `glm`, fixed-effects bands for `glmerMod`, posterior quantiles for
+  `brmsfit`; the coverage of the `glm` band is tested.
+- G2.6, G2.7, G2.8, G2.11, G2.12: `as_input_table()` in `R/checks.R` is
+  the entry routine of the prediction tables (`check_detections()`, used by
+  `select_clips()`, `select_directed()` and `threshold_history()`) and of
+  the reviewed clips (`reviewed_with_confidence()`, used by every threshold
+  function). Tests in `test-input-tables.R`.
+- G2.13, G2.14, G2.14a, G2.14b, G2.15: the option `sheepdog.missing`
+  ("omit", the default, leaves incomplete rows out with a message;
+  "error" stops), applied by `drop_missing()` to the calibration data, the
+  predictions and the reviewed clips; documented in `?sheepdog`. A reviewed
+  clip without a score is a whole recording of `"random_recordings"`, not a
+  missing value, unless `sampling_mode` says otherwise.
+- G5.2b: `test-messages.R` triggers every progress message and note;
+  `conditions.R` now finds a test for all 405 conditions. Missing
+  suggested packages go through `has_suggested()`, which tests mock.
+- RE5.0 and G1.6: `dev/benchmarks/scaling.R` and the performance vignette
+  (time against 500 to 32,000 clips; partial pooling against per-species
+  and global `glm()`).
+- RE2.3 moved to not applicable (see below).
+
+Still to do: G1.4a (roxygen of the internal functions, with the English
+names of phase 5), G2.0a and G2.1a (lengths and types in the argument
+documentation), plus the two items added on 2026-11-21: English internal
+names and a generic adapter for other classifiers.
 
 ## Not applicable
 
@@ -114,6 +142,7 @@ fit) was fixed in phase 1 and is tagged in `tests/testthat/test-bayes.R`.
 | G5.4c | There are no published numeric outputs of these methods to store as test values. |
 | G5.11 | Extended tests use only data shipped with the package; nothing is downloaded. |
 | G5.11a | No downloads are needed (see G5.11). |
+| RE2.3 | `logit_conf` stays on its natural scale: its zero is a score of 0.5, the scale of `calibration_prior()`, and `score_detections()` carries no other covariate, so centring would only relabel coefficients. Users centre other covariates before the call; `calibration_prior()` warns when they are not standardised. |
 | RE2.2 | Clips without a verdict are not training data: calibration is fitted on reviewed clips only and then used to predict P(TP) for every detection, which is the purpose of the package. |
 | RE4.1 | Optional standard. A model object is always fitted, because convergence diagnostics run immediately after fitting. |
 | RE4.14 | The package makes no forecasts or temporal extrapolation; it predicts P(TP) at observed scores. |
@@ -136,7 +165,7 @@ fit) was fixed in phase 1 and is tagged in `tests/testthat/test-bayes.R`.
 | BS4.7 | No convergence checker with automatic stopping; the thresholds `rhat_max` and `ess_min` only classify a fit. |
 | BS5.4 | A single composite convergence check is used (see BS1.5). |
 
-Borderline calls a reviewer may contest: RE2.2, RE7.1a, BS1.5, BS5.4, BS2.5, BS3.2 and BS4.7.
+Borderline calls a reviewer may contest: RE2.2, RE2.3, RE7.1a, BS1.5, BS5.4, BS2.5, BS3.2 and BS4.7.
 
 ## Other pkgcheck findings
 

@@ -1,11 +1,16 @@
 # sheepdog <img src="man/figures/logo.png" align="right" height="139" alt="sheepdog hex logo" />
 
+<!-- badges: start -->
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![R-CMD-check](https://github.com/diogoprov/sheepdog/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/diogoprov/sheepdog/actions/workflows/R-CMD-check.yaml)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22696209.svg)](https://doi.org/10.5281/zenodo.22696209)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
 [![r-universe](https://diogoprov.r-universe.dev/sheepdog/badges/version)](https://diogoprov.r-universe.dev/sheepdog)
 [![Codecov](https://codecov.io/gh/diogoprov/sheepdog/graph/badge.svg)](https://app.codecov.io/gh/diogoprov/sheepdog)
+[![CRAN status](https://www.r-pkg.org/badges/version/sheepdog)](https://CRAN.R-project.org/package=sheepdog)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/sheepdog)](https://CRAN.R-project.org/package=sheepdog)
+[![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
+<!-- badges: end -->
 
 In the fable, the boy cries "wolf!" and the villagers have to decide whether
 the wolf is real. **sheepdog** does that check for automated predictions from

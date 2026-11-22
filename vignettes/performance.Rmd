@@ -263,6 +263,66 @@ The cached `*-session.txt` files record R and dependency versions. Timing
 varies with hardware, background load, data and convergence. These small
 frequentist fits do not predict the cost of a `brms` refit.
 
+### Scaling with the number of reviewed clips
+
+`dev/benchmarks/scaling.R` times one `fit_calibration()` call for three
+candidates, from 500 to 32,000 simulated reviewed clips of eight species at
+six sites (three repetitions each, one fit at a time). The exponent is the
+slope of log time on log clips from 2,000 clips upwards; an exponent of 1
+means time proportional to the number of clips.
+
+```{r scaling, echo=FALSE}
+sc <- bench("scaling-timing.csv")
+ex <- bench("scaling-exponent.csv")
+tab <- sc |> group_by(model, n) |> summarise(s = median(seconds), .groups = "drop") |>
+  tidyr::pivot_wider(names_from = model, values_from = s)
+names(tab)[1] <- "Reviewed clips"
+tab[-1] <- lapply(tab[-1], function(x) sprintf("%.3f", x))
+knitr::kable(tab, caption = "Median elapsed seconds of one fit.")
+knitr::kable(data.frame(Model = ex$model, Exponent = sprintf("%.2f", ex$exponent)))
+```
+
+Time grows slightly less than proportionally with the number of clips over
+this range for all three models. Cross-validation multiplies the cost by the
+number of folds and candidates, and the effort curve by the number of
+training sizes and repetitions, because each of them is one such fit.
+
+### Comparison with base R implementations
+
+The same script compares the calibration with alternatives written with
+`stats::glm()` only. The global model of sheepdog is `stats::glm()` itself:
+its coefficients match a direct call exactly (maximum absolute difference
+`r fmt(max(bench("alternatives-logloss.csv")$glm_max_abs_diff))` over all
+the simulated data sets). The species model with random intercepts and
+slopes (`m2_species_slope`, partial pooling) is compared with one logistic
+regression per species (no pooling) and one for all species (complete
+pooling), by log-loss on 2,000 new clips per species drawn with the same
+generating parameters; the oracle uses the true parameters. Each row is the
+mean over 50 simulated data sets of eight species with the given number of
+reviewed clips per species.
+
+```{r alternatives, echo=FALSE}
+al <- bench("alternatives-logloss.csv")
+tab <- al |> group_by(n_per) |> summarise(
+  `Partial pooling (sheepdog)` = fmt(mean(partial)),
+  `No pooling (glm per species)` = fmt(mean(none)),
+  `Complete pooling (glm)` = fmt(mean(complete)),
+  Oracle = fmt(mean(oracle)),
+  `Species fits failing or separated` = sprintf("%.2f", mean(no_pool_problems)),
+  .groups = "drop")
+names(tab)[1] <- "Clips per species"
+knitr::kable(tab)
+```
+
+With 10 clips per species the per-species regressions separate or fail in
+most species and predict far worse than either pooled model, and the
+complete-pooling model predicts better than partial pooling, whose random
+slopes are poorly estimated from so few clips. From 25 clips per species
+partial pooling has the lowest log-loss of the three, and with 100 or more
+clips the per-species regressions approach it. These results come from
+species effects only, simulated with a known logistic relation; they say
+nothing about site effects or misspecified score relations.
+
 ## What you can do, and what did not consistently improve
 
 - Use `fold_group = "source_audio"` or `"night"` when windows share an
@@ -290,6 +350,10 @@ source("dev/benchmarks/curiango-native.R")
 
 # 60 simulated datasets; expensive, opt-in regeneration.
 source("dev/benchmarks/multispecies.R")
+
+# Scaling with the number of clips and comparison with stats::glm();
+# about 10 minutes on 10 cores.
+source("dev/benchmarks/scaling.R")
 
 # Full empirical benchmark: nested CV, recording-level sensitivity,
 # histories, diagnostics, paired bootstrap and the original report plots.

@@ -317,6 +317,10 @@ select_clips <- function(detections,
                   alternate_days = alternate_days,
                   date_start = date_start, date_end = date_end)
 
+  detections <- check_detections(
+    detections, c("site", "begin_path", "begin_time", "end_time",
+                  "file_offset"))
+
   # Rodadas anteriores do mesmo desenho
   rodadas <- NULL
   outro_desenho <- NULL
