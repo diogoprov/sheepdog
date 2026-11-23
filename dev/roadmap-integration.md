@@ -60,8 +60,26 @@ proporcional por sítio. É o equivalente ao `sampling_mode =
 "random_recordings"` do sheepdog e identifica as distribuições de scores dos
 verdadeiros e dos falsos positivos sem depender do classificador.
 
-## Estado (22/11/2026)
+## Estado (23/11/2026)
 
+- 23/11/2026: **itens 3 e 4 do plano de integração.**
+  - **Item 3 (Curiango) não espera mais nada da Liliana.** O script de
+    seleção dos conjuntos de teste se perdeu; o sorteio foi reconstruído em
+    19/11 a partir das saídas e do diário guardados no NAS (ct01+ct02 são o
+    sorteio, ct03 é a complementação escolhida com escuta), e ela respondeu
+    às perguntas sobre o ct03. O estágio 1 só com ct01+ct02 e pesos 1/π₁
+    foi refeito em 19/11 (`emissions_ct12_curiango.R`), com o ct03 só como
+    sensibilidade; depois vieram o estágio 2 com réplicas do bootstrap
+    (20/11), o estágio 1 por faixas de score (21/11) e a cobertura de ψ
+    (22/11). Tudo em `dev/fase2/PLANO-v1-markov.md`. Opcional: as listas
+    das 6 pastas de 5% de `Audios_Clima` tornariam π₁ exato (hoje vem de um
+    modelo logístico com ano-mês, hora e sítio).
+  - **Item 4 pronto nos dois lados.** No crywolf (PR #62, 2.3.0.9000),
+    `fp_review_priority()` devolve `site`, `species_code` e `size`, que
+    `select_directed()` aceita como `units` (`size_col = "size"` por
+    padrão). A função é experimental no crywolf; mudanças na chave das
+    unidades, no nome da coluna de tamanho ou no esquema do export devem
+    ser avisadas lá. O crywolf 2.3.0 foi enviado ao CRAN em 23/11.
 - 22/11/2026: **Fase 2, critério 2 cumprido para ψ̄.** A rodada
   `simpsi-boot-1` (AWS, 1.500 ajustes: 3 cenários × 50 conjuntos × 10
   réplicas do estágio 1) deu cobertura de 90% de 0,88 a 0,94 e |viés| ≤
@@ -106,7 +124,8 @@ verdadeiros e dos falsos positivos sem depender do classificador.
   no crywolf, o `fp_review_priority()` devolver a tabela `units` (colunas da
   unidade mais `size`) e o `fp_read_sheepdog()` usar `inclusion_prob` nos
   clipes `directed_pps`. O item 3 continua esperando a conferência do script
-  pela Liliana.
+  pela Liliana. *(Desatualizado: o script se perdeu e o estágio 1 só com
+  ct01+ct02 foi refeito no mesmo dia; ver a entrada de 23/11.)*
 - 19/11/2026: **respostas à sessão do crywolf** (status do `fp_occu_ms()` e
   plano de integração de 19/11). As decisões continuam com o Diogo; isto é o
   estado do lado do sheepdog.
@@ -128,7 +147,8 @@ verdadeiros e dos falsos positivos sem depender do classificador.
       noite), as emissões respondem por 91% da variância de ψ θ̄;
     - em aberto: o mecanismo de inclusão dos verificados. Há indício de
       complementação dirigida a presenças nos scores altos. A Liliana vai
-      conferir o script, e só então o estágio 1 é refeito.
+      conferir o script, e só então o estágio 1 é refeito. *(Desatualizado;
+      ver a entrada de 23/11.)*
 
     Para o `fp_occu_score()`, isso sugere começar com emissões estimadas nos
     verificados e uma forma de dependência entre minutos. f₁ flexível
