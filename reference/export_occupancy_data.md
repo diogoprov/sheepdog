@@ -337,7 +337,7 @@ out <- export_occupancy_data(
   validation = list.files(file.path(ex, "validation"), full.names = TRUE),
   classifier = "BirdNET", overwrite = TRUE
 )
-#> Export written to /tmp/Rtmpgb1liF/occupancy: occasions, detections, scores, validation, sites.
+#> Export written to /tmp/RtmpRwTikI/occupancy: occasions, detections, scores, validation, sites.
 vapply(out$tables, nrow, integer(1))
 #>  occasions detections     scores validation      sites 
 #>        354       7553       2298       2467          4 
