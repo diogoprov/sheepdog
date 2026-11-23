@@ -60,8 +60,44 @@ proporcional por sítio. É o equivalente ao `sampling_mode =
 "random_recordings"` do sheepdog e identifica as distribuições de scores dos
 verdadeiros e dos falsos positivos sem depender do classificador.
 
-## Estado (11/11/2026)
+## Estado (22/11/2026)
 
+- 22/11/2026: **Fase 2, critério 2 cumprido para ψ̄.** A rodada
+  `simpsi-boot-1` (AWS, 1.500 ajustes: 3 cenários × 50 conjuntos × 10
+  réplicas do estágio 1) deu cobertura de 90% de 0,88 a 0,94 e |viés| ≤
+  0,01 nos três cenários, sem divergências (detalhes em
+  `dev/fase2/PLANO-v1-markov.md`, "Cobertura de ψ: resultados"). Dos três
+  critérios para levar o v1 ao crywolf como `fp_occu_score()`
+  experimental, o 1 passa no limite (21/11) e o 2 passa; falta o 3, a
+  rodada aleatória do FrogNet com o Massao.
+- 20 a 22/11/2026: **sheepdog: trilha de software estatístico do
+  rOpenSci.** Entraram na `main` os arquivos do guia de pacotes (#162) e
+  as fases 1 a 5 da trilha (#163 a #165, #167 a #169): categorias
+  Regression and Supervised Learning e Bayesian and Monte Carlo, com todos
+  os standards aplicáveis documentados pelo `srr`, validação de entrada,
+  testes de erros e o inventário de condições (`dev/ropensci-stats/`).
+  Depois, exemplos em todas as funções exportadas (#171) e as correções dos
+  achados do `pkgcheck` e do `autotest` (#172). O `pkgcheck` passa em todos
+  os itens obrigatórios. A submissão ao rOpenSci fica para depois de uma
+  decisão do Diogo sobre o momento.
+- 22/11/2026: **adaptador de classificadores (#170).**
+  `read_classifier_output()` lê as previsões do Perch, do OpenSoundscape e
+  do pattern matching do Arbimon, e `score_detections()` aceita uma tabela
+  de previsões. O sheepdog deixa de depender do formato do BirdNET na
+  entrada, o que também abre o benchmark a outros classificadores. O
+  Kaleidoscope ficou de fora: as colunas do `birdnet.csv` não são
+  documentadas e não há arquivo público para testar.
+- 20 a 22/11/2026: **versões.** A 3.4.1 (exemplos mais rápidos, #160)
+  passou no pré-teste do CRAN em 20/11 e espera a revisão manual. A `main`
+  está em 3.4.1.9000; a próxima versão será a 3.5.0, depois da resposta do
+  CRAN. Na 3.5.0, `threshold_bootstrap()` avisa que o padrão de
+  `sustained` passa de `TRUE` para `FALSE` na versão seguinte, como em
+  `suggest_thresholds()`.
+- 20 a 22/11/2026: **Fase 2, Curiango.** Incerteza do estágio 1 propagada
+  ao estágio 2 (#157), reanálise com os conjuntos sorteados ct01+ct02 e
+  scripts do artigo (#159), e `combine_rounds()` aceitando uma rodada
+  `score_bands` depois das aleatórias (#161). O passo a passo está no
+  PLANO da fase 2.
 - 19/11/2026: **Fase 3, camada dirigida.** A linha `select_clips(sampling_mode
   = "targeted")` da tabela da Fase 3 estava desatualizada: o
   `select_directed()` (sheepdog#124) já faz a camada dirigida, com
@@ -331,7 +367,7 @@ verdadeiros e dos falsos positivos sem depender do classificador.
 | 1 | 0. Contrato de dados (feita) | os dois | P–M | — |
 | 2 | 1. Propagação Monte Carlo da calibração (feita) | os dois | P | fase 0 |
 | 3 | 5. Comunidade (`fp_occu_ms()` em desenvolvimento; PRs 3 e 4 com merge em 11/11/2026, falta o 5) | crywolf (+ sheepdog: fixture e verificação por espécie, feitas) | G | fase 0; `fp_occu_dyn()` pronto (decidido em 02/11/2026) |
-| 4 | 2. Modelo conjunto score–ocupação (protótipo v0 em `dev/fase2`, desde 05/11/2026) | sheepdog `dev/` até validar; depois crywolf | G | fase 0 |
+| 4 | 2. Modelo conjunto score–ocupação (v1 em `dev/fase2`; critérios 1 e 2 cumpridos em 22/11/2026, falta o 3, FrogNet) | sheepdog `dev/` até validar; depois crywolf | G | fase 0 |
 | 5 | 3. Validação em duas camadas | sheepdog (+ crywolf) | M | fase 2 |
 | 6 | 4. Atividade vocal (densidade de chamadas) | crywolf | M–G | fase 2 |
 | — | Estudo de simulação do desenho da revisão (futuro) | compêndio próprio (sheepdog + crywolf) | G | Curiango da fase 2; a fase 1 do estudo pode andar em paralelo |

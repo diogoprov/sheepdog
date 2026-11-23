@@ -1651,6 +1651,32 @@ Critério 2 reescrito para o alvo de ocupação. `run_simpsi_boot.R` na AWS.
 * Fora do desenho: θ heterogêneo entre sítio-noites (`hett`), que já
   mostrou viés de −0,16 sem precisar de cobertura.
 
+### Cobertura de ψ: resultados (22/11/2026)
+
+Rodada `simpsi-boot-1` na AWS (c7a.32xlarge spot, 128 workers), em duas
+partes: a primeira parou no limite de 3 h com 918 tarefas; a segunda,
+com limite de 4 h, retomou e terminou as 1.500 (cerca de 29 min por
+ajuste na instância, contra ~7 min no Mac). `summarise_simpsi_boot.R`:
+
+| Cenário | Conjuntos | ψ̄ | Viés (EP) | Cob. 90% (EP) | Cob. 95% | Largura 90% |
+|---|---|---|---|---|---|---|
+| `ind` | 50 | 0,560 | −0,009 (0,004) | 0,88 (0,05) | 0,96 | 0,11 |
+| `pers` | 50 | 0,441 | 0,006 (0,003) | 0,94 (0,03) | 0,98 | 0,07 |
+| `pers0` | 50 | 0,441 | −0,004 (0,002) | 0,94 (0,03) | 0,94 | 0,06 |
+
+* Nenhuma tarefa com erro e nenhuma com divergências. R-hat > 1,01 em 183
+  das 1.500 tarefas (12%), com ESS mínimo de 298: as cadeias curtas
+  (500 + 500) bastam para ψ̄, mas um ajuste final deve usar mais
+  iterações.
+* Entre réplicas do estágio 1, o desvio-padrão de ψ̄ (0,009 a 0,023) é da
+  mesma ordem que o de dentro de cada ajuste (0,016 a 0,025): o bootstrap
+  do estágio 1 responde por um quarto a metade da variância de ψ̄
+  (26% em `pers0`, 46% em `ind`), e sem ele o intervalo ficaria estreito
+  demais (interpretação minha, não testada sem o bootstrap).
+* **O critério passa nos três cenários** (cobertura de 90% ≥ 0,85,
+  |viés| ≤ 0,05, divergências em menos de 5% das tarefas). O critério 2,
+  para ψ̄, está cumprido; falta o critério 3 (FrogNet).
+
 ## Critério para levar o v1 de dois estágios ao crywolf (20/11/2026)
 
 Decidido com o Diogo: o v1 fica em `dev/fase2` até cumprir os três
@@ -1671,5 +1697,8 @@ critérios abaixo. Cumpridos, o pedido vai à sessão do crywolf como
 2. **Cobertura do procedimento em dois estágios:** uma simulação com o
    estágio 1 ponderado, o bootstrap por noite e o estágio 2 com réplicas
    cobre ψ, θ̄ e ψθ̄, pelas regras V1/V2 da validação do v1.
+   *Situação em 22/11: cumprido para ψ̄ (o alvo do v1), na rodada
+   `simpsi-boot-1`: cobertura de 90% de 0,88 a 0,94 e |viés| ≤ 0,01 nos
+   três cenários, sem divergências.*
 3. **Segundo conjunto:** o procedimento funciona na rodada aleatória do
    FrogNet (com o Massao), com convergência, PPC e o critério 1.
