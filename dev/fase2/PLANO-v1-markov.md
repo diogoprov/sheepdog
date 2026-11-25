@@ -1677,6 +1677,65 @@ ajuste na instância, contra ~7 min no Mac). `summarise_simpsi_boot.R`:
   |viés| ≤ 0,05, divergências em menos de 5% das tarefas). O critério 2,
   para ψ̄, está cumprido; falta o critério 3 (FrogNet).
 
+### π₁ exato do sorteio ct01+ct02 (25/11/2026)
+
+O Diogo achou no NAS (`art-cur/Clima` e `art-cur/Pre_dados`) o script do
+sorteio (`Disponibilidade_dados_clima.R`), o `.Rhistory` da sessão, a
+amostra sorteada (`amostra_teste_curiango.csv`, 1.064 minutos) e o quadro
+(`clima_diversons_noite.csv`). Cópias em `dev/fase2/inputs/liliana_sorteio/`
+(fora do git). Script novo: `dev/fase2/curiango_pi1_exato.R`.
+
+**Desenho real** (diferente do diário, que fala em 6 pastas de 5%; o diário
+deve descrever uma tentativa anterior):
+
+- quadro: registros do datalogger dos 7 sítios entre 16:00 e 23:50 e entre
+  00:10 e 06:00 (106.788 registros), por isso nenhum minuto às 00:00;
+- peso = mês × hora: 5 em ago–out, 3 em nov–jan, 1 no resto; 4 de 18 a
+  22 h, 2 de 0 a 5 h, 1 no resto;
+- `slice_sample(prop = 0.01, weight_by = peso)` por sítio, sem reposição e
+  sem semente (o desenho é conhecido, a realização não é reproduzível);
+- 97 sorteados sem áudio do sítio caíram (XAR 65, MIM 29, UEM 2, REF 1); os
+  967 restantes foram divididos em ct01 e ct02 com `set.seed(123)`.
+
+Conferências: n = floor(0,01 N) nos 7 sítios; os pesos reconstruídos batem
+com `peso_total` nos 1.064 sorteados; os 960 verificados de ct12 estão todos
+na amostra, e nenhum do ct03; os 97.806 minutos do depósito estão no quadro.
+
+π₁ = n_sítio × peso / Σ pesos do sítio (0,0016 a 0,037). O Monte Carlo do
+`sample.int` sem reposição (400 réplicas) concorda dentro do ruído.
+`pi_verificados.csv` passou a ter o π₁ do desenho em `pi1` e o do modelo em
+`pi1_modelo`; `pi` e `pi_f03` foram recalculados com o mesmo π₃.
+
+Nos 960 verificados de ct12 (43 positivos):
+
+| π₁ | Prevalência (Hájek) | Kish n_eff | Maior peso 1/π |
+|---|---|---|---|
+| modelo (ano-mês + hora + sítio) | 0,026 | 493 | 1.742 |
+| desenho | 0,024 | 535 | 615 |
+| sem peso | 0,045 | 960 | |
+
+Correlação de 0,975 entre os log π₁. Os positivos se concentram nos pesos
+10 e 20 (ago–out, 18 a 22 h).
+
+**Estágio 1 e estágio 2 (opção a) com o π₁ do desenho.** Mesmos comandos de
+19/11 (`emissions_ct12_curiango.R` com 200 réplicas por noite;
+`run_curiango_2stage.R` com Markov, 4 × 2.000, semente 2026). Saídas em
+`results/curiango_v1/pi1exato/`. Sem divergências, sem treedepth máximo,
+E-BFMI ≥ 0,99, R-hat ≤ 1,003, ESS bulk ≥ 2.880.
+
+| | f₁: peso comp. baixo | f₁: comp. alto | P(s > logit 0,4 \| y = 1) | n efetivo f₁ | ψ no centro | θ̄ | ρ | ψ θ̄ |
+|---|---|---|---|---|---|---|---|---|
+| π₁ do modelo (19/11) | 0,38 | N(0,49; 1,05) | 0,50 | 29 | 0,42 | 0,152 | 4,66 | 0,064 (0,058 a 0,070) |
+| π₁ do desenho | 0,38 | N(0,58; 0,98) | 0,52 | 27 | 0,41 | 0,140 | 4,60 | 0,057 (0,052 a 0,063) |
+
+Intervalos de 90%. Referência ponderada: 0,024.
+
+Leitura: o π₁ do modelo já aproximava bem o desenho; trocar por ele quase
+não muda o estágio 1 e reduz um pouco ψθ̄, que continua acima da
+referência. As conclusões do bootstrap, das faixas e da cobertura de ψ
+(critério 2) não devem mudar (interpretação; não rodadas de novo). A frase
+do JAV sobre o sorteio deve descrever o desenho ponderado por mês e hora.
+
 ## Critério para levar o v1 de dois estágios ao crywolf (20/11/2026)
 
 Decidido com o Diogo: o v1 fica em `dev/fase2` até cumprir os três
