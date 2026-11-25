@@ -39,7 +39,7 @@ invisible(file.create(file.path(out, "clips", man$species_folder,
                                 man$clip_file)))
 zips <- pack_clips(man, out)
 #> Package boa_ran.zip: 0 MB
-#> 1 validation package(s) in /tmp/RtmpEfjhan/packs/packages
+#> 1 validation package(s) in /tmp/RtmppCvLSL/packs/packages
 basename(zips)
 #> [1] "boa_ran.zip"
 ```

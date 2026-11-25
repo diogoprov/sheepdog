@@ -251,7 +251,7 @@ out_dir <- file.path(tempdir(), "birdnet_training")
 ts <- build_training_set(reviewed, out_dir, split = "site",
                          test_sites = "NHE", min_files = 20,
                          copy = FALSE)
-#> 2467 clips listed in training_set.csv (nothing copied) in /tmp/RtmpEfjhan/birdnet_training (1827 train, 640 test).
+#> 2467 clips listed in training_set.csv (nothing copied) in /tmp/RtmppCvLSL/birdnet_training (1827 train, 640 test).
 #> Checks (all should be 0 with split = "night"):
 #>   test_nights_in_train: 0
 #>   test_nights_excluded: 0
@@ -266,7 +266,7 @@ table(ts$set, ts$verdict)
 ts_night <- build_training_set(reviewed, out_dir, split = "night",
                                test_prop = 0.2, negatives_folder = "Noise",
                                min_files = 20, copy = FALSE)
-#> 2467 clips listed in training_set.csv (nothing copied) in /tmp/RtmpEfjhan/birdnet_training (1937 train, 530 test).
+#> 2467 clips listed in training_set.csv (nothing copied) in /tmp/RtmppCvLSL/birdnet_training (1937 train, 530 test).
 #> Checks (all should be 0 with split = "night"):
 #>   test_nights_in_train: 0
 #>   test_nights_excluded: 0
