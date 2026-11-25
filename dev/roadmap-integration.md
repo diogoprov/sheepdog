@@ -71,9 +71,11 @@ verdadeiros e dos falsos positivos sem depender do classificador.
     foi refeito em 19/11 (`emissions_ct12_curiango.R`), com o ct03 só como
     sensibilidade; depois vieram o estágio 2 com réplicas do bootstrap
     (20/11), o estágio 1 por faixas de score (21/11) e a cobertura de ψ
-    (22/11). Tudo em `dev/fase2/PLANO-v1-markov.md`. Opcional: as listas
-    das 6 pastas de 5% de `Audios_Clima` tornariam π₁ exato (hoje vem de um
-    modelo logístico com ano-mês, hora e sítio).
+    (22/11). Tudo em `dev/fase2/PLANO-v1-markov.md`. Em 25/11 o script do
+    sorteio apareceu no NAS (sorteio ponderado por mês e hora, 1% por
+    sítio); π₁ agora vem do desenho (`curiango_pi1_exato.R`), e o estágio 1
+    e o estágio 2 refeitos com ele quase não mudam (ψθ̄ de 0,064 para
+    0,057).
   - **Item 4 pronto nos dois lados.** No crywolf (PR #62, 2.3.0.9000),
     `fp_review_priority()` devolve `site`, `species_code` e `size`, que
     `select_directed()` aceita como `units` (`size_col = "size"` por
