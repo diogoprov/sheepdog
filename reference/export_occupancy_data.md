@@ -5,7 +5,7 @@ positives needs from a passive acoustic survey: the occasions, the
 classifier scores, the reviewed clips with their sampling design and,
 optionally, covariates of the occasions and posterior draws of a
 Bayesian calibration. The folder follows the `sheepdog-occupancy` schema
-(version 1.4), described in
+(version 1.5), described in
 [`vignette("crywolf-integration")`](https://provetelab.org/sheepdog/articles/crywolf-integration.md);
 the crywolf package reads it, but any software can, since every table is
 a plain CSV file (the calibration draws are a Parquet file).
@@ -245,8 +245,11 @@ list).
   `"random_detections"`, `"directed_pps"` (from
   [`select_directed()`](https://provetelab.org/sheepdog/reference/select_directed.md))
   and `"score_bands"` designs, with their verdict, inclusion
-  probability, round and stratum, and what a negative verdict covers
-  (`review_scope`; only when `validation` is given).
+  probability, round and stratum, what a negative verdict covers
+  (`review_scope`) and, for negative or uncertain clips, the identity
+  given by the reviewer (`identity`, `identity_certainty`; see
+  [`join_identities()`](https://provetelab.org/sheepdog/reference/join_identities.md))
+  (only when `validation` is given).
 
 - `recordings_verified.csv`: the occasions annotated by ear in the
   `"random_recordings"` design, with the state of each occasion (only
@@ -337,7 +340,7 @@ out <- export_occupancy_data(
   validation = list.files(file.path(ex, "validation"), full.names = TRUE),
   classifier = "BirdNET", overwrite = TRUE
 )
-#> Export written to /tmp/RtmppCvLSL/occupancy: occasions, detections, scores, validation, sites.
+#> Export written to /tmp/RtmpAGFSf1/occupancy: occasions, detections, scores, validation, sites.
 vapply(out$tables, nrow, integer(1))
 #>  occasions detections     scores validation      sites 
 #>        354       7553       2298       2467          4 

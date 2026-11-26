@@ -52,7 +52,7 @@ invisible(file.create(file.path(clips_dir, man$species_folder,
                                 man$clip_file)))
 copies <- split_by_reviewer(man, clips_dir,
                             file.path(tempdir(), "by_reviewer"))
-#> 15 clips copied to 2 reviewer folders in /tmp/RtmppCvLSL/by_reviewer
+#> 15 clips copied to 2 reviewer folders in /tmp/RtmpAGFSf1/by_reviewer
 table(copies$reviewer)
 #> 
 #>   ana bruno 

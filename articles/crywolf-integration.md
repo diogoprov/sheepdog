@@ -112,7 +112,7 @@ writes in one folder everything an occupancy model with false positives
 needs: every occasion, the classifier scores, the reviewed clips with
 their design and, optionally, covariates of the occasions and posterior
 draws of a Bayesian calibration. The folder follows the schema
-`sheepdog-occupancy`, version 1.4, described below. The tables are plain
+`sheepdog-occupancy`, version 1.5, described below. The tables are plain
 CSV files (missing values are empty cells); the calibration draws are a
 Parquet file.
 
@@ -138,7 +138,7 @@ the calibration but not the false-positive rate of an occupancy model
 
 | field | definition |
 |----|----|
-| `schema`, `schema_version` | `"sheepdog-occupancy"` and `1.4`. Minor versions only add tables, columns or fields, so a reader of version 1 can read any 1.x by ignoring what it does not know; it should refuse other names and major versions. Version 1.1 added the occasion covariates and the calibration keys; version 1.2, `occasion_draws.parquet`; version 1.3, the continuous covariates of the calibration (`calibration$covariates`), with which `occasion_draws.parquet` is required and `calibration_draws.parquet` is not written; version 1.4, `n_windows` in `occasions.csv`, `round`, `stratum`, `n_candidates`, `n_drawn` and `review_scope` in `validation.csv`, and `window_step` and `validation_design` here. |
+| `schema`, `schema_version` | `"sheepdog-occupancy"` and `1.5`. Minor versions only add tables, columns or fields, so a reader of version 1 can read any 1.x by ignoring what it does not know; it should refuse other names and major versions. Version 1.1 added the occasion covariates and the calibration keys; version 1.2, `occasion_draws.parquet`; version 1.3, the continuous covariates of the calibration (`calibration$covariates`), with which `occasion_draws.parquet` is required and `calibration_draws.parquet` is not written; version 1.4, `n_windows` in `occasions.csv`, `round`, `stratum`, `n_candidates`, `n_drawn` and `review_scope` in `validation.csv`, and `window_step` and `validation_design` here; version 1.5, `identity` and `identity_certainty` in `validation.csv`. |
 | `window_step` | Time between the starts of consecutive windows of the classifier (s), used for `n_windows`. |
 | `validation_design` | With the `candidates.csv` of a `"random_detections"` design: `threshold` and `strata` of the draw, `occasion_unit` and `capped`. Absent otherwise. |
 | `created`, `sheepdog_version`, `classifier` | Provenance of the export. |
@@ -186,14 +186,15 @@ and `"directed_pps"` designs: `site`, `occasion_id`, `species_code`,
 [`consensus_verdicts()`](https://provetelab.org/sheepdog/reference/consensus_verdicts.md))
 and `tp` (1 for `positive`, 0 for `negative`, empty otherwise), `round`,
 `stratum`, `n_candidates` (`N` of the stratum), `n_drawn` (occasions
-drawn in the stratum) and `review_scope`, plus `reviewer` and
-`n_reviewers` when present. Only clips of `"random_detections"` estimate
-a false-positive rate; `"top"` clips serve the calibration. Clips of
-`"directed_pps"` come from units chosen by a model, with a known
-`inclusion_prob`: weighted by `1 / inclusion_prob` they estimate rates
-over the units listed for the draw, not over all predictions; `stratum`
-is the unit and `n_candidates` its number of candidate occasions, of
-which one was drawn. `stratum` comes from `candidates.csv` or from
+drawn in the stratum) and `review_scope`, `identity` and
+`identity_certainty`, plus `reviewer` and `n_reviewers` when present.
+Only clips of `"random_detections"` estimate a false-positive rate;
+`"top"` clips serve the calibration. Clips of `"directed_pps"` come from
+units chosen by a model, with a known `inclusion_prob`: weighted by
+`1 / inclusion_prob` they estimate rates over the units listed for the
+draw, not over all predictions; `stratum` is the unit and `n_candidates`
+its number of candidate occasions, of which one was drawn. `stratum`
+comes from `candidates.csv` or from
 [`combine_rounds()`](https://provetelab.org/sheepdog/reference/combine_rounds.md),
 and is empty without them. Under a cap on the occasions (`capped` in
 `validation_design`), `inclusion_prob` is not `n_drawn / n_candidates`;
@@ -205,6 +206,22 @@ when the occasion x species was drawn in `"random_detections"` or
 has a verdict, so that all negatives mean no true call at those scores;
 a call with a lower score remains possible. It is `"clip"` otherwise:
 only that prediction was judged.
+
+`identity` is what the reviewer heard in a negative or uncertain clip
+instead of the target, as given in
+[`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md) or
+with
+[`join_identities()`](https://provetelab.org/sheepdog/reference/join_identities.md):
+a label of the classifier (another species) or a free category such as
+`insect` or `rain`, with several identities separated by `|` meaning
+either of them. `identity_certainty` is `"sure"` or `"probable"`. Both
+are empty where no identity was given, so a missing identity is not
+evidence of noise. An identity found among the labels of the classifier
+(at least those in `species` of `schema.json`) marks confusion between
+classes, the others marks noise, as `is_class` in
+[`confuser_summary()`](https://provetelab.org/sheepdog/reference/confuser_summary.md).
+Rates of confusion are unbiased only where every negative clip of the
+design received an identity.
 
 `recordings_verified.csv` holds the occasions annotated by ear
 (`"random_recordings"`), with `present` (1, 0 or empty) in place of

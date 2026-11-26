@@ -356,7 +356,7 @@ an occupancy model with false positives needs: every occasion, the
 classifier scores, the reviewed clips with their design and, optionally,
 covariates of the occasions and posterior draws of a Bayesian
 calibration. The folder follows the schema
-<code>sheepdog-occupancy</code>, version 1.4, described below. The
+<code>sheepdog-occupancy</code>, version 1.5, described below. The
 tables are plain CSV files (missing values are empty cells); the
 calibration draws are a Parquet file.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -392,7 +392,7 @@ false-positive rate of an occupancy model (see
 <code>schema</code>, <code>schema_version</code>
 </td>
 <td>
-<code>"sheepdog-occupancy"</code> and <code>1.4</code>. Minor
+<code>"sheepdog-occupancy"</code> and <code>1.5</code>. Minor
 versions only add tables, columns or fields, so a reader of version 1
 can read any 1.x by ignoring what it does not know; it should refuse
 other names and major versions. Version 1.1 added the occasion
@@ -405,7 +405,8 @@ with which <code>occasion_draws.parquet</code> is required and
 <code>round</code>, <code>stratum</code>, <code>n_candidates</code>,
 <code>n_drawn</code> and <code>review_scope</code> in
 <code>validation.csv</code>, and <code>window_step</code> and
-<code>validation_design</code> here.</td>
+<code>validation_design</code> here; version 1.5, <code>identity</code>
+and <code>identity_certainty</code> in <code>validation.csv</code>.</td>
 </tr>
 <tr class="even">
 <td><code>window_step</code></td>
@@ -589,7 +590,8 @@ occasion x species: <code>max_score</code> (the highest confidence) and
 <code>negative</code>, empty otherwise), <code>round</code>,
 <code>stratum</code>, <code>n_candidates</code> (<code>N</code> of the
 stratum), <code>n_drawn</code> (occasions drawn in the stratum) and
-<code>review_scope</code>, plus <code>reviewer</code> and
+<code>review_scope</code>, <code>identity</code> and
+<code>identity_certainty</code>, plus <code>reviewer</code> and
 <code>n_reviewers</code> when present. Only clips of
 <code>"random_detections"</code> estimate a false-positive rate;
 <code>"top"</code> clips serve the calibration. Clips of
@@ -611,6 +613,19 @@ every prediction above the threshold of the draw has a verdict, so that
 all negatives mean no true call at those scores; a call with a lower
 score remains possible. It is <code>"clip"</code> otherwise: only that
 prediction was judged.</p>
+<p><code>identity</code> is what the reviewer heard in a negative or
+uncertain clip instead of the target, as given in <code><a href="../reference/run_app.html">run_app()</a></code>
+or with <code><a href="../reference/join_identities.html">join_identities()</a></code>: a label of the classifier
+(another species) or a free category such as <code>insect</code> or
+<code>rain</code>, with several identities separated by <code>|</code>
+meaning either of them. <code>identity_certainty</code> is
+<code>"sure"</code> or <code>"probable"</code>. Both are empty where no
+identity was given, so a missing identity is not evidence of noise. An
+identity found among the labels of the classifier (at least those in
+<code>species</code> of <code>schema.json</code>) marks confusion
+between classes, the others marks noise, as <code>is_class</code> in
+<code><a href="../reference/confuser_summary.html">confuser_summary()</a></code>. Rates of confusion are unbiased only
+where every negative clip of the design received an identity.</p>
 <p><code>recordings_verified.csv</code> holds the occasions annotated by
 ear (<code>"random_recordings"</code>), with <code>present</code> (1, 0
 or empty) in place of <code>tp</code>. The two tables are kept apart

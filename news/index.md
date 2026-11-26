@@ -2,6 +2,19 @@
 
 ## sheepdog (development version)
 
+- [`export_occupancy_data()`](https://provetelab.org/sheepdog/reference/export_occupancy_data.md)
+  writes schema 1.5, which only adds to 1.4: `identity` and
+  `identity_certainty` in `validation.csv`, the identity a reviewer gave
+  to a negative or uncertain clip in
+  [`run_app()`](https://provetelab.org/sheepdog/reference/run_app.md) or
+  with
+  [`join_identities()`](https://provetelab.org/sheepdog/reference/join_identities.md)
+  (empty where none was given). A reader can tell confusion between
+  classes from noise by matching `identity` against the classifier
+  labels, as
+  [`confuser_summary()`](https://provetelab.org/sheepdog/reference/confuser_summary.md)
+  does.
+
 - New
   [`read_classifier_output()`](https://provetelab.org/sheepdog/reference/read_classifier_output.md)
   reads the predictions of Perch (the inference CSV of perch-hoplite and

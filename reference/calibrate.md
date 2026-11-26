@@ -261,7 +261,7 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #> Scoring XAR (/home/runner/work/_temp/Library/sheepdog/extdata/example/birdnet/XAR/BirdNET_SelectionTable.txt)...
 #>   1866 detections of calibrated species (0 of species NOT calibrated were dropped).
 #> Nights with a reliable detection (p_tp >= 0.95): 339 (k = 1), 268 (k = 2), 217 (k = 3).
-#> Done! Outputs in /tmp/RtmppCvLSL/calibration
+#> Done! Outputs in /tmp/RtmpAGFSf1/calibration
 #> nightly_detection_history.csv is the input of the analyses; the column 'detection' uses k = 1; detection_k1/k2/k3 give the sensitivity to the rule.
 #>  [1] "calibrated_detections_ARA.csv" "calibrated_detections_BAI.csv"
 #>  [3] "calibrated_detections_NHE.csv" "calibrated_detections_XAR.csv"

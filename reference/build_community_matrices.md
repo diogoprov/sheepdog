@@ -66,7 +66,7 @@ build_community_matrices(file.path(ex, "nightly_detection_history.csv"),
                          k_min = 2)
 #> Matrix: 23 rows (site x month) x 3 species | rule k >= 2
 #> Effort: 23 site x month cells included; 1 dropped for having < 5 recorded nights (see effort_site_month.csv)
-#> Files in: /tmp/RtmppCvLSL/matrices
+#> Files in: /tmp/RtmpAGFSf1/matrices
 list.files(out)
 #> [1] "count_matrix_site_month_k2.csv"     "effort_site_month.csv"             
 #> [3] "frequency_matrix_site_month_k2.csv"
