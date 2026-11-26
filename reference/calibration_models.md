@@ -51,7 +51,7 @@ names(mods)
 #> [4] "m3_plus_site"         "m4_species_x_site"   
 mods$m2_species_slope
 #> tp ~ logit_conf + (logit_conf | species)
-#> <environment: 0x5614abcdd1d0>
+#> <environment: 0x5e4dca019c10>
 # Family for a single species, with uncorrelated site effects
 names(calibration_models(uncorrelated = TRUE, single_species = TRUE))
 #> [1] "m0_global"                  "m1_site_intercept"         

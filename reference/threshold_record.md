@@ -100,7 +100,7 @@ threshold_record(thr, bootstrap = boot, groups = groups)
 # Also write the record as a Markdown table
 md <- file.path(tempdir(), "threshold_record.md")
 threshold_record(thr, bootstrap = boot, groups = groups, file = md)
-#> Threshold record written to /tmp/RtmpAGFSf1/threshold_record.md
+#> Threshold record written to /tmp/RtmpnYqzB0/threshold_record.md
 head(readLines(md))
 #> [1] "# Threshold record"                           
 #> [2] ""                                             
