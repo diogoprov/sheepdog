@@ -1,5 +1,11 @@
 # sheepdog (development version)
 
+- `export_occupancy_data()` writes schema 1.5, which only adds to 1.4:
+  `identity` and `identity_certainty` in `validation.csv`, the identity a
+  reviewer gave to a negative or uncertain clip in `run_app()` or with
+  `join_identities()` (empty where none was given). A reader can tell
+  confusion between classes from noise by matching `identity` against the
+  classifier labels, as `confuser_summary()` does.
 - New `read_classifier_output()` reads the predictions of Perch (the
   inference CSV of perch-hoplite and of the earlier perch repository), of
   OpenSoundscape (the table of `predict()`) and of Arbimon pattern matching

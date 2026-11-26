@@ -171,7 +171,7 @@ positives needs from a passive acoustic survey: the occasions, the
 classifier scores, the reviewed clips with their sampling design and,
 optionally, covariates of the occasions and posterior draws of a
 Bayesian calibration. The folder follows the \code{sheepdog-occupancy}
-schema (version 1.4), described in
+schema (version 1.5), described in
 \code{vignette("crywolf-integration")}; the crywolf package reads it, but any
 software can, since every table is a plain CSV file (the calibration
 draws are a Parquet file).
@@ -193,8 +193,10 @@ x species pairs absent from this table had no prediction >=
 \item \code{validation.csv}: the reviewed clips of the \code{"top"},
 \code{"random_detections"}, \code{"directed_pps"} (from \code{\link[=select_directed]{select_directed()}}) and
 \code{"score_bands"} designs, with their verdict, inclusion
-probability, round and stratum, and what a negative verdict covers
-(\code{review_scope}; only when \code{validation} is given).
+probability, round and stratum, what a negative verdict covers
+(\code{review_scope}) and, for negative or uncertain clips, the identity
+given by the reviewer (\code{identity}, \code{identity_certainty}; see
+\code{\link[=join_identities]{join_identities()}}) (only when \code{validation} is given).
 \item \code{recordings_verified.csv}: the occasions annotated by ear in the
 \code{"random_recordings"} design, with the state of each occasion (only
 when \code{validation} holds such clips).
