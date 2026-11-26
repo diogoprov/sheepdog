@@ -85,8 +85,13 @@ expect_contract <- function(dir) {
     expect_identical(names(val)[seq_along(colunas$validation)], colunas$validation)
     novas <- c("round", "stratum", "n_candidates", "n_drawn", "review_scope")
     if (sc$schema_version >= 1.4) expect_true(all(novas %in% names(val)))
+    ident <- c("identity", "identity_certainty")
+    if (sc$schema_version >= 1.5) {
+      expect_true(all(ident %in% names(val)))
+      expect_true(all(val$identity_certainty %in% c(NA, "sure", "probable")))
+    }
     expect_true(all(setdiff(names(val), colunas$validation) %in%
-                      c(novas, "reviewer", "n_reviewers")))
+                      c(novas, ident, "reviewer", "n_reviewers")))
     expect_true(all(val$sampling_mode %in% c("top", "random_detections")))
     expect_true(all(val$verdict %in% c(names(veredito), "not_reviewed",
                                        "clip_missing", "disagreement")))

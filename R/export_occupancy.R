@@ -5,7 +5,7 @@
 #' classifier scores, the reviewed clips with their sampling design and,
 #' optionally, covariates of the occasions and posterior draws of a
 #' Bayesian calibration. The folder follows the `sheepdog-occupancy`
-#' schema (version 1.4), described in
+#' schema (version 1.5), described in
 #' `vignette("crywolf-integration")`; the crywolf package reads it, but any
 #' software can, since every table is a plain CSV file (the calibration
 #' draws are a Parquet file).
@@ -25,8 +25,10 @@
 #' * `validation.csv`: the reviewed clips of the `"top"`,
 #'   `"random_detections"`, `"directed_pps"` (from [select_directed()]) and
 #'   `"score_bands"` designs, with their verdict, inclusion
-#'   probability, round and stratum, and what a negative verdict covers
-#'   (`review_scope`; only when `validation` is given).
+#'   probability, round and stratum, what a negative verdict covers
+#'   (`review_scope`) and, for negative or uncertain clips, the identity
+#'   given by the reviewer (`identity`, `identity_certainty`; see
+#'   [join_identities()]) (only when `validation` is given).
 #' * `recordings_verified.csv`: the occasions annotated by ear in the
 #'   `"random_recordings"` design, with the state of each occasion (only
 #'   when `validation` holds such clips).
@@ -381,7 +383,7 @@ export_occupancy_data <- function(output_dir, detections, recordings = NULL,
 
   schema <- list(
     schema = "sheepdog-occupancy",
-    schema_version = 1.4,
+    schema_version = 1.5,
     created = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     sheepdog_version = as.character(utils::packageVersion("sheepdog")),
     classifier = classifier,
@@ -799,7 +801,9 @@ export_validation <- function(validation, occasions, candidates = NULL) {
                 "n_detections_occasion", "round", "n_candidates", "n_drawn")) {
     if (!col %in% names(validation)) validation[[col]] <- NA_real_
   }
-  if (!"stratum" %in% names(validation)) validation$stratum <- NA_character_
+  for (col in c("stratum", identity_columns)) {
+    if (!col %in% names(validation)) validation[[col]] <- NA_character_
+  }
   validation <- join_candidates(validation, candidates)
   v <- validation |>
     mutate(site = as.character(site),
@@ -809,7 +813,8 @@ export_validation <- function(validation, occasions, candidates = NULL) {
                           verdict == "negative" ~ 0L,
                           .default = NA_integer_),
            across(c(round, n_candidates, n_drawn), as.integer),
-           stratum = as.character(stratum)) |>
+           stratum = as.character(stratum),
+           across(all_of(identity_columns), as.character)) |>
     mutate(review_scope = review_scope(sampling_mode, tp,
                                        n_detections_occasion),
            .by = c(site, occasion_id, species_code, sampling_mode))
@@ -827,7 +832,8 @@ export_validation <- function(validation, occasions, candidates = NULL) {
       select(site, occasion_id, species_code, species, clip_start, clip_end,
              confidence, sampling_mode, inclusion_prob,
              n_detections_occasion, verdict, tp, round, stratum,
-             n_candidates, n_drawn, review_scope, all_of(extras)) |>
+             n_candidates, n_drawn, review_scope, identity,
+             identity_certainty, all_of(extras)) |>
       arrange(site, occasion_id, species_code, clip_start)
   )
   check_clips_in_both_designs(out$validation)

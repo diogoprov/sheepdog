@@ -14,7 +14,7 @@ test_that("export_occupancy_data() writes the tables and the schema", {
                               "validation.csv", "sites.csv", "schema.json"))
   sc <- jsonlite::read_json(file.path(ex$dir, "schema.json"))
   expect_identical(sc$schema, "sheepdog-occupancy")
-  expect_identical(sc$schema_version, 1.4)
+  expect_identical(sc$schema_version, 1.5)
   expect_null(sc$occasion_covariates)
   expect_identical(sc$occasion_unit, "file")
   expect_identical(sc$classifier, "sim v1")
@@ -409,6 +409,24 @@ test_that("validation.csv keeps the round and the scope of a verdict", {
   v <- read_export(export_sim(validation = top)$dir, "validation")
   expect_true(all(v$review_scope == "clip"))
   expect_true(all(is.na(v$stratum)))
+})
+
+test_that("validation.csv carries the identity of negative clips", {
+  val <- sim_validation(sim_pred())
+  v <- read_export(export_sim(validation = val)$dir, "validation")
+  expect_true(all(c("identity", "identity_certainty") %in% names(v)))
+  expect_true(all(is.na(v$identity)))
+  neg <- which(val$verdict == "negative")[1:2]
+  val$identity <- NA_character_
+  val$identity_certainty <- NA_character_
+  val$identity[neg] <- c(sim_especies[2], "insect|rain")
+  val$identity_certainty[neg] <- c("sure", "probable")
+  v <- read_export(export_sim(validation = val)$dir, "validation")
+  k <- function(d) paste(d$site, d$occasion_id, d$species_code, d$clip_start)
+  m <- match(k(val)[neg], k(v))
+  expect_identical(v$identity[m], c(sim_especies[2], "insect|rain"))
+  expect_identical(v$identity_certainty[m], c("sure", "probable"))
+  expect_identical(sum(!is.na(v$identity)), 2L)
 })
 
 test_that("candidates give the stratum and the design of the draw", {
