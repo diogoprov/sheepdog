@@ -60,8 +60,30 @@ proporcional por sítio. É o equivalente ao `sampling_mode =
 "random_recordings"` do sheepdog e identifica as distribuições de scores dos
 verdadeiros e dos falsos positivos sem depender do classificador.
 
-## Estado (23/11/2026)
+## Estado (25/11/2026)
 
+- 25/11/2026: **π₁ exato do Curiango (#175).** O script do sorteio
+  ct01+ct02 apareceu no NAS. O desenho foi um sorteio ponderado por mês ×
+  hora (`slice_sample(prop = 0.01, weight_by = peso)` por sítio) sobre os
+  registros noturnos do datalogger, e não as 6 pastas de 5% do diário; os
+  960 verificados de ct12 estão todos na amostra. π₁ agora vem do desenho
+  (`dev/fase2/curiango_pi1_exato.R`), e `pi_verificados.csv` guarda o π₁ do
+  modelo em `pi1_modelo`. Refeitos o estágio 1 e o estágio 2 (opção a):
+  f₁ quase não muda, ψθ̄ vai de 0,064 para 0,057, diagnósticos limpos. O
+  bootstrap, as faixas e a cobertura de ψ não foram refeitos; o critério 2
+  segue cumprido. Os dados da Liliana ficam fora do git.
+- 25/11/2026: **esquema 1.5 do export (#176).** `validation.csv` ganha
+  `identity` e `identity_certainty`, a identidade que quem revisou deu aos
+  clipes negativos ou incertos (`run_app()` ou `join_identities()`), vazias
+  onde não foi dada. Pedido do crywolf, que documentou (PR #72) que
+  `fp_occu()` e `fp_occu_ms()` supõem falsos positivos independentes entre
+  espécies: em simulação, confusão de 0,30 por ocasião enviesou a ocupação
+  em 0,6 a 1,7 logit. O esquema não ganhou lista de classes: o leitor
+  separa confusão entre classes de ruído comparando `identity` com
+  `species` do `schema.json`, como o `is_class` do `confuser_summary()`.
+  Falta a leitura no `fp_read_sheepdog()` (crywolf, a propor ao Diogo).
+  A taxa de confusão só sai sem viés onde todos os negativos do desenho
+  receberam identidade.
 - 23/11/2026: **itens 3 e 4 do plano de integração.**
   - **Item 3 (Curiango) não espera mais nada da Liliana.** O script de
     seleção dos conjuntos de teste se perdeu; o sorteio foi reconstruído em
@@ -158,7 +180,9 @@ verdadeiros e dos falsos positivos sem depender do classificador.
     reais. É interpretação, não teste.
   - **Fixture `export-1.3-ms`.** Fica como está: as fixtures são versões
     gravadas do esquema e não são reescritas (`export-1.1` a `export-1.3`
-    continuam nos testes). O esquema atual é o 1.4, que só acrescenta campos:
+    continuam nos testes). *(Desatualizado em 25/11: o esquema atual é o
+    1.5, que acrescenta `identity` e `identity_certainty`.)* O esquema
+    atual é o 1.4, que só acrescenta campos:
     `n_windows` em `occasions.csv`; `round`, `stratum`, `n_candidates`,
     `n_drawn` e `review_scope` em `validation.csv`; `window_step` e
     `validation_design` no `schema.json`. Se o multiespécies do modelo de
@@ -908,7 +932,10 @@ do plano**, como decidido no roadmap do crywolf. A literatura sobre ela
 existe (Wright et al. 2019; Stratton et al. 2022; Clement et al. 2022), mas
 exige uma matriz de classificação e um desenho de verificação próprio.
 **[decidir]** Se ela vira um projeto de pesquisa separado (por exemplo, com
-os anuros do FrogNet, que têm cantos parecidos entre espécies).
+os anuros do FrogNet, que têm cantos parecidos entre espécies). Desde
+25/11 a identidade dos negativos chega ao export (esquema 1.5), o que dá
+os dados para descrever a confusão; estimá-la sem viés exige identidade em
+todos os negativos de um desenho aleatório.
 
 ## Estudo de simulação: desenho da revisão
 
